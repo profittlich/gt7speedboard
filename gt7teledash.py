@@ -167,6 +167,7 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
         masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
+        masterWidget.setStyleSheet("background-color:black;color:white;")
 
         self.setCentralWidget(masterWidget)
 
