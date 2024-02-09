@@ -5,21 +5,48 @@ from wakepy import keep
 import math
 import queue
 
-from PyQt6.QtCore import QSize, Qt, QTimer
-from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout
+from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression
+from PyQt6.QtGui import QColor, QRegularExpressionValidator
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit
 
 from gt7telepoint import Point
 
 import gt7telemetryreceiver as tele
+
+class StartWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("GT7 TeleDash")
+        self.starter = QPushButton("Start")
+
+        ipLabel = QLabel("PlayStation IP address:")
+        self.ip = QLineEdit()
+
+        ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
+        ipRegex = QRegularExpression ("^" + ipRange
+                 + "\\." + ipRange
+                 + "\\." + ipRange
+                 + "\\." + ipRange + "$");
+        ipValidator = QRegularExpressionValidator(ipRegex)
+        self.ip.setValidator(ipValidator)
+
+        layout = QHBoxLayout()
+        self.setLayout(layout)
+        layout.addWidget(ipLabel)
+        layout.addWidget(self.ip)
+        layout.addWidget(self.starter)
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.startWindow = StartWindow()
+        self.startWindow.starter.clicked.connect(self.startDash)
+
         self.setWindowTitle("GT7 TeleDash")
         self.queue = queue.Queue()
+        self.receiver = None
 
         
         # Lvl 4
@@ -67,6 +94,14 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.tyreRL.setFont(font)
 
+        self.pedalBest = QLabel("COAST")
+        self.pedalBest.setStyleSheet("background: #222;")
+        self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = self.pedalBest.font()
+        font.setPointSize(64)
+        font.setBold(True)
+        self.pedalBest.setFont(font)
+
         self.speedBest = QLabel("BEST")
         self.speedBest.setStyleSheet("background-color:grey;")
         self.speedBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -74,6 +109,17 @@ class MainWindow(QMainWindow):
         font.setPointSize(64)
         font.setBold(True)
         self.speedBest.setFont(font)
+
+        self.lineBest = QLabel("")
+        self.lineBest.setStyleSheet("background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop: 0.29 #222, stop:0.3 yellow, stop:0.489 #222, stop:0.49 white, stop: 0.51 white, stop:0.511 #222 );")
+
+        self.pedalLast = QLabel("GAS")
+        self.pedalLast.setStyleSheet("background: green;")
+        self.pedalLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = self.pedalLast.font()
+        font.setPointSize(64)
+        font.setBold(True)
+        self.pedalLast.setFont(font)
 
         self.speedLast = QLabel("LAST")
         self.speedLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -83,6 +129,17 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.speedLast.setFont(font)
 
+        self.lineLast = QLabel("")
+        self.lineLast.setStyleSheet("background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop: 0.049 #222, stop:0.05 yellow, stop:0.489 #222, stop:0.49 white, stop: 0.51 white, stop:0.511 #222 );")
+
+        self.pedalMedian = QLabel("BRAKE")
+        self.pedalMedian.setStyleSheet("background: red;")
+        self.pedalMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = self.pedalMedian.font()
+        font.setPointSize(64)
+        font.setBold(True)
+        self.pedalMedian.setFont(font)
+
         self.speedMedian = QLabel("MEDIAN")
         self.speedMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedMedian.setStyleSheet("background-color:grey;")
@@ -90,6 +147,9 @@ class MainWindow(QMainWindow):
         font.setPointSize(64)
         font.setBold(True)
         self.speedMedian.setFont(font)
+
+        self.lineMedian = QLabel("")
+        self.lineMedian.setStyleSheet("background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0.489 #222, stop:0.49 white, stop: 0.51 white, stop:0.511 #222, stop:0.75 blue, stop:0.76 #222 );")
 
         # Lvl 3
         fuelWidget = QWidget()
@@ -116,9 +176,18 @@ class MainWindow(QMainWindow):
         speedWidget = QWidget()
         speedLayout = QGridLayout()
         speedWidget.setLayout(speedLayout)
-        speedLayout.addWidget(self.speedBest, 0, 0)
-        speedLayout.addWidget(self.speedMedian, 0, 1)
-        speedLayout.addWidget(self.speedLast, 0, 3)
+        speedLayout.addWidget(self.pedalBest, 0, 0)
+        speedLayout.addWidget(self.speedBest, 1, 0)
+        speedLayout.addWidget(self.lineBest, 2, 0)
+        speedLayout.addWidget(self.pedalMedian, 0, 1)
+        speedLayout.addWidget(self.speedMedian, 1, 1)
+        speedLayout.addWidget(self.lineMedian, 2, 1)
+        speedLayout.addWidget(self.pedalLast, 0, 2)
+        speedLayout.addWidget(self.speedLast, 1, 2)
+        speedLayout.addWidget(self.lineLast, 2, 2)
+        speedLayout.setRowStretch(0, 1)
+        speedLayout.setRowStretch(1, 4)
+        speedLayout.setRowStretch(2, 1)
 
         # Lvl 2
         self.header = QLabel("? LAPS LEFT")
@@ -151,8 +220,8 @@ class MainWindow(QMainWindow):
 
         # Lvl 1
         masterLayout = QGridLayout()
-        masterWidget = QWidget()
-        masterWidget.setLayout(masterLayout)
+        self.masterWidget = QWidget()
+        self.masterWidget.setLayout(masterLayout)
         masterLayout.setColumnStretch(0, 1)
         masterLayout.setColumnStretch(1, 1)
         masterLayout.setRowStretch(0, 1)
@@ -169,11 +238,15 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
         masterWidget.setStyleSheet("background-color:black;color:white;")
 
-        self.setCentralWidget(masterWidget)
+        self.setCentralWidget(self.startWindow)
+
+
+    def startDash(self):
+        self.setCentralWidget(self.masterWidget)
 
         self.initRace()
 
-        self.receiver = tele.GT7TelemetryReceiver()
+        self.receiver = tele.GT7TelemetryReceiver(self.startWindow.ip.text())
         self.receiver.setQueue(self.queue)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
@@ -265,7 +338,8 @@ class MainWindow(QMainWindow):
 
             curPoint = Point(d)
 
-            if curPoint.current_lap  == 0:
+            if curPoint.current_lap <= 0:
+                print("(re-)init")
                 self.initRace()
                 continue
 
@@ -368,8 +442,9 @@ class MainWindow(QMainWindow):
             self.newLapPos.append(curPoint)
 
     def closeEvent(self, event):
-        self.receiver.running = False
-        self.thread.join()
+        if not self.receiver is None:
+            self.receiver.running = False
+            self.thread.join()
         event.accept()
 
 

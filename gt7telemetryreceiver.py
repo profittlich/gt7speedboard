@@ -10,11 +10,11 @@ from salsa20 import Salsa20_xor
 
 class GT7TelemetryReceiver:
 
-    def __init__(self):
+    def __init__(self, ip):
         # ports for send and receive data
         self.SendPort = 33739
         self.ReceivePort = 33740
-        self.ip = "172.23.79.118"
+        self.ip = ip
         self.prevlap = -1
         self.pktid = 0
         self.pknt = 0
@@ -45,6 +45,7 @@ class GT7TelemetryReceiver:
     # send heartbeat
     def send_hb(self):
         send_data = 'A'
+        print("Send heartbeat to " + self.ip)
         self.s.sendto(send_data.encode('utf-8'), (self.ip, self.SendPort))
         #print('send heartbeat')
 
