@@ -1,0 +1,5 @@
+PyQt6==6.6.1
+PyQt6-Qt6==6.6.1
+PyQt6-sip==13.6.0
+salsa20==0.3.0
+wakepy==0.7.2
