@@ -45,16 +45,10 @@ class GT7TelemetryReceiver:
     # send heartbeat
     def send_hb(self):
         send_data = 'A'
-        print("Send heartbeat to " + self.ip)
+        #print("Send heartbeat to " + self.ip)
         self.s.sendto(send_data.encode('utf-8'), (self.ip, self.SendPort))
         #print('send heartbeat')
 
-
-    def secondsToLaptime(self, seconds):
-        remaining = seconds
-        minutes = seconds // 60
-        remaining = seconds % 60
-        return '{:01.0f}:{:06.3f}'.format(minutes, remaining)
 
     def runTelemetryReceiver(self):
         # Create a UDP socket and bind it

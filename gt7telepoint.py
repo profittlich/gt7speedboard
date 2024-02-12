@@ -70,14 +70,14 @@ class Point:
         self.tyre_temp_FL = struct.unpack('f', ddata[0x60:0x60 + 4])[0]  # tyre temp FL
         self.tyre_temp_FR = struct.unpack('f', ddata[0x64:0x64 + 4])[0]  # tyre temp FR
 
-        self.suspension_fl = struct.unpack('f', ddata[0xC4:0xC4 + 4])[0]  # suspension FL
-        self.suspension_fr = struct.unpack('f', ddata[0xC8:0xC8 + 4])[0]  # suspension FR
+        self.suspension_FL = struct.unpack('f', ddata[0xC4:0xC4 + 4])[0]  # suspension FL
+        self.suspension_FR = struct.unpack('f', ddata[0xC8:0xC8 + 4])[0]  # suspension FR
 
         self.tyre_temp_RL = struct.unpack('f', ddata[0x68:0x68 + 4])[0]  # tyre temp RL
         self.tyre_temp_RR = struct.unpack('f', ddata[0x6C:0x6C + 4])[0]  # tyre temp RR
 
-        self.suspension_rl = struct.unpack('f', ddata[0xCC:0xCC + 4])[0]  # suspension RL
-        self.suspension_rr = struct.unpack('f', ddata[0xD0:0xD0 + 4])[0]  # suspension RR
+        self.suspension_RL = struct.unpack('f', ddata[0xCC:0xCC + 4])[0]  # suspension RL
+        self.suspension_RR = struct.unpack('f', ddata[0xD0:0xD0 + 4])[0]  # suspension RR
 
         self.gear_1 = struct.unpack('f', ddata[0x104:0x104 + 4])[0]  # 1st gear
         self.gear_2 = struct.unpack('f', ddata[0x108:0x108 + 4])[0]  # 2nd gear
@@ -109,26 +109,27 @@ class Point:
         self.is_paused = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-2] == '1'
         self.in_race = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-1] == '1'
 
-        # struct.unpack('f', ddata[0x28:0x28+4])[0]					# rot ???
+        self.unknown = []
+        self.unknown.append( struct.unpack('f', ddata[0x28:0x28+4])[0])					# rot ???
 
-        # bin(struct.unpack('B', ddata[0x8E:0x8E+1])[0])[2:]	# various flags (see https://github.com/Nenkai/PDTools/blob/master/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs)
-        # bin(struct.unpack('B', ddata[0x8F:0x8F+1])[0])[2:]	# various flags (see https://github.com/Nenkai/PDTools/blob/master/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs)
-        # bin(struct.unpack('B', ddata[0x93:0x93+1])[0])[2:]	# 0x93 = ???
+        self.unknown.append( bin(struct.unpack('B', ddata[0x8E:0x8E+1])[0])[2:])	# various flags (see https://github.com/Nenkai/PDTools/blob/master/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs)
+        self.unknown.append( bin(struct.unpack('B', ddata[0x8F:0x8F+1])[0])[2:])	# various flags (see https://github.com/Nenkai/PDTools/blob/master/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs)
+        self.unknown.append( bin(struct.unpack('B', ddata[0x93:0x93+1])[0])[2:])	# 0x93 = ???
 
-        # struct.unpack('f', ddata[0x94:0x94+4])[0]			# 0x94 = ???
-        # struct.unpack('f', ddata[0x98:0x98+4])[0]			# 0x98 = ???
-        # struct.unpack('f', ddata[0x9C:0x9C+4])[0]			# 0x9C = ???
-        # struct.unpack('f', ddata[0xA0:0xA0+4])[0]			# 0xA0 = ???
+        self.unknown.append( struct.unpack('f', ddata[0x94:0x94+4])[0])			# 0x94 = ???
+        self.unknown.append( struct.unpack('f', ddata[0x98:0x98+4])[0])			# 0x98 = ???
+        self.unknown.append( struct.unpack('f', ddata[0x9C:0x9C+4])[0])			# 0x9C = ???
+        self.unknown.append( struct.unpack('f', ddata[0xA0:0xA0+4])[0])			# 0xA0 = ???
 
-        # struct.unpack('f', ddata[0xD4:0xD4+4])[0]			# 0xD4 = ???
-        # struct.unpack('f', ddata[0xD8:0xD8+4])[0]			# 0xD8 = ???
-        # struct.unpack('f', ddata[0xDC:0xDC+4])[0]			# 0xDC = ???
-        # struct.unpack('f', ddata[0xE0:0xE0+4])[0]			# 0xE0 = ???
+        self.unknown.append( struct.unpack('f', ddata[0xD4:0xD4+4])[0])			# 0xD4 = ???
+        self.unknown.append( struct.unpack('f', ddata[0xD8:0xD8+4])[0])			# 0xD8 = ???
+        self.unknown.append( struct.unpack('f', ddata[0xDC:0xDC+4])[0])			# 0xDC = ???
+        self.unknown.append( struct.unpack('f', ddata[0xE0:0xE0+4])[0])			# 0xE0 = ???
 
-        # struct.unpack('f', ddata[0xE4:0xE4+4])[0]			# 0xE4 = ???
-        # struct.unpack('f', ddata[0xE8:0xE8+4])[0]			# 0xE8 = ???
-        # struct.unpack('f', ddata[0xEC:0xEC+4])[0]			# 0xEC = ???
-        # struct.unpack('f', ddata[0xF0:0xF0+4])[0]			# 0xF0 = ???
+        self.unknown.append( struct.unpack('f', ddata[0xE4:0xE4+4])[0])			# 0xE4 = ???
+        self.unknown.append( struct.unpack('f', ddata[0xE8:0xE8+4])[0])			# 0xE8 = ???
+        self.unknown.append( struct.unpack('f', ddata[0xEC:0xEC+4])[0])			# 0xEC = ???
+        self.unknown.append( struct.unpack('f', ddata[0xF0:0xF0+4])[0])			# 0xF0 = ???
 
         # end of https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
 

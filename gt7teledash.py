@@ -4,10 +4,12 @@ import threading
 from wakepy import keep
 import math
 import queue
+from cProfile import Profile
+from pstats import SortKey, Stats
 
-from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression
-from PyQt6.QtGui import QColor, QRegularExpressionValidator
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit
+from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
+from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox
 
 from gt7telepoint import Point
 
@@ -31,10 +33,56 @@ class StartWindow(QWidget):
         self.ip.setValidator(ipValidator)
 
         layout = QHBoxLayout()
-        self.setLayout(layout)
         layout.addWidget(ipLabel)
         layout.addWidget(self.ip)
         layout.addWidget(self.starter)
+
+        addr = QWidget()
+        addr.setLayout(layout)
+
+
+        self.experimental = QCheckBox("Experimental features")
+
+        modeLabel = QLabel("Mode:")
+
+        self.mode = QComboBox()
+        self.mode.addItem("Laps")
+        self.mode.addItem("Circuit Experience")
+        
+        mainLayout = QVBoxLayout()
+        self.setLayout(mainLayout)
+        mainLayout.addWidget(modeLabel)
+        mainLayout.addWidget(self.mode)
+        mainLayout.addWidget(self.experimental)
+        mainLayout.addWidget(addr)
+
+        mainLayout.insertStretch(-1)
+
+        settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
+        self.ip.setText(settings.value("ip"))
+        self.experimental.setChecked(settings.value("experimental")=="true")
+        self.mode.setCurrentIndex(int(settings.value("mode")))
+
+
+class FuelGauge(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.level = 0.0
+
+    def setLevel(self, l):
+        self.level = l
+
+    def paintEvent(self, event):
+
+        qp = QPainter()
+        qp.begin(self)
+        qp.setPen(Qt.GlobalColor.red)
+        qp.setBrush(Qt.GlobalColor.red)
+        qp.drawRect(0,int(self.height()*(1-self.level)), int(self.width()), int(self.height()))
+        qp.end()
+
+
 
 
 class MainWindow(QMainWindow):
@@ -43,24 +91,32 @@ class MainWindow(QMainWindow):
 
         self.startWindow = StartWindow()
         self.startWindow.starter.clicked.connect(self.startDash)
+        self.startWindow.ip.returnPressed.connect(self.startDash)
 
         self.setWindowTitle("GT7 TeleDash")
         self.queue = queue.Queue()
         self.receiver = None
 
-        
+        self.circuitExperience = True
+        self.experimental = False
+
+        self.setCentralWidget(self.startWindow)
+
+    def makeDashWidget(self):
         # Lvl 4
         self.fuel = QLabel("?%")
         self.fuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.fuel.setAutoFillBackground(True)
         font = self.fuel.font()
         font.setPointSize(96)
         font.setBold(True)
         self.fuel.setFont(font)
 
-        self.fuelBar = QWidget()
+        self.fuelBar = FuelGauge()
 
         self.laps = QLabel("? LAPS LEFT")
         self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.laps.setAutoFillBackground(True)
         font = self.laps.font()
         font.setPointSize(96)
         font.setBold(True)
@@ -68,93 +124,141 @@ class MainWindow(QMainWindow):
 
         self.tyreFR = QLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tyreFR.setAutoFillBackground(True)
         font = self.tyreFR.font()
         font.setPointSize(72)
         font.setBold(True)
         self.tyreFR.setFont(font)
+        pal = self.tyreFR.palette()
+        pal.setColor(self.tyreFR.backgroundRole(), QColor('#222'))
+        self.tyreFR.setPalette(pal)
 
         self.tyreFL = QLabel("?°C")
         self.tyreFL.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tyreFL.setAutoFillBackground(True)
         font = self.tyreFL.font()
         font.setPointSize(72)
         font.setBold(True)
         self.tyreFL.setFont(font)
+        pal = self.tyreFL.palette()
+        pal.setColor(self.tyreFL.backgroundRole(), QColor('#222'))
+        self.tyreFL.setPalette(pal)
         
         self.tyreRR = QLabel("?°C")
         self.tyreRR.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tyreRR.setAutoFillBackground(True)
         font = self.tyreRR.font()
         font.setPointSize(72)
         font.setBold(True)
         self.tyreRR.setFont(font)
+        pal = self.tyreRR.palette()
+        pal.setColor(self.tyreRR.backgroundRole(), QColor('#222'))
+        self.tyreRR.setPalette(pal)
 
         self.tyreRL = QLabel("?°C")
         self.tyreRL.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tyreRL.setAutoFillBackground(True)
         font = self.tyreRL.font()
         font.setPointSize(72)
         font.setBold(True)
         self.tyreRL.setFont(font)
+        pal = self.tyreRL.palette()
+        pal.setColor(self.tyreRL.backgroundRole(), QColor('#222'))
+        self.tyreRL.setPalette(pal)
 
         self.pedalBest = QLabel("COAST")
-        self.pedalBest.setStyleSheet("background: #222;")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pedalBest.setAutoFillBackground(True)
         font = self.pedalBest.font()
         font.setPointSize(64)
         font.setBold(True)
         self.pedalBest.setFont(font)
+        pal = self.pedalBest.palette()
+        pal.setColor(self.pedalBest.backgroundRole(), QColor('#222'))
+        self.pedalBest.setPalette(pal)
 
         self.speedBest = QLabel("BEST")
-        self.speedBest.setStyleSheet("background-color:grey;")
         self.speedBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.speedBest.setAutoFillBackground(True)
         font = self.speedBest.font()
         font.setPointSize(64)
         font.setBold(True)
         self.speedBest.setFont(font)
+        pal = self.speedBest.palette()
+        pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
+        self.speedBest.setPalette(pal)
 
         self.lineBest = QLabel("")
-        self.lineBest.setStyleSheet("background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop: 0.29 #222, stop:0.3 yellow, stop:0.489 #222, stop:0.49 white, stop: 0.51 white, stop:0.511 #222 );")
+        self.lineBest.setAutoFillBackground(True)
+        pal = self.lineBest.palette()
+        pal.setColor(self.lineBest.backgroundRole(), QColor('#222'))
+        self.lineBest.setPalette(pal)
 
         self.pedalLast = QLabel("GAS")
-        self.pedalLast.setStyleSheet("background: green;")
         self.pedalLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pedalLast.setAutoFillBackground(True)
         font = self.pedalLast.font()
         font.setPointSize(64)
         font.setBold(True)
         self.pedalLast.setFont(font)
+        pal = self.pedalLast.palette()
+        pal.setColor(self.pedalLast.backgroundRole(), QColor('#222'))
+        self.pedalLast.setPalette(pal)
 
         self.speedLast = QLabel("LAST")
         self.speedLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.speedLast.setStyleSheet("background-color:grey;")
+        self.speedLast.setAutoFillBackground(True)
         font = self.speedLast.font()
         font.setPointSize(64)
         font.setBold(True)
         self.speedLast.setFont(font)
+        pal = self.speedLast.palette()
+        pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
+        self.speedLast.setPalette(pal)
 
         self.lineLast = QLabel("")
-        self.lineLast.setStyleSheet("background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop: 0.049 #222, stop:0.05 yellow, stop:0.489 #222, stop:0.49 white, stop: 0.51 white, stop:0.511 #222 );")
+        self.lineLast.setAutoFillBackground(True)
+        pal = self.lineLast.palette()
+        pal.setColor(self.lineLast.backgroundRole(), QColor('#222'))
+        self.lineLast.setPalette(pal)
 
         self.pedalMedian = QLabel("BRAKE")
-        self.pedalMedian.setStyleSheet("background: red;")
         self.pedalMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pedalMedian.setAutoFillBackground(True)
         font = self.pedalMedian.font()
         font.setPointSize(64)
         font.setBold(True)
         self.pedalMedian.setFont(font)
+        pal = self.pedalMedian.palette()
+        pal.setColor(self.pedalMedian.backgroundRole(), QColor('#222'))
+        self.pedalMedian.setPalette(pal)
 
         self.speedMedian = QLabel("MEDIAN")
         self.speedMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.speedMedian.setStyleSheet("background-color:grey;")
+        self.speedMedian.setAutoFillBackground(True)
         font = self.speedMedian.font()
         font.setPointSize(64)
         font.setBold(True)
         self.speedMedian.setFont(font)
+        pal = self.speedMedian.palette()
+        pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
+        self.speedMedian.setPalette(pal)
 
         self.lineMedian = QLabel("")
-        self.lineMedian.setStyleSheet("background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0.489 #222, stop:0.49 white, stop: 0.51 white, stop:0.511 #222, stop:0.75 blue, stop:0.76 #222 );")
+        self.lineMedian.setAutoFillBackground(True)
+        pal = self.lineMedian.palette()
+        pal.setColor(self.lineMedian.backgroundRole(), QColor('#222'))
+        self.lineMedian.setPalette(pal)
 
         # Lvl 3
         fuelWidget = QWidget()
-        self.fuel.setStyleSheet("background-color:#222;")
-        self.laps.setStyleSheet("background-color:#222;")
+        pal = self.fuel.palette()
+        pal.setColor(self.fuel.backgroundRole(), QColor("#222"))
+        self.fuel.setPalette(pal)
+        pal = self.laps.palette()
+        pal.setColor(self.laps.backgroundRole(), QColor("#222"))
+        pal.setColor(self.laps.foregroundRole(), QColor("#fff"))
+        self.laps.setPalette(pal)
         fuelLayout = QGridLayout()
         fuelLayout.setContentsMargins(11,11,11,11)
         fuelWidget.setLayout(fuelLayout)
@@ -176,18 +280,19 @@ class MainWindow(QMainWindow):
         speedWidget = QWidget()
         speedLayout = QGridLayout()
         speedWidget.setLayout(speedLayout)
-        speedLayout.addWidget(self.pedalBest, 0, 0)
         speedLayout.addWidget(self.speedBest, 1, 0)
-        speedLayout.addWidget(self.lineBest, 2, 0)
-        speedLayout.addWidget(self.pedalMedian, 0, 1)
         speedLayout.addWidget(self.speedMedian, 1, 1)
-        speedLayout.addWidget(self.lineMedian, 2, 1)
-        speedLayout.addWidget(self.pedalLast, 0, 2)
         speedLayout.addWidget(self.speedLast, 1, 2)
-        speedLayout.addWidget(self.lineLast, 2, 2)
-        speedLayout.setRowStretch(0, 1)
+        if self.experimental:
+            speedLayout.addWidget(self.pedalBest, 0, 0)
+            speedLayout.addWidget(self.lineBest, 2, 0)
+            speedLayout.addWidget(self.pedalMedian, 0, 1)
+            speedLayout.addWidget(self.lineMedian, 2, 1)
+            speedLayout.addWidget(self.pedalLast, 0, 2)
+            speedLayout.addWidget(self.lineLast, 2, 2)
+            speedLayout.setRowStretch(0, 1)
+            speedLayout.setRowStretch(2, 1)
         speedLayout.setRowStretch(1, 4)
-        speedLayout.setRowStretch(2, 1)
 
         # Lvl 2
         self.header = QLabel("? LAPS LEFT")
@@ -236,17 +341,30 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
         masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
-        masterWidget.setStyleSheet("background-color:black;color:white;")
+        #self.masterWidget.setStyleSheet("background-color:#333;color:white;")
 
-        self.setCentralWidget(self.startWindow)
-
+        if self.circuitExperience:
+            canvas = QPixmap(500, 500)
+            canvas.fill(Qt.GlobalColor.white)
+            self.laps.setPixmap(canvas)
 
     def startDash(self):
+        self.experimental = self.startWindow.experimental.isChecked()
+        self.circuitExperience = self.startWindow.mode.currentIndex() == 1
+        ip = self.startWindow.ip.text()
+
+        settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
+        settings.setValue("ip", ip)
+        settings.setValue("experimental", self.experimental)
+        settings.setValue("mode", self.startWindow.mode.currentIndex())
+        settings.sync()
+
+        self.makeDashWidget()
         self.setCentralWidget(self.masterWidget)
 
         self.initRace()
 
-        self.receiver = tele.GT7TelemetryReceiver(self.startWindow.ip.text())
+        self.receiver = tele.GT7TelemetryReceiver(ip)
         self.receiver.setQueue(self.queue)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
@@ -257,6 +375,16 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.updateDisplay)
         self.timer.start()
 
+        self.debugCount = 0
+        self.noThrottleCount = 0
+
+    def stopDash(self):
+        self.timer.stop()
+        if not self.receiver is None:
+            self.receiver.running = False
+            self.thread.join()
+            self.receiver = None
+
     def initRace(self):
         self.lastLap = -1
         self.lastFuel = -1
@@ -264,10 +392,18 @@ class MainWindow(QMainWindow):
         self.fuelFactor = 0
         self.refueled = 0
 
+        self.previousPoint = None
+
         self.newLapPos = []
         self.previousLaps = []
         self.bestLap = -1
         self.medianLap = -1
+
+        self.offset, self.scale = self.getCircuitScale()
+
+        self.closestILast = 0
+        self.closestIBest = 0
+        self.closestIMedian = 0
 
     def tyreTempColor(self, temp):
         col = QColor()
@@ -280,6 +416,17 @@ class MainWindow(QMainWindow):
 
         return "background-color: " + col.name() + ";"
 
+    def tyreTempQColor(self, temp):
+        col = QColor()
+        hue = 0.333 - (temp - 70)/50
+        if hue < 0:
+            hue = 0
+        if hue > 0.666:
+            hue = 0.666
+        col.setHsvF (hue, 1, 1)
+
+        return col
+
     def speedDiffColor(self, d):
         col = QColor()
         hue = -d/60 + 60/360
@@ -291,18 +438,118 @@ class MainWindow(QMainWindow):
 
         return "background-color: " + col.name() + ";"
 
+    def speedDiffQColor(self, d):
+        col = QColor()
+        hue = -d/60 + 60/360
+        if hue < 0:
+            hue = 0
+        if hue > 120/360:
+            hue = 120/360
+        col.setHsvF (hue, 1, 1)
+
+        return col
+
     def distance(self, p1, p2):
         return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
 
-    def findClosestPoint(self, lap, p):
+    def findClosestPoint(self, lap, p, startIdx):
+        shortestDistance = 100000000
+        result = None
+        dbgCount = 0
+        for p2 in range(startIdx, len(lap)-10):
+            dbgCount+=1
+            curDist = self.distance(p, lap[p2])
+            if curDist < 10 and curDist < shortestDistance:
+                shortestDistance = curDist
+                result = p2
+            if not result is None and curDist > 20:
+                break
+            if curDist >= 500:
+                break
+
+        if result is None:
+            return None, startIdx
+        return lap[result], result
+
+    def findClosestPointNoLimit(self, lap, p):
         shortestDistance = 100000000
         result = None
         for p2 in lap:
             curDist = self.distance(p, p2)
-            if curDist < 10 and curDist < shortestDistance:
+            if curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
 
+        return result
+
+    def getLapLength(self, lap):
+        totalDist = 0
+        for i in range(1, len(lap)):
+            totalDist += self.distance(lap[i-1], lap[i])
+        return totalDist
+
+    def getAvgSpeed(self, lap):
+        if len(lap) == 0:
+            return 0
+        sm = 0
+        for s in lap:
+            sm += s.car_speed
+        return sm / len(lap)
+
+    def purgeBadLaps(self):
+        print("Purge laps")
+        longestLength = 0
+        longestLap = None
+        for l in self.previousLaps:
+            ll = self.getLapLength(l[1])
+            if longestLength < ll:
+                longestLength = ll
+                longestLap = l
+
+        print("Longest: ", longestLength, longestLap[0])
+        temp = []
+        for l in self.previousLaps:
+            d = self.distance(longestLap[1][-1], l[1][-1])
+            c = self.findClosestPointNoLimit(l[1], longestLap[1][-1])
+            d2 = -1
+            d3 = -1
+            if not c is None:
+                d2 = self.distance(longestLap[1][-1], c)
+            c3 = self.findClosestPointNoLimit(longestLap[1], l[1][-1])
+            if not c3 is None:
+                d3 = self.distance(l[1][-1], c3)
+            print(d, d2, d3)
+            if d > 15:
+                print("Purge lap", len(l[1])/60)
+            else:
+                temp.append(l)
+        self.previousLaps = temp
+
+
+
+
+    def cleanUpLap(self, lap):
+        if len(lap) == 0:
+            print("Lap is empty")
+            return lap
+        if len(lap) < 600:
+            print("Lap is short")
+            return lap
+        if (lap[-1].throttle > 0):# or lap[-1].brake > 0):
+            print("Throttle to the end")
+            return lap
+        afterLap = 0
+        for i in range(1, len(lap)):
+            if lap[-i].throttle == 0:# and lap[-i].brake == 0:
+                afterLap+=1
+            else:
+                break
+        print("Remove", afterLap, "of", len(lap))
+        if afterLap > 0:
+            result = lap[:-afterLap]
+        else:
+            result = lap
+        print("Got", len(result))
         return result
 
     def findBestLap(self):
@@ -327,125 +574,319 @@ class MainWindow(QMainWindow):
         return 0
 
     def makeFuelBar(self, val):
+        if val > 1:
+            color = "darkred"
+        else:
+            color = "orange"
         val = min (1, max(0.002, val))
-        return "background: qlineargradient( x1:0 y1:1, x2:0 y2:0, stop:" + str(val-0.001) + " darkred, stop:" + str (val) + " #222);"
+        return "background: qlineargradient( x1:0 y1:1, x2:0 y2:0, stop:" + str(val-0.001) + " " + color + ", stop:" + str (val) + " #222);"
+
+    def getCircuitScale(self):
+        return ((-2562.2564697265625, -313.49867248535156), 0.1041195076387775)
+        minX = 10000000
+        maxX = -10000000
+        minZ = 10000000
+        maxZ = -10000000
+
+        for l in self.previousLaps:
+            for p in l[1]:
+                if p.position_x < minX:
+                    minX = p.position_x
+                if p.position_x > maxX:
+                    maxX = p.position_x
+                if p.position_z < minZ:
+                    minZ = p.position_z
+                if p.position_z > maxZ:
+                    maxZ = p.position_y
+
+        dx = maxX - minX
+        dz = maxZ - minZ
+
+        d = max(dx, dz)
+        ox = (minX + maxX)/2
+        oz = (minZ + maxZ)/2
+
+        return ((ox, oz),100 * 1/d)
 
     def updateDisplay(self):
-        counter = 0
+
         while not self.queue.empty():
-            counter += 1
+            self.debugCount += 1
             d = self.queue.get()
 
             curPoint = Point(d)
 
-            if curPoint.current_lap <= 0:
-                print("(re-)init")
+            if curPoint.is_paused or not curPoint.in_race:
+                continue
+
+            if curPoint.current_lap <= 0 and not self.circuitExperience:
                 self.initRace()
                 continue
 
+            #print(len(self.newLapPos))
+
+            #if self.circuitExperience and not self.previousPoint is None:
+                #canvas = self.laps.pixmap()
+                #painter = QPainter(canvas)
+                #px1 = 250 + (self.scale * (self.previousPoint.position_x - self.offset[0])) 
+                #pz1 = 250 + (self.scale * (self.previousPoint.position_z - self.offset[1])) 
+                #px2 = 250 + (self.scale * (curPoint.position_x - self.offset[0])) 
+                #pz2 = 250 + (self.scale * (curPoint.position_z - self.offset[1]))
+                #print(px1, pz1, px2, pz2, "    ", self.scale, self.offset)
+                #painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+                #painter.end()
+                #self.laps.setPixmap(canvas)
+                #self.laps.setScaledContents(True)
+
+
+            if curPoint.throttle == 0 and curPoint.brake == 0:
+                self.noThrottleCount+=1
+            elif self.noThrottleCount > 0:
+                self.noThrottleCount=0
+
             # TYRE TEMPS
             self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
-            self.tyreFL.setStyleSheet(self.tyreTempColor(curPoint.tyre_temp_FL))
-            self.tyreFR.setText (str(round(curPoint.tyre_temp_FR)) + "°C")
-            self.tyreFR.setStyleSheet(self.tyreTempColor(curPoint.tyre_temp_FR))
-            self.tyreRR.setText (str(round(curPoint.tyre_temp_RR)) + "°C")
-            self.tyreRR.setStyleSheet(self.tyreTempColor(curPoint.tyre_temp_RR))
-            self.tyreRL.setText (str(round(curPoint.tyre_temp_RL)) + "°C")
-            self.tyreRL.setStyleSheet(self.tyreTempColor(curPoint.tyre_temp_RL))
+            pal = self.tyreFL.palette()
+            pal.setColor(self.tyreFL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FL)))
+            self.tyreFL.setPalette(pal)
 
-            # LAP DISPLAY
+            self.tyreFR.setText (str(round(curPoint.tyre_temp_FR)) + "°C")
+            pal = self.tyreFR.palette()
+            pal.setColor(self.tyreFR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FR)))
+            self.tyreFR.setPalette(pal)
+
+            self.tyreRR.setText (str(round(curPoint.tyre_temp_RR)) + "°C")
+            pal = self.tyreRR.palette()
+            pal.setColor(self.tyreRR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RR)))
+            self.tyreRR.setPalette(pal)
+
+            self.tyreRL.setText (str(round(curPoint.tyre_temp_RL)) + "°C")
+            pal = self.tyreRL.palette()
+            pal.setColor(self.tyreRL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
+            self.tyreRL.setPalette(pal)
+
+
+            #print("LAP ", self.lastLap, curPoint.current_lap, curPoint.total_laps, curPoint.time_on_track)
+            # LAP CHANGE
+            if self.circuitExperience and self.noThrottleCount == 60 * 10:
+                print("Lap ended 10 seconds ago")
+            if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 250 or self.noThrottleCount == 60 * 10)):
+                if self.circuitExperience:
+                    cleanLap = self.cleanUpLap(self.newLapPos)
+                    canvas = self.laps.pixmap()
+                    painter = QPainter(canvas)
+                    for pi in range(1, len(cleanLap)):
+                        px1 = 250 + (self.scale * (cleanLap[pi-1].position_x - self.offset[0])) 
+                        pz1 = 250 + (self.scale * (cleanLap[pi-1].position_z - self.offset[1])) 
+                        px2 = 250 + (self.scale * (cleanLap[pi].position_x - self.offset[0])) 
+                        pz2 = 250 + (self.scale * (cleanLap[pi].position_z - self.offset[1]))
+                        painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+
+                    if len(cleanLap) > 0:
+                        px1 = 260 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
+                        pz1 = 260 + (self.scale * (cleanLap[-1].position_z - self.offset[1])) 
+                        px2 = 240 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
+                        pz2 = 240 + (self.scale * (cleanLap[-1].position_z - self.offset[1]))
+                        painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+                        px1 = 240 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
+                        pz1 = 260 + (self.scale * (cleanLap[-1].position_z - self.offset[1])) 
+                        px2 = 260 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
+                        pz2 = 240 + (self.scale * (cleanLap[-1].position_z - self.offset[1]))
+                        painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+
+                    painter.end()
+                    self.laps.setPixmap(canvas)
+                    self.laps.setScaledContents(True)
+
+                else:
+                    cleanLap = self.newLapPos
+                #print(len(self.newLapPos), len(cleanLap))
+                lapLen = self.getLapLength(cleanLap)
+                
+                if lapLen < 10:
+                    print("LAP CHANGE short")
+                else:
+                    print("LAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap) / 60,3), "s")
+                    if (len(self.newLapPos)>0):
+                        print("start", self.newLapPos[0].position_x, self.newLapPos[0].position_y, self.newLapPos[0].position_z)
+                    if not self.previousPoint is None:
+                        print("end", self.previousPoint.position_x, self.previousPoint.position_y, self.previousPoint.position_z)
+
+                if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
+                    if self.lastLap > 0:
+                        if self.circuitExperience:
+                            lastLapTime = len(cleanLap)/60.0
+                        else:
+                            lastLapTime = curPoint.last_lap
+                        self.previousLaps.append([lastLapTime, cleanLap])
+                        if self.circuitExperience:
+                            self.offset, self.scale = self.getCircuitScale()
+                            self.purgeBadLaps()
+                        #self.previousLaps.append([lastLapTime, self.newLapPos])
+                        #for pl in self.previousLaps:
+                            #print(pl[0], len(pl[1]), len(pl[1]) / 60)
+                    
+                        self.bestLap = self.findBestLap()
+                        self.medianLap = self.findMedianLap()
+                        self.newLapPos = []
+                        self.closestILast = 0
+                        self.closestIBest = 0
+                        self.closestIMedian = 0
+
+                    print("handle fuel")
+                    if self.lastFuel != -1:
+                        fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
+                        if fuelDiff > 0:
+                            self.lastFuelUsage.append(fuelDiff)
+                            self.refueled += 1
+                        elif fuelDiff < 0:
+                            self.refueled = 0
+                        if len(self.lastFuelUsage) > 5:
+                            self.lastFuelUsage = self.lastFuelUsage[1:]
+                    self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
+
+                    if len(self.lastFuelUsage) > 0:
+                        self.fuelFactor = self.lastFuelUsage[0]
+                        for i in range(1, len(self.lastFuelUsage)):
+                            self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
+
+                print("copy lap")
+                self.lastLap = curPoint.current_lap
+                print("copied lap")
+            elif (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
+                self.initRace()
+
+            # FUEL
             if self.refueled > 0:
                 refuelLaps = "\n" + str (self.refueled) + " SINCE REFUEL"
             else:
                 refuelLaps = ""
 
-            if curPoint.total_laps > 0:
-                self.header.setText(str(curPoint.total_laps - curPoint.current_lap + 1) + " LAPS LEFT")
+            if self.fuelFactor != 0:
+                fuelLapPercent = "\n" + str(round(100 * self.fuelFactor,1)) + "% PER LAP"
             else:
-                self.header.setText("LAP " + str(curPoint.current_lap))
+                fuelLapPercent = ""
 
-            if self.lastLap == -1 and curPoint.current_lap > 0:
-                self.lastLap = curPoint.current_lap
-                self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
+            self.fuel.setText(str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%" + fuelLapPercent + refuelLaps)
+            if not self.previousPoint is None:
+                fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
+                fuelConsumption *= 60 * 60 * 60 # l per hour
+                if curPoint.car_speed > 0:
+                    fuelConsumption /= curPoint.car_speed # l per km
+                    fuelConsumption *= 100 # l per 100 km
 
-            # LAP CHANGE
-            if self.lastLap < curPoint.current_lap:
-                print("LAP CHANGE")
-                self.previousLaps.append([curPoint.last_lap, self.newLapPos])
-                self.bestLap = self.findBestLap()
-                self.medianLap = self.findMedianLap()
-                self.newLapPos = []
-                if self.lastFuel != -1:
-                    fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
-                    if fuelDiff > 0:
-                        self.lastFuelUsage.append(fuelDiff)
-                        self.refueled += 1
-                    elif fuelDiff < 0:
-                        self.refueled = 0
-                    if len(self.lastFuelUsage) > 5:
-                        self.lastFuelUsage = self.lastFuelUsage[1:]
-                self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
+                fuelConsumption /= 3*150
+                self.fuelBar.setLevel(min(fuelConsumption, 1))
+                self.fuelBar.update()
 
-                if len(self.lastFuelUsage) > 0:
-                    self.fuelFactor = self.lastFuelUsage[0]
-                    for i in range(1, len(self.lastFuelUsage)):
-                        self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
-
-                self.lastLap = curPoint.current_lap
-            elif self.lastLap > curPoint.current_lap or curPoint.current_lap == 0:
-                self.initRace()
-
-            # FUEL
-            self.fuel.setText(str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%\n" + str(round(100 * self.fuelFactor,1)) + "% PER LAP" + refuelLaps)
-            self.fuelBar.setStyleSheet(self.makeFuelBar(curPoint.current_fuel / curPoint.fuel_capacity))
             if self.fuelFactor > 0:
                 self.laps.setText(str(round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2)) + " LAPS FUEL")
                 if round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 1:
-                    self.laps.setStyleSheet("background-color:red;")
+                    pal = self.laps.palette()
+                    pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    self.laps.setPalette(pal)
                 elif round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 2:
-                    self.laps.setStyleSheet("background-color:orange;")
+                    pal = self.laps.palette()
+                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                    pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
+                    self.laps.setPalette(pal)
                 else:
-                    self.laps.setStyleSheet("background-color:#222;")
-
+                    pal = self.laps.palette()
+                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    self.laps.setPalette(pal)
+            elif self.circuitExperience:
+                pass
             elif curPoint.current_fuel == curPoint.fuel_capacity:
                 self.laps.setText("FOREVER")
+                pal = self.laps.palette()
+                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                self.laps.setPalette(pal)
             else:
                 self.laps.setText("measuring")
+                pal = self.laps.palette()
+                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                self.laps.setPalette(pal)
 
             # SPEED
             closestPLast = None
             closestPBest = None
             closestPMedian = None
             if len(self.previousLaps) > 0:
-                closestPLast = self.findClosestPoint (self.previousLaps[-1][1], curPoint)
-                closestPBest = self.findClosestPoint (self.previousLaps[self.bestLap][1], curPoint)
-                closestPMedian = self.findClosestPoint (self.previousLaps[self.medianLap][1], curPoint)
+                closestPLast, self.closestILast = self.findClosestPoint (self.previousLaps[-1][1], curPoint, self.closestILast)
+                closestPBest, self.closestIBest = self.findClosestPoint (self.previousLaps[self.bestLap][1], curPoint, self.closestIBest)
+                closestPMedian, self.closestIMedian = self.findClosestPoint (self.previousLaps[self.medianLap][1], curPoint, self.closestIMedian)
 
             if not closestPLast is None:
                 speedDiff = closestPLast.car_speed - curPoint.car_speed
-                self.speedLast.setStyleSheet(self.speedDiffColor(speedDiff))
+                pal = self.speedLast.palette()
+                pal.setColor(self.speedLast.backgroundRole(), self.speedDiffQColor(speedDiff))
+                self.speedLast.setPalette(pal)
             else:
-                self.speedLast.setStyleSheet("background-color:grey;")
+                pal = self.speedLast.palette()
+                pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
+                self.speedLast.setPalette(pal)
 
             if not closestPBest is None:
                 speedDiff = closestPBest.car_speed - curPoint.car_speed
-                self.speedBest.setStyleSheet(self.speedDiffColor(speedDiff))
+                pal = self.speedBest.palette()
+                pal.setColor(self.speedBest.backgroundRole(), self.speedDiffQColor(speedDiff))
+                self.speedBest.setPalette(pal)
             else:
-                self.speedBest.setStyleSheet("background-color:grey;")
+                pal = self.speedBest.palette()
+                pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
+                self.speedBest.setPalette(pal)
 
             if not closestPMedian is None:
                 speedDiff = closestPMedian.car_speed - curPoint.car_speed
-                self.speedMedian.setStyleSheet(self.speedDiffColor(speedDiff))
+                pal = self.speedMedian.palette()
+                pal.setColor(self.speedMedian.backgroundRole(), self.speedDiffQColor(speedDiff))
+                self.speedMedian.setPalette(pal)
             else:
-                self.speedMedian.setStyleSheet("background-color:grey;")
+                pal = self.speedMedian.palette()
+                pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
+                self.speedMedian.setPalette(pal)
 
+            # LAP DISPLAY
+            if curPoint.total_laps > 0:
+                lapValue = curPoint.total_laps - curPoint.current_lap + 1
+                if self.experimental and self.closestILast > 0:
+                    lapValue -= (
+                            self.closestILast / len(self.previousLaps[-1][1]) +
+                            self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
+                            self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
+                    lapValue = round(lapValue, 2)
+                self.header.setText(str(lapValue) + " LAPS LEFT")
+            else:
+                lapValue = curPoint.current_lap
+                if self.experimental and self.closestILast > 0:
+                    lapValue += (
+                            self.closestILast / len(self.previousLaps[-1][1]) +
+                            self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
+                            self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
+                    lapValue = round(lapValue, 2)
+                self.header.setText("LAP " + str(lapValue))
+
+            self.previousPoint = curPoint
             self.newLapPos.append(curPoint)
 
+
     def closeEvent(self, event):
-        if not self.receiver is None:
-            self.receiver.running = False
-            self.thread.join()
+        self.stopDash()
         event.accept()
+
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key.Key_Escape.value:
+            if self.centralWidget() == self.masterWidget:
+                self.stopDash()
+                self.startWindow = StartWindow()
+                self.startWindow.starter.clicked.connect(self.startDash)
+                self.startWindow.ip.returnPressed.connect(self.startDash)
+                self.setCentralWidget(self.startWindow)
 
 
 if __name__ == '__main__':
