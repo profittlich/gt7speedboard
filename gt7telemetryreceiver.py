@@ -21,6 +21,9 @@ class GT7TelemetryReceiver:
         self.s = None
         self.running = False
         self.queue = None
+        self.record = None
+        self.startRec = False
+        self.stopRec = False
 
     def setQueue(self, q):
         self.queue = q
@@ -49,6 +52,14 @@ class GT7TelemetryReceiver:
         self.s.sendto(send_data.encode('utf-8'), (self.ip, self.SendPort))
         #print('send heartbeat')
 
+    def startRecording(self):
+        print("Start recording")
+        self.startRec = True
+
+    def stopRecording(self):
+        print("Stop recording")
+        self.startRec = False
+        self.stopRec = True
 
     def runTelemetryReceiver(self):
         # Create a UDP socket and bind it
@@ -62,10 +73,23 @@ class GT7TelemetryReceiver:
         self.running = True
         while self.running:
             try:
+                if self.startRec:
+                    fn = "recording-" + dt.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7"
+                    print("record to", fn)
+                    self.record = open (fn, "wb")
+                    self.startRec = False
+                if self.stopRec:
+                    self.stopRec = False
+                    self.record.close()
+                    self.record = None
                 data, address = self.s.recvfrom(4096)
+                if not self.record is None:
+                    self.record.write(data)
+                
                 self.pknt = self.pknt + 1
                 ddata = self.salsa20_dec(data)
                 if len(ddata) > 0 and struct.unpack('i', ddata[0x70:0x70+4])[0] > self.pktid:
+                    self.pktid = struct.unpack('i', ddata[0x70:0x70+4])[0]
 
                     if not self.queue is None:
                         self.queue.put(ddata)
