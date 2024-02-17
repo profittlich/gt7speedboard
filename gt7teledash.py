@@ -58,7 +58,13 @@ class StartWindow(QWidget):
         addr = QWidget()
         addr.setLayout(layout)
 
-        self.experimental = QCheckBox("Show experimental displays")
+        self.lapDecimals = QCheckBox("Show decimals in lap displays (experimental)")
+        self.recordingEnabled = QCheckBox("Allow recording data by pressing R")
+        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing space (experimental)")
+        self.linecomp = QCheckBox("Show racing line comparisons (experimental)")
+        self.brakepoints = QCheckBox("Show brake points")
+        self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
+        self.bigCountdownBrakepoint = QCheckBox("Larger count down color area")
         self.allowLoop = QCheckBox("Allow looping telemetry from playback")
 
         modeLabel = QLabel("Mode:")
@@ -71,7 +77,13 @@ class StartWindow(QWidget):
         self.setLayout(mainLayout)
         mainLayout.addWidget(modeLabel)
         mainLayout.addWidget(self.mode)
-        mainLayout.addWidget(self.experimental)
+        mainLayout.addWidget(self.lapDecimals)
+        mainLayout.addWidget(self.recordingEnabled)
+        mainLayout.addWidget(self.messagesEnabled)
+        mainLayout.addWidget(self.linecomp)
+        mainLayout.addWidget(self.brakepoints)
+        mainLayout.addWidget(self.countdownBrakepoint)
+        mainLayout.addWidget(self.bigCountdownBrakepoint)
         mainLayout.addWidget(self.allowLoop)
         mainLayout.addWidget(fmLabel)
         mainLayout.addWidget(self.fuelMultiplier)
@@ -83,10 +95,17 @@ class StartWindow(QWidget):
 
         mainLayout.insertStretch(-1)
 
+        print("Load preferences")
         settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
         self.ip.setText(settings.value("ip", ""))
-        self.experimental.setChecked(settings.value("experimental")=="true")
-        self.allowLoop.setChecked(settings.value("allowLoop")=="true")
+        self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
+        self.recordingEnabled.setChecked(settings.value("recordingEnabled") in [ True, "true"])
+        self.messagesEnabled.setChecked(settings.value("messagesEnabled") in [ True, "true"])
+        self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
+        self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
+        self.allowLoop.setChecked(settings.value("allowLoop") in [True, "true"])
+        self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
+        self.bigCountdownBrakepoint.setChecked(settings.value("bigCountdownBrakepoint") in [True, "true"])
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
@@ -148,6 +167,8 @@ class MapView(QWidget):
         self.curPoints.append (p2)
 
     def endLap(self, cleanLap):
+        if self.mapOffset is None:
+            return
         painter = QPainter(self.map)
         pen = QPen(self.mapColor)
         pen.setWidth(5)
@@ -301,7 +322,6 @@ class LineDeviation(QWidget):
                 self.greenGradient.setFinalStop(self.width()/2 + self.dist/self.maxDist * self.width() / 2, 0)
                 qp.fillRect(int(self.width()/2), 0, int(self.dist/self.maxDist * self.width() / 2), int(self.height()), self.greenGradient)
                 qp.drawLine(int(self.width()/2) + int(self.dist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(self.dist/self.maxDist * self.width() / 2), int(self.height()))
-            qp.drawText(10, 40, str(round(self.angle*180/math.pi,2)))
         qp.drawLine(int(self.width()/2), 0, int(self.width()/2), int (self.height()))
         qp.end()
 
@@ -322,8 +342,14 @@ class MainWindow(QMainWindow):
         self.isRecording = False
 
         self.circuitExperience = True
-        self.experimental = False
+        self.lapDecimals = False
+        self.recordingEnabled = False
+        self.messagesEnabled = False
+        self.linecomp = False
+        self.brakepoints = False
         self.allowLoop = False
+        self.countdownBrakepoint = False
+        self.bigCountdownBrakepoint = False
 
         self.newMessage = None
         self.messages = []
@@ -505,15 +531,16 @@ class MainWindow(QMainWindow):
         speedLayout.addWidget(self.speedBest, 2, 0)
         speedLayout.addWidget(self.speedMedian, 2, 1)
         speedLayout.addWidget(self.speedLast, 2, 2)
-        if self.experimental:
-            speedLayout.addWidget(self.pedalBest, 0, 0)
+        if self.linecomp:
             speedLayout.addWidget(self.lineBest, 1, 0)
-            speedLayout.addWidget(self.pedalMedian, 0, 1)
             speedLayout.addWidget(self.lineMedian, 1, 1)
-            speedLayout.addWidget(self.pedalLast, 0, 2)
             speedLayout.addWidget(self.lineLast, 1, 2)
-            speedLayout.setRowStretch(0, 1)
             speedLayout.setRowStretch(1, 1)
+        if self.brakepoints:
+            speedLayout.addWidget(self.pedalBest, 0, 0)
+            speedLayout.addWidget(self.pedalMedian, 0, 1)
+            speedLayout.addWidget(self.pedalLast, 0, 2)
+            speedLayout.setRowStretch(0, 1)
         speedLayout.setRowStretch(2, 4)
 
         # Lvl 2
@@ -566,8 +593,14 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
 
     def startDash(self):
-        self.experimental = self.startWindow.experimental.isChecked()
+        self.lapDecimals = self.startWindow.lapDecimals.isChecked()
+        self.recordingEnabled = self.startWindow.recordingEnabled.isChecked()
+        self.messagesEnabled = self.startWindow.messagesEnabled.isChecked()
+        self.linecomp = self.startWindow.linecomp.isChecked()
+        self.brakepoints = self.startWindow.brakepoints.isChecked()
         self.allowLoop = self.startWindow.allowLoop.isChecked()
+        self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
+        self.bigCountdownBrakepoint = self.startWindow.bigCountdownBrakepoint.isChecked()
         self.circuitExperience = self.startWindow.mode.currentIndex() == 1
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
@@ -577,8 +610,14 @@ class MainWindow(QMainWindow):
 
         settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
         settings.setValue("ip", ip)
-        settings.setValue("experimental", self.experimental)
+        settings.setValue("lapDecimals", self.lapDecimals)
+        settings.setValue("recordingEnabled", self.recordingEnabled)
+        settings.setValue("messagesEnabled", self.messagesEnabled)
+        settings.setValue("linecomp", self.linecomp)
+        settings.setValue("brakepoints", self.brakepoints)
         settings.setValue("allowLoop", self.allowLoop)
+        settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
+        settings.setValue("bigCountdownBrakepoint", self.bigCountdownBrakepoint)
         settings.setValue("mode", self.startWindow.mode.currentIndex())
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
@@ -715,6 +754,14 @@ class MainWindow(QMainWindow):
 
         return result
 
+    def findNextBrake(self, lap, startI):
+        #print("findNextBrake", startI)
+        for i in range(startI, min(startI + 60 * 3, len(lap))):
+            #print(startI, i, min(startI + 60, len(lap)))
+            if lap[i].brake > 0.1:
+                return i-startI
+        return None
+
     def getLapLength(self, lap):
         totalDist = 0
         for i in range(1, len(lap)):
@@ -824,7 +871,7 @@ class MainWindow(QMainWindow):
 
             curPoint = Point(d)
 
-            if not self.newMessage is None:
+            if self.messagesEnabled and not self.newMessage is None:
                 print(len(self.newLapPos), -min(60*5,len(self.newLapPos)-1))
                 self.messages.append([self.newLapPos[-min(60*5,len(self.newLapPos)-1)], self.newMessage])
                 self.newMessage = None
@@ -942,7 +989,7 @@ class MainWindow(QMainWindow):
             # FUEL
             if self.refueled > 0:
                 lapValue = self.refueled
-                if self.experimental and self.closestILast > 0:
+                if self.lapDecimals and self.closestILast > 0:
                     lapValue += (
                             self.closestILast / len(self.previousLaps[-1][1]) +
                             self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
@@ -969,22 +1016,22 @@ class MainWindow(QMainWindow):
                 self.fuelBar.update()
 
             messageShown = False
-            for m in self.messages:
-                #print( self.distance(curPoint, m[0]))
-                if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
-                    pal = self.laps.palette()
-                    if datetime.datetime.now().microsecond < 500000:
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                    else:
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.white)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.red)
-                    self.laps.setPalette(pal)
-                    self.laps.setText(m[1])
-                    messageShown = True
+            if self.messagesEnabled:
+                for m in self.messages:
+                    if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
+                        pal = self.laps.palette()
+                        if datetime.datetime.now().microsecond < 500000:
+                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                        else:
+                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.white)
+                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.red)
+                        self.laps.setPalette(pal)
+                        self.laps.setText(m[1])
+                        messageShown = True
 
 
-            if not self.circuitExperience and (not self.experimental or not messageShown):
+            if not self.circuitExperience and not messageShown:
                 if self.fuelFactor > 0:
                     self.laps.setText(str(round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2)) + " LAPS FUEL")
                     if round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 1:
@@ -1016,18 +1063,15 @@ class MainWindow(QMainWindow):
                     self.laps.setPalette(pal)
 
             # SPEED
-            #if self.experimental:
-                #pal = self.headerSpeed.palette()
-                #pal.setColor(self.headerSpeed.backgroundRole(), self.speedDiffQColor((curPoint.throttle - curPoint.brake)/10))
-                #self.headerSpeed.setPalette(pal)
-
             closestPLast = None
             closestPBest = None
             closestPMedian = None
+            nextBrakeBest = None
             if len(self.previousLaps) > 0:
                 closestPLast, self.closestILast = self.findClosestPoint (self.previousLaps[-1][1], curPoint, self.closestILast)
                 closestPBest, self.closestIBest = self.findClosestPoint (self.previousLaps[self.bestLap][1], curPoint, self.closestIBest)
                 closestPMedian, self.closestIMedian = self.findClosestPoint (self.previousLaps[self.medianLap][1], curPoint, self.closestIMedian)
+                nextBrakeBest = self.findNextBrake(self.previousLaps[self.bestLap][1], self.closestIBest)
 
             if not closestPLast is None:
                 speedDiff = closestPLast.car_speed - curPoint.car_speed
@@ -1035,18 +1079,14 @@ class MainWindow(QMainWindow):
                 pal.setColor(self.speedLast.backgroundRole(), self.speedDiffQColor(speedDiff))
                 self.speedLast.setPalette(pal)
 
-                if self.experimental:
+                if self.brakepoints:
                     pal = self.pedalLast.palette()
                     if closestPLast.brake > 0:
                         self.pedalLast.setText("BRAKE")
                         pal.setColor(self.pedalLast.backgroundRole(), self.brakeQColor(closestPLast.brake))
-                    #elif closestPLast.throttle > 0:
                     else:
                         self.pedalLast.setText("")
                         pal.setColor(self.pedalLast.backgroundRole(), QColor("#222"))
-                    #else:
-                        #self.pedalLast.setText("COAST")
-                        #pal.setColor(self.pedalLast.backgroundRole(), self.speedDiffQColor(0))
                     self.pedalLast.setPalette(pal)
                     self.lineLast.setPoints(curPoint, closestPLast)
                     self.lineLast.update()
@@ -1055,26 +1095,43 @@ class MainWindow(QMainWindow):
                 pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
                 self.speedLast.setPalette(pal)
 
-            #self.lineLast.setPoints(curPoint, curPoint)
-            #self.lineLast.update()
-
             if not closestPBest is None:
                 speedDiff = closestPBest.car_speed - curPoint.car_speed
                 pal = self.speedBest.palette()
                 pal.setColor(self.speedBest.backgroundRole(), self.speedDiffQColor(speedDiff))
                 self.speedBest.setPalette(pal)
-                if self.experimental:
+                if self.brakepoints:
                     pal = self.pedalBest.palette()
                     if closestPBest.brake > 0:
                         self.pedalBest.setText("BRAKE")
                         pal.setColor(self.pedalBest.backgroundRole(), self.brakeQColor(closestPBest.brake))
-                    #elif closestPBest.throttle > 0:
+                    elif self.countdownBrakepoint and not nextBrakeBest is None:
+                        self.pedalBest.setText(str(math.ceil (nextBrakeBest/60)))
+                        if nextBrakeBest >= 120:
+                            if nextBrakeBest%60 >= 30:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                                if self.bigCountdownBrakepoint:
+                                    self.speedBest.setPalette(pal)
+                            else:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                        elif nextBrakeBest >= 60:
+                            if nextBrakeBest%30 >= 15:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                                if self.bigCountdownBrakepoint:
+                                    self.speedBest.setPalette(pal)
+                            else:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                        else:
+                            if nextBrakeBest%15 >= 7:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                                if self.bigCountdownBrakepoint:
+                                    self.speedBest.setPalette(pal)
+                            else:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+
                     else:
                         self.pedalBest.setText("")
                         pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
-                    #else:
-                        #self.pedalBest.setText("COAST")
-                        #pal.setColor(self.pedalBest.backgroundRole(), self.speedDiffQColor(0))
                     self.pedalBest.setPalette(pal)
 
                     self.lineBest.setPoints(curPoint, closestPBest)
@@ -1089,7 +1146,7 @@ class MainWindow(QMainWindow):
                 pal = self.speedMedian.palette()
                 pal.setColor(self.speedMedian.backgroundRole(), self.speedDiffQColor(speedDiff))
                 self.speedMedian.setPalette(pal)
-                if self.experimental:
+                if self.brakepoints:
                     pal = self.pedalMedian.palette()
                     if closestPMedian.brake > 0:
                         self.pedalMedian.setText("BRAKE")
@@ -1115,7 +1172,7 @@ class MainWindow(QMainWindow):
                 lapSuffix = " [RECORDING]"
             if curPoint.total_laps > 0:
                 lapValue = curPoint.total_laps - curPoint.current_lap + 1
-                if self.experimental and self.closestILast > 0:
+                if self.lapDecimals and self.closestILast > 0:
                     lapValue -= (
                             self.closestILast / len(self.previousLaps[-1][1]) +
                             self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
@@ -1124,7 +1181,7 @@ class MainWindow(QMainWindow):
                 self.header.setText(str(lapValue) + " LAPS LEFT" + lapSuffix)
             else:
                 lapValue = curPoint.current_lap
-                if self.experimental and self.closestILast > 0:
+                if self.lapDecimals and self.closestILast > 0:
                     lapValue += (
                             self.closestILast / len(self.previousLaps[-1][1]) +
                             self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
@@ -1142,7 +1199,7 @@ class MainWindow(QMainWindow):
 
 
     def toggleRecording(self):
-        if self.experimental:
+        if self.recordingEnabled:
             if self.isRecording:
                 self.isRecording = False
                 self.receiver.stopRecording()
