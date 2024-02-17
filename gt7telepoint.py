@@ -133,5 +133,7 @@ class Point:
 
         # end of https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
 
+        self.message = None
+
 
 

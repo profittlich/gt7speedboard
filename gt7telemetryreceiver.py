@@ -24,9 +24,13 @@ class GT7TelemetryReceiver:
         self.record = None
         self.startRec = False
         self.stopRec = False
+        self.ignorePktId = False
 
     def setQueue(self, q):
         self.queue = q
+
+    def setIgnorePktId(self, b):
+        self.ignorePktId = b
 
     # data stream decoding
     def salsa20_dec(self, dat):
@@ -89,7 +93,8 @@ class GT7TelemetryReceiver:
                 self.pknt = self.pknt + 1
                 ddata = self.salsa20_dec(data)
                 if len(ddata) > 0 and struct.unpack('i', ddata[0x70:0x70+4])[0] > self.pktid:
-                    self.pktid = struct.unpack('i', ddata[0x70:0x70+4])[0]
+                    if not self.ignorePktId:
+                        self.pktid = struct.unpack('i', ddata[0x70:0x70+4])[0]
 
                     if not self.queue is None:
                         self.queue.put(ddata)

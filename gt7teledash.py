@@ -4,6 +4,7 @@ import threading
 from wakepy import keep
 import math
 import queue
+import datetime
 from cProfile import Profile
 from pstats import SortKey, Stats
 
@@ -43,7 +44,7 @@ class StartWindow(QWidget):
         self.maxFuelConsumption.setMinimum(1)
         self.maxFuelConsumption.setMaximum(500)
 
-        fwLabel = QLabel("Fuel warning:")
+        fwLabel = QLabel("Fuel meter turns red at:")
         self.fuelWarning = QSpinBox()
         self.fuelWarning.setSuffix(" l/100km")
         self.fuelWarning.setMinimum(1)
@@ -57,19 +58,21 @@ class StartWindow(QWidget):
         addr = QWidget()
         addr.setLayout(layout)
 
-        self.experimental = QCheckBox("Experimental features")
+        self.experimental = QCheckBox("Show experimental displays")
+        self.allowLoop = QCheckBox("Allow looping telemetry from playback")
 
         modeLabel = QLabel("Mode:")
 
         self.mode = QComboBox()
         self.mode.addItem("Laps")
-        self.mode.addItem("Circuit Experience")
+        self.mode.addItem("Circuit Experience (experimental)")
         
         mainLayout = QVBoxLayout()
         self.setLayout(mainLayout)
         mainLayout.addWidget(modeLabel)
         mainLayout.addWidget(self.mode)
         mainLayout.addWidget(self.experimental)
+        mainLayout.addWidget(self.allowLoop)
         mainLayout.addWidget(fmLabel)
         mainLayout.addWidget(self.fuelMultiplier)
         mainLayout.addWidget(fcLabel)
@@ -83,6 +86,7 @@ class StartWindow(QWidget):
         settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
         self.ip.setText(settings.value("ip", ""))
         self.experimental.setChecked(settings.value("experimental")=="true")
+        self.allowLoop.setChecked(settings.value("allowLoop")=="true")
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
@@ -122,6 +126,87 @@ class FuelGauge(QWidget):
         except OverflowError as e:
             print(e)
             print(self.maxLevel, self.level)
+        qp.end()
+
+
+class MapView(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.map = QPixmap(2000, 2000)
+        self.map.fill(QColor("#222"))#Qt.GlobalColor.black)
+        self.liveMap = QPixmap(2000, 2000)
+        self.liveMap.fill(QColor("#222"))#Qt.GlobalColor.black)
+        self.previousPoints = []
+        self.curPoints = []
+        self.mapOffset = None
+        self.mapWindow = [1000,1000]
+        self.mapColor = Qt.GlobalColor.white
+
+    def setPoints(self, p1, p2):
+        self.previousPoints.append (p1)
+        self.curPoints.append (p2)
+
+    def endLap(self, cleanLap):
+        painter = QPainter(self.map)
+        pen = QPen(self.mapColor)
+        pen.setWidth(5)
+        painter.setPen(pen)
+        for pi in range(1, len(cleanLap)):
+            px1 = 1000 + (0.25 * (cleanLap[pi-1].position_x + self.mapOffset[0])) 
+            pz1 = 1000 + (0.25 * (cleanLap[pi-1].position_z + self.mapOffset[1])) 
+            px2 = 1000 + (0.25 * (cleanLap[pi].position_x + self.mapOffset[0])) 
+            pz2 = 1000 + (0.25 * (cleanLap[pi].position_z + self.mapOffset[1]))
+            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+
+        if len(cleanLap) > 0:
+            px1 = 1010 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz1 = 1010 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1])) 
+            px2 = 990 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz2 = 990 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1]))
+            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+            px1 = 990 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz1 = 1010 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1])) 
+            px2 = 1010 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz2 = 990 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1]))
+            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+
+        painter.end()
+        self.liveMap = self.map.copy()
+
+    def paintEvent(self, event):
+        while len (self.previousPoints) > 0  and len(self.curPoints) > 0:
+            previousPoint = self.previousPoints.pop()
+            curPoint = self.curPoints.pop()
+            painter = QPainter(self.liveMap)
+            pen = QPen(Qt.GlobalColor.red)
+            pen.setWidth(3)
+            painter.setPen(pen)
+            if self.mapOffset is None:
+                self.mapOffset = (-previousPoint.position_x, -previousPoint.position_z)
+            px1 = 1000 + (0.25 * (previousPoint.position_x + self.mapOffset[0])) 
+            pz1 = 1000 + (0.25 * (previousPoint.position_z + self.mapOffset[1])) 
+            px2 = 1000 + (0.25 * (curPoint.position_x + self.mapOffset[0])) 
+            pz2 = 1000 + (0.25 * (curPoint.position_z + self.mapOffset[1]))
+            if max(px1,px2) > (self.mapWindow[0] + 240) and (self.mapWindow[0] + 250) < 2000 - self.width():
+                self.mapWindow[0] += 1
+            if min(px1,px2) < (self.mapWindow[0] - 240) and (self.mapWindow[0] - 250) > self.width():
+                self.mapWindow[0] -= 1
+            if max(pz1,pz2) > (self.mapWindow[1] + 240) and (self.mapWindow[1] + 250) < 2000 - self.height():
+                self.mapWindow[1] += 1
+            if min(pz1,pz2) < (self.mapWindow[1] - 240) and (self.mapWindow[1] - 250) > self.height():
+                self.mapWindow[1] -= 1
+            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+            painter.end()
+
+        qp = QPainter()
+        qp.begin(self)
+
+        scaleTarget = 3000#min(self.width(), self.height())
+        aspectRatio = self.width()/self.height()
+
+        qp.drawPixmap(self.rect(), self.liveMap.copy(int(self.mapWindow[0] - aspectRatio * 250), int(self.mapWindow[1]-250), int(aspectRatio * 500), 500).scaled(self.width(), self.height()))
+
         qp.end()
 
 
@@ -199,7 +284,7 @@ class LineDeviation(QWidget):
         qp.begin(self)
         qp.fillRect(0, 0, int(self.width()), int(self.height()), QColor("#222"))
         pen = QPen(Qt.GlobalColor.white)
-        pen.setWidth(10)
+        pen.setWidth(5)
         qp.setPen(pen)
         font = self.font()
         font.setPointSize(36)
@@ -238,6 +323,10 @@ class MainWindow(QMainWindow):
 
         self.circuitExperience = True
         self.experimental = False
+        self.allowLoop = False
+
+        self.newMessage = None
+        self.messages = []
 
         self.setCentralWidget(self.startWindow)
 
@@ -253,13 +342,20 @@ class MainWindow(QMainWindow):
 
         self.fuelBar = FuelGauge()
 
-        self.laps = QLabel("? LAPS LEFT")
-        self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.laps.setAutoFillBackground(True)
-        font = self.laps.font()
-        font.setPointSize(96)
-        font.setBold(True)
-        self.laps.setFont(font)
+        if self.circuitExperience:
+            self.mapView = MapView()
+        else:
+            self.laps = QLabel("? LAPS LEFT")
+            self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.laps.setAutoFillBackground(True)
+            font = self.laps.font()
+            font.setPointSize(96)
+            font.setBold(True)
+            self.laps.setFont(font)
+            pal = self.laps.palette()
+            pal.setColor(self.laps.backgroundRole(), QColor("#222"))
+            pal.setColor(self.laps.foregroundRole(), QColor("#fff"))
+            self.laps.setPalette(pal)
 
         self.tyreFR = QLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -382,10 +478,6 @@ class MainWindow(QMainWindow):
         pal = self.fuel.palette()
         pal.setColor(self.fuel.backgroundRole(), QColor("#222"))
         self.fuel.setPalette(pal)
-        pal = self.laps.palette()
-        pal.setColor(self.laps.backgroundRole(), QColor("#222"))
-        pal.setColor(self.laps.foregroundRole(), QColor("#fff"))
-        self.laps.setPalette(pal)
         fuelLayout = QGridLayout()
         fuelLayout.setContentsMargins(11,11,11,11)
         fuelWidget.setLayout(fuelLayout)
@@ -394,7 +486,10 @@ class MainWindow(QMainWindow):
 
         fuelLayout.addWidget(self.fuel, 0, 0, 1, 1)
         fuelLayout.addWidget(self.fuelBar, 0, 1, 1, 1)
-        fuelLayout.addWidget(self.laps, 1, 0, 1, 2)
+        if self.circuitExperience:
+            fuelLayout.addWidget(self.mapView, 1, 0, 1, 2)
+        else:
+            fuelLayout.addWidget(self.laps, 1, 0, 1, 2)
 
         tyreWidget = QWidget()
         tyreLayout = QGridLayout()
@@ -470,13 +565,9 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
 
-        if self.circuitExperience:
-            canvas = QPixmap(500, 500)
-            canvas.fill(Qt.GlobalColor.white)
-            self.laps.setPixmap(canvas)
-
     def startDash(self):
         self.experimental = self.startWindow.experimental.isChecked()
+        self.allowLoop = self.startWindow.allowLoop.isChecked()
         self.circuitExperience = self.startWindow.mode.currentIndex() == 1
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
@@ -487,6 +578,7 @@ class MainWindow(QMainWindow):
         settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
         settings.setValue("ip", ip)
         settings.setValue("experimental", self.experimental)
+        settings.setValue("allowLoop", self.allowLoop)
         settings.setValue("mode", self.startWindow.mode.currentIndex())
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
@@ -502,6 +594,7 @@ class MainWindow(QMainWindow):
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
         self.receiver.setQueue(self.queue)
+        self.receiver.setIgnorePktId(self.allowLoop)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
 
@@ -534,8 +627,6 @@ class MainWindow(QMainWindow):
         self.previousLaps = []
         self.bestLap = -1
         self.medianLap = -1
-
-        self.offset, self.scale = self.getCircuitScale()
 
         self.closestILast = 0
         self.closestIBest = 0
@@ -587,7 +678,6 @@ class MainWindow(QMainWindow):
 
     def brakeQColor(self, d):
         col = QColor()
-        print("BRAKE", (0x22/0xff) + d * (1 - 0x22/0xff))
         col.setHsvF (0, 1, (0x22/0xff) + d * (1 - 0x22/0xff)/100)
 
         return col
@@ -640,7 +730,7 @@ class MainWindow(QMainWindow):
         return sm / len(lap)
 
     def purgeBadLaps(self):
-        print("Purge laps")
+        print("PURGE laps")
         longestLength = 0
         longestLap = None
         for l in self.previousLaps:
@@ -653,6 +743,7 @@ class MainWindow(QMainWindow):
             print("Longest: ", longestLength, longestLap[0])
         temp = []
         for l in self.previousLaps:
+            print ("\nCheck lap", l[0])
             d = self.distance(longestLap[1][-1], l[1][-1])
             c = self.findClosestPointNoLimit(l[1], longestLap[1][-1])
             d2 = -1
@@ -662,9 +753,9 @@ class MainWindow(QMainWindow):
             c3 = self.findClosestPointNoLimit(longestLap[1], l[1][-1])
             if not c3 is None:
                 d3 = self.distance(l[1][-1], c3)
-            print(d, d2, d3)
+            print("End distance:", d)
             if d > 15:
-                print("Purge lap", len(l[1])/60, d)
+                print("PURGE lap", len(l[1])/60, d)
             else:
                 temp.append(l)
         self.previousLaps = temp
@@ -677,7 +768,7 @@ class MainWindow(QMainWindow):
             print("Lap is empty")
             return lap
         if len(lap) < 600:
-            print("Lap is short")
+            print("\nLap is short")
             return lap
         if (lap[-1].throttle > 0):# or lap[-1].brake > 0):
             print("Throttle to the end")
@@ -725,33 +816,6 @@ class MainWindow(QMainWindow):
         val = min (1, max(0.002, val))
         return "background: qlineargradient( x1:0 y1:1, x2:0 y2:0, stop:" + str(val-0.001) + " " + color + ", stop:" + str (val) + " #222);"
 
-    def getCircuitScale(self):
-        return ((-2562.2564697265625, -313.49867248535156), 0.1041195076387775)
-        minX = 10000000
-        maxX = -10000000
-        minZ = 10000000
-        maxZ = -10000000
-
-        for l in self.previousLaps:
-            for p in l[1]:
-                if p.position_x < minX:
-                    minX = p.position_x
-                if p.position_x > maxX:
-                    maxX = p.position_x
-                if p.position_z < minZ:
-                    minZ = p.position_z
-                if p.position_z > maxZ:
-                    maxZ = p.position_y
-
-        dx = maxX - minX
-        dz = maxZ - minZ
-
-        d = max(dx, dz)
-        ox = (minX + maxX)/2
-        oz = (minZ + maxZ)/2
-
-        return ((ox, oz),100 * 1/d)
-
     def updateDisplay(self):
 
         while not self.queue.empty():
@@ -759,6 +823,12 @@ class MainWindow(QMainWindow):
             d = self.queue.get()
 
             curPoint = Point(d)
+
+            if not self.newMessage is None:
+                print(len(self.newLapPos), -min(60*5,len(self.newLapPos)-1))
+                self.messages.append([self.newLapPos[-min(60*5,len(self.newLapPos)-1)], self.newMessage])
+                self.newMessage = None
+                print(self.messages)
 
             if curPoint.is_paused or not curPoint.in_race:
                 continue
@@ -769,18 +839,9 @@ class MainWindow(QMainWindow):
 
             #print(len(self.newLapPos))
 
-            #if self.circuitExperience and not self.previousPoint is None:
-                #canvas = self.laps.pixmap()
-                #painter = QPainter(canvas)
-                #px1 = 250 + (self.scale * (self.previousPoint.position_x - self.offset[0])) 
-                #pz1 = 250 + (self.scale * (self.previousPoint.position_z - self.offset[1])) 
-                #px2 = 250 + (self.scale * (curPoint.position_x - self.offset[0])) 
-                #pz2 = 250 + (self.scale * (curPoint.position_z - self.offset[1]))
-                #print(px1, pz1, px2, pz2, "    ", self.scale, self.offset)
-                #painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-                #painter.end()
-                #self.laps.setPixmap(canvas)
-                #self.laps.setScaledContents(True)
+            if self.circuitExperience and not self.previousPoint is None:
+                self.mapView.setPoints(self.previousPoint, curPoint)
+                self.mapView.update()
 
 
             if curPoint.throttle == 0 and curPoint.brake == 0:
@@ -817,31 +878,8 @@ class MainWindow(QMainWindow):
             if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 250 or self.noThrottleCount == 60 * 10)):
                 if self.circuitExperience:
                     cleanLap = self.cleanUpLap(self.newLapPos)
-                    canvas = self.laps.pixmap()
-                    painter = QPainter(canvas)
-                    for pi in range(1, len(cleanLap)):
-                        px1 = 250 + (self.scale * (cleanLap[pi-1].position_x - self.offset[0])) 
-                        pz1 = 250 + (self.scale * (cleanLap[pi-1].position_z - self.offset[1])) 
-                        px2 = 250 + (self.scale * (cleanLap[pi].position_x - self.offset[0])) 
-                        pz2 = 250 + (self.scale * (cleanLap[pi].position_z - self.offset[1]))
-                        painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-
-                    if len(cleanLap) > 0:
-                        px1 = 260 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
-                        pz1 = 260 + (self.scale * (cleanLap[-1].position_z - self.offset[1])) 
-                        px2 = 240 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
-                        pz2 = 240 + (self.scale * (cleanLap[-1].position_z - self.offset[1]))
-                        painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-                        px1 = 240 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
-                        pz1 = 260 + (self.scale * (cleanLap[-1].position_z - self.offset[1])) 
-                        px2 = 260 + (self.scale * (cleanLap[-1].position_x - self.offset[0])) 
-                        pz2 = 240 + (self.scale * (cleanLap[-1].position_z - self.offset[1]))
-                        painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-
-                    painter.end()
-                    self.laps.setPixmap(canvas)
-                    self.laps.setScaledContents(True)
-
+                    self.mapView.endLap(cleanLap)
+                    self.mapView.update()
                 else:
                     cleanLap = self.newLapPos
                 #print(len(self.newLapPos), len(cleanLap))
@@ -850,7 +888,7 @@ class MainWindow(QMainWindow):
                 if lapLen < 10:
                     print("LAP CHANGE short")
                 else:
-                    print("LAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap) / 60,3), "s")
+                    print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap) / 60,3), "s")
                     if (len(self.newLapPos)>0):
                         print("start", self.newLapPos[0].position_x, self.newLapPos[0].position_y, self.newLapPos[0].position_z)
                     if not self.previousPoint is None:
@@ -865,7 +903,6 @@ class MainWindow(QMainWindow):
                         self.previousLaps.append([lastLapTime, cleanLap])
                         print("Append lap", lastLapTime, len(cleanLap))
                         if self.circuitExperience:
-                            self.offset, self.scale = self.getCircuitScale()
                             self.purgeBadLaps()
                         #self.previousLaps.append([lastLapTime, self.newLapPos])
                         #for pl in self.previousLaps:
@@ -878,11 +915,10 @@ class MainWindow(QMainWindow):
                         self.closestIBest = 0
                         self.closestIMedian = 0
 
-                        print("Best lap:", self.bestLap, self.previousLaps[self.bestLap][0])
+                        print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap][0])
                         print("Median lap:", self.medianLap, self.previousLaps[self.medianLap][0])
                         print("Last lap:", len(self.previousLaps)-1, self.previousLaps[-1][0])
 
-                    print("handle fuel")
                     if self.lastFuel != -1:
                         fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
                         if fuelDiff > 0:
@@ -899,9 +935,7 @@ class MainWindow(QMainWindow):
                         for i in range(1, len(self.lastFuelUsage)):
                             self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
 
-                print("copy lap")
                 self.lastLap = curPoint.current_lap
-                print("copied lap")
             elif (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
                 self.initRace()
 
@@ -934,37 +968,52 @@ class MainWindow(QMainWindow):
                 self.fuelBar.setLevel(max(0, fuelConsumption))
                 self.fuelBar.update()
 
-            if self.fuelFactor > 0:
-                self.laps.setText(str(round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2)) + " LAPS FUEL")
-                if round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 1:
+            messageShown = False
+            for m in self.messages:
+                #print( self.distance(curPoint, m[0]))
+                if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
                     pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    if datetime.datetime.now().microsecond < 500000:
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    else:
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.white)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.red)
                     self.laps.setPalette(pal)
-                elif round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 2:
+                    self.laps.setText(m[1])
+                    messageShown = True
+
+
+            if not self.circuitExperience and (not self.experimental or not messageShown):
+                if self.fuelFactor > 0:
+                    self.laps.setText(str(round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2)) + " LAPS FUEL")
+                    if round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 1:
+                        pal = self.laps.palette()
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                        self.laps.setPalette(pal)
+                    elif round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 2:
+                        pal = self.laps.palette()
+                        pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                        pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
+                        self.laps.setPalette(pal)
+                    else:
+                        pal = self.laps.palette()
+                        pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                        self.laps.setPalette(pal)
+                elif curPoint.current_fuel == curPoint.fuel_capacity:
+                    self.laps.setText("FOREVER")
                     pal = self.laps.palette()
                     pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                    pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
+                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
                     self.laps.setPalette(pal)
                 else:
+                    self.laps.setText("measuring")
                     pal = self.laps.palette()
                     pal.setColor(self.laps.backgroundRole(), QColor('#222'))
                     pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
                     self.laps.setPalette(pal)
-            elif self.circuitExperience:
-                pass
-            elif curPoint.current_fuel == curPoint.fuel_capacity:
-                self.laps.setText("FOREVER")
-                pal = self.laps.palette()
-                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                self.laps.setPalette(pal)
-            else:
-                self.laps.setText("measuring")
-                pal = self.laps.palette()
-                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                self.laps.setPalette(pal)
 
             # SPEED
             #if self.experimental:
@@ -1102,11 +1151,10 @@ class MainWindow(QMainWindow):
                 self.isRecording = True
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key.Key_Space.value:
-            if self.centralWidget() == self.masterWidget:
+        if self.centralWidget() == self.masterWidget:
+            if e.key() == Qt.Key.Key_R.value:
                 self.toggleRecording()
-        if e.key() == Qt.Key.Key_Escape.value:
-            if self.centralWidget() == self.masterWidget:
+            elif e.key() == Qt.Key.Key_Escape.value:
                 if self.isRecording:
                     self.isRecording = False
                     self.receiver.stopRecording()
@@ -1115,6 +1163,9 @@ class MainWindow(QMainWindow):
                 self.startWindow.starter.clicked.connect(self.startDash)
                 self.startWindow.ip.returnPressed.connect(self.startDash)
                 self.setCentralWidget(self.startWindow)
+            elif e.key() == Qt.Key.Key_Space.value:
+                self.newMessage = "CAUTION"
+
 
 
 if __name__ == '__main__':
