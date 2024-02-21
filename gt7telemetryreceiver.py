@@ -97,7 +97,7 @@ class GT7TelemetryReceiver:
                         self.pktid = struct.unpack('i', ddata[0x70:0x70+4])[0]
 
                     if not self.queue is None:
-                        self.queue.put(ddata)
+                        self.queue.put((ddata, data))
 
                 if self.pknt > 100:
                     self.send_hb()

@@ -1,6 +1,8 @@
 import sys
 import os
 import threading
+import traceback
+import json
 from wakepy import keep
 import math
 import queue
@@ -65,7 +67,7 @@ class StartWindow(QWidget):
         self.brakepoints = QCheckBox("Show brake points")
         self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
         self.bigCountdownBrakepoint = QCheckBox("Larger count down color area")
-        self.allowLoop = QCheckBox("Allow looping telemetry from playback")
+        self.allowLoop = QCheckBox("Allow looping telemetry from playback (experimental)")
 
         modeLabel = QLabel("Mode:")
 
@@ -199,6 +201,8 @@ class MapView(QWidget):
         while len (self.previousPoints) > 0  and len(self.curPoints) > 0:
             previousPoint = self.previousPoints.pop()
             curPoint = self.curPoints.pop()
+            if previousPoint.position_x - curPoint.position_x > 5 or previousPoint.position_z - curPoint.position_z > 5:
+                continue
             painter = QPainter(self.liveMap)
             pen = QPen(Qt.GlobalColor.red)
             pen.setWidth(3)
@@ -271,6 +275,12 @@ class LineDeviation(QWidget):
         a1 = self.abs(p1.velocity_x, p1.velocity_y, p1.velocity_z)
         a2 = self.abs(p2.velocity_x, p2.velocity_y, p2.velocity_z)
 
+        # is the car standing still? TODO: maybe use orientation?
+        if a1 == 0:
+            a1 = 1
+        if a2 == 0:
+            a2 = 1
+
         #cosangle = min(1,(p1.velocity_x * p2.velocity_x + p1.velocity_y * p2.velocity_y + p1.velocity_z * p2.velocity_z) / (a1*a2))
         #self.angle = math.acos(cosangle)
 
@@ -332,6 +342,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.masterWidget = None
+
         self.startWindow = StartWindow()
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
@@ -350,6 +362,12 @@ class MainWindow(QMainWindow):
         self.allowLoop = False
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = False
+
+        self.showBestLap = True # TODO make ini entry
+        self.showLastLap = True # TODO make ini entry
+        self.showMedianLap = True # TODO make ini entry
+        self.showRef1Lap = False # TODO implement
+        self.showRef2Lap = False
 
         self.newMessage = None
         self.messages = []
@@ -528,18 +546,27 @@ class MainWindow(QMainWindow):
         speedWidget = QWidget()
         speedLayout = QGridLayout()
         speedWidget.setLayout(speedLayout)
-        speedLayout.addWidget(self.speedBest, 2, 0)
-        speedLayout.addWidget(self.speedMedian, 2, 1)
-        speedLayout.addWidget(self.speedLast, 2, 2)
+        if self.showBestLap:
+            speedLayout.addWidget(self.speedBest, 2, 0)
+        if self.showMedianLap:
+            speedLayout.addWidget(self.speedMedian, 2, 1)
+        if self.showLastLap:
+            speedLayout.addWidget(self.speedLast, 2, 2)
         if self.linecomp:
-            speedLayout.addWidget(self.lineBest, 1, 0)
-            speedLayout.addWidget(self.lineMedian, 1, 1)
-            speedLayout.addWidget(self.lineLast, 1, 2)
+            if self.showBestLap:
+                speedLayout.addWidget(self.lineBest, 1, 0)
+            if self.showMedianLap:
+                speedLayout.addWidget(self.lineMedian, 1, 1)
+            if self.showLastLap:
+                speedLayout.addWidget(self.lineLast, 1, 2)
             speedLayout.setRowStretch(1, 1)
         if self.brakepoints:
-            speedLayout.addWidget(self.pedalBest, 0, 0)
-            speedLayout.addWidget(self.pedalMedian, 0, 1)
-            speedLayout.addWidget(self.pedalLast, 0, 2)
+            if self.showBestLap:
+                speedLayout.addWidget(self.pedalBest, 0, 0)
+            if self.showMedianLap:
+                speedLayout.addWidget(self.pedalMedian, 0, 1)
+            if self.showLastLap:
+                speedLayout.addWidget(self.pedalLast, 0, 2)
             speedLayout.setRowStretch(0, 1)
         speedLayout.setRowStretch(2, 4)
 
@@ -731,7 +758,7 @@ class MainWindow(QMainWindow):
         for p2 in range(startIdx, len(lap)-10):
             dbgCount+=1
             curDist = self.distance(p, lap[p2])
-            if curDist < 10 and curDist < shortestDistance:
+            if curDist < 15 and curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
             if not result is None and curDist > 20:
@@ -838,7 +865,7 @@ class MainWindow(QMainWindow):
         bestIndex = 0
         bestTime = 100000000.0
         for t in range(len(self.previousLaps)):
-            if self.previousLaps[t][0] < bestTime:
+            if self.previousLaps[t][2] and self.previousLaps[t][0] < bestTime:
                 bestTime = self.previousLaps[t][0]
                 bestIndex = t
         return bestIndex
@@ -846,13 +873,15 @@ class MainWindow(QMainWindow):
     def findMedianLap(self):
         sorter = []
         for e in self.previousLaps:
-            sorter.append(e[0])
+            if e[2]:
+                sorter.append(e[0])
 
-        sorter = sorted(sorter)
-        target = sorter[len(sorter)//2]
-        for e in range(len(self.previousLaps)):
-            if self.previousLaps[e][0] == target:
-                return e
+        if len(sorter) > 0:
+            sorter = sorted(sorter)
+            target = sorter[len(sorter)//2]
+            for e in range(len(self.previousLaps)):
+                if self.previousLaps[e][0] == target:
+                    return e
         return 0
 
     def makeFuelBar(self, val):
@@ -869,7 +898,7 @@ class MainWindow(QMainWindow):
             self.debugCount += 1
             d = self.queue.get()
 
-            curPoint = Point(d)
+            curPoint = Point(d[0], d[1])
 
             if self.messagesEnabled and not self.newMessage is None:
                 print(len(self.newLapPos), -min(60*5,len(self.newLapPos)-1))
@@ -922,7 +951,7 @@ class MainWindow(QMainWindow):
             # LAP CHANGE
             if self.circuitExperience and self.noThrottleCount == 60 * 10:
                 print("Lap ended 10 seconds ago")
-            if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 250 or self.noThrottleCount == 60 * 10)):
+            if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 10 or self.noThrottleCount == 60 * 10)):
                 if self.circuitExperience:
                     cleanLap = self.cleanUpLap(self.newLapPos)
                     self.mapView.endLap(cleanLap)
@@ -947,8 +976,13 @@ class MainWindow(QMainWindow):
                             lastLapTime = len(cleanLap)/60.0
                         else:
                             lastLapTime = curPoint.last_lap
-                        self.previousLaps.append([lastLapTime, cleanLap])
-                        print("Append lap", lastLapTime, len(cleanLap))
+                        print("Closed loop distance:", self.distance(cleanLap[0], cleanLap[-1])) 
+                        if self.circuitExperience or self.distance(cleanLap[0], cleanLap[-1]) < 30: 
+                            self.previousLaps.append([lastLapTime, cleanLap, True])
+                            print("Append valid lap", lastLapTime, len(cleanLap))
+                        else:
+                            print("Append invalid lap", lastLapTime, len(cleanLap))
+                            self.previousLaps.append([lastLapTime, cleanLap, False])
                         if self.circuitExperience:
                             self.purgeBadLaps()
                         #self.previousLaps.append([lastLapTime, self.newLapPos])
@@ -1100,6 +1134,8 @@ class MainWindow(QMainWindow):
                 pal = self.speedBest.palette()
                 pal.setColor(self.speedBest.backgroundRole(), self.speedDiffQColor(speedDiff))
                 self.speedBest.setPalette(pal)
+                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                self.fuel.setPalette(pal)
                 if self.brakepoints:
                     pal = self.pedalBest.palette()
                     if closestPBest.brake > 0:
@@ -1111,21 +1147,21 @@ class MainWindow(QMainWindow):
                             if nextBrakeBest%60 >= 30:
                                 pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
                                 if self.bigCountdownBrakepoint:
-                                    self.speedBest.setPalette(pal)
+                                    self.fuel.setPalette(pal)
                             else:
                                 pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
                         elif nextBrakeBest >= 60:
-                            if nextBrakeBest%30 >= 15:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                            if nextBrakeBest%60 >= 30:
+                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#2FF"))
                                 if self.bigCountdownBrakepoint:
-                                    self.speedBest.setPalette(pal)
+                                    self.fuel.setPalette(pal)
                             else:
                                 pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
                         else:
-                            if nextBrakeBest%15 >= 7:
+                            if nextBrakeBest%30 >= 15:
                                 pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
                                 if self.bigCountdownBrakepoint:
-                                    self.speedBest.setPalette(pal)
+                                    self.fuel.setPalette(pal)
                             else:
                                 pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
 
@@ -1222,6 +1258,51 @@ class MainWindow(QMainWindow):
                 self.setCentralWidget(self.startWindow)
             elif e.key() == Qt.Key.Key_Space.value:
                 self.newMessage = "CAUTION"
+            elif e.key() == Qt.Key.Key_B.value:
+                if self.bestLap >= 0:
+                    print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap][0])
+                    saveThread = threading.Thread(target=self.saveLap, args=(self.bestLap, "best"))
+                    saveThread.start()
+            elif e.key() == Qt.Key.Key_L.value:
+                if len(self.previousLaps) > 0:
+                    saveThread = threading.Thread(target=self.saveLap, args=(-1, "last"))
+                    saveThread.start()
+            elif e.key() == Qt.Key.Key_M.value:
+                if self.medianLap >= 0:
+                    print("\nBest lap:", self.medianLap, self.previousLaps[self.medianLap][0])
+                    saveThread = threading.Thread(target=self.saveLap, args=(self.medianLap, "median"))
+                    saveThread.start()
+            elif e.key() == Qt.Key.Key_W.value:
+                print("store message positions")
+                saveThread = threading.Thread(target=self.saveMessages)
+                saveThread.start()
+
+    def saveLap(self, index, name):
+        print("store lap:", name)
+        with open ( "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+            for p in self.previousLaps[index][1]:
+                f.write(p.raw)
+
+    def saveMessages(self):
+        d = []
+        for m in self.messages:
+            d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
+
+        j = json.dumps(d, indent=4)
+        print(j)
+        with open ( "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".json", "w") as f:
+            f.write(j)
+
+
+def excepthook(exc_type, exc_value, exc_tb):
+    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    print("=== EXCEPTION ===")
+    print("error message:\n", tb)
+    with open ("gt7teledash.log", "a") as f:
+        f.write("=== EXCEPTION ===\n")
+        f.write(str(datetime.datetime.now ()) + "\n\n")
+        f.write(str(tb) + "\n")
+    QApplication.quit()
 
 
 
@@ -1233,6 +1314,8 @@ if __name__ == '__main__':
     window.startWindow.ip.setFocus()
 
 
+    sys.excepthook = excepthook
     with keep.presenting():
         app.exec()
+
 

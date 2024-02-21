@@ -3,8 +3,8 @@ from datetime import timedelta as td
 
 class Point:
 
-    def __init__(self, ddata):
-        self.raw = ddata
+    def __init__(self, ddata, encRaw):
+        self.raw = encRaw
         
         # from https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
         self.package_id = struct.unpack('i', ddata[0x70:0x70 + 4])[0]
