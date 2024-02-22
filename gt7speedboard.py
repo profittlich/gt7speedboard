@@ -21,7 +21,7 @@ import gt7telemetryreceiver as tele
 class StartWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("GT7 TeleDash")
+        self.setWindowTitle("GT7 SpeedBoard")
         self.starter = QPushButton("Start")
 
         ipLabel = QLabel("PlayStation IP address:")
@@ -103,7 +103,7 @@ class StartWindow(QWidget):
         mainLayout.insertStretch(-1)
 
         print("Load preferences")
-        settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
+        settings = QSettings("./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.ip.setText(settings.value("ip", ""))
         self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
         self.recordingEnabled.setChecked(settings.value("recordingEnabled") in [ True, "true"])
@@ -343,7 +343,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("GT7 TeleDash")
+        self.setWindowTitle("GT7 SpeedBoard")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -630,7 +630,7 @@ class MainWindow(QMainWindow):
         
         ip = self.startWindow.ip.text()
 
-        settings = QSettings("./gt7teledash.ini", QSettings.Format.IniFormat)
+        settings = QSettings("./gt7speedboard.ini", QSettings.Format.IniFormat)
         settings.setValue("ip", ip)
         settings.setValue("lapDecimals", self.lapDecimals)
         settings.setValue("recordingEnabled", self.recordingEnabled)
@@ -1349,7 +1349,7 @@ def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
     print("=== EXCEPTION ===")
     print("error message:\n", tb)
-    with open ("gt7teledash.log", "a") as f:
+    with open ("gt7speedboard.log", "a") as f:
         f.write("=== EXCEPTION ===\n")
         f.write(str(datetime.datetime.now ()) + "\n\n")
         f.write(str(tb) + "\n")
