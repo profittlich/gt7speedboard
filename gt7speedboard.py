@@ -21,7 +21,7 @@ import gt7telemetryreceiver as tele
 class StartWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("GT7 SpeedBoard")
+        self.setWindowTitle("GT7 SpeedBoard 1.0")
         self.starter = QPushButton("Start")
 
         ipLabel = QLabel("PlayStation IP address:")
@@ -103,7 +103,7 @@ class StartWindow(QWidget):
         mainLayout.insertStretch(-1)
 
         print("Load preferences")
-        settings = QSettings("./gt7speedboard.ini", QSettings.Format.IniFormat)
+        settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.ip.setText(settings.value("ip", ""))
         self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
         self.recordingEnabled.setChecked(settings.value("recordingEnabled") in [ True, "true"])
@@ -343,7 +343,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("GT7 SpeedBoard")
+        self.setWindowTitle("GT7 SpeedBoard 1.0")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -630,7 +630,8 @@ class MainWindow(QMainWindow):
         
         ip = self.startWindow.ip.text()
 
-        settings = QSettings("./gt7speedboard.ini", QSettings.Format.IniFormat)
+        print(__file__)
+        settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         settings.setValue("ip", ip)
         settings.setValue("lapDecimals", self.lapDecimals)
         settings.setValue("recordingEnabled", self.recordingEnabled)
@@ -1359,6 +1360,10 @@ def excepthook(exc_type, exc_value, exc_tb):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    app.setOrganizationName("pitstop.profittlich.com");
+    app.setOrganizationDomain("pitstop.profittlich.com");
+    app.setApplicationName("GT7 SpeedBoard");
 
     window = MainWindow()
     window.show()
