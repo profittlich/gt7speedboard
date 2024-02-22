@@ -61,12 +61,12 @@ class StartWindow(QWidget):
         addr.setLayout(layout)
 
         self.lapDecimals = QCheckBox("Show decimals in lap displays (experimental)")
-        self.recordingEnabled = QCheckBox("Allow recording data by pressing R")
-        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing space (experimental)")
+        self.recordingEnabled = QCheckBox("Allow recording data by pressing [R]")
+        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing [space] (experimental)")
         self.linecomp = QCheckBox("Show racing line comparisons (experimental)")
         self.brakepoints = QCheckBox("Show brake points")
         self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
-        self.bigCountdownBrakepoint = QCheckBox("Larger count down color area")
+        self.bigCountdownBrakepoint = QCheckBox("Hijack fuel box for countdown colors")
         self.allowLoop = QCheckBox("Allow looping telemetry from playback (experimental)")
 
         modeLabel = QLabel("Mode:")
@@ -79,13 +79,18 @@ class StartWindow(QWidget):
         self.setLayout(mainLayout)
         mainLayout.addWidget(modeLabel)
         mainLayout.addWidget(self.mode)
+        mainLayout.addWidget(QLabel("View:"))
         mainLayout.addWidget(self.lapDecimals)
+        mainLayout.addWidget(QLabel("Recording:"))
         mainLayout.addWidget(self.recordingEnabled)
-        mainLayout.addWidget(self.messagesEnabled)
+        mainLayout.addWidget(QLabel("Racing line:"))
         mainLayout.addWidget(self.linecomp)
+        mainLayout.addWidget(self.messagesEnabled)
+        mainLayout.addWidget(QLabel("Break points:"))
         mainLayout.addWidget(self.brakepoints)
         mainLayout.addWidget(self.countdownBrakepoint)
         mainLayout.addWidget(self.bigCountdownBrakepoint)
+        mainLayout.addWidget(QLabel("Network:"))
         mainLayout.addWidget(self.allowLoop)
         mainLayout.addWidget(fmLabel)
         mainLayout.addWidget(self.fuelMultiplier)
@@ -241,7 +246,7 @@ class LineDeviation(QWidget):
         super().__init__()
         self.maxDist = 3
         self.dist = 0
-        self.history = []
+        self.invert = True
         self.p1 = None
         self.p2 = None
         self.redGradient = QLinearGradient (10,0,120,0);
@@ -257,21 +262,20 @@ class LineDeviation(QWidget):
         return math.sqrt(x**2 + y**2 + z**2)
 
     def normal(self, x, y, z): # (0, 1, 0)
-        a = self.abs(y, 0, -y)
-        return (y/a, 0, -y/a)
+        a = self.abs(-z, 0, x)
+        return (-z/a, 0, x/a)
 
     def setDistance(self, d):
-        self.history.append(d)
-        if (len(self.history) > 4):
-            self.history = self.history[1:]
-        self.dist = 0
-        for i in self.history:
-            self.dist+=i
-        self.dist /= len(self.history)
+        if self.invert:
+            self.dist = -d
+        else:
+            self.dist = d
 
     def setPoints(self, p2, p1):
         self.p1 = p1
         self.p2 = p2
+        if p1 is None or p2 is None:
+            return
         a1 = self.abs(p1.velocity_x, p1.velocity_y, p1.velocity_z)
         a2 = self.abs(p2.velocity_x, p2.velocity_y, p2.velocity_z)
 
@@ -280,14 +284,6 @@ class LineDeviation(QWidget):
             a1 = 1
         if a2 == 0:
             a2 = 1
-
-        #cosangle = min(1,(p1.velocity_x * p2.velocity_x + p1.velocity_y * p2.velocity_y + p1.velocity_z * p2.velocity_z) / (a1*a2))
-        #self.angle = math.acos(cosangle)
-
-        #northcosangle = p1.velocity_z / a1
-        #self.northangle = math.acos(northcosangle)
-        #if p1.velocity_x < 0:
-            #self.northangle = 2*math.pi - self.northangle
 
         self.angle1 = math.acos(p1.velocity_z / a1)
         if p1.velocity_x < 0:
@@ -298,8 +294,6 @@ class LineDeviation(QWidget):
             self.angle2 = 2*math.pi - self.angle2
 
         self.angle = self.angle2-self.angle1
-        #if self.angle < 0:
-            #self.angle += math.pi
 
         n = self.normal(p1.velocity_x, p1.velocity_y, p1.velocity_z)
         dx = p2.position_x - p1.position_x
@@ -321,17 +315,18 @@ class LineDeviation(QWidget):
         font.setPointSize(36)
         font.setBold(True)
         self.setFont(font)
+        clippedDist = min(self.maxDist, max(-self.maxDist, self.dist))
         if not self.p1 is None and not self.p2 is None:
             if self.dist < 0:
                 self.redGradient.setStart(self.width()/2,0)
-                self.redGradient.setFinalStop(self.width()/2 + self.dist/self.maxDist * self.width() / 2, 0)
-                qp.fillRect(int(self.width()/2), 0, int(self.dist/self.maxDist * self.width() / 2), int(self.height()), self.redGradient)
-                qp.drawLine(int(self.width()/2) + int(self.dist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(self.dist/self.maxDist * self.width() / 2), int(self.height()))
+                self.redGradient.setFinalStop(self.width()/2 + clippedDist/self.maxDist * self.width() / 2, 0)
+                qp.fillRect(int(self.width()/2), 0, int(clippedDist/self.maxDist * self.width() / 2), int(self.height()), self.redGradient)
+                qp.drawLine(int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), int(self.height()))
             else:
                 self.greenGradient.setStart(self.width()/2,0)
-                self.greenGradient.setFinalStop(self.width()/2 + self.dist/self.maxDist * self.width() / 2, 0)
-                qp.fillRect(int(self.width()/2), 0, int(self.dist/self.maxDist * self.width() / 2), int(self.height()), self.greenGradient)
-                qp.drawLine(int(self.width()/2) + int(self.dist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(self.dist/self.maxDist * self.width() / 2), int(self.height()))
+                self.greenGradient.setFinalStop(self.width()/2 + clippedDist/self.maxDist * self.width() / 2, 0)
+                qp.fillRect(int(self.width()/2), 0, int(clippedDist/self.maxDist * self.width() / 2), int(self.height()), self.greenGradient)
+                qp.drawLine(int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), int(self.height()))
         qp.drawLine(int(self.width()/2), 0, int(self.width()/2), int (self.height()))
         qp.end()
 
@@ -380,7 +375,7 @@ class MainWindow(QMainWindow):
         self.fuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.fuel.setAutoFillBackground(True)
         font = self.fuel.font()
-        font.setPointSize(96)
+        font.setPointSize(64)
         font.setBold(True)
         self.fuel.setFont(font)
 
@@ -697,6 +692,30 @@ class MainWindow(QMainWindow):
         self.closestILast = 0
         self.closestIBest = 0
         self.closestIMedian = 0
+
+        pal = self.pedalLast.palette()
+        self.pedalLast.setText("")
+        pal.setColor(self.pedalLast.backgroundRole(), QColor("#222"))
+        self.pedalLast.setPalette(pal)
+
+        pal = self.pedalBest.palette()
+        self.pedalBest.setText("")
+        pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+        self.pedalBest.setPalette(pal)
+
+        pal = self.pedalMedian.palette()
+        self.pedalMedian.setText("")
+        pal.setColor(self.pedalMedian.backgroundRole(), QColor("#222"))
+        self.pedalMedian.setPalette(pal)
+
+        self.lineBest.setPoints(None,None)
+        self.lineBest.update()
+
+        self.lineLast.setPoints(None,None)
+        self.lineLast.update()
+
+        self.lineMedian.setPoints(None,None)
+        self.lineMedian.update()
 
     def tyreTempColor(self, temp):
         col = QColor()
@@ -1029,16 +1048,21 @@ class MainWindow(QMainWindow):
                             self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
                             self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
                     lapValue = round(lapValue, 2)
-                refuelLaps = "\n" + str (lapValue) + " SINCE REFUEL"
+                refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
             else:
                 refuelLaps = ""
 
             if self.fuelFactor != 0:
-                fuelLapPercent = "\n" + str(round(100 * self.fuelFactor,1)) + "% PER LAP"
+                fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + "% PER LAP<br>" + str(round(100 / self.fuelFactor,1)) + " FULL RANGE"
             else:
                 fuelLapPercent = ""
 
-            self.fuel.setText(str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%" + fuelLapPercent + refuelLaps)
+            self.fuel.setTextFormat(Qt.TextFormat.RichText)
+            self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
+            if False:
+                refuelLaps = "<br>" + str (3.12) + " SINCE REFUEL" + "<br>" + str (14.2) + " FULL RANGE"
+                fuelLapPercent = "<br>" + str(7.7) + "% PER LAP"
+                self.fuel.setText("<font size=6>" + str(round(100 * 80 / 100)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
             if not self.previousPoint is None:
                 fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
                 fuelConsumption *= 60 * 60 * 60 # l per hour
@@ -1067,13 +1091,31 @@ class MainWindow(QMainWindow):
 
             if not self.circuitExperience and not messageShown:
                 if self.fuelFactor > 0:
-                    self.laps.setText(str(round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2)) + " LAPS FUEL")
-                    if round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 1:
+                    lapsFuel = curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor
+                    self.laps.setText(str(round(lapsFuel, 2)) + " LAPS FUEL")
+
+                    lapValue = 1
+                    if self.lapDecimals and self.closestILast > 0:
+                        lapValue -= (
+                                self.closestILast / len(self.previousLaps[-1][1]) +
+                                self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
+                                self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
+                    
+                    if self.lapDecimals and round(lapsFuel, 2) < 1 and lapsFuel < lapValue:
+                        pal = self.laps.palette()
+                        if datetime.datetime.now().microsecond < 500000:
+                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                        else:
+                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.yellow)
+                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.black)
+                        self.laps.setPalette(pal)
+                    elif round(lapsFuel, 2) < 1:
                         pal = self.laps.palette()
                         pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
                         pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
                         self.laps.setPalette(pal)
-                    elif round(curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor, 2) < 2:
+                    elif round(lapsFuel, 2) < 2:
                         pal = self.laps.palette()
                         pal.setColor(self.laps.backgroundRole(), QColor('#222'))
                         pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
@@ -1260,7 +1302,6 @@ class MainWindow(QMainWindow):
                 self.newMessage = "CAUTION"
             elif e.key() == Qt.Key.Key_B.value:
                 if self.bestLap >= 0:
-                    print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap][0])
                     saveThread = threading.Thread(target=self.saveLap, args=(self.bestLap, "best"))
                     saveThread.start()
             elif e.key() == Qt.Key.Key_L.value:
@@ -1269,13 +1310,23 @@ class MainWindow(QMainWindow):
                     saveThread.start()
             elif e.key() == Qt.Key.Key_M.value:
                 if self.medianLap >= 0:
-                    print("\nBest lap:", self.medianLap, self.previousLaps[self.medianLap][0])
                     saveThread = threading.Thread(target=self.saveLap, args=(self.medianLap, "median"))
+                    saveThread.start()
+            elif e.key() == Qt.Key.Key_A.value:
+                if len(self.previousLaps) > 0:
+                    saveThread = threading.Thread(target=self.saveAllLaps, args=("combined",))
                     saveThread.start()
             elif e.key() == Qt.Key.Key_W.value:
                 print("store message positions")
                 saveThread = threading.Thread(target=self.saveMessages)
                 saveThread.start()
+
+    def saveAllLaps(self, name):
+        print("store all laps:", name)
+        with open ( "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+            for index in range(len(self.previousLaps)):
+                for p in self.previousLaps[index][1]:
+                    f.write(p.raw)
 
     def saveLap(self, index, name):
         print("store lap:", name)
