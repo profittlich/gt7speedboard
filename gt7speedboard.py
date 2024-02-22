@@ -405,6 +405,7 @@ class MainWindow(QMainWindow):
         self.tyreFR.setFont(font)
         pal = self.tyreFR.palette()
         pal.setColor(self.tyreFR.backgroundRole(), QColor('#222'))
+        pal.setColor(self.tyreFR.foregroundRole(), QColor("#fff"))
         self.tyreFR.setPalette(pal)
 
         self.tyreFL = QLabel("?°C")
@@ -416,6 +417,7 @@ class MainWindow(QMainWindow):
         self.tyreFL.setFont(font)
         pal = self.tyreFL.palette()
         pal.setColor(self.tyreFL.backgroundRole(), QColor('#222'))
+        pal.setColor(self.tyreFL.foregroundRole(), QColor("#fff"))
         self.tyreFL.setPalette(pal)
         
         self.tyreRR = QLabel("?°C")
@@ -427,6 +429,7 @@ class MainWindow(QMainWindow):
         self.tyreRR.setFont(font)
         pal = self.tyreRR.palette()
         pal.setColor(self.tyreRR.backgroundRole(), QColor('#222'))
+        pal.setColor(self.tyreRR.foregroundRole(), QColor("#fff"))
         self.tyreRR.setPalette(pal)
 
         self.tyreRL = QLabel("?°C")
@@ -438,6 +441,7 @@ class MainWindow(QMainWindow):
         self.tyreRL.setFont(font)
         pal = self.tyreRL.palette()
         pal.setColor(self.tyreRL.backgroundRole(), QColor('#222'))
+        pal.setColor(self.tyreRL.foregroundRole(), QColor("#fff"))
         self.tyreRL.setPalette(pal)
 
         self.pedalBest = QLabel("")
@@ -449,6 +453,7 @@ class MainWindow(QMainWindow):
         self.pedalBest.setFont(font)
         pal = self.pedalBest.palette()
         pal.setColor(self.pedalBest.backgroundRole(), QColor('#222'))
+        pal.setColor(self.pedalBest.foregroundRole(), QColor("#fff"))
         self.pedalBest.setPalette(pal)
 
         self.speedBest = QLabel("BEST")
@@ -460,6 +465,7 @@ class MainWindow(QMainWindow):
         self.speedBest.setFont(font)
         pal = self.speedBest.palette()
         pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
+        pal.setColor(self.speedBest.foregroundRole(), QColor("#fff"))
         self.speedBest.setPalette(pal)
 
         self.lineBest = LineDeviation()
@@ -473,6 +479,7 @@ class MainWindow(QMainWindow):
         self.pedalLast.setFont(font)
         pal = self.pedalLast.palette()
         pal.setColor(self.pedalLast.backgroundRole(), QColor('#222'))
+        pal.setColor(self.pedalLast.foregroundRole(), QColor("#fff"))
         self.pedalLast.setPalette(pal)
 
         self.speedLast = QLabel("LAST")
@@ -484,6 +491,7 @@ class MainWindow(QMainWindow):
         self.speedLast.setFont(font)
         pal = self.speedLast.palette()
         pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
+        pal.setColor(self.speedLast.foregroundRole(), QColor("#fff"))
         self.speedLast.setPalette(pal)
 
         self.lineLast = LineDeviation()
@@ -497,6 +505,7 @@ class MainWindow(QMainWindow):
         self.pedalMedian.setFont(font)
         pal = self.pedalMedian.palette()
         pal.setColor(self.pedalMedian.backgroundRole(), QColor('#222'))
+        pal.setColor(self.pedalMedian.foregroundRole(), QColor("#fff"))
         self.pedalMedian.setPalette(pal)
 
         self.speedMedian = QLabel("MEDIAN")
@@ -508,6 +517,7 @@ class MainWindow(QMainWindow):
         self.speedMedian.setFont(font)
         pal = self.speedMedian.palette()
         pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
+        pal.setColor(self.speedMedian.foregroundRole(), QColor("#fff"))
         self.speedMedian.setPalette(pal)
 
         self.lineMedian = LineDeviation()
@@ -516,6 +526,7 @@ class MainWindow(QMainWindow):
         fuelWidget = QWidget()
         pal = self.fuel.palette()
         pal.setColor(self.fuel.backgroundRole(), QColor("#222"))
+        pal.setColor(self.fuel.foregroundRole(), QColor("#fff"))
         self.fuel.setPalette(pal)
         fuelLayout = QGridLayout()
         fuelLayout.setContentsMargins(11,11,11,11)
@@ -572,6 +583,10 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.header.setFont(font)
         self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pal = self.header.palette()
+        pal.setColor(self.header.backgroundRole(), QColor('#222'))
+        pal.setColor(self.header.foregroundRole(), QColor("#fff"))
+        self.header.setPalette(pal)
 
         headerFuel = QLabel("FUEL")
         font = headerFuel.font()
@@ -579,6 +594,10 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         headerFuel.setFont(font)
         headerFuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pal = headerFuel.palette()
+        pal.setColor(headerFuel.backgroundRole(), QColor('#222'))
+        pal.setColor(headerFuel.foregroundRole(), QColor("#fff"))
+        headerFuel.setPalette(pal)
 
         headerTyres = QLabel("TYRES")
         font = headerTyres.font()
@@ -586,6 +605,10 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         headerTyres.setFont(font)
         headerTyres.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pal = headerTyres.palette()
+        pal.setColor(headerTyres.backgroundRole(), QColor('#222'))
+        pal.setColor(headerTyres.foregroundRole(), QColor("#fff"))
+        headerTyres.setPalette(pal)
 
         self.headerSpeed = QLabel("SPEED")
         font = self.headerSpeed.font()
@@ -594,6 +617,10 @@ class MainWindow(QMainWindow):
         self.headerSpeed.setFont(font)
         self.headerSpeed.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.headerSpeed.setAutoFillBackground(True)
+        pal = self.headerSpeed.palette()
+        pal.setColor(self.headerSpeed.backgroundRole(), QColor('#222'))
+        pal.setColor(self.headerSpeed.foregroundRole(), QColor("#fff"))
+        self.headerSpeed.setPalette(pal)
 
         # Lvl 1
         masterLayout = QGridLayout()
@@ -613,6 +640,10 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
         masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
+
+        pal = self.palette()
+        pal.setColor(self.backgroundRole(), QColor('#333'))
+        self.setPalette(pal)
 
     def startDash(self):
         self.lapDecimals = self.startWindow.lapDecimals.isChecked()
