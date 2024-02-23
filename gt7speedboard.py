@@ -618,7 +618,6 @@ class MainWindow(QMainWindow):
         self.headerSpeed.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.headerSpeed.setAutoFillBackground(True)
         pal = self.headerSpeed.palette()
-        pal.setColor(self.headerSpeed.backgroundRole(), QColor('#222'))
         pal.setColor(self.headerSpeed.foregroundRole(), QColor("#fff"))
         self.headerSpeed.setPalette(pal)
 
@@ -1085,7 +1084,7 @@ class MainWindow(QMainWindow):
                 refuelLaps = ""
 
             if self.fuelFactor != 0:
-                fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + "% PER LAP<br>" + str(round(100 / self.fuelFactor,1)) + " FULL RANGE"
+                fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + "% PER LAP<br>" + str(round(1 / self.fuelFactor,1)) + " FULL RANGE"
             else:
                 fuelLapPercent = ""
 
