@@ -350,6 +350,7 @@ class MainWindow(QMainWindow):
         self.messagesEnabled = self.startWindow.messagesEnabled.isChecked()
         self.sessionName = self.startWindow.sessionName.text()
         saveSessionName = self.startWindow.saveSessionName.isChecked()
+        self.storageLocation = self.startWindow.storageLocation
         
         self.linecomp = self.startWindow.linecomp.isChecked()
         
@@ -387,7 +388,8 @@ class MainWindow(QMainWindow):
             settings.setValue("sessionName", self.sessionName)
         else:
             settings.setValue("sessionName", "")
-        
+        settings.setValue("storageLocation", self.storageLocation)
+
         settings.setValue("linecomp", self.linecomp)
 
         settings.setValue("brakepoints", self.brakepoints)
@@ -1038,9 +1040,9 @@ class MainWindow(QMainWindow):
                 self.isRecording = False
                 self.receiver.stopRecording()
             else:
-                prefix = ""
+                prefix = self.storageLocation + "/"
                 if len(self.sessionName) > 0:
-                    prefix = self.sessionName + "-"
+                    prefix += self.sessionName + "-"
                 self.receiver.startRecording(prefix)
                 self.isRecording = True
 
@@ -1082,9 +1084,9 @@ class MainWindow(QMainWindow):
 
     def saveAllLaps(self, name):
         print("store all laps:", name)
-        prefix = ""
+        prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
-            prefix = self.sessionName + "-"
+            prefix += self.sessionName + "-"
         with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
             for index in range(len(self.previousLaps)):
                 for p in self.previousLaps[index][1]:
@@ -1092,9 +1094,9 @@ class MainWindow(QMainWindow):
 
     def saveLap(self, index, name):
         print("store lap:", name)
-        prefix = ""
+        prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
-            prefix = self.sessionName + "-"
+            prefix += self.sessionName + "-"
         with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
             for p in self.previousLaps[index][1]:
                 f.write(p.raw)
@@ -1106,9 +1108,9 @@ class MainWindow(QMainWindow):
 
         j = json.dumps(d, indent=4)
         print(j)
-        prefix = ""
+        prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
-            prefix = self.sessionName + "-"
+            prefix += self.sessionName + "-"
         with open ( prefix + "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".json", "w") as f:
             f.write(j)
 

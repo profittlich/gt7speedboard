@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog
 import math
 
 class StartWindow(QWidget):
@@ -71,12 +71,16 @@ class StartWindow(QWidget):
         self.sessionName = QLineEdit()
         self.saveSessionName = QCheckBox("Remember session name")
         pbChooseStorage = QPushButton("Choose storage location")
+        self.lStorageLocation = QLabel()
+        self.storageLocation = ""
+        self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
+        pbChooseStorage.clicked.connect(self.chooseStorage)
         
         recLayout.addWidget(self.recordingEnabled)
         recLayout.addWidget(QLabel("Session name:"))
         recLayout.addWidget(self.sessionName)
         recLayout.addWidget(self.saveSessionName)
-        recLayout.addWidget(QLabel("Storage location: None"))
+        recLayout.addWidget(self.lStorageLocation)
         recLayout.addWidget(pbChooseStorage)
         
         # RACING LINE
@@ -189,6 +193,8 @@ class StartWindow(QWidget):
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
 
         self.ip.setText(settings.value("ip", ""))
+        self.storageLocation = settings.value("storageLocation", "")
+        self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
 
         self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
         self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
@@ -217,6 +223,14 @@ class StartWindow(QWidget):
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
         self.maxFuelConsumption.setValue(int(settings.value("maxFuelConsumption", 150)))
 
+    def chooseStorage(self):
+        chosen = QFileDialog.getExistingDirectory()
+        if chosen == "":
+            print("None")
+        else:
+            self.storageLocation = chosen
+            self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
+            print(chosen)
 
 
 class FuelGauge(QWidget):
