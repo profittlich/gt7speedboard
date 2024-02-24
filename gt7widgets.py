@@ -1,11 +1,163 @@
 from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit
+import math
 
 class StartWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("GT7 SpeedBoard 1.0")
+        modeLabel = QLabel("Mode:")
+
+        self.mode = QComboBox()
+        self.mode.addItem("Laps")
+        self.mode.addItem("Circuit Experience (experimental)")
+        
+        mainLayout = QVBoxLayout()
+        self.setLayout(mainLayout)
+        mainLayout.addWidget(modeLabel)
+        mainLayout.addWidget(self.mode)
+
+        cols = QWidget()
+        mainLayoutCols = QHBoxLayout()
+        cols.setLayout(mainLayoutCols)
+        mainLayout.addWidget(cols)
+
+        ll = QWidget()
+        mainLayoutL = QVBoxLayout()
+        ll.setLayout(mainLayoutL)
+        mainLayoutCols.addWidget(ll)
+
+        lr = QWidget()
+        mainLayoutR = QVBoxLayout()
+        lr.setLayout(mainLayoutR)
+        mainLayoutCols.addWidget(lr)
+
+        # VIEW
+        vwGroup = QGroupBox("View")
+        mainLayoutL.addWidget(vwGroup)
+        vwLayout = QVBoxLayout()
+        vwGroup.setLayout(vwLayout)
+
+        self.lapDecimals = QCheckBox("Show decimals in lap displays (experimental)")
+        self.cbOptimal = QCheckBox("Optimal lap")
+        self.cbOptimal.setEnabled(False)
+        self.cbBest = QCheckBox("Best lap")
+        self.cbMedian = QCheckBox("Median lap")
+        self.cbRefA = QCheckBox("Referance lap A")
+        self.cbRefA.setEnabled(False)
+        self.cbRefB = QCheckBox("Referance lap B")
+        self.cbRefB.setEnabled(False)
+        self.cbRefC = QCheckBox("Referance lap C")
+        self.cbRefC.setEnabled(False)
+        self.cbLast = QCheckBox("Last lap")
+        
+        vwLayout.addWidget(self.lapDecimals)
+        vwLayout.addWidget(self.cbOptimal)
+        vwLayout.addWidget(self.cbBest)
+        vwLayout.addWidget(self.cbMedian)
+        vwLayout.addWidget(self.cbRefA)
+        vwLayout.addWidget(self.cbRefB)
+        vwLayout.addWidget(self.cbRefC)
+        vwLayout.addWidget(self.cbLast)
+
+        # RECORDING
+        recGroup = QGroupBox("Recording")
+        mainLayoutL.addWidget(recGroup)
+        recLayout = QVBoxLayout()
+        recGroup.setLayout(recLayout)
+
+        self.recordingEnabled = QCheckBox("Allow recording data by pressing [R]")
+        self.sessionName = QLineEdit()
+        self.saveSessionName = QCheckBox("Remember session name")
+        pbChooseStorage = QPushButton("Choose storage location")
+        
+        recLayout.addWidget(self.recordingEnabled)
+        recLayout.addWidget(QLabel("Session name:"))
+        recLayout.addWidget(self.sessionName)
+        recLayout.addWidget(self.saveSessionName)
+        recLayout.addWidget(QLabel("Storage location: None"))
+        recLayout.addWidget(pbChooseStorage)
+        
+        # RACING LINE
+        rlGroup = QGroupBox("Racing line")
+        mainLayoutL.addWidget(rlGroup)
+        rlLayout = QVBoxLayout()
+        rlGroup.setLayout(rlLayout)
+
+        self.linecomp = QCheckBox("Show racing line comparisons (experimental)")
+        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing [space] (experimental)")
+        
+        rlLayout.addWidget(self.linecomp)
+        rlLayout.addWidget(self.messagesEnabled)
+
+        # BRAKE POINTS
+        bpGroup = QGroupBox("Brake points")
+        bpLayout = QVBoxLayout()
+        bpGroup.setLayout(bpLayout)
+        mainLayoutR.addWidget(bpGroup)
+
+        self.brakepoints = QCheckBox("Show brake points")
+        self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
+        self.bigCountdownBrakepoint = QCheckBox("Hijack fuel box for countdown colors")
+        
+        bpLayout.addWidget(self.brakepoints)
+        bpLayout.addWidget(self.countdownBrakepoint)
+        bpLayout.addWidget(self.bigCountdownBrakepoint)
+        
+        # NETWORK
+        netGroup = QGroupBox("Network")
+        netLayout = QVBoxLayout()
+        netGroup.setLayout(netLayout)
+        mainLayoutR.addWidget(netGroup)
+
+        self.allowLoop = QCheckBox("Allow looping telemetry from playback (experimental)")
+        
+        netLayout.addWidget(self.allowLoop)
+
+        # FUEL
+        fuGroup = QGroupBox("Fuel")
+        fuLayout = QVBoxLayout()
+        fuGroup.setLayout(fuLayout)
+        mainLayoutR.addWidget(fuGroup)
+
+        self.fuelMultiplier = QSpinBox()
+        self.fuelMultiplier.setMinimum(1)
+        self.fuelMultiplier.setMaximum(100)
+
+        self.maxFuelConsumption = QSpinBox()
+        self.maxFuelConsumption.setSuffix(" l/100km")
+        self.maxFuelConsumption.setMinimum(1)
+        self.maxFuelConsumption.setMaximum(500)
+
+        self.fuelWarning = QSpinBox()
+        self.fuelWarning.setSuffix(" l/100km")
+        self.fuelWarning.setMinimum(1)
+        self.fuelWarning.setMaximum(500)
+        fuLayout.addWidget(QLabel("Fuel multiplier:"))
+        fuLayout.addWidget(self.fuelMultiplier)
+        fuLayout.addWidget(QLabel("Max. fuel consumption:"))
+        fuLayout.addWidget(self.maxFuelConsumption)
+        fuLayout.addWidget(QLabel("Fuel meter turns red at:"))
+        fuLayout.addWidget(self.fuelWarning)
+
+        # SHORTCUTS
+        ksGroup = QGroupBox("Keyboard shortcuts")
+        ksLayout = QVBoxLayout()
+        ksGroup.setLayout(ksLayout)
+        mainLayoutR.addWidget(ksGroup)
+
+        ksLayout.addWidget(QLabel("ESC - return to configuration\n"+
+                                  "R - start/stop recording\n"+
+                                  "SPACE - set CAUTION marker to current location\n"+
+                                  "B - save best lap\n"+
+                                  "L - save last lap\n"+
+                                  "M - save median lap\n"+
+                                  "A - save all laps\n"+
+                                  "W - save warning messages\n"
+                                  ))
+
+        # CONNECT
         self.starter = QPushButton("Start")
 
         ipLabel = QLabel("PlayStation IP address:")
@@ -19,22 +171,6 @@ class StartWindow(QWidget):
         ipValidator = QRegularExpressionValidator(ipRegex)
         self.ip.setValidator(ipValidator)
 
-        fmLabel = QLabel("Fuel multiplier:")
-        self.fuelMultiplier = QSpinBox()
-        self.fuelMultiplier.setMinimum(1)
-        self.fuelMultiplier.setMaximum(100)
-
-        fcLabel = QLabel("Max. fuel consumption:")
-        self.maxFuelConsumption = QSpinBox()
-        self.maxFuelConsumption.setSuffix(" l/100km")
-        self.maxFuelConsumption.setMinimum(1)
-        self.maxFuelConsumption.setMaximum(500)
-
-        fwLabel = QLabel("Fuel meter turns red at:")
-        self.fuelWarning = QSpinBox()
-        self.fuelWarning.setSuffix(" l/100km")
-        self.fuelWarning.setMinimum(1)
-        self.fuelWarning.setMaximum(500)
 
         layout = QHBoxLayout()
         layout.addWidget(ipLabel)
@@ -44,85 +180,39 @@ class StartWindow(QWidget):
         addr = QWidget()
         addr.setLayout(layout)
 
-        self.lapDecimals = QCheckBox("Show decimals in lap displays (experimental)")
-        self.recordingEnabled = QCheckBox("Allow recording data by pressing [R]")
-        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing [space] (experimental)")
-        self.linecomp = QCheckBox("Show racing line comparisons (experimental)")
-        self.brakepoints = QCheckBox("Show brake points")
-        self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
-        self.bigCountdownBrakepoint = QCheckBox("Hijack fuel box for countdown colors")
-        self.allowLoop = QCheckBox("Allow looping telemetry from playback (experimental)")
-
-        modeLabel = QLabel("Mode:")
-
-        self.mode = QComboBox()
-        self.mode.addItem("Laps")
-        self.mode.addItem("Circuit Experience (experimental)")
-        
-        mainLayout = QVBoxLayout()
-        self.setLayout(mainLayout)
-        mainLayout.addWidget(modeLabel)
-        mainLayout.addWidget(self.mode)
-
-        vwGroup = QGroupBox("View")
-        mainLayout.addWidget(vwGroup)
-        vwLayout = QVBoxLayout()
-        vwGroup.setLayout(vwLayout)
-        vwLayout.addWidget(self.lapDecimals)
-
-        recGroup = QGroupBox("Recording")
-        mainLayout.addWidget(recGroup)
-        recLayout = QVBoxLayout()
-        recGroup.setLayout(recLayout)
-        recLayout.addWidget(self.recordingEnabled)
-        
-        rlGroup = QGroupBox("Racing line")
-        mainLayout.addWidget(rlGroup)
-        rlLayout = QVBoxLayout()
-        rlGroup.setLayout(rlLayout)
-        rlLayout.addWidget(self.linecomp)
-        rlLayout.addWidget(self.messagesEnabled)
-
-        bpGroup = QGroupBox("Brake points")
-        bpLayout = QVBoxLayout()
-        bpGroup.setLayout(bpLayout)
-        mainLayout.addWidget(bpGroup)
-        bpLayout.addWidget(self.brakepoints)
-        bpLayout.addWidget(self.countdownBrakepoint)
-        bpLayout.addWidget(self.bigCountdownBrakepoint)
-        
-        netGroup = QGroupBox("Network")
-        netLayout = QVBoxLayout()
-        netGroup.setLayout(netLayout)
-        mainLayout.addWidget(netGroup)
-        netLayout.addWidget(self.allowLoop)
-
-        fuGroup = QGroupBox("Fuel")
-        fuLayout = QVBoxLayout()
-        fuGroup.setLayout(fuLayout)
-        mainLayout.addWidget(fuGroup)
-        fuLayout.addWidget(fmLabel)
-        fuLayout.addWidget(self.fuelMultiplier)
-        fuLayout.addWidget(fcLabel)
-        fuLayout.addWidget(self.maxFuelConsumption)
-        fuLayout.addWidget(fwLabel)
-        fuLayout.addWidget(self.fuelWarning)
-        mainLayout.addWidget(addr)
 
         mainLayout.insertStretch(-1)
+        mainLayout.addWidget(addr)
 
         print("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
+        self.mode.setCurrentIndex(int(settings.value("mode",0)))
+
         self.ip.setText(settings.value("ip", ""))
+
         self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
+        self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
+        self.cbBest.setChecked(settings.value("showBestLap") in [ True, "true"])
+        self.cbMedian.setChecked(settings.value("showMedianLap") in [ True, "true"])
+        self.cbRefA.setChecked(settings.value("showRefALap") in [ True, "true"])
+        self.cbRefB.setChecked(settings.value("showRefBLap") in [ True, "true"])
+        self.cbRefC.setChecked(settings.value("showRefCLap") in [ True, "true"])
+        self.cbLast.setChecked(settings.value("showLastLap") in [ True, "true"])
+        
+
         self.recordingEnabled.setChecked(settings.value("recordingEnabled") in [ True, "true"])
         self.messagesEnabled.setChecked(settings.value("messagesEnabled") in [ True, "true"])
+        self.sessionName.setText(settings.value("sessionName", ""))
+        self.saveSessionName.setChecked(settings.value("saveSessionName") in [ True, "true"])
+
         self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
+        
         self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
-        self.allowLoop.setChecked(settings.value("allowLoop") in [True, "true"])
         self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
         self.bigCountdownBrakepoint.setChecked(settings.value("bigCountdownBrakepoint") in [True, "true"])
-        self.mode.setCurrentIndex(int(settings.value("mode",0)))
+
+        self.allowLoop.setChecked(settings.value("allowLoop") in [True, "true"])
+        
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
         self.maxFuelConsumption.setValue(int(settings.value("maxFuelConsumption", 150)))

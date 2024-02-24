@@ -333,36 +333,73 @@ class MainWindow(QMainWindow):
         self.setPalette(pal)
 
     def startDash(self):
+        self.circuitExperience = self.startWindow.mode.currentIndex() == 1
+
+        ip = self.startWindow.ip.text()
+
         self.lapDecimals = self.startWindow.lapDecimals.isChecked()
+        self.showOptimalLap = self.startWindow.cbOptimal.isChecked()
+        self.showBestLap = self.startWindow.cbBest.isChecked()
+        self.showMedianLap = self.startWindow.cbMedian.isChecked()
+        self.showRefALap = self.startWindow.cbRefA.isChecked()
+        self.showRefBLap = self.startWindow.cbRefB.isChecked()
+        self.showRefCLap = self.startWindow.cbRefC.isChecked()
+        self.showLastLap = self.startWindow.cbLast.isChecked()
+
         self.recordingEnabled = self.startWindow.recordingEnabled.isChecked()
         self.messagesEnabled = self.startWindow.messagesEnabled.isChecked()
+        self.sessionName = self.startWindow.sessionName.text()
+        saveSessionName = self.startWindow.saveSessionName.isChecked()
+        
         self.linecomp = self.startWindow.linecomp.isChecked()
+        
         self.brakepoints = self.startWindow.brakepoints.isChecked()
-        self.allowLoop = self.startWindow.allowLoop.isChecked()
         self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
         self.bigCountdownBrakepoint = self.startWindow.bigCountdownBrakepoint.isChecked()
-        self.circuitExperience = self.startWindow.mode.currentIndex() == 1
+        
+        self.allowLoop = self.startWindow.allowLoop.isChecked()
+
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
         fuelWarning = self.startWindow.fuelWarning.value()
         
-        ip = self.startWindow.ip.text()
 
         print(__file__)
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
+
+        settings.setValue("mode", self.startWindow.mode.currentIndex())
+        
         settings.setValue("ip", ip)
+        
         settings.setValue("lapDecimals", self.lapDecimals)
+        settings.setValue("showOptimalLap", self.showOptimalLap)
+        settings.setValue("showBestLap", self.showBestLap)
+        settings.setValue("showMedianLap", self.showMedianLap)
+        settings.setValue("showRefALap", self.showRefALap)
+        settings.setValue("showRefBLap", self.showRefBLap)
+        settings.setValue("showRefCLap", self.showRefCLap)
+        settings.setValue("showLastLap", self.showLastLap)
+        
         settings.setValue("recordingEnabled", self.recordingEnabled)
         settings.setValue("messagesEnabled", self.messagesEnabled)
+        settings.setValue("saveSessionName", saveSessionName)
+        if saveSessionName:
+            settings.setValue("sessionName", self.sessionName)
+        else:
+            settings.setValue("sessionName", "")
+        
         settings.setValue("linecomp", self.linecomp)
+
         settings.setValue("brakepoints", self.brakepoints)
-        settings.setValue("allowLoop", self.allowLoop)
         settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
         settings.setValue("bigCountdownBrakepoint", self.bigCountdownBrakepoint)
-        settings.setValue("mode", self.startWindow.mode.currentIndex())
+
+        settings.setValue("allowLoop", self.allowLoop)
+        
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
         settings.setValue("fuelWarning", self.startWindow.fuelWarning.value())
+
         settings.sync()
 
         self.makeDashWidget()
@@ -1001,7 +1038,10 @@ class MainWindow(QMainWindow):
                 self.isRecording = False
                 self.receiver.stopRecording()
             else:
-                self.receiver.startRecording()
+                prefix = ""
+                if len(self.sessionName) > 0:
+                    prefix = self.sessionName + "-"
+                self.receiver.startRecording(prefix)
                 self.isRecording = True
 
     def keyPressEvent(self, e):
@@ -1042,14 +1082,20 @@ class MainWindow(QMainWindow):
 
     def saveAllLaps(self, name):
         print("store all laps:", name)
-        with open ( "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+        prefix = ""
+        if len(self.sessionName) > 0:
+            prefix = self.sessionName + "-"
+        with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
             for index in range(len(self.previousLaps)):
                 for p in self.previousLaps[index][1]:
                     f.write(p.raw)
 
     def saveLap(self, index, name):
         print("store lap:", name)
-        with open ( "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+        prefix = ""
+        if len(self.sessionName) > 0:
+            prefix = self.sessionName + "-"
+        with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
             for p in self.previousLaps[index][1]:
                 f.write(p.raw)
 
@@ -1060,7 +1106,10 @@ class MainWindow(QMainWindow):
 
         j = json.dumps(d, indent=4)
         print(j)
-        with open ( "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".json", "w") as f:
+        prefix = ""
+        if len(self.sessionName) > 0:
+            prefix = self.sessionName + "-"
+        with open ( prefix + "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".json", "w") as f:
             f.write(j)
 
 
