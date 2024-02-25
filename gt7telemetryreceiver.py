@@ -93,9 +93,11 @@ class GT7TelemetryReceiver:
                 
                 self.pknt = self.pknt + 1
                 ddata = self.salsa20_dec(data)
-                if len(ddata) > 0 and struct.unpack('i', ddata[0x70:0x70+4])[0] > self.pktid:
-                    if not self.ignorePktId:
-                        self.pktid = struct.unpack('i', ddata[0x70:0x70+4])[0]
+                newPktId = struct.unpack('i', ddata[0x70:0x70+4])[0]
+                if len(ddata) > 0 and (self.ignorePktId or newPktId > self.pktid):
+                    if self.pktid != newPktId-1:
+                        print("Packet loss:", newPktId-self.pktid-1)
+                    self.pktid = newPktId
 
                     if not self.queue is None:
                         self.queue.put((ddata, data))

@@ -19,6 +19,25 @@ from gt7telepoint import Point
 import gt7telemetryreceiver as tele
 from gt7widgets import *
 
+class Lap:
+    def __init__(self, time = None, pts = None, valid=True):
+        self.time = time
+        if pts is None:
+            self.points = []
+        else:
+            self.points = pts
+        self.valid = valid
+
+    def distance(self, p1, p2):
+        return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
+
+    def length(self):
+        totalDist = 0
+        for i in range(1, len(self.points)):
+            totalDist += self.distance(self.points[i-1], self.points[i])
+        return totalDist
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -44,13 +63,15 @@ class MainWindow(QMainWindow):
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = False
 
-        self.showBestLap = True # TODO make ini entry
-        self.showLastLap = True # TODO make ini entry
-        self.showMedianLap = True # TODO make ini entry
+        self.showBestLap = True
+        self.showLastLap = True
+        self.showMedianLap = True
         self.showRefALap = False # TODO implement
-        self.showRefBLap = False
-        self.showRefCLap = False
-        self.showOptimalLap = False
+        self.showRefBLap = False # TODO implement
+        self.showRefCLap = False # TODO implement
+        self.showOptimalLap = False # TODO implement
+
+        self.keepLaps = False
 
         self.newMessage = None
         self.messages = []
@@ -366,7 +387,7 @@ class MainWindow(QMainWindow):
         
 
         print(__file__)
-        settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
+        settings = QSettings()
 
         settings.setValue("mode", self.startWindow.mode.currentIndex())
         
@@ -434,6 +455,7 @@ class MainWindow(QMainWindow):
             self.receiver = None
 
     def initRace(self):
+        print("INIT RACE")
         self.lastLap = -1
         self.lastFuel = -1
         self.lastFuelUsage = []
@@ -442,13 +464,14 @@ class MainWindow(QMainWindow):
 
         self.previousPoint = None
 
-        self.newLapPos = []
+        self.curLap = Lap()
         self.previousLaps = []
         self.bestLap = -1
         self.medianLap = -1
 
         self.closestILast = 0
         self.closestIBest = 0
+        self.oldIBest = 0
         self.closestIMedian = 0
 
         pal = self.pedalLast.palette()
@@ -572,41 +595,33 @@ class MainWindow(QMainWindow):
             totalDist += self.distance(lap[i-1], lap[i])
         return totalDist
 
-    def getAvgSpeed(self, lap):
-        if len(lap) == 0:
-            return 0
-        sm = 0
-        for s in lap:
-            sm += s.car_speed
-        return sm / len(lap)
-
     def purgeBadLaps(self):
         print("PURGE laps")
         longestLength = 0
         longestLap = None
         for l in self.previousLaps:
-            ll = self.getLapLength(l[1])
+            ll = l.length()
             if longestLength < ll:
                 longestLength = ll
                 longestLap = l
 
         if not longestLap is None:
-            print("Longest: ", longestLength, longestLap[0])
+            print("Longest: ", longestLength, longestLap.time)
         temp = []
         for l in self.previousLaps:
-            print ("\nCheck lap", l[0])
-            d = self.distance(longestLap[1][-1], l[1][-1])
-            c = self.findClosestPointNoLimit(l[1], longestLap[1][-1])
+            print ("\nCheck lap", l.time)
+            d = self.distance(longestLap.points[-1], l.points[-1])
+            c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
             d2 = -1
             d3 = -1
             if not c is None:
-                d2 = self.distance(longestLap[1][-1], c)
-            c3 = self.findClosestPointNoLimit(longestLap[1], l[1][-1])
+                d2 = self.distance(longestLap.points[-1], c)
+            c3 = self.findClosestPointNoLimit(longestLap.points, l.points[-1])
             if not c3 is None:
-                d3 = self.distance(l[1][-1], c3)
+                d3 = self.distance(l.points[-1], c3)
             print("End distance:", d)
             if d > 15:
-                print("PURGE lap", len(l[1])/60, d)
+                print("PURGE lap", len(l.points)/60, d)
             else:
                 temp.append(l)
         self.previousLaps = temp
@@ -615,62 +630,397 @@ class MainWindow(QMainWindow):
 
 
     def cleanUpLap(self, lap):
-        if len(lap) == 0:
+        print("Input:", len(lap.points))
+        if len(lap.points) == 0:
             print("Lap is empty")
             return lap
-        if len(lap) < 600:
+        if len(lap.points) < 600:
             print("\nLap is short")
             return lap
-        if (lap[-1].throttle > 0):# or lap[-1].brake > 0):
+        if (lap.points[-1].throttle > 0):# or lap[-1].brake > 0):
             print("Throttle to the end")
             return lap
         afterLap = 0
-        for i in range(1, len(lap)):
-            if lap[-i].throttle == 0:# and lap[-i].brake == 0:
+        for i in range(1, len(lap.points)):
+            if lap.points[-i].throttle == 0:# and lap[-i].brake == 0:
                 afterLap+=1
             else:
                 break
-        print("Remove", afterLap, "of", len(lap))
+        print("Remove", afterLap, "of", len(lap.points))
         if afterLap > 0:
-            result = lap[:-afterLap]
+            result = lap.points[:-afterLap]
         else:
-            result = lap
+            result = lap.points
         print("Got", len(result))
-        return result
+        return Lap(lap.time, result, lap.valid)
 
     def findBestLap(self):
         bestIndex = 0
         bestTime = 100000000.0
         for t in range(len(self.previousLaps)):
-            if self.previousLaps[t][2] and self.previousLaps[t][0] < bestTime:
-                bestTime = self.previousLaps[t][0]
+            if self.previousLaps[t].valid and self.previousLaps[t].time < bestTime:
+                bestTime = self.previousLaps[t].time
                 bestIndex = t
         return bestIndex
 
     def findMedianLap(self):
         sorter = []
         for e in self.previousLaps:
-            if e[2]:
-                sorter.append(e[0])
+            if e.valid:
+                sorter.append(e.time)
 
         if len(sorter) > 0:
             sorter = sorted(sorter)
             target = sorter[len(sorter)//2]
             for e in range(len(self.previousLaps)):
-                if self.previousLaps[e][0] == target:
+                if self.previousLaps[e].time == target:
                     return e
         return 0
 
-    def makeFuelBar(self, val):
-        if val > 1:
-            color = "darkred"
+    def updateTyreTemps(self, curPoint):
+        self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
+        pal = self.tyreFL.palette()
+        pal.setColor(self.tyreFL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FL)))
+        self.tyreFL.setPalette(pal)
+
+        self.tyreFR.setText (str(round(curPoint.tyre_temp_FR)) + "°C")
+        pal = self.tyreFR.palette()
+        pal.setColor(self.tyreFR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FR)))
+        self.tyreFR.setPalette(pal)
+
+        self.tyreRR.setText (str(round(curPoint.tyre_temp_RR)) + "°C")
+        pal = self.tyreRR.palette()
+        pal.setColor(self.tyreRR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RR)))
+        self.tyreRR.setPalette(pal)
+
+        self.tyreRL.setText (str(round(curPoint.tyre_temp_RL)) + "°C")
+        pal = self.tyreRL.palette()
+        pal.setColor(self.tyreRL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
+        self.tyreRL.setPalette(pal)
+            
+
+    def updateLaps(self, curPoint):
+        lapSuffix = ""
+        if self.isRecording:
+            lapSuffix = " [RECORDING]"
+        if curPoint.total_laps > 0:
+            lapValue = curPoint.total_laps - curPoint.current_lap + 1
+            if self.lapDecimals and self.closestILast > 0:
+                lapValue -= (
+                        self.closestILast / len(self.previousLaps[-1].points) +
+                        self.closestIBest / len(self.previousLaps[self.bestLap].points) +
+                        self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                lapValue = round(lapValue, 2)
+            self.header.setText(str(lapValue) + " LAPS LEFT" + lapSuffix)
         else:
-            color = "orange"
-        val = min (1, max(0.002, val))
-        return "background: qlineargradient( x1:0 y1:1, x2:0 y2:0, stop:" + str(val-0.001) + " " + color + ", stop:" + str (val) + " #222);"
+            lapValue = curPoint.current_lap
+            if self.lapDecimals and self.closestILast > 0:
+                lapValue += (
+                        self.closestILast / len(self.previousLaps[-1].points) +
+                        self.closestIBest / len(self.previousLaps[self.bestLap].points) +
+                        self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                lapValue = round(lapValue, 2)
+            self.header.setText("LAP " + str(lapValue) + lapSuffix)
+
+    def updateFuelAndWarnings(self, curPoint):
+        if self.refueled > 0:
+            lapValue = self.refueled
+            if self.lapDecimals and self.closestILast > 0:
+                lapValue += (
+                        self.closestILast / len(self.previousLaps[-1].points) +
+                        self.closestIBest / len(self.previousLaps[self.bestLap].points) +
+                        self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                lapValue = round(lapValue, 2)
+            refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
+        else:
+            refuelLaps = ""
+
+        if self.fuelFactor != 0:
+            fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + "% PER LAP<br>" + str(round(1 / self.fuelFactor,1)) + " FULL RANGE"
+        else:
+            fuelLapPercent = ""
+
+        self.fuel.setTextFormat(Qt.TextFormat.RichText)
+        self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
+        if False:
+            refuelLaps = "<br>" + str (3.12) + " SINCE REFUEL" + "<br>" + str (14.2) + " FULL RANGE"
+            fuelLapPercent = "<br>" + str(7.7) + "% PER LAP"
+            self.fuel.setText("<font size=6>" + str(round(100 * 80 / 100)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
+        if not self.previousPoint is None:
+            fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
+            fuelConsumption *= 60 * 60 * 60 # l per hour
+            if curPoint.car_speed > 0:
+                fuelConsumption /= curPoint.car_speed # l per km
+                fuelConsumption *= 100 # l per 100 km
+
+            self.fuelBar.setLevel(max(0, fuelConsumption))
+            self.fuelBar.update()
+
+        messageShown = False
+        if self.messagesEnabled: # TODO: put at end and remove messageShown?
+            for m in self.messages:
+                if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
+                    pal = self.laps.palette()
+                    if datetime.datetime.now().microsecond < 500000:
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    else:
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.white)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.red)
+                    self.laps.setPalette(pal)
+                    self.laps.setText(m[1])
+                    messageShown = True
+
+
+        if not self.circuitExperience and not messageShown:
+            if self.fuelFactor > 0:
+                lapsFuel = curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor
+                self.laps.setText(str(round(lapsFuel, 2)) + " LAPS FUEL")
+
+                lapValue = 1
+                if self.lapDecimals and self.closestILast > 0:
+                    lapValue -= (
+                            self.closestILast / len(self.previousLaps[-1].points) +
+                            self.closestIBest / len(self.previousLaps[self.bestLap].points) +
+                            self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                
+                if self.lapDecimals and round(lapsFuel, 2) < 1 and lapsFuel < lapValue:
+                    pal = self.laps.palette()
+                    if datetime.datetime.now().microsecond < 500000:
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    else:
+                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.yellow)
+                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.black)
+                    self.laps.setPalette(pal)
+                elif round(lapsFuel, 2) < 1:
+                    pal = self.laps.palette()
+                    pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
+                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    self.laps.setPalette(pal)
+                elif round(lapsFuel, 2) < 2:
+                    pal = self.laps.palette()
+                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                    pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
+                    self.laps.setPalette(pal)
+                else:
+                    pal = self.laps.palette()
+                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    self.laps.setPalette(pal)
+            elif curPoint.current_fuel == curPoint.fuel_capacity:
+                self.laps.setText("FOREVER")
+                pal = self.laps.palette()
+                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                self.laps.setPalette(pal)
+            else:
+                self.laps.setText("measuring")
+                pal = self.laps.palette()
+                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
+                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                self.laps.setPalette(pal)
+
+    def updateSpeed(self, curPoint):
+        closestPLast = None
+        closestPBest = None
+        closestPMedian = None
+        nextBrakeBest = None
+        if len(self.previousLaps) > 0:
+            closestPLast, self.closestILast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
+            closestPBest, self.closestIBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
+            closestPMedian, self.closestIMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
+            nextBrakeBest = self.findNextBrake(self.previousLaps[self.bestLap].points, self.closestIBest)
+
+        if not closestPLast is None:
+            speedDiff = closestPLast.car_speed - curPoint.car_speed
+            pal = self.speedLast.palette()
+            pal.setColor(self.speedLast.backgroundRole(), self.speedDiffQColor(speedDiff))
+            self.speedLast.setPalette(pal)
+
+            if self.brakepoints:
+                pal = self.pedalLast.palette()
+                if closestPLast.brake > 0:
+                    self.pedalLast.setText("BRAKE")
+                    pal.setColor(self.pedalLast.backgroundRole(), self.brakeQColor(closestPLast.brake))
+                else:
+                    self.pedalLast.setText("")
+                    pal.setColor(self.pedalLast.backgroundRole(), QColor("#222"))
+                self.pedalLast.setPalette(pal)
+                self.lineLast.setPoints(curPoint, closestPLast)
+                self.lineLast.update()
+        else:
+            pal = self.speedLast.palette()
+            pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
+            self.speedLast.setPalette(pal)
+
+        if not closestPBest is None:
+            speedDiff = closestPBest.car_speed - curPoint.car_speed
+
+            pal = self.speedBest.palette()
+            pal.setColor(self.speedBest.backgroundRole(), self.speedDiffQColor(speedDiff))
+            self.speedBest.setPalette(pal)
+            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+            self.fuel.setPalette(pal)
+            if self.brakepoints:
+                pal = self.pedalBest.palette()
+                if closestPBest.brake > 0:
+                    self.pedalBest.setText("BRAKE")
+                    pal.setColor(self.pedalBest.backgroundRole(), self.brakeQColor(closestPBest.brake))
+                elif self.countdownBrakepoint and not nextBrakeBest is None:
+                    self.pedalBest.setText(str(math.ceil (nextBrakeBest/60)))
+                    if nextBrakeBest >= 120:
+                        if nextBrakeBest%60 >= 30:
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                            if self.bigCountdownBrakepoint:
+                                self.fuel.setPalette(pal)
+                        else:
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                    elif nextBrakeBest >= 60:
+                        if nextBrakeBest%60 >= 30:
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#2FF"))
+                            if self.bigCountdownBrakepoint:
+                                self.fuel.setPalette(pal)
+                        else:
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                    else:
+                        if nextBrakeBest%30 >= 15:
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                            if self.bigCountdownBrakepoint:
+                                self.fuel.setPalette(pal)
+                        else:
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+
+                else:
+                    self.pedalBest.setText("")
+                    pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                self.pedalBest.setPalette(pal)
+
+                self.lineBest.setPoints(curPoint, closestPBest)
+                self.lineBest.update()
+        else:
+            pal = self.speedBest.palette()
+            pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
+            self.speedBest.setPalette(pal)
+
+        if not closestPMedian is None:
+            speedDiff = closestPMedian.car_speed - curPoint.car_speed
+            pal = self.speedMedian.palette()
+            pal.setColor(self.speedMedian.backgroundRole(), self.speedDiffQColor(speedDiff))
+            self.speedMedian.setPalette(pal)
+            if self.brakepoints:
+                pal = self.pedalMedian.palette()
+                if closestPMedian.brake > 0:
+                    self.pedalMedian.setText("BRAKE")
+                    pal.setColor(self.pedalMedian.backgroundRole(), self.brakeQColor(closestPMedian.brake))
+                #elif closestPMedian.throttle > 0:
+                else:
+                    self.pedalMedian.setText("")
+                    pal.setColor(self.pedalMedian.backgroundRole(), QColor("#222"))
+                #else:
+                    #self.pedalMedian.setText("COAST")
+                    #pal.setColor(self.pedalMedian.backgroundRole(), self.speedDiffQColor(0))
+                self.pedalMedian.setPalette(pal)
+                self.lineMedian.setPoints(curPoint, closestPMedian)
+                self.lineMedian.update()
+        else:
+            pal = self.speedMedian.palette()
+            pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
+            self.speedMedian.setPalette(pal)
+
+    def updateMap(self, curPoint):
+        if self.circuitExperience and not self.previousPoint is None:
+            color = Qt.GlobalColor.red
+            if len(self.previousLaps) > 0:
+                #speedDiff = self.previousLaps[self.bestLap].points[self.closestIBest].car_speed - curPoint.car_speed
+                speedDiff = 10*((self.closestIBest - self.oldIBest) - 1)
+                self.oldIBest = self.closestIBest
+                if speedDiff == 0:
+                    color = Qt.GlobalColor.black
+                else:
+                    color = self.speedDiffQColor(speedDiff)
+            self.mapView.setPoints(self.previousPoint, curPoint, color)
+            self.mapView.update()
+
+
+        if curPoint.throttle == 0 and curPoint.brake == 0:
+            self.noThrottleCount+=1
+        elif self.noThrottleCount > 0:
+            self.noThrottleCount=0
+
+    def handleLapChanges(self, curPoint):
+        if self.circuitExperience and self.noThrottleCount == 60 * 10:
+            print("Lap ended 10 seconds ago")
+        if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 10 or self.noThrottleCount == 60 * 10)):
+            if self.circuitExperience:
+                cleanLap = self.cleanUpLap(self.curLap)
+                self.mapView.endLap(cleanLap.points)
+                self.mapView.update()
+            else:
+                cleanLap = self.curLap
+            lapLen = cleanLap.length()
+            
+            if lapLen < 10:
+                print("LAP CHANGE short")
+            else:
+                print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap.points) / 60,3), "s")
+                if (len(self.curLap.points)>0):
+                    print("start", self.curLap.points[0].position_x, self.curLap.points[0].position_y, self.curLap.points[0].position_z)
+                if not self.previousPoint is None:
+                    print("end", self.previousPoint.position_x, self.previousPoint.position_y, self.previousPoint.position_z)
+
+            if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
+                if self.lastLap > 0:
+                    if self.circuitExperience:
+                        lastLapTime = len(cleanLap.points)/60.0
+                    else:
+                        lastLapTime = curPoint.last_lap
+                    print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
+                    if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < 30: 
+                        self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True))
+                        print("Append valid lap", lastLapTime, len(cleanLap.points), len(self.previousLaps))
+                    else:
+                        print("Append invalid lap", lastLapTime, len(cleanLap.points), len(self.previousLaps))
+                        self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False))
+                    print("Laps:", len(self.previousLaps))
+                    if self.circuitExperience:
+                        self.purgeBadLaps()
+                    print("Laps after purge:", len(self.previousLaps))
+                
+                    self.bestLap = self.findBestLap()
+                    self.medianLap = self.findMedianLap()
+                    print("Reset cur lap storage")
+                    self.curLap = Lap()
+                    print("Should be 0:", len(self.curLap.points))
+                    self.closestILast = 0
+                    self.closestIBest = 0
+                    self.closestIMedian = 0
+
+                    print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap].time)
+                    print("Median lap:", self.medianLap, self.previousLaps[self.medianLap].time)
+                    print("Last lap:", len(self.previousLaps)-1, self.previousLaps[-1].time)
+
+                if self.lastFuel != -1:
+                    fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
+                    if fuelDiff > 0:
+                        self.lastFuelUsage.append(fuelDiff)
+                        self.refueled += 1
+                    elif fuelDiff < 0:
+                        self.refueled = 0
+                    if len(self.lastFuelUsage) > 5:
+                        self.lastFuelUsage = self.lastFuelUsage[1:]
+                self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
+
+                if len(self.lastFuelUsage) > 0:
+                    self.fuelFactor = self.lastFuelUsage[0]
+                    for i in range(1, len(self.lastFuelUsage)):
+                        self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
+
+            self.lastLap = curPoint.current_lap
+        elif (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
+            self.initRace()
 
     def updateDisplay(self):
-
         while not self.queue.empty():
             self.debugCount += 1
             d = self.queue.get()
@@ -678,355 +1028,27 @@ class MainWindow(QMainWindow):
             curPoint = Point(d[0], d[1])
 
             if self.messagesEnabled and not self.newMessage is None:
-                print(len(self.newLapPos), -min(60*5,len(self.newLapPos)-1))
-                self.messages.append([self.newLapPos[-min(60*5,len(self.newLapPos)-1)], self.newMessage])
+                print(len(self.curLap.points), -min(60*5,len(self.curLap.points)-1))
+                self.messages.append([self.curLap.points[-min(60*5,len(self.curLap.points)-1)], self.newMessage])
                 self.newMessage = None
                 print(self.messages)
 
             if curPoint.is_paused or not curPoint.in_race:
                 continue
 
-            if curPoint.current_lap <= 0 and not self.circuitExperience:
+            if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
                 self.initRace()
                 continue
 
-            #print(len(self.newLapPos))
-
-            if self.circuitExperience and not self.previousPoint is None:
-                self.mapView.setPoints(self.previousPoint, curPoint)
-                self.mapView.update()
-
-
-            if curPoint.throttle == 0 and curPoint.brake == 0:
-                self.noThrottleCount+=1
-            elif self.noThrottleCount > 0:
-                self.noThrottleCount=0
-
-            # TYRE TEMPS
-            self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
-            pal = self.tyreFL.palette()
-            pal.setColor(self.tyreFL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FL)))
-            self.tyreFL.setPalette(pal)
-
-            self.tyreFR.setText (str(round(curPoint.tyre_temp_FR)) + "°C")
-            pal = self.tyreFR.palette()
-            pal.setColor(self.tyreFR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FR)))
-            self.tyreFR.setPalette(pal)
-
-            self.tyreRR.setText (str(round(curPoint.tyre_temp_RR)) + "°C")
-            pal = self.tyreRR.palette()
-            pal.setColor(self.tyreRR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RR)))
-            self.tyreRR.setPalette(pal)
-
-            self.tyreRL.setText (str(round(curPoint.tyre_temp_RL)) + "°C")
-            pal = self.tyreRL.palette()
-            pal.setColor(self.tyreRL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
-            self.tyreRL.setPalette(pal)
-
-
-            #print("LAP ", self.lastLap, curPoint.current_lap, curPoint.total_laps, curPoint.time_on_track)
-            # LAP CHANGE
-            if self.circuitExperience and self.noThrottleCount == 60 * 10:
-                print("Lap ended 10 seconds ago")
-            if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 10 or self.noThrottleCount == 60 * 10)):
-                if self.circuitExperience:
-                    cleanLap = self.cleanUpLap(self.newLapPos)
-                    self.mapView.endLap(cleanLap)
-                    self.mapView.update()
-                else:
-                    cleanLap = self.newLapPos
-                #print(len(self.newLapPos), len(cleanLap))
-                lapLen = self.getLapLength(cleanLap)
-                
-                if lapLen < 10:
-                    print("LAP CHANGE short")
-                else:
-                    print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap) / 60,3), "s")
-                    if (len(self.newLapPos)>0):
-                        print("start", self.newLapPos[0].position_x, self.newLapPos[0].position_y, self.newLapPos[0].position_z)
-                    if not self.previousPoint is None:
-                        print("end", self.previousPoint.position_x, self.previousPoint.position_y, self.previousPoint.position_z)
-
-                if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
-                    if self.lastLap > 0:
-                        if self.circuitExperience:
-                            lastLapTime = len(cleanLap)/60.0
-                        else:
-                            lastLapTime = curPoint.last_lap
-                        print("Closed loop distance:", self.distance(cleanLap[0], cleanLap[-1])) 
-                        if self.circuitExperience or self.distance(cleanLap[0], cleanLap[-1]) < 30: 
-                            self.previousLaps.append([lastLapTime, cleanLap, True])
-                            print("Append valid lap", lastLapTime, len(cleanLap))
-                        else:
-                            print("Append invalid lap", lastLapTime, len(cleanLap))
-                            self.previousLaps.append([lastLapTime, cleanLap, False])
-                        if self.circuitExperience:
-                            self.purgeBadLaps()
-                        #self.previousLaps.append([lastLapTime, self.newLapPos])
-                        #for pl in self.previousLaps:
-                            #print(pl[0], len(pl[1]), len(pl[1]) / 60)
-                    
-                        self.bestLap = self.findBestLap()
-                        self.medianLap = self.findMedianLap()
-                        self.newLapPos = []
-                        self.closestILast = 0
-                        self.closestIBest = 0
-                        self.closestIMedian = 0
-
-                        print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap][0])
-                        print("Median lap:", self.medianLap, self.previousLaps[self.medianLap][0])
-                        print("Last lap:", len(self.previousLaps)-1, self.previousLaps[-1][0])
-
-                    if self.lastFuel != -1:
-                        fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
-                        if fuelDiff > 0:
-                            self.lastFuelUsage.append(fuelDiff)
-                            self.refueled += 1
-                        elif fuelDiff < 0:
-                            self.refueled = 0
-                        if len(self.lastFuelUsage) > 5:
-                            self.lastFuelUsage = self.lastFuelUsage[1:]
-                    self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
-
-                    if len(self.lastFuelUsage) > 0:
-                        self.fuelFactor = self.lastFuelUsage[0]
-                        for i in range(1, len(self.lastFuelUsage)):
-                            self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
-
-                self.lastLap = curPoint.current_lap
-            elif (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
-                self.initRace()
-
-            # FUEL
-            if self.refueled > 0:
-                lapValue = self.refueled
-                if self.lapDecimals and self.closestILast > 0:
-                    lapValue += (
-                            self.closestILast / len(self.previousLaps[-1][1]) +
-                            self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
-                            self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
-                    lapValue = round(lapValue, 2)
-                refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
-            else:
-                refuelLaps = ""
-
-            if self.fuelFactor != 0:
-                fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + "% PER LAP<br>" + str(round(1 / self.fuelFactor,1)) + " FULL RANGE"
-            else:
-                fuelLapPercent = ""
-
-            self.fuel.setTextFormat(Qt.TextFormat.RichText)
-            self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
-            if False:
-                refuelLaps = "<br>" + str (3.12) + " SINCE REFUEL" + "<br>" + str (14.2) + " FULL RANGE"
-                fuelLapPercent = "<br>" + str(7.7) + "% PER LAP"
-                self.fuel.setText("<font size=6>" + str(round(100 * 80 / 100)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
-            if not self.previousPoint is None:
-                fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
-                fuelConsumption *= 60 * 60 * 60 # l per hour
-                if curPoint.car_speed > 0:
-                    fuelConsumption /= curPoint.car_speed # l per km
-                    fuelConsumption *= 100 # l per 100 km
-
-                self.fuelBar.setLevel(max(0, fuelConsumption))
-                self.fuelBar.update()
-
-            messageShown = False
-            if self.messagesEnabled:
-                for m in self.messages:
-                    if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
-                        pal = self.laps.palette()
-                        if datetime.datetime.now().microsecond < 500000:
-                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                        else:
-                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.white)
-                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.red)
-                        self.laps.setPalette(pal)
-                        self.laps.setText(m[1])
-                        messageShown = True
-
-
-            if not self.circuitExperience and not messageShown:
-                if self.fuelFactor > 0:
-                    lapsFuel = curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor
-                    self.laps.setText(str(round(lapsFuel, 2)) + " LAPS FUEL")
-
-                    lapValue = 1
-                    if self.lapDecimals and self.closestILast > 0:
-                        lapValue -= (
-                                self.closestILast / len(self.previousLaps[-1][1]) +
-                                self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
-                                self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
-                    
-                    if self.lapDecimals and round(lapsFuel, 2) < 1 and lapsFuel < lapValue:
-                        pal = self.laps.palette()
-                        if datetime.datetime.now().microsecond < 500000:
-                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                        else:
-                            pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.yellow)
-                            pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.black)
-                        self.laps.setPalette(pal)
-                    elif round(lapsFuel, 2) < 1:
-                        pal = self.laps.palette()
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                        self.laps.setPalette(pal)
-                    elif round(lapsFuel, 2) < 2:
-                        pal = self.laps.palette()
-                        pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                        pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
-                        self.laps.setPalette(pal)
-                    else:
-                        pal = self.laps.palette()
-                        pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                        self.laps.setPalette(pal)
-                elif curPoint.current_fuel == curPoint.fuel_capacity:
-                    self.laps.setText("FOREVER")
-                    pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                    self.laps.setPalette(pal)
-                else:
-                    self.laps.setText("measuring")
-                    pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
-                    self.laps.setPalette(pal)
-
-            # SPEED
-            closestPLast = None
-            closestPBest = None
-            closestPMedian = None
-            nextBrakeBest = None
-            if len(self.previousLaps) > 0:
-                closestPLast, self.closestILast = self.findClosestPoint (self.previousLaps[-1][1], curPoint, self.closestILast)
-                closestPBest, self.closestIBest = self.findClosestPoint (self.previousLaps[self.bestLap][1], curPoint, self.closestIBest)
-                closestPMedian, self.closestIMedian = self.findClosestPoint (self.previousLaps[self.medianLap][1], curPoint, self.closestIMedian)
-                nextBrakeBest = self.findNextBrake(self.previousLaps[self.bestLap][1], self.closestIBest)
-
-            if not closestPLast is None:
-                speedDiff = closestPLast.car_speed - curPoint.car_speed
-                pal = self.speedLast.palette()
-                pal.setColor(self.speedLast.backgroundRole(), self.speedDiffQColor(speedDiff))
-                self.speedLast.setPalette(pal)
-
-                if self.brakepoints:
-                    pal = self.pedalLast.palette()
-                    if closestPLast.brake > 0:
-                        self.pedalLast.setText("BRAKE")
-                        pal.setColor(self.pedalLast.backgroundRole(), self.brakeQColor(closestPLast.brake))
-                    else:
-                        self.pedalLast.setText("")
-                        pal.setColor(self.pedalLast.backgroundRole(), QColor("#222"))
-                    self.pedalLast.setPalette(pal)
-                    self.lineLast.setPoints(curPoint, closestPLast)
-                    self.lineLast.update()
-            else:
-                pal = self.speedLast.palette()
-                pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
-                self.speedLast.setPalette(pal)
-
-            if not closestPBest is None:
-                speedDiff = closestPBest.car_speed - curPoint.car_speed
-                pal = self.speedBest.palette()
-                pal.setColor(self.speedBest.backgroundRole(), self.speedDiffQColor(speedDiff))
-                self.speedBest.setPalette(pal)
-                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
-                self.fuel.setPalette(pal)
-                if self.brakepoints:
-                    pal = self.pedalBest.palette()
-                    if closestPBest.brake > 0:
-                        self.pedalBest.setText("BRAKE")
-                        pal.setColor(self.pedalBest.backgroundRole(), self.brakeQColor(closestPBest.brake))
-                    elif self.countdownBrakepoint and not nextBrakeBest is None:
-                        self.pedalBest.setText(str(math.ceil (nextBrakeBest/60)))
-                        if nextBrakeBest >= 120:
-                            if nextBrakeBest%60 >= 30:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
-                                if self.bigCountdownBrakepoint:
-                                    self.fuel.setPalette(pal)
-                            else:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
-                        elif nextBrakeBest >= 60:
-                            if nextBrakeBest%60 >= 30:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#2FF"))
-                                if self.bigCountdownBrakepoint:
-                                    self.fuel.setPalette(pal)
-                            else:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
-                        else:
-                            if nextBrakeBest%30 >= 15:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
-                                if self.bigCountdownBrakepoint:
-                                    self.fuel.setPalette(pal)
-                            else:
-                                pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
-
-                    else:
-                        self.pedalBest.setText("")
-                        pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
-                    self.pedalBest.setPalette(pal)
-
-                    self.lineBest.setPoints(curPoint, closestPBest)
-                    self.lineBest.update()
-            else:
-                pal = self.speedBest.palette()
-                pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
-                self.speedBest.setPalette(pal)
-
-            if not closestPMedian is None:
-                speedDiff = closestPMedian.car_speed - curPoint.car_speed
-                pal = self.speedMedian.palette()
-                pal.setColor(self.speedMedian.backgroundRole(), self.speedDiffQColor(speedDiff))
-                self.speedMedian.setPalette(pal)
-                if self.brakepoints:
-                    pal = self.pedalMedian.palette()
-                    if closestPMedian.brake > 0:
-                        self.pedalMedian.setText("BRAKE")
-                        pal.setColor(self.pedalMedian.backgroundRole(), self.brakeQColor(closestPMedian.brake))
-                    #elif closestPMedian.throttle > 0:
-                    else:
-                        self.pedalMedian.setText("")
-                        pal.setColor(self.pedalMedian.backgroundRole(), QColor("#222"))
-                    #else:
-                        #self.pedalMedian.setText("COAST")
-                        #pal.setColor(self.pedalMedian.backgroundRole(), self.speedDiffQColor(0))
-                    self.pedalMedian.setPalette(pal)
-                    self.lineMedian.setPoints(curPoint, closestPMedian)
-                    self.lineMedian.update()
-            else:
-                pal = self.speedMedian.palette()
-                pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
-                self.speedMedian.setPalette(pal)
-
-            # LAP DISPLAY
-            lapSuffix = ""
-            if self.isRecording:
-                lapSuffix = " [RECORDING]"
-            if curPoint.total_laps > 0:
-                lapValue = curPoint.total_laps - curPoint.current_lap + 1
-                if self.lapDecimals and self.closestILast > 0:
-                    lapValue -= (
-                            self.closestILast / len(self.previousLaps[-1][1]) +
-                            self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
-                            self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
-                    lapValue = round(lapValue, 2)
-                self.header.setText(str(lapValue) + " LAPS LEFT" + lapSuffix)
-            else:
-                lapValue = curPoint.current_lap
-                if self.lapDecimals and self.closestILast > 0:
-                    lapValue += (
-                            self.closestILast / len(self.previousLaps[-1][1]) +
-                            self.closestIBest / len(self.previousLaps[self.bestLap][1]) +
-                            self.closestIMedian / len(self.previousLaps[self.medianLap][1])) / 3
-                    lapValue = round(lapValue, 2)
-                self.header.setText("LAP " + str(lapValue) + lapSuffix)
+            self.updateTyreTemps(curPoint)
+            self.handleLapChanges(curPoint)
+            self.updateFuelAndWarnings(curPoint)
+            self.updateSpeed(curPoint)
+            self.updateMap(curPoint)
+            self.updateLaps(curPoint)
 
             self.previousPoint = curPoint
-            self.newLapPos.append(curPoint)
+            self.curLap.points.append(curPoint)
 
 
     def closeEvent(self, event):
@@ -1089,7 +1111,7 @@ class MainWindow(QMainWindow):
             prefix += self.sessionName + "-"
         with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
             for index in range(len(self.previousLaps)):
-                for p in self.previousLaps[index][1]:
+                for p in self.previousLaps[index].points:
                     f.write(p.raw)
 
     def saveLap(self, index, name):
@@ -1098,7 +1120,7 @@ class MainWindow(QMainWindow):
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
         with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
-            for p in self.previousLaps[index][1]:
+            for p in self.previousLaps[index].points:
                 f.write(p.raw)
 
     def saveMessages(self):

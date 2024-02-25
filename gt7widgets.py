@@ -252,6 +252,7 @@ class FuelGauge(QWidget):
 
     def paintEvent(self, event):
 
+        print(self.level, self.maxLevel)
         qp = QPainter()
         qp.begin(self)
         if self.level > self.threshold:
@@ -272,19 +273,22 @@ class MapView(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.map = QPixmap(2000, 2000)
+        self.size = [1000, 1000]
+        self.map = QPixmap(self.size[0], self.size[1])
         self.map.fill(QColor("#222"))#Qt.GlobalColor.black)
-        self.liveMap = QPixmap(2000, 2000)
+        self.liveMap = QPixmap(self.size[0], self.size[1])
         self.liveMap.fill(QColor("#222"))#Qt.GlobalColor.black)
         self.previousPoints = []
         self.curPoints = []
         self.mapOffset = None
-        self.mapWindow = [1000,1000]
-        self.mapColor = Qt.GlobalColor.white
+        self.mapWindow = [self.size[0]/2,self.size[1]/2]
+        self.mapColor = QColor("#77f")
+        self.zoom = 0.7
 
-    def setPoints(self, p1, p2):
+    def setPoints(self, p1, p2, color = Qt.GlobalColor.red):
         self.previousPoints.append (p1)
         self.curPoints.append (p2)
+        self.liveColor = color
 
     def endLap(self, cleanLap):
         if self.mapOffset is None:
@@ -294,61 +298,104 @@ class MapView(QWidget):
         pen.setWidth(5)
         painter.setPen(pen)
         for pi in range(1, len(cleanLap)):
-            px1 = 1000 + (0.25 * (cleanLap[pi-1].position_x + self.mapOffset[0])) 
-            pz1 = 1000 + (0.25 * (cleanLap[pi-1].position_z + self.mapOffset[1])) 
-            px2 = 1000 + (0.25 * (cleanLap[pi].position_x + self.mapOffset[0])) 
-            pz2 = 1000 + (0.25 * (cleanLap[pi].position_z + self.mapOffset[1]))
+            px1 = self.size[0]/2 + (self.zoom * (cleanLap[pi-1].position_x + self.mapOffset[0])) 
+            pz1 = self.size[1]/2 + (self.zoom * (cleanLap[pi-1].position_z + self.mapOffset[1])) 
+            px2 = self.size[0]/2 + (self.zoom * (cleanLap[pi].position_x + self.mapOffset[0])) 
+            pz2 = self.size[1]/2 + (self.zoom * (cleanLap[pi].position_z + self.mapOffset[1]))
             painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
 
         if len(cleanLap) > 0:
-            px1 = 1010 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz1 = 1010 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1])) 
-            px2 = 990 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz2 = 990 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1]))
+            px1 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz1 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1])) 
+            px2 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz2 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1]))
             painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-            px1 = 990 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz1 = 1010 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1])) 
-            px2 = 1010 + (0.25 * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz2 = 990 + (0.25 * (cleanLap[-1].position_z + self.mapOffset[1]))
+            px1 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz1 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1])) 
+            px2 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
+            pz2 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1]))
             painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
 
         painter.end()
         self.liveMap = self.map.copy()
 
     def paintEvent(self, event):
+        aspectRatio = self.width()/self.height()
+        baseAspectRatio = self.size[0] / self.size[1]
+
         while len (self.previousPoints) > 0  and len(self.curPoints) > 0:
             previousPoint = self.previousPoints.pop()
             curPoint = self.curPoints.pop()
             if previousPoint.position_x - curPoint.position_x > 5 or previousPoint.position_z - curPoint.position_z > 5:
                 continue
+
             painter = QPainter(self.liveMap)
-            pen = QPen(Qt.GlobalColor.red)
-            pen.setWidth(3)
+            pen = QPen(self.liveColor)
+            pen.setWidth(5)
             painter.setPen(pen)
+            
             if self.mapOffset is None:
                 self.mapOffset = (-previousPoint.position_x, -previousPoint.position_z)
-            px1 = 1000 + (0.25 * (previousPoint.position_x + self.mapOffset[0])) 
-            pz1 = 1000 + (0.25 * (previousPoint.position_z + self.mapOffset[1])) 
-            px2 = 1000 + (0.25 * (curPoint.position_x + self.mapOffset[0])) 
-            pz2 = 1000 + (0.25 * (curPoint.position_z + self.mapOffset[1]))
-            if max(px1,px2) > (self.mapWindow[0] + 240) and (self.mapWindow[0] + 250) < 2000 - self.width():
-                self.mapWindow[0] += 1
-            if min(px1,px2) < (self.mapWindow[0] - 240) and (self.mapWindow[0] - 250) > self.width():
-                self.mapWindow[0] -= 1
-            if max(pz1,pz2) > (self.mapWindow[1] + 240) and (self.mapWindow[1] + 250) < 2000 - self.height():
-                self.mapWindow[1] += 1
-            if min(pz1,pz2) < (self.mapWindow[1] - 240) and (self.mapWindow[1] - 250) > self.height():
-                self.mapWindow[1] -= 1
-            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
+            
+            px1 = self.size[0]/2 + (self.zoom * (previousPoint.position_x + self.mapOffset[0])) 
+            pz1 = self.size[1]/2 + (self.zoom * (previousPoint.position_z + self.mapOffset[1])) 
+            px2 = self.size[0]/2 + (self.zoom * (curPoint.position_x + self.mapOffset[0])) 
+            pz2 = self.size[1]/2 + (self.zoom * (curPoint.position_z + self.mapOffset[1]))
+            
+            temp = self.zoom
+            self.zoom=0.25
+            #TODO: Handle leaving the pixmap area
+            if max(px1,px2) > (self.mapWindow[0] + (self.size[0]-100)*self.zoom*aspectRatio):                                           # and (self.mapWindow[0] + 1000*self.zoom*aspectRatio) < 2000 - self.width():
+                self.mapWindow[0] += math.ceil(abs(max(px1,px2) - (self.mapWindow[0] + (self.size[0]-100)*self.zoom*aspectRatio))/10)
+            if min(px1,px2) < (self.mapWindow[0] - (self.size[0]-100)*self.zoom*aspectRatio):                                           # and (self.mapWindow[0] - 1000*self.zoom*aspectRatio) > self.width():
+                self.mapWindow[0] -= math.ceil (abs(min(px1,px2) - (self.mapWindow[0] - (self.size[0]-100)*self.zoom*aspectRatio))/10)
+            if max(pz1,pz2) > (self.mapWindow[1] + (self.size[1]-100)*self.zoom):                                                       # and (self.mapWindow[1] + self.size[1]/2*self.zoom) < self.size[1] - self.height():
+                self.mapWindow[1] += math.ceil(abs(max(pz1,pz2) - (self.mapWindow[1] + (self.size[1]-100)*self.zoom))/10)
+            if min(pz1,pz2) < (self.mapWindow[1] - (self.size[1]-100)*self.zoom):                                                       # and (self.mapWindow[1] - self.size[1]/2*self.zoom) > self.height():
+                self.mapWindow[1] -= math.ceil (abs(min(pz1,pz2) - (self.mapWindow[1] - (self.size[1]-100)*self.zoom))/10)
+            self.zoom = temp
+            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2),)
             painter.end()
+
+            if px1 < 0 or px2 < 0 or pz1 < 0 or pz2 < 0 or px1 > self.size[0] or px2 > self.size[0] or pz1 > self.size[1] or pz2 > self.size[1] :
+                print("Outside:", px1, pz1, px2, pz2)
+                if max(px1, px2) > self.size[0]:
+                    self.size[0] *= 2
+                    newLive = QPixmap(self.size[0], self.size[1])
+                    cp = QPainter(newLive)
+                    cp.drawPixmap(0,0, self.liveMap)
+                    cp.end()
+                    self.liveMap = newLive
+                    newBase = QPixmap(self.size[0], self.size[1])
+                    cp2 = QPainter(newBase)
+                    cp2.drawPixmap(0,0, self.map)
+                    cp2.end()
+                    self.map = newBase
+                if max(pz1, pz2) > self.size[1]:
+                    self.size[1] *= 2
+                    newLive = QPixmap(self.size[0], self.size[1])
+                    cp = QPainter(newLive)
+                    cp.drawPixmap(0,0, self.liveMap)
+                    cp.end()
+                    self.liveMap = newLive
+                    newBase = QPixmap(self.size[0], self.size[1])
+                    cp2 = QPainter(newBase)
+                    cp2.drawPixmap(0,0, self.map)
+                    cp2.end()
+                    self.map = newBase
+                    
 
         qp = QPainter()
         qp.begin(self)
 
-        scaleTarget = 3000#min(self.width(), self.height())
-        aspectRatio = self.width()/self.height()
 
-        qp.drawPixmap(self.rect(), self.liveMap.copy(int(self.mapWindow[0] - aspectRatio * 250), int(self.mapWindow[1]-250), int(aspectRatio * 500), 500).scaled(self.width(), self.height()))
+        temp = self.zoom
+        self.zoom=0.25
+        #qp.drawPixmap(self.rect(), self.liveMap.copy(int(self.mapWindow[0] - aspectRatio * 1000*self.zoom), int(self.mapWindow[1]-1000*self.zoom), int(aspectRatio * self.zoom * 2000), int(self.zoom * 2000)).scaled(self.width(), self.height()))
+        #qp.drawPixmap(self.rect(), self.liveMap.copy(0, 0, self.size[0], self.size[1]).scaled(self.width(), self.height()))
+        #print(self.size, aspectRatio,self.size[1] - self.size[1]/aspectRatio)
+        qp.drawPixmap(self.rect(), self.liveMap.copy(0, int((self.size[1] - self.size[1]/aspectRatio)/2), self.size[0], int(self.size[1]/aspectRatio)).scaled(self.width(), self.height()))
+        self.zoom = temp
 
         qp.end()
 
@@ -376,6 +423,8 @@ class LineDeviation(QWidget):
 
     def normal(self, x, y, z): # (0, 1, 0)
         a = self.abs(-z, 0, x)
+        if a == 0:
+            a = 1
         return (-z/a, 0, x/a)
 
     def setDistance(self, d):
