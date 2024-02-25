@@ -33,6 +33,15 @@ class StartWindow(QWidget):
         lr.setLayout(mainLayoutR)
         mainLayoutCols.addWidget(lr)
 
+        # GENERAL
+        gnGroup = QGroupBox("General")
+        mainLayoutL.addWidget(gnGroup)
+        gnLayout = QVBoxLayout()
+        gnGroup.setLayout(gnLayout)
+
+        self.keepLaps = QCheckBox("Keep laps through setup changes")
+        gnLayout.addWidget(self.keepLaps)
+
         # VIEW
         vwGroup = QGroupBox("View")
         mainLayoutL.addWidget(vwGroup)
@@ -44,12 +53,15 @@ class StartWindow(QWidget):
         self.cbOptimal.setEnabled(False)
         self.cbBest = QCheckBox("Best lap")
         self.cbMedian = QCheckBox("Median lap")
-        self.cbRefA = QCheckBox("Referance lap A")
-        self.cbRefA.setEnabled(False)
-        self.cbRefB = QCheckBox("Referance lap B")
-        self.cbRefB.setEnabled(False)
-        self.cbRefC = QCheckBox("Referance lap C")
-        self.cbRefC.setEnabled(False)
+        self.cbRefA = QCheckBox("Reference lap A")
+        self.cbRefA.stateChanged.connect(self.chooseReferenceLapA)
+        self.refAFile = ""
+        self.cbRefB = QCheckBox("Reference lap B")
+        self.cbRefB.stateChanged.connect(self.chooseReferenceLapB)
+        self.refBFile = ""
+        self.cbRefC = QCheckBox("Reference lap C")
+        self.cbRefC.stateChanged.connect(self.chooseReferenceLapC)
+        self.refCFile = ""
         self.cbLast = QCheckBox("Last lap")
         
         vwLayout.addWidget(self.lapDecimals)
@@ -103,11 +115,18 @@ class StartWindow(QWidget):
 
         self.brakepoints = QCheckBox("Show brake points")
         self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
-        self.bigCountdownBrakepoint = QCheckBox("Hijack fuel box for countdown colors")
+        self.bigCountdownBrakepoint = QLabel("Whole screen brake point colors for:")
+        self.bigCountdownTarget = QComboBox()
+        self.bigCountdownTarget.addItem("Nothing")
+        self.bigCountdownTarget.addItem("Best lap")
+        self.bigCountdownTarget.addItem("Reference lap A")
+        self.bigCountdownTarget.addItem("Reference lap B")
+        self.bigCountdownTarget.addItem("Reference lap C")
         
         bpLayout.addWidget(self.brakepoints)
         bpLayout.addWidget(self.countdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownBrakepoint)
+        bpLayout.addWidget(self.bigCountdownTarget)
         
         # NETWORK
         netGroup = QGroupBox("Network")
@@ -192,6 +211,8 @@ class StartWindow(QWidget):
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
 
+        self.keepLaps.setChecked(settings.value("keepLaps") in [ True, "true"])
+
         self.ip.setText(settings.value("ip", ""))
         self.storageLocation = settings.value("storageLocation", "")
         self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
@@ -200,9 +221,6 @@ class StartWindow(QWidget):
         self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
         self.cbBest.setChecked(settings.value("showBestLap") in [ True, "true"])
         self.cbMedian.setChecked(settings.value("showMedianLap") in [ True, "true"])
-        self.cbRefA.setChecked(settings.value("showRefALap") in [ True, "true"])
-        self.cbRefB.setChecked(settings.value("showRefBLap") in [ True, "true"])
-        self.cbRefC.setChecked(settings.value("showRefCLap") in [ True, "true"])
         self.cbLast.setChecked(settings.value("showLastLap") in [ True, "true"])
         
 
@@ -215,7 +233,7 @@ class StartWindow(QWidget):
         
         self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
         self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
-        self.bigCountdownBrakepoint.setChecked(settings.value("bigCountdownBrakepoint") in [True, "true"])
+        self.bigCountdownTarget.setCurrentIndex(int(settings.value("bigCountdownTarget",0)))
 
         self.allowLoop.setChecked(settings.value("allowLoop") in [True, "true"])
         
@@ -231,6 +249,43 @@ class StartWindow(QWidget):
             self.storageLocation = chosen
             self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
             print(chosen)
+
+    def chooseReferenceLapA(self, on):
+        if on:
+            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+            if chosen[0] == "":
+                print("None")
+                self.cbRefA.setCheckState(Qt.CheckState.Unchecked)
+            else:
+                self.refAFile = chosen[0]
+                self.cbRefA.setText("Reference lap A: " + chosen[0][chosen[0].rfind("/")+1:])
+        else:
+            self.cbRefA.setText("Reference lap A")
+
+    def chooseReferenceLapB(self, on):
+        if on:
+            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+            if chosen[0] == "":
+                print("None")
+                self.cbRefB.setCheckState(Qt.CheckState.Unchecked)
+            else:
+                self.refBFile = chosen[0]
+                self.cbRefB.setText("Reference lap B: " + chosen[0][chosen[0].rfind("/")+1:])
+        else:
+            self.cbRefB.setText("Reference lap B")
+
+    def chooseReferenceLapC(self, on):
+        if on:
+            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+            if chosen[0] == "":
+                print("None")
+                self.cbRefC.setCheckState(Qt.CheckState.Unchecked)
+            else:
+                self.refCFile = chosen[0]
+                self.cbRefC.setText("Reference lap C: " + chosen[0][chosen[0].rfind("/")+1:])
+        else:
+            self.cbRefC.setText("Reference lap C")
+
 
 
 class FuelGauge(QWidget):
@@ -252,7 +307,6 @@ class FuelGauge(QWidget):
 
     def paintEvent(self, event):
 
-        print(self.level, self.maxLevel)
         qp = QPainter()
         qp.begin(self)
         if self.level > self.threshold:
@@ -273,7 +327,7 @@ class MapView(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.size = [1000, 1000]
+        self.size = [2000, 2000]
         self.map = QPixmap(self.size[0], self.size[1])
         self.map.fill(QColor("#222"))#Qt.GlobalColor.black)
         self.liveMap = QPixmap(self.size[0], self.size[1])
