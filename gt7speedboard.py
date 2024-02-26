@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
             self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.laps.setAutoFillBackground(True)
             font = self.laps.font()
-            font.setPointSize(96)
+            font.setPointSize(64)
             font.setBold(True)
             self.laps.setFont(font)
             pal = self.laps.palette()
@@ -550,10 +550,11 @@ class MainWindow(QMainWindow):
         self.noThrottleCount = 0
 
     def stopDash(self):
-        pal = self.palette()
-        pal.setColor(self.pedalBest.backgroundRole(), QColor("#333"))
-        self.setPalette(pal)
         if not self.receiver is None:
+            pal = self.palette()
+            pal.setColor(self.backgroundRole(), QColor("#333"))
+            self.setPalette(pal)
+
             self.timer.stop()
             self.receiver.running = False
             self.thread.join()
@@ -829,7 +830,9 @@ class MainWindow(QMainWindow):
         lapSuffix = ""
         if self.isRecording:
             lapSuffix = " [RECORDING]"
-        if curPoint.total_laps > 0:
+        if self.circuitExperience:
+            self.header.setText("CIRCUIT EXPERIENCE" + lapSuffix)
+        elif curPoint.total_laps > 0:
             lapValue = curPoint.total_laps - curPoint.current_lap + 1
             if self.lapDecimals and self.closestILast > 0:
                 lapValue -= (
@@ -882,6 +885,7 @@ class MainWindow(QMainWindow):
             self.fuelBar.setLevel(max(0, fuelConsumption))
             self.fuelBar.update()
 
+        self.laps.setTextFormat(Qt.TextFormat.RichText)
         messageShown = False
         if self.messagesEnabled: # TODO: put at end and remove messageShown?
             for m in self.messages:
@@ -901,7 +905,7 @@ class MainWindow(QMainWindow):
         if not self.circuitExperience and not messageShown:
             if self.fuelFactor > 0:
                 lapsFuel = curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor
-                self.laps.setText(str(round(lapsFuel, 2)) + " LAPS FUEL")
+                self.laps.setText("<font size=6>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>")
 
                 lapValue = 1
                 if self.lapDecimals and self.closestILast > 0:
@@ -935,13 +939,13 @@ class MainWindow(QMainWindow):
                     pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
                     self.laps.setPalette(pal)
             elif curPoint.current_fuel == curPoint.fuel_capacity:
-                self.laps.setText("FOREVER")
+                self.laps.setText("<font size=1>FOREVER</font>")
                 pal = self.laps.palette()
                 pal.setColor(self.laps.backgroundRole(), QColor('#222'))
                 pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
                 self.laps.setPalette(pal)
             else:
-                self.laps.setText("measuring")
+                self.laps.setText("<font size=1>MEASURING</font>")
                 pal = self.laps.palette()
                 pal.setColor(self.laps.backgroundRole(), QColor('#222'))
                 pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
@@ -1231,7 +1235,7 @@ class MainWindow(QMainWindow):
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount == 60 * 10:
             print("Lap ended 10 seconds ago")
-        if self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 10 or self.noThrottleCount == 60 * 10)):
+        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 10 or self.noThrottleCount == 60 * 10)):
             if self.circuitExperience:
                 cleanLap = self.cleanUpLap(self.curLap)
                 self.mapView.endLap(cleanLap.points)
@@ -1300,7 +1304,7 @@ class MainWindow(QMainWindow):
                         self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
 
             self.lastLap = curPoint.current_lap
-        elif (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
+        elif not self.keepLaps and (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
             self.initRace()
 
     def updateDisplay(self):
@@ -1439,6 +1443,14 @@ if __name__ == '__main__':
     app.setApplicationName("GT7 SpeedBoard");
 
     window = MainWindow()
+
+    i = 1
+    while i < len(sys.argv):
+        if sys.argv[i] == "--ip" and i < len(sys.argv)-1:
+            window.startWindow.ip.setText(sys.argv[i+1])
+            i+=1
+        i+=1
+    
     window.show()
     window.startWindow.ip.setFocus()
 

@@ -39,7 +39,7 @@ class StartWindow(QWidget):
         gnLayout = QVBoxLayout()
         gnGroup.setLayout(gnLayout)
 
-        self.keepLaps = QCheckBox("Keep laps through setup changes")
+        self.keepLaps = QCheckBox("Keep laps through setup changes and sessions (experimental)")
         gnLayout.addWidget(self.keepLaps)
 
         # VIEW
@@ -65,7 +65,7 @@ class StartWindow(QWidget):
         self.cbLast = QCheckBox("Last lap")
         
         vwLayout.addWidget(self.lapDecimals)
-        vwLayout.addWidget(self.cbOptimal)
+        #vwLayout.addWidget(self.cbOptimal)
         vwLayout.addWidget(self.cbBest)
         vwLayout.addWidget(self.cbMedian)
         vwLayout.addWidget(self.cbRefA)
