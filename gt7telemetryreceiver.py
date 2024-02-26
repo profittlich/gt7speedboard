@@ -69,7 +69,7 @@ class GT7TelemetryReceiver:
     def runTelemetryReceiver(self):
         # Create a UDP socket and bind it
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.s.bind((self.ip, self.ReceivePort))
+        self.s.bind(("0.0.0.0", self.ReceivePort))
         self.s.settimeout(2)
 
         # start by sending heartbeat
@@ -88,6 +88,8 @@ class GT7TelemetryReceiver:
                     self.record.close()
                     self.record = None
                 data, address = self.s.recvfrom(4096)
+                if not address[0] == self.ip:
+                    continue
                 if not self.record is None:
                     self.record.write(data)
                 

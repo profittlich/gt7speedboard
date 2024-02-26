@@ -16,3 +16,4 @@ build/gt7speedboard/Analysis-00.toc
 /data
 gt7speedboard.ini
 salsatest.py
+*.swp
