@@ -11,13 +11,13 @@ import datetime
 from cProfile import Profile
 from pstats import SortKey, Stats
 
-from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
+from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QEvent
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient, QPainterPath
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
 
 from gt7telepoint import Point
 from helpers import loadLap
-from helpers import Lap
+from helpers import Lap, PositionPoint
 
 import gt7telemetryreceiver as tele
 from gt7widgets import *
@@ -125,6 +125,7 @@ class MapView2(QWidget):
         self.showText = True
         self.showLayers = [ True, ] * 5
         self.showGroups = {}
+        self.dragging = False
 
     def setLaps(self, lap1, lap2):
         self.lap1 = lap1
@@ -203,6 +204,17 @@ class MapView2(QWidget):
         return result
 
     # DATA ANALYSIS
+    def findClosestPointNoLimit(self, lap, p):
+        shortestDistance = 100000000
+        result = None
+        for p2 in lap:
+            curDist = self.lap1.flatDistance(p, p2)
+            if curDist < shortestDistance:
+                shortestDistance = curDist
+                result = p2
+
+        return result
+
     def findNextBrake(self, lap, startI):
         j = startI
         for j in range(startI, len(lap)):
@@ -240,7 +252,7 @@ class MapView2(QWidget):
         return False
 
     def findNextThrottle(self, lap, startI):
-        print("findNextThrottle", startI)
+        #print("findNextThrottle", startI)
         j = startI
         for j in range(startI, len(lap)):
             if lap[j].throttle <= 0.9:
@@ -248,11 +260,11 @@ class MapView2(QWidget):
         for i in range(j, len(lap)):
             if lap[i].throttle > 0.9:
                 future = False #self.recentGearChange(lap, i)
-                if i > 4 and i < 8200:
-                    if future:
-                        print("X", i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
-                    else:
-                        print(i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                #if i > 4 and i < 8200:
+                    #if future:
+                        #print("X", i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                    #else:
+                        #print(i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
                 if not future:
                     return i
                 else:
@@ -260,7 +272,7 @@ class MapView2(QWidget):
         return None
 
     def findNextThrottleOff(self, lap, startI):
-        print("        ", "findNextThrottleOff", startI)
+        #print("        ", "findNextThrottleOff", startI)
         j = startI
         found = False
         for j in range(startI, len(lap)):
@@ -270,11 +282,11 @@ class MapView2(QWidget):
         for i in range(j, len(lap)):
             if lap[i].throttle <= 0.9 and found:
                 recent = False #self.recentGearChange(lap, i)
-                if i > 4 and i < 8200:
-                    if recent:
-                        print("        ", "X", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
-                    else:
-                        print("        ", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                #if i > 4 and i < 8200:
+                    #if recent:
+                        #print("        ", "X", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                    #else:
+                        #print("        ", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
                 if not recent:
                     return i
                 else:
@@ -346,7 +358,10 @@ class MapView2(QWidget):
                 
                 if not prevStep:
                     self.layers[lap1Markers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p1next.position_x, p1next.position_z, l2Color))
-                    self.layers[lap2Markers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p1.car_speed - p2.car_speed)) + " km/h"))
+                    dpre = ""
+                    if int(p2.car_speed - p1.car_speed) > 0:
+                        dpre = "+"
+                    self.layers[lap2Markers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p1.car_speed)) + "km/h\n" + str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed - p1.car_speed)) + " km/h"))
                     prevStep = True
             elif d2 < d1 and d2 < db: # Lap 1 is faster here
                 i2+=1
@@ -358,7 +373,10 @@ class MapView2(QWidget):
                 ad = mean(diffHistory)
                 if not prevStep:
                     self.layers[lap1Markers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, l1Color))
-                    self.layers[lap2Markers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p1.car_speed-p2.car_speed)) + " km/h"))
+                    dpre = ""
+                    if int(p2.car_speed - p1.car_speed) > 0:
+                        dpre = "+"
+                    self.layers[lap2Markers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p1.car_speed)) + "km/h\n" + str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed-p1.car_speed)) + " km/h"))
                     prevStep = True
             else: # No time difference
                 i1+=1
@@ -463,6 +481,7 @@ class MapView2(QWidget):
         for ly in range(len(self.layers)):
             if self.showLayers[ly]:
                 for l in self.layers[ly]:
+                    qp.setBrush(Qt.BrushStyle.NoBrush)
                     if l.group in self.showGroups and not self.showGroups[l.group]:
                         pass
                     elif isinstance(l, CrossMarker):
@@ -566,7 +585,15 @@ class MapView2(QWidget):
                         dz /= le/30
                         qp.drawLine(int(x1), int(z1), int(x1+dz), int(z1-dx))
                         if not l.endText is None and self.showText:
-                            qp.drawText(int(x1 + 1.5*dz), int(z1 - 1.5*dx), l.endText)
+                            lines = l.endText.split("\n")
+                            numLines = len(lines)
+                            offsetH = 15
+                            for curLine in range(numLines):
+                                fm = qp.fontMetrics()
+                                br = fm.boundingRect(lines[curLine])
+                                px = int(x1 + 1.5*dz - br.width() / 2)
+                                py = int(z1 - (1+ 0.5 * numLines)*dx + br.height() / 2 + curLine * offsetH - (numLines-1) * offsetH / 2)
+                                qp.drawText(px, py, lines[curLine])
 
                     elif isinstance(l, Text) and self.showText:
                         pen = QPen(l.color)
@@ -580,27 +607,68 @@ class MapView2(QWidget):
 
     # EVENTS
     def mousePressEvent(self, e):
-        print(e.position().x(), e.position().y())
-        mx = e.position().x()
-        mz = e.position().y()
-        wx = (mx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
-        wz = (mz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
-        self.offsetX = self.midX-wx
-        self.offsetZ = self.midZ-wz
-        self.update()
-        print(wx, wz)
+        if e.button () == Qt.MouseButton.LeftButton:
+            self.dragging = True
+            self.dragX = e.position().x()
+            self.dragY = e.position().y()
+        elif e.button () == Qt.MouseButton.RightButton:
+            mx = e.position().x()
+            mz = e.position().y()
+            wx = (mx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
+            wz = (mz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
+            mp = PositionPoint()
+            mp.position_x = wx
+            mp.position_z = wz
+            
+            lp2 = self.findClosestPointNoLimit (self.lap2.points, mp)
+            self.layers[3].append(CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2))
+            self.layers[3].append(Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%", 20, 0, 0x0000ff00, 2))
+
+            lp1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
+            self.layers[2].append(CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2))
+            self.layers[2].append(Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%", 20, 15, 0x00ff7f7f, 2))
+            self.update()
+            
+
+    def mouseReleaseEvent(self, e):
+        if e.button () == Qt.MouseButton.LeftButton:
+            self.dragging = False
+
+    def mouseMoveEvent(self, e):
+        if self.dragging:
+            mx = e.position().x()
+            mz = e.position().y()
+            wx = (mx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
+            wz = (mz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
+            wxp = (self.dragX - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
+            wzp = (self.dragY - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
+            self.dragX = mx
+            self.dragY = mz
+            self.offsetX += wx - wxp
+            self.offsetZ += wz - wzp
+            self.update()
 
     def resizeEvent(self, e):
         self.aspectRatio = e.size().width() / e.size().height()
 
     def wheelEvent(self, e):
+        dx = e.position().x()
+        dz = e.position().y()
+        wx = (dx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
+        wz = (dz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
+        rx = wx - self.midX + self.offsetX
+        rz = wz - self.midZ + self.offsetZ
         d = e.angleDelta().y()
         if d > 0:
             for i in range(d):
                 self.zoomIn(1.01)
+                self.offsetX -= rx * 1.01 - rx
+                self.offsetZ -= rz * 1.01 - rz
         else:
             for i in range(-d):
                 self.zoomOut(1.01)
+                self.offsetX -= rx / 1.01 - rx
+                self.offsetZ -= rz / 1.01 - rz
 
     def delegateKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Right.value:

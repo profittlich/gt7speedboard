@@ -22,18 +22,23 @@ class Point:
         self.tyre_diameter_RL = struct.unpack('f', ddata[0xBC:0xBC + 4])[0]
         self.tyre_diameter_RR = struct.unpack('f', ddata[0xC0:0xC0 + 4])[0]
 
-        self.type_speed_FL = abs(3.6 * self.tyre_diameter_FL * struct.unpack('f', ddata[0xA4:0xA4 + 4])[0])
-        self.type_speed_FR = abs(3.6 * self.tyre_diameter_FR * struct.unpack('f', ddata[0xA8:0xA8 + 4])[0])
-        self.type_speed_RL = abs(3.6 * self.tyre_diameter_RL * struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
+        self.tyre_speed_FL = abs(3.6 * self.tyre_diameter_FL * struct.unpack('f', ddata[0xA4:0xA4 + 4])[0])
+        self.tyre_speed_FR = abs(3.6 * self.tyre_diameter_FR * struct.unpack('f', ddata[0xA8:0xA8 + 4])[0])
+        self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
         self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * struct.unpack('f', ddata[0xB0:0xB0 + 4])[0])
 
         self.car_speed = 3.6 * struct.unpack('f', ddata[0x4C:0x4C + 4])[0]
 
         if self.car_speed > 0:
-            self.tyre_slip_ratio_FL = '{:6.2f}'.format(self.type_speed_FL / self.car_speed)
-            self.tyre_slip_ratio_FR = '{:6.2f}'.format(self.type_speed_FR / self.car_speed)
-            self.tyre_slip_ratio_RL = '{:6.2f}'.format(self.type_speed_RL / self.car_speed)
+            self.tyre_slip_ratio_FL = '{:6.2f}'.format(self.tyre_speed_FL / self.car_speed)
+            self.tyre_slip_ratio_FR = '{:6.2f}'.format(self.tyre_speed_FR / self.car_speed)
+            self.tyre_slip_ratio_RL = '{:6.2f}'.format(self.tyre_speed_RL / self.car_speed)
             self.tyre_slip_ratio_RR = '{:6.2f}'.format(self.tyre_speed_RR / self.car_speed)
+        else:
+            self.tyre_slip_ratio_FL = 1
+            self.tyre_slip_ratio_FR = 1
+            self.tyre_slip_ratio_RL = 1
+            self.tyre_slip_ratio_RR = 1
 
         self.time_on_track = td(
             seconds=round(struct.unpack('i', ddata[0x80:0x80 + 4])[0] / 1000))  # time of day on track
@@ -134,6 +139,9 @@ class Point:
         # end of https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
 
         self.message = None
+
+    def str(self):
+        return str(self.brake) + " " + str(self.is_paused) + " " + str (self.in_race) + " " + str(self.current_lap)
 
 
 

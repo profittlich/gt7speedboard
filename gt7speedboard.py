@@ -15,27 +15,12 @@ from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
 
 from gt7telepoint import Point
+from helpers import loadLap
+from helpers import Lap
 
 import gt7telemetryreceiver as tele
 from gt7widgets import *
 
-class Lap:
-    def __init__(self, time = None, pts = None, valid=True):
-        self.time = time
-        if pts is None:
-            self.points = []
-        else:
-            self.points = pts
-        self.valid = valid
-
-    def distance(self, p1, p2):
-        return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
-
-    def length(self):
-        totalDist = 0
-        for i in range(1, len(self.points)):
-            totalDist += self.distance(self.points[i-1], self.points[i])
-        return totalDist
 
 
 class MainWindow(QMainWindow):
@@ -533,7 +518,7 @@ class MainWindow(QMainWindow):
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
 
-        self.refLaps = [ self.loadLap(self.refAFile), self.loadLap(self.refBFile), self.loadLap(self.refCFile) ]
+        self.refLaps = [ loadLap(self.refAFile), loadLap(self.refBFile), loadLap(self.refCFile) ]
 
         self.receiver.setQueue(self.queue)
         self.receiver.setIgnorePktId(self.allowLoop)
@@ -559,23 +544,6 @@ class MainWindow(QMainWindow):
             self.receiver.running = False
             self.thread.join()
             self.receiver = None
-
-    def loadLap(self, fn):
-        lap = Lap()
-        if len(fn)>0:
-            print(fn)
-            with open(fn, "rb") as f:
-                allData = f.read()
-                curIndex = 0
-                print(len(allData))
-                while curIndex < len(allData):
-                    data = allData[curIndex:curIndex + 296]
-                    curIndex += 296
-                    ddata = self.receiver.salsa20_dec(data)
-                    curPoint = Point(ddata, data)
-                    lap.points.append(curPoint)
-        return lap
-
 
 
     def initRace(self):
@@ -734,24 +702,24 @@ class MainWindow(QMainWindow):
 
         if not longestLap is None:
             print("Longest: ", longestLength, longestLap.time)
-        temp = []
-        for l in self.previousLaps:
-            print ("\nCheck lap", l.time)
-            d = self.distance(longestLap.points[-1], l.points[-1])
-            c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
-            d2 = -1
-            d3 = -1
-            if not c is None:
-                d2 = self.distance(longestLap.points[-1], c)
-            c3 = self.findClosestPointNoLimit(longestLap.points, l.points[-1])
-            if not c3 is None:
-                d3 = self.distance(l.points[-1], c3)
-            print("End distance:", d)
-            if d > 15:
-                print("PURGE lap", len(l.points)/60, d)
-            else:
-                temp.append(l)
-        self.previousLaps = temp
+            temp = []
+            for l in self.previousLaps:
+                print ("\nCheck lap", l.time)
+                d = self.distance(longestLap.points[-1], l.points[-1])
+                c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
+                d2 = -1
+                d3 = -1
+                if not c is None:
+                    d2 = self.distance(longestLap.points[-1], c)
+                c3 = self.findClosestPointNoLimit(longestLap.points, l.points[-1])
+                if not c3 is None:
+                    d3 = self.distance(l.points[-1], c3)
+                print("End distance:", d)
+                if d > 15:
+                    print("PURGE lap", len(l.points)/60, d)
+                else:
+                    temp.append(l)
+            self.previousLaps = temp
 
 
 
@@ -785,9 +753,11 @@ class MainWindow(QMainWindow):
         bestIndex = 0
         bestTime = 100000000.0
         for t in range(len(self.previousLaps)):
+            print("Check", bestTime, "against", self.previousLaps[t].time)
             if self.previousLaps[t].valid and self.previousLaps[t].time < bestTime:
                 bestTime = self.previousLaps[t].time
                 bestIndex = t
+                print("This one's better")
         return bestIndex
 
     def findMedianLap(self):
@@ -885,13 +855,14 @@ class MainWindow(QMainWindow):
             self.fuelBar.setLevel(max(0, fuelConsumption))
             self.fuelBar.update()
 
-        self.laps.setTextFormat(Qt.TextFormat.RichText)
+        if not self.circuitExperience:
+            self.laps.setTextFormat(Qt.TextFormat.RichText)
         messageShown = False
         if self.messagesEnabled: # TODO: put at end and remove messageShown?
             for m in self.messages:
                 if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
                     pal = self.laps.palette()
-                    if datetime.datetime.now().microsecond < 500000:
+                    if (datetime.datetime.now().microsecond + 100000) % 500000 < 250000:
                         pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
                         pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
                     else:
@@ -1028,7 +999,7 @@ class MainWindow(QMainWindow):
                             pal.setColor(self.pedalRefA.backgroundRole(), QColor("#222"))
                     else:
                         if nextBrakeRefA%30 >= 15:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#FFF"))
                             if self.bigCountdownBrakepoint == 2:
                                 self.setPalette(pal)
                         else:
@@ -1075,7 +1046,7 @@ class MainWindow(QMainWindow):
                             pal.setColor(self.pedalRefB.backgroundRole(), QColor("#222"))
                     else:
                         if nextBrakeRefB%30 >= 15:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#FFF"))
                             if self.bigCountdownBrakepoint == 3:
                                 self.setPalette(pal)
                         else:
@@ -1122,7 +1093,7 @@ class MainWindow(QMainWindow):
                             pal.setColor(self.pedalRefC.backgroundRole(), QColor("#222"))
                     else:
                         if nextBrakeRefC%30 >= 15:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#FFF"))
                             if self.bigCountdownBrakepoint == 4:
                                 self.setPalette(pal)
                         else:
@@ -1169,7 +1140,7 @@ class MainWindow(QMainWindow):
                             pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
                     else:
                         if nextBrakeBest%30 >= 15:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#FFF"))
                             if self.bigCountdownBrakepoint == 1:
                                 self.setPalette(pal)
                         else:
@@ -1283,7 +1254,7 @@ class MainWindow(QMainWindow):
                     self.closestIRefB = 0
                     self.closestIRefC = 0
 
-                    print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap].time)
+                    print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap].time, "of", len(self.previousLaps))
                     print("Median lap:", self.medianLap, self.previousLaps[self.medianLap].time)
                     print("Last lap:", len(self.previousLaps)-1, self.previousLaps[-1].time)
 
