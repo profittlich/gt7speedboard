@@ -126,6 +126,7 @@ class MapView2(QWidget):
         self.showLayers = [ True, ] * 5
         self.showGroups = {}
         self.dragging = False
+        self.temporaryMarkers = []
 
     def setLaps(self, lap1, lap2):
         self.lap1 = lap1
@@ -596,11 +597,16 @@ class MapView2(QWidget):
                                 qp.drawText(px, py, lines[curLine])
 
                     elif isinstance(l, Text) and self.showText:
+                        fm = qp.fontMetrics()
+                        br = fm.boundingRect(l.text)
+                        x1 = self.width() / 2 - self.zoom * -((l.x1 + self.offsetX) - self.midX)/((self.maxX - self.minX)/self.width())
+                        z1 = self.height() / 2 - self.zoom*self.aspectRatio * -((l.z1 + self.offsetZ) - self.midZ)/((self.maxZ - self.minZ)/self.height())
+                        qp.setBrush(QColor(0, 0, 0, 127))
+                        qp.setPen(Qt.PenStyle.NoPen)
+                        qp.drawRect(int(x1 + br.left() + l.offsetx), int(z1 + br.top() + l.offsetz), int(br.width()), int(br.height()))
                         pen = QPen(l.color)
                         pen.setWidth(l.bold)
                         qp.setPen(pen)
-                        x1 = self.width() / 2 - self.zoom * -((l.x1 + self.offsetX) - self.midX)/((self.maxX - self.minX)/self.width())
-                        z1 = self.height() / 2 - self.zoom*self.aspectRatio * -((l.z1 + self.offsetZ) - self.midZ)/((self.maxZ - self.minZ)/self.height())
                         qp.drawText(int(x1 + l.offsetx), int(z1 + l.offsetz), l.text)
 
         qp.end()
@@ -621,12 +627,20 @@ class MapView2(QWidget):
             mp.position_z = wz
             
             lp2 = self.findClosestPointNoLimit (self.lap2.points, mp)
-            self.layers[3].append(CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2))
-            self.layers[3].append(Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%", 20, 0, 0x0000ff00, 2))
+            mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
+            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%", 20, 0, 0x0000ff00, 2)
+            self.layers[3].append(mk1)
+            self.layers[3].append(mk2)
+            self.temporaryMarkers.append(mk1)
+            self.temporaryMarkers.append(mk2)
 
             lp1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
-            self.layers[2].append(CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2))
-            self.layers[2].append(Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%", 20, 15, 0x00ff7f7f, 2))
+            mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
+            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%", 20, 15, 0x00ff7f7f, 2)
+            self.layers[2].append(mk3)
+            self.layers[2].append(mk4)
+            self.temporaryMarkers.append(mk3)
+            self.temporaryMarkers.append(mk4)
             self.update()
             
 
@@ -685,6 +699,9 @@ class MapView2(QWidget):
             self.zoomOut()
         
         elif e.key() == Qt.Key.Key_T.value:
+            self.showText = not self.showText
+            self.update()
+        elif e.key() == Qt.Key.Key_S.value:
             if not 'time' in self.showGroups:
                 self.showGroups['time'] = True
             self.showGroups['time'] = not self.showGroups['time']
@@ -698,6 +715,14 @@ class MapView2(QWidget):
             if not 'throttle' in self.showGroups:
                 self.showGroups['throttle'] = True
             self.showGroups['throttle'] = not self.showGroups['throttle']
+            self.update()
+
+        elif e.key() == Qt.Key.Key_C.value:
+            for m in self.temporaryMarkers:
+                for ly in self.layers:
+                    if m in ly:
+                        ly.remove (m)
+            self.temporaryMarkers = []
             self.update()
 
         elif e.key() == Qt.Key.Key_1.value:
