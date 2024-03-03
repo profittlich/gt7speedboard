@@ -19,7 +19,7 @@ from mapview2 import MapView2
 class StartWindowVLC(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("GT7 SpeedBoard Visual Lap Compare 1.0")
+        self.setWindowTitle("GT7 SpeedBoard Graphical Lap Comparison")
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         self.startWidget = StartWindowVLC()
         self.startWidget.starter.clicked.connect(self.compare)
 
-        self.setWindowTitle("GT7 Visual Lap Comparison")
+        self.setWindowTitle("GT7 Graphical Lap Comparison")
 
         self.setCentralWidget(self.startWidget)
 
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
     app.setOrganizationName("pitstop.profittlich.com");
     app.setOrganizationDomain("pitstop.profittlich.com");
-    app.setApplicationName("GT7 Visual Lap Comparison");
+    app.setApplicationName("GT7 Graphical Lap Comparison");
 
     window = MainWindow()
 

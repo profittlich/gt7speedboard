@@ -587,7 +587,6 @@ class MapView2(QWidget):
             self.layerInfo = layerInfo
 
         qp.drawStaticText(10, 10, self.layerInfoTxt)
-        print(self.layerInfoTxt.size())
 
         typeInfo = ""
         if self.showText:
