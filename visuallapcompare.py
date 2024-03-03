@@ -16,11 +16,69 @@ from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
 
 from gt7telepoint import Point
-from helpers import loadLap
+from helpers import loadLap, loadLaps, indexToTime
 from helpers import Lap, PositionPoint
 
 import gt7telemetryreceiver as tele
 from gt7widgets import *
+
+class StartWindowVLC(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("GT7 SpeedBoard Visual Lap Compare 1.0")
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.lRefA = QLabel("Red lap:")
+        layout.addWidget(self.lRefA)
+        self.bRefA = QPushButton("Select file")
+        layout.addWidget(self.bRefA)
+        self.bRefA.clicked.connect(self.chooseReferenceLapA)
+        self.refAFile = ""
+        
+        self.idxRefA = QComboBox()
+        layout.addWidget(self.idxRefA)
+        #self.idxRefA.addItem("Laps")
+        #self.idxRefA.addItem("Circuit Experience (experimental)")
+
+        self.lRefB = QLabel("Green lap")
+        layout.addWidget(self.lRefB)
+        self.bRefB = QPushButton("Select file")
+        self.bRefB.clicked.connect(self.chooseReferenceLapB)
+        layout.addWidget(self.bRefB)
+        self.refBFile = ""
+        
+        self.idxRefB = QComboBox()
+        layout.addWidget(self.idxRefB)
+        #self.idxRefB.addItem("Laps")
+        #self.idxRefB.addItem("Circuit Experience (experimental)")
+
+        self.starter = QPushButton("Compare")
+        layout.addWidget(self.starter)
+
+    def chooseReferenceLapA(self):
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+        if chosen[0] == "":
+            print("None")
+        else:
+            self.refAFile = chosen[0]
+            self.lRefA.setText("Red lap: " + chosen[0][chosen[0].rfind("/")+1:])
+            self.aLaps = loadLaps(self.refAFile)
+            for l in self.aLaps:
+                self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
+
+    def chooseReferenceLapB(self):
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+        if chosen[0] == "":
+            print("None")
+        else:
+            self.refBFile = chosen[0]
+            self.lRefB.setText("Green lap: " + chosen[0][chosen[0].rfind("/")+1:])
+            self.bLaps = loadLaps(self.refBFile)
+            for l in self.bLaps:
+                self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
+
 
 class CrossMarker:
     def __init__(self, group, x1, z1, color, bold=1):
@@ -71,7 +129,7 @@ class DownMarker:
         self.bold = bold
 
 class LeftLineMarker:
-    def __init__(self, group, x1, z1, x2, z2, color, bold=1, endText = None):
+    def __init__(self, group, x1, z1, x2, z2, color, bold=1, length=100, endText = None):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -79,6 +137,7 @@ class LeftLineMarker:
         self.z2 = z2
         self.color = color
         self.bold = bold
+        self.length = length
         self.endText = endText
 
 class Text:
@@ -123,7 +182,7 @@ class MapView2(QWidget):
         self.offsetX = 0
         self.offsetZ = 0
         self.showText = True
-        self.showLayers = [ True, ] * 5
+        self.showLayers = [ True, ] * 7
         self.showGroups = {}
         self.dragging = False
         self.temporaryMarkers = []
@@ -193,17 +252,6 @@ class MapView2(QWidget):
 
         return col
 
-    def indexToTime(self, i):
-        minu = i // (60*60)
-        sec = str(i // 60 - minu*60)
-        if len(sec) < 2:
-            sec = "0" * (2-len(sec)) + sec
-        msec = str((i % 60) * 1/60)[2:5]
-        if len(msec) < 3:
-            msec += "0" * (3-len(msec))
-        result = "{minu:1.0f}:{sec}:{msec}".format(minu = minu, sec = sec, msec = msec)
-        return result
-
     # DATA ANALYSIS
     def findClosestPointNoLimit(self, lap, p):
         shortestDistance = 100000000
@@ -256,10 +304,10 @@ class MapView2(QWidget):
         #print("findNextThrottle", startI)
         j = startI
         for j in range(startI, len(lap)):
-            if lap[j].throttle <= 0.9:
+            if lap[j].throttle <= 90:
                 break
         for i in range(j, len(lap)):
-            if lap[i].throttle > 0.9:
+            if lap[i].throttle > 90:
                 future = False #self.recentGearChange(lap, i)
                 #if i > 4 and i < 8200:
                     #if future:
@@ -277,11 +325,11 @@ class MapView2(QWidget):
         j = startI
         found = False
         for j in range(startI, len(lap)):
-            if lap[j].throttle > 0.9:
+            if lap[j].throttle > 90:
                 found = True
                 break
         for i in range(j, len(lap)):
-            if lap[i].throttle <= 0.9 and found:
+            if lap[i].throttle <= 90 and found:
                 recent = False #self.recentGearChange(lap, i)
                 #if i > 4 and i < 8200:
                     #if recent:
@@ -296,29 +344,35 @@ class MapView2(QWidget):
 
     def makeGraphic(self):
         # init
-        self.layers = [[], [], [], [], []]
-        lap1Layer = 0
-        lap2Layer = 1
-        lap1Markers = 2
-        lap2Markers = 3
-        textLayer = 4
+        self.layers = [[], [], [], [], [], [], []]
+        self.lap1Layer = 2
+        self.lap2Layer = 3
+        self.lap1BottomMarkers = 0
+        self.lap2BottomMarkers = 1
+        self.lap1Markers = 4
+        self.lap2Markers = 5
+        self.textLayer = 6
 
-        t1 = self.findNextThrottle(lap1.points, 0)
-        t2 = self.findNextThrottle(lap2.points, 0)
-        to1 = self.findNextThrottleOff(lap1.points, 0)
-        to2 = self.findNextThrottleOff(lap2.points, 0)
-        b1 = self.findNextBrake(lap1.points, 0)
-        b2 = self.findNextBrake(lap2.points, 0)
-        bo1 = self.findNextBrakeOff(lap1.points, 0)
-        bo2 = self.findNextBrakeOff(lap2.points, 0)
+        t1 = self.findNextThrottle(self.lap1.points, 0)
+        t2 = self.findNextThrottle(self.lap2.points, 0)
+        to1 = self.findNextThrottleOff(self.lap1.points, 0)
+        to2 = self.findNextThrottleOff(self.lap2.points, 0)
+        b1 = self.findNextBrake(self.lap1.points, 0)
+        b2 = self.findNextBrake(self.lap2.points, 0)
+        bo1 = self.findNextBrakeOff(self.lap1.points, 0)
+        bo2 = self.findNextBrakeOff(self.lap2.points, 0)
 
         i1 = 0
         i2 = 0
-        p1 = lap1.points[i1]
-        p2 = lap2.points[i2]
+        p1 = self.lap1.points[i1]
+        p2 = self.lap2.points[i2]
 
         l1Color = 0x00ff7f7f
         l2Color = 0x0000ff00
+        l1ColorDark = 0x00ff3f3f
+        l2ColorDark = 0x00007f00
+        l1ColorBright = 0x00ffafaf
+        l2ColorBright = 0x00afffaf
 
         prevStep = False
         diffHistory = []
@@ -328,27 +382,27 @@ class MapView2(QWidget):
         prevGear2 = 0
 
         # add finish line marker
-        self.layers[lap1Markers].append(CircleMarker("finish", lap1.points[-1].position_x, lap1.points[-1].position_z, l1Color, 2))
-        self.layers[textLayer].append(Text("finish", lap1.points[-1].position_x, lap1.points[-1].position_z, "FINISH:", 0, 20, 0x00ffffff, 2))
-        self.layers[textLayer].append(Text("finish", lap1.points[-1].position_x, lap1.points[-1].position_z, self.indexToTime(len(lap1.points)), 0, 35, l1Color, 2))
-        self.layers[textLayer].append(Text("finish", lap1.points[-1].position_x, lap1.points[-1].position_z, self.indexToTime(len(lap2.points)), 0, 50, l2Color, 2))
-        if len(lap1.points) < len(lap2.points):
+        self.layers[self.lap1Markers].append(CircleMarker("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, l1ColorBright, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "FINISH:", 0, 20, 0x00ffffff, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, indexToTime(len(self.lap1.points)), 0, 35, l1Color, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, indexToTime(len(self.lap2.points)), 0, 50, l2Color, 2))
+        if len(self.lap1.points) < len(self.lap2.points):
             signPre = "+"
         else:
             signPre = "-"
-        self.layers[textLayer].append(Text("finish", lap1.points[-1].position_x, lap1.points[-1].position_z, signPre + self.indexToTime(abs(len(lap1.points)-len(lap2.points))) + " ± 0.017s", 0, 65, 0x00ffffff, 2))
-        self.layers[lap2Markers].append(CircleMarker("finish", lap2.points[-1].position_x, lap2.points[-1].position_z, l2Color, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, signPre + indexToTime(abs(len(self.lap1.points)-len(self.lap2.points))) + " ± 0.017s", 0, 65, 0x00ffffff, 2))
+        self.layers[self.lap2Markers].append(CircleMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, l2ColorBright, 2))
 
         # handle all data points in the laps
-        while i1 < len(lap1.points)-1 and i2 < len(lap2.points)-1:
+        while i1 < len(self.lap1.points)-1 and i2 < len(self.lap2.points)-1:
 
-            p1next = lap1.points[i1+1]
-            p2next = lap2.points[i2+1]
+            p1next = self.lap1.points[i1+1]
+            p2next = self.lap2.points[i2+1]
 
-            d1 = lap1.distance(p1next, p2)
-            d2 = lap1.distance(p2next, p1)
-            db = lap1.distance(p1next, p2next)
-            dn = lap1.distance(p1, p2)
+            d1 = self.lap1.distance(p1next, p2)
+            d2 = self.lap1.distance(p2next, p1)
+            db = self.lap1.distance(p1next, p2next)
+            dn = self.lap1.distance(p1, p2)
             if d1 < d2 and d1 < db: # Lap 2 is faster here
                 i1+=1
 
@@ -358,11 +412,11 @@ class MapView2(QWidget):
                 ad = mean(diffHistory)
                 
                 if not prevStep:
-                    self.layers[lap1Markers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p1next.position_x, p1next.position_z, l2Color))
+                    self.layers[self.lap1Markers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p1next.position_x, p1next.position_z, l2Color))
                     dpre = ""
                     if int(p2.car_speed - p1.car_speed) > 0:
                         dpre = "+"
-                    self.layers[lap2Markers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p1.car_speed)) + "km/h\n" + str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed - p1.car_speed)) + " km/h"))
+                    self.layers[self.lap2BottomMarkers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed - p1.car_speed)) + " km/h"))
                     prevStep = True
             elif d2 < d1 and d2 < db: # Lap 1 is faster here
                 i2+=1
@@ -373,11 +427,11 @@ class MapView2(QWidget):
 
                 ad = mean(diffHistory)
                 if not prevStep:
-                    self.layers[lap1Markers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, l1Color))
+                    self.layers[self.lap1Markers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, l1Color))
                     dpre = ""
                     if int(p2.car_speed - p1.car_speed) > 0:
                         dpre = "+"
-                    self.layers[lap2Markers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p1.car_speed)) + "km/h\n" + str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed-p1.car_speed)) + " km/h"))
+                    self.layers[self.lap2BottomMarkers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed-p1.car_speed)) + " km/h"))
                     prevStep = True
             else: # No time difference
                 i1+=1
@@ -390,26 +444,24 @@ class MapView2(QWidget):
             
             # Mark gear changes
             if prevGear1 != p1.current_gear:
-                print("Gear change 1:", i1, prevGear1, "->", p1.current_gear)
                 if prevGear1 > p1.current_gear:
-                    self.layers[lap1Markers].append(DownMarker("gear", p1.position_x, p1.position_z, l1Color, 4))
+                    self.layers[self.lap1Markers].append(DownMarker("gear", p1.position_x, p1.position_z, l1ColorBright, 4))
                 else:
-                    self.layers[lap1Markers].append(UpMarker("gear", p1.position_x, p1.position_z, l1Color, 4))
+                    self.layers[self.lap1Markers].append(UpMarker("gear", p1.position_x, p1.position_z, l1ColorBright, 4))
                 prevGear1 = p1.current_gear
 
             if prevGear2 != p2.current_gear:
-                print("Gear change 2:", i2, prevGear2, "->", p2.current_gear)
                 if prevGear2 > p2.current_gear:
-                    self.layers[lap2Markers].append(DownMarker("gear", p2.position_x, p2.position_z, l2Color, 4))
+                    self.layers[self.lap2Markers].append(DownMarker("gear", p2.position_x, p2.position_z, l2ColorBright, 4))
                 else:
-                    self.layers[lap2Markers].append(UpMarker("gear", p2.position_x, p2.position_z, l2Color, 4))
+                    self.layers[self.lap2Markers].append(UpMarker("gear", p2.position_x, p2.position_z, l2ColorBright, 4))
                 prevGear2 = p2.current_gear
                 
             # Mark brake points
             if b1 == i1:
-                self.layers[lap1Markers].append(CrossMarker("brake", p1next.position_x, p1next.position_z, l1Color, 4))
-                self.layers[textLayer].append(Text("time", p1next.position_x, p1next.position_z, self.indexToTime(i1) + " ± 0.017s", 0, 20, l1Color, 2))
-                self.layers[textLayer].append(Text("time", p1next.position_x, p1next.position_z, self.indexToTime(i2) + " ± 0.017s", 0, 35, l2Color, 2))
+                self.layers[self.lap1Markers].append(CrossMarker("brake", p1next.position_x, p1next.position_z, l1ColorBright, 4))
+                self.layers[self.textLayer].append(Text("time", p1next.position_x, p1next.position_z, indexToTime(i1) + " ± 0.017s", 0, 20, l1Color, 2))
+                self.layers[self.textLayer].append(Text("time", p1next.position_x, p1next.position_z, indexToTime(i2) + " ± 0.017s", 0, 35, l2Color, 2))
                 if i1 <= i2:
                     signPre = "+"
                 else:
@@ -419,16 +471,16 @@ class MapView2(QWidget):
                     cSignPre = "-"
                 else:
                     cSignPre = "+"
-                self.layers[textLayer].append(Text("time", p1next.position_x, p1next.position_z, signPre + self.indexToTime(abs(i1-i2)) + " (" + cSignPre + self.indexToTime(abs(change)) + ")", 0, 50, 0x00ffffff, 2))
+                self.layers[self.textLayer].append(Text("time", p1next.position_x, p1next.position_z, signPre + indexToTime(abs(i1-i2)) + " (" + cSignPre + indexToTime(abs(change)) + ")", 0, 50, 0x00ffffff, 2))
                 prevDelta = i1-i2
-                b1 = self.findNextBrake(lap1.points, b1+1)
+                b1 = self.findNextBrake(self.lap1.points, b1+1)
             if bo1 == i1:
-                self.layers[lap1Markers].append(SquareMarker("brake", p1next.position_x, p1next.position_z, l1Color, 4))
-                bo1 = self.findNextBrakeOff(lap1.points, bo1+1)
+                self.layers[self.lap1Markers].append(SquareMarker("brake", p1next.position_x, p1next.position_z, l1ColorBright, 4))
+                bo1 = self.findNextBrakeOff(self.lap1.points, bo1+1)
             if b2 == i2:
-                self.layers[lap2Markers].append(CrossMarker("brake", p2next.position_x, p2next.position_z, l2Color, 4))
-                self.layers[textLayer].append(Text("time", p2next.position_x, p2next.position_z, self.indexToTime(i2) + " ± 0.017s", 0, -20, l2Color, 2))
-                self.layers[textLayer].append(Text("time", p2next.position_x, p2next.position_z, self.indexToTime(i1) + " ± 0.017s", 0, -35, l1Color, 2))
+                self.layers[self.lap2Markers].append(CrossMarker("brake", p2next.position_x, p2next.position_z, l2ColorBright, 4))
+                self.layers[self.textLayer].append(Text("time", p2next.position_x, p2next.position_z, indexToTime(i2) + " ± 0.017s", 0, -20, l2Color, 2))
+                self.layers[self.textLayer].append(Text("time", p2next.position_x, p2next.position_z, indexToTime(i1) + " ± 0.017s", 0, -35, l1Color, 2))
                 if i1 <= i2:
                     signPre = "+"
                 else:
@@ -438,40 +490,41 @@ class MapView2(QWidget):
                     cSignPre = "-"
                 else:
                     cSignPre = "+"
-                self.layers[textLayer].append(Text("time", p2next.position_x, p2next.position_z, signPre + self.indexToTime(abs(i1-i2)) + " (" + cSignPre + self.indexToTime(abs(change)) + ")", 0, -50, 0x00ffffff, 2))
+                self.layers[self.textLayer].append(Text("time", p2next.position_x, p2next.position_z, signPre + indexToTime(abs(i1-i2)) + " (" + cSignPre + indexToTime(abs(change)) + ")", 0, -50, 0x00ffffff, 2))
                 prevDelta = i1-i2
-                b2 = self.findNextBrake(lap2.points, b2+1)
+                b2 = self.findNextBrake(self.lap2.points, b2+1)
             if bo2 == i2:
-                self.layers[lap2Markers].append(SquareMarker("brake", p2next.position_x, p2next.position_z, l2Color, 4))
-                bo2 = self.findNextBrakeOff(lap2.points, bo2+1)
+                self.layers[self.lap2Markers].append(SquareMarker("brake", p2next.position_x, p2next.position_z, l2ColorBright, 4))
+                bo2 = self.findNextBrakeOff(self.lap2.points, bo2+1)
 
 
             # Mark throttle points
+            if not prevStep and i1 % 10 == 0 or abs(p1.throttle-p1next.throttle) > 0.9:
+                self.layers[self.lap1BottomMarkers].append(LeftLineMarker("time", p1next.position_x, p1next.position_z, p1.position_x, p1.position_z, l1ColorDark, 4, length = p1next.throttle))
+            if not prevStep and i2 % 10 == 0 or abs(p2.throttle-p2next.throttle) > 0.9:
+                self.layers[self.lap2BottomMarkers].append(LeftLineMarker("time", p2next.position_x, p2next.position_z, p2.position_x, p2.position_z, l2ColorDark, 4, length = p2next.throttle))
+
             if t1 == i1:
-                #self.layers[lap1Markers].append(LeftLineMarker(p1next.position_x, p1next.position_z, p1.position_x, p1.position_z, l1Color, 4))
-                self.layers[lap1Markers].append(PlusMarker("throttle", p1next.position_x, p1next.position_z, l1Color, 4))
-                t1 = self.findNextThrottle(lap1.points, t1+1)
+                #self.layers[self.lap1Markers].append(PlusMarker("throttle", p1next.position_x, p1next.position_z, l1Color, 4))
+                t1 = self.findNextThrottle(self.lap1.points, t1+1)
             if to1 == i1:
-                #self.layers[lap1Markers].append(LeftLineMarker(p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, 0x00ffffff, 4))
-                self.layers[lap1Markers].append(CircleMarker("throttle", p1next.position_x, p1next.position_z, l1Color, 4))
-                to1 = self.findNextThrottleOff(lap1.points, to1+1)
+                #self.layers[self.lap1Markers].append(CircleMarker("throttle", p1next.position_x, p1next.position_z, l1Color, 4))
+                to1 = self.findNextThrottleOff(self.lap1.points, to1+1)
             
             if t2 == i2:
-                #self.layers[lap2Markers].append(LeftLineMarker(p2next.position_x, p2next.position_z, p2.position_x, p2.position_z, l2Color, 4))
-                self.layers[lap2Markers].append(PlusMarker("throttle", p2next.position_x, p2next.position_z, l2Color, 4))
-                t2 = self.findNextThrottle(lap2.points, t2+1)
+                #self.layers[self.lap2Markers].append(PlusMarker("throttle", p2next.position_x, p2next.position_z, l2Color, 4))
+                t2 = self.findNextThrottle(self.lap2.points, t2+1)
             if to2 == i2:
-                #self.layers[lap2Markers].append(LeftLineMarker(p2next.position_x, p2next.position_z, p2.position_x, p2.position_z, 0x00ffffff, 4))
-                self.layers[lap2Markers].append(CircleMarker("throttle", p2next.position_x, p2next.position_z, l2Color, 4))
-                to2 = self.findNextThrottleOff(lap2.points, to2+1)
+                #self.layers[self.lap2Markers].append(CircleMarker("throttle", p2next.position_x, p2next.position_z, l2Color, 4))
+                to2 = self.findNextThrottleOff(self.lap2.points, to2+1)
 
             # Draw laps
-            self.layers[lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, l1Color, 4))
-            self.layers[lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, l2Color, 4))
+            self.layers[self.lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, l1Color, 4))
+            self.layers[self.lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, l2Color, 4))
             
             # Go to next points
-            p1 = lap1.points[i1]
-            p2 = lap2.points[i2]
+            p1 = self.lap1.points[i1]
+            p2 = self.lap2.points[i2]
 
     # RENDERING
     def paintEvent(self, event):
@@ -582,8 +635,8 @@ class MapView2(QWidget):
                         dx = x2 - x1
                         dz = z2 - z1
                         le = math.sqrt(dx**2 + dz**2)
-                        dx /= le/30
-                        dz /= le/30
+                        dx *= l.length/le/3
+                        dz *= l.length/le/3
                         qp.drawLine(int(x1), int(z1), int(x1+dz), int(z1-dx))
                         if not l.endText is None and self.showText:
                             lines = l.endText.split("\n")
@@ -629,16 +682,16 @@ class MapView2(QWidget):
             lp2 = self.findClosestPointNoLimit (self.lap2.points, mp)
             mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
             mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%", 20, 0, 0x0000ff00, 2)
-            self.layers[3].append(mk1)
-            self.layers[3].append(mk2)
+            self.layers[self.lap2Markers].append(mk1)
+            self.layers[self.lap2Markers].append(mk2)
             self.temporaryMarkers.append(mk1)
             self.temporaryMarkers.append(mk2)
 
             lp1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
             mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%", 20, 15, 0x00ff7f7f, 2)
-            self.layers[2].append(mk3)
-            self.layers[2].append(mk4)
+            self.layers[self.lap1Markers].append(mk3)
+            self.layers[self.lap1Markers].append(mk4)
             self.temporaryMarkers.append(mk3)
             self.temporaryMarkers.append(mk4)
             self.update()
@@ -740,15 +793,29 @@ class MapView2(QWidget):
         elif e.key() == Qt.Key.Key_5.value:
             self.showLayers[4] = not self.showLayers[4]
             self.update()
+        elif e.key() == Qt.Key.Key_6.value:
+            self.showLayers[5] = not self.showLayers[5]
+            self.update()
+        elif e.key() == Qt.Key.Key_7.value:
+            self.showLayers[6] = not self.showLayers[6]
+            self.update()
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.masterWidget = MapView2()
+        self.startWidget = StartWindowVLC()
+        self.startWidget.starter.clicked.connect(self.compare)
 
         self.setWindowTitle("GT7 Visual Lap Comparison")
 
+        self.setCentralWidget(self.startWidget)
+
+    def compare(self):
+        lap1 = self.startWidget.aLaps[self.startWidget.idxRefA.currentIndex()]
+        lap2 = self.startWidget.bLaps[self.startWidget.idxRefB.currentIndex()]
+        self.masterWidget.setLaps(lap1, lap2)
         self.setCentralWidget(self.masterWidget)
 
     def keyPressEvent(self, e):
@@ -777,10 +844,12 @@ if __name__ == '__main__':
 
     window = MainWindow()
 
-    lap1 = loadLap(sys.argv[1])
-    lap2 = loadLap(sys.argv[2])
+    if len(sys.argv) >= 3:
+        lap1 = loadLap(sys.argv[1])
+        lap2 = loadLap(sys.argv[2])
 
-    window.masterWidget.setLaps(lap1, lap2)
+        window.masterWidget.setLaps(lap1, lap2)
+        window.setCentralWidget(window.masterWidget)
     
     window.show()
 

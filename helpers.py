@@ -62,3 +62,34 @@ def loadLap(fn):
                 lap.points.append(curPoint)
     return lap
 
+def loadLaps(fn):
+    result = []
+    if len(fn)>0:
+        print(fn)
+        with open(fn, "rb") as f:
+            allData = f.read()
+            curIndex = 0
+            curLap = -10
+            print(len(allData))
+            while curIndex < len(allData):
+                data = allData[curIndex:curIndex + 296]
+                curIndex += 296
+                ddata = salsa20_dec(data)
+                curPoint = Point(ddata, data)
+                if curPoint.current_lap != curLap:
+                    curLap = curPoint.current_lap
+                    result.append(Lap())
+                result[-1].points.append(curPoint)
+    return result
+
+def indexToTime(i):
+    minu = i // (60*60)
+    sec = str(i // 60 - minu*60)
+    if len(sec) < 2:
+        sec = "0" * (2-len(sec)) + sec
+    msec = str((i % 60) * 1/60)[2:5]
+    if len(msec) < 3:
+        msec += "0" * (3-len(msec))
+    result = "{minu:1.0f}:{sec}:{msec}".format(minu = minu, sec = sec, msec = msec)
+    return result
+
