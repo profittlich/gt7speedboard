@@ -24,17 +24,7 @@ class StartWindowVLC(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        self.lRefA = QLabel("Red lap:")
-        layout.addWidget(self.lRefA)
-        self.bRefA = QPushButton("Select file")
-        layout.addWidget(self.bRefA)
-        self.bRefA.clicked.connect(self.chooseReferenceLapA)
-        self.refAFile = ""
-        
-        self.idxRefA = QComboBox()
-        layout.addWidget(self.idxRefA)
-
-        self.lRefB = QLabel("Green lap")
+        self.lRefB = QLabel("Blue lap:")
         layout.addWidget(self.lRefB)
         self.bRefB = QPushButton("Select file")
         self.bRefB.clicked.connect(self.chooseReferenceLapB)
@@ -43,6 +33,16 @@ class StartWindowVLC(QWidget):
         
         self.idxRefB = QComboBox()
         layout.addWidget(self.idxRefB)
+
+        self.lRefA = QLabel("Violet lap:")
+        layout.addWidget(self.lRefA)
+        self.bRefA = QPushButton("Select file")
+        layout.addWidget(self.bRefA)
+        self.bRefA.clicked.connect(self.chooseReferenceLapA)
+        self.refAFile = ""
+        
+        self.idxRefA = QComboBox()
+        layout.addWidget(self.idxRefA)
 
         self.starter = QPushButton("Compare")
         layout.addWidget(self.starter)

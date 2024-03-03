@@ -1,5 +1,5 @@
 class CrossMarker:
-    def __init__(self, group, x1, z1, color, bold=1):
+    def __init__(self, group, x1, z1, color, bold=2):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -7,7 +7,7 @@ class CrossMarker:
         self.bold = bold
 
 class PlusMarker:
-    def __init__(self, group, x1, z1, color, bold=1):
+    def __init__(self, group, x1, z1, color, bold=2):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -15,7 +15,7 @@ class PlusMarker:
         self.bold = bold
 
 class SquareMarker:
-    def __init__(self, group, x1, z1, color, bold=1):
+    def __init__(self, group, x1, z1, color, bold=2):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -23,7 +23,7 @@ class SquareMarker:
         self.bold = bold
 
 class CircleMarker:
-    def __init__(self, group, x1, z1, color, bold=1):
+    def __init__(self, group, x1, z1, color, bold=2):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -31,23 +31,25 @@ class CircleMarker:
         self.bold = bold
 
 class UpMarker:
-    def __init__(self, group, x1, z1, color, bold=1):
+    def __init__(self, group, x1, z1, color, bold=2, text=None):
         self.group = group
         self.x1 = x1
         self.z1 = z1
         self.color = color
         self.bold = bold
+        self.text = text
 
 class DownMarker:
-    def __init__(self, group, x1, z1, color, bold=1):
+    def __init__(self, group, x1, z1, color, bold=2, text=None):
         self.group = group
         self.x1 = x1
         self.z1 = z1
         self.color = color
         self.bold = bold
+        self.text = text
 
 class LeftLineMarker:
-    def __init__(self, group, x1, z1, x2, z2, color, bold=1, length=100, endText = None):
+    def __init__(self, group, x1, z1, x2, z2, color, bold=2, length=100, endText = None):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -59,7 +61,7 @@ class LeftLineMarker:
         self.endText = endText
 
 class Text:
-    def __init__(self, group, x1, z1, text, offsetx, offsetz, color, bold=1):
+    def __init__(self, group, x1, z1, text, offsetx, offsetz, color, bold=2):
         self.group = group
         self.x1 = x1
         self.z1 = z1
@@ -70,7 +72,7 @@ class Text:
         self.bold = bold
 
 class Line:
-    def __init__(self, group, x1, z1, x2, z2, color, bold=1):
+    def __init__(self, group, x1, z1, x2, z2, color, bold=2):
         self.group = group
         self.x1 = x1
         self.z1 = z1

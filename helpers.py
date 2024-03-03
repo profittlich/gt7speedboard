@@ -82,7 +82,8 @@ def loadLaps(fn):
                 result[-1].points.append(curPoint)
     return result
 
-def indexToTime(i):
+def indexToTime(i, compensate=1):
+    i += 0.5 * compensate
     minu = i // (60*60)
     sec = str(i // 60 - minu*60)
     if len(sec) < 2:
