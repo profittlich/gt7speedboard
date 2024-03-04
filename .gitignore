@@ -18,3 +18,6 @@ gt7speedboard.ini
 salsatest.py
 *.swp
 *.pyc
+*.xlsx
+*.csv
+*.json
