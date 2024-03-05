@@ -1,6 +1,5 @@
 import sys
 import os
-import threading
 import traceback
 from wakepy import keep
 import datetime
@@ -97,7 +96,7 @@ def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
     print("=== EXCEPTION ===")
     print("error message:\n", tb)
-    with open ("gt7visualcomp.log", "a") as f:
+    with open ("gt7glc.log", "a") as f:
         f.write("=== EXCEPTION ===\n")
         f.write(str(datetime.datetime.now ()) + "\n\n")
         f.write(str(tb) + "\n")

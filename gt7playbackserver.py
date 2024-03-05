@@ -1,7 +1,12 @@
 from salsa20 import Salsa20_xor
+import threading
 import time
 import socket
 import sys
+import struct
+from PyQt6.QtCore import Qt 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog
+from helpers import salsa20_dec, salsa20_enc
 
 class GT7PlaybackServer:
 
@@ -20,21 +25,8 @@ class GT7PlaybackServer:
     def setFilename(self, f):
         self.filename = f
     
-    def salsa20_enc(self, dat, iv1):
-        KEY = b'Simulator Interface Packet GT7 ver 0.0'
-        # Seed IV is always located here
-        oiv = iv1.to_bytes(4, 'little')
-        iv1 = int.from_bytes(oiv, byteorder='little')
-        # Notice DEADBEAF, not DEADBEEF
-        iv2 = iv1 ^ 0xDEADBEAF
-        IV = bytearray()
-        IV.extend(iv2.to_bytes(4, 'little'))
-        IV.extend(iv1.to_bytes(4, 'little'))
-        dat[0:4] = 0x47375330.to_bytes(4, 'little')
-        print(type(dat), type(bytes(IV)), type(KEY[0:32]))
-        ddata = bytearray(Salsa20_xor(bytes(dat), bytes(IV), KEY[0:32]))
-        ddata[0x40:0x44] = oiv
-        return ddata
+    def stop(self):
+        self.running=False
 
     def runPlaybackServer(self):
         # Create a UDP socket and bind it
@@ -48,19 +40,21 @@ class GT7PlaybackServer:
 
         print("Samples:", len(allData)/296)
 
+        self.running = True
         connected = False
-        while not connected:
+        while not connected and self.running:
             try:
                 data, address = self.s.recvfrom(4096)
                 print(address)
                 connected = True
             except Exception as e:
                 print('Exception: {}'.format(e))
-        print("Connected to ", address)
+        if connected:
+            print("Connected to ", address)
 
-        self.running = True
         curIndex = 0
         oldPc = 0
+        pktIdCounter = 0
         while self.running:
             try:
                 pc = time.perf_counter()
@@ -69,30 +63,140 @@ class GT7PlaybackServer:
                     pc = time.perf_counter()
                 oldPc = pc
 
-                self.s.sendto(allData[curIndex:curIndex + 296], (self.ip, self.ReceivePort))
+                decr = bytearray(salsa20_dec(allData[curIndex:curIndex+296]))
+                newPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
+                struct.pack_into('i', decr, 0x70, pktIdCounter)
+                newNewPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
+                if (curIndex//296) % 600 == 0:
+                    print("Serve index", curIndex//296, "pkt", newPktId, "new pkt", newNewPktId)
+                encr = salsa20_enc(decr, 296)
+
+                self.s.sendto(encr, (self.ip, self.ReceivePort))
                 curIndex += 296
                 if curIndex >= len(allData):
                     print("Loop")
                     curIndex = 0
+                pktIdCounter += 1
 
             except Exception as e:
                 print('Exception: {}'.format(e))
+        print("Serving stopped.")
 
+class StartWindowPS(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("GT7 Playback Server")
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.lRec = QLabel("Recording:")
+        layout.addWidget(self.lRec)
+        self.bRec = QPushButton("Select file")
+        layout.addWidget(self.bRec)
+        self.recFile = ""
+
+        self.lFps = QLabel("Playback rate:")
+        layout.addWidget(self.lFps)
+        self.sFps = QDoubleSpinBox()
+        self.sFps.setValue(1)
+        self.sFps.setMinimum(0.1)
+        self.sFps.setMaximum(10)
+        self.sFps.setSingleStep(0.1)
+        self.sFps.setDecimals(1)
+        self.sFps.setSuffix("x")
+        layout.addWidget(self.sFps)
+        
+        self.starter = QPushButton("Serve")
+        layout.addWidget(self.starter)
+        self.stopper = QPushButton("Stop")
+        layout.addWidget(self.stopper)
+        self.stopper.hide()
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.server = GT7PlaybackServer ("127.0.0.1")
+        self.thread = None
+        self.startWidget = StartWindowPS()
+        self.startWidget.starter.clicked.connect(self.serve)
+        self.startWidget.stopper.clicked.connect(self.stop)
+        self.startWidget.bRec.clicked.connect(self.chooseRecording)
+        self.startWidget.sFps.valueChanged.connect(self.updateRate)
+
+        self.setCentralWidget(self.startWidget)
+
+    def stop(self):
+        self.server.stop()
+        if not self.thread is None:
+            self.thread.join()
+            self.thread = None
+        self.startWidget.stopper.hide()
+        self.startWidget.starter.show()
+
+    def chooseRecording(self):
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+        if chosen[0] == "":
+            print("None")
+        else:
+            self.startWidget.recFile = chosen[0]
+            self.startWidget.lRec.setText("Recording: " + chosen[0][chosen[0].rfind("/")+1:])
+            self.stop()
+
+    def updateRate(self, rate):
+        print("Set rate to", rate, "(" + str(60*rate) + " fps)")
+        self.server.setFPS(60 * rate)
+
+    def serve(self):
+        if self.startWidget.recFile != "":
+            self.server.setFPS(60 * self.startWidget.sFps.value())
+            self.server.setFilename(self.startWidget.recFile)
+            self.thread = threading.Thread(target=self.server.runPlaybackServer)
+            self.thread.start()
+            self.startWidget.stopper.show()
+            self.startWidget.starter.hide()
+
+    def closeEvent(self, event):
+        print("Closing...")
+        self.server.stop()
+        event.accept()
+
+
+def excepthook(exc_type, exc_value, exc_tb):
+    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    print("=== EXCEPTION ===")
+    print("error message:\n", tb)
+    with open ("gt7playbackserver.log", "a") as f:
+        f.write("=== EXCEPTION ===\n")
+        f.write(str(datetime.datetime.now ()) + "\n\n")
+        f.write(str(tb) + "\n")
+    QApplication.quit()
 
 if __name__ == '__main__':
-    tester = GT7PlaybackServer ("127.0.0.1")
+    app = QApplication(sys.argv)
+
+    app.setOrganizationName("pitstop.profittlich.com");
+    app.setOrganizationDomain("pitstop.profittlich.com");
+    app.setApplicationName("GT7 Playback Server");
+
+    window = MainWindow()
+
     ready = False
     i = 1
     while i < len(sys.argv):
         if sys.argv[i] == "--fps":
             fps = float(sys.argv[i+1])
-            tester.setFPS(fps)
+            window.server.setFPS(fps)
             i+=1
         else:
             ready = True
-            tester.setFilename(sys.argv[i])
+            window.server.setFilename(sys.argv[i])
         i+=1
     if ready:
-        tester.runPlaybackServer()
+        window.server.runPlaybackServer()
     else:
-        print("usage: " + sys.argv[0] + " [options] <filename>")
+        window.show()
+
+        sys.excepthook = excepthook
+        app.exec()

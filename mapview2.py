@@ -244,17 +244,22 @@ class MapView2(QWidget):
         self.layers[self.lap2Markers].append(LeftLineMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.lap2.points[-2].position_x, self.lap2.points[-2].position_z, 0x00ffffff, 2))
 
         # handle all data points in the laps
-        while i1 < len(self.lap1.points)-1 and i2 < len(self.lap2.points)-1:
+        while i1 < len(self.lap1.points)-1 or i2 < len(self.lap2.points)-1:
 
-            p1next = self.lap1.points[i1+1]
-            p2next = self.lap2.points[i2+1]
+            if i1 < len(self.lap1.points)-1:
+                p1next = self.lap1.points[i1+1]
+            if i2 < len(self.lap2.points)-1:
+                p2next = self.lap2.points[i2+1]
 
             d1 = self.lap1.distance(p1next, p2)
             d2 = self.lap1.distance(p2next, p1)
             db = self.lap1.distance(p1next, p2next)
             dn = self.lap1.distance(p1, p2)
-            if d1 < d2 and d1 < db: # Lap 2 is faster here
+            i1Incremented = False
+            i2Incremented = False
+            if d1 < d2 and d1 < db and i1 < len(self.lap1.points)-1: # Lap 2 is faster here
                 i1+=1
+                i1Incremented = True
 
                 diffHistory.append(1)
                 if len(diffHistory) > 180:
@@ -268,8 +273,9 @@ class MapView2(QWidget):
                         dpre = "+"
                     self.layers[self.lap2BottomMarkers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed - p1.car_speed)) + " km/h"))
                     prevStep = True
-            elif d2 < d1 and d2 < db: # Lap 1 is faster here
+            elif d2 < d1 and d2 < db and i2 < len(self.lap2.points)-1: # Lap 1 is faster here
                 i2+=1
+                i2Incremented = True
 
                 diffHistory.append(-1)
                 if len(diffHistory) > 180:
@@ -284,8 +290,12 @@ class MapView2(QWidget):
                     self.layers[self.lap2BottomMarkers].append(LeftLineMarker("time", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.speedDiffQColor(6*30*ad), 4, endText = str(int(p2.car_speed)) + "km/h\n" + dpre + str(int(p2.car_speed-p1.car_speed)) + " km/h"))
                     prevStep = True
             else: # No time difference
-                i1+=1
-                i2+=1
+                if i1 < len(self.lap1.points)-1:
+                    i1+=1
+                    i1Incremented = True
+                if i2 < len(self.lap2.points)-1:
+                    i2+=1
+                    i2Incremented = True
 
                 diffHistory.append(0)
                 if len(diffHistory) > 180:
@@ -372,19 +382,11 @@ class MapView2(QWidget):
             if not prevStep and i2 % 60 == 0 or abs(p2.throttle-p2next.throttle) > 0.9:
                 self.layers[self.lap2BottomMarkers].append(LeftLineMarker("throttle", p2next.position_x, p2next.position_z, p2.position_x, p2.position_z, self.l2ColorDark, 2, length = p2next.throttle))
 
-            #if t1 == i1:
-                #t1 = self.findNextThrottle(self.lap1.points, t1+1)
-            #if to1 == i1:
-                #to1 = self.findNextThrottleOff(self.lap1.points, to1+1)
-            
-            #if t2 == i2:
-                #t2 = self.findNextThrottle(self.lap2.points, t2+1)
-            #if to2 == i2:
-                #to2 = self.findNextThrottleOff(self.lap2.points, to2+1)
-
             # Draw laps
-            self.layers[self.lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, self.l1Color))
-            self.layers[self.lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.l2Color))
+            if i1Incremented:
+                self.layers[self.lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, self.l1Color))
+            if i2Incremented:
+                self.layers[self.lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.l2Color))
             
             # Go to next points
             p1 = self.lap1.points[i1]
@@ -397,6 +399,7 @@ class MapView2(QWidget):
         qp.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         for ly in range(len(self.layers)):
+            print("Paint", len(self.layers[ly]), "elements")
             if self.showLayers[ly]:
                 for l in self.layers[ly]:
                     qp.setBrush(Qt.BrushStyle.NoBrush)
@@ -499,9 +502,10 @@ class MapView2(QWidget):
                         dx = x2 - x1
                         dz = z2 - z1
                         le = math.sqrt(dx**2 + dz**2)
-                        dx *= l.length/le/3
-                        dz *= l.length/le/3
-                        qp.drawLine(int(x1), int(z1), int(x1+dz), int(z1-dx))
+                        if (le > 0):
+                            dx *= l.length/le/3
+                            dz *= l.length/le/3
+                            qp.drawLine(int(x1), int(z1), int(x1+dz), int(z1-dx))
 
         for ly in range(len(self.layers)):
             if self.showLayers[ly]:
@@ -520,18 +524,19 @@ class MapView2(QWidget):
                         dx = x2 - x1
                         dz = z2 - z1
                         le = math.sqrt(dx**2 + dz**2)
-                        dx *= l.length/le/3
-                        dz *= l.length/le/3
-                        if not l.endText is None and self.showText:
-                            lines = l.endText.split("\n")
-                            numLines = len(lines)
-                            offsetH = 15
-                            for curLine in range(numLines):
-                                fm = qp.fontMetrics()
-                                br = fm.boundingRect(lines[curLine])
-                                px = int(x1 + 1.5*dz - br.width() / 2)
-                                py = int(z1 - (1+ 0.5 * numLines)*dx + br.height() / 2 + curLine * offsetH - (numLines-1) * offsetH / 2)
-                                qp.drawText(px, py, lines[curLine])
+                        if (le > 0):
+                            dx *= l.length/le/3
+                            dz *= l.length/le/3
+                            if not l.endText is None and self.showText:
+                                lines = l.endText.split("\n")
+                                numLines = len(lines)
+                                offsetH = 15
+                                for curLine in range(numLines):
+                                    fm = qp.fontMetrics()
+                                    br = fm.boundingRect(lines[curLine])
+                                    px = int(x1 + 1.5*dz - br.width() / 2)
+                                    py = int(z1 - (1+ 0.5 * numLines)*dx + br.height() / 2 + curLine * offsetH - (numLines-1) * offsetH / 2)
+                                    qp.drawText(px, py, lines[curLine])
                     elif isinstance(l, UpMarker) and self.showText:
                         if not l.text is None:
                             pen = QPen(l.color)

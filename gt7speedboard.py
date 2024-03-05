@@ -7,12 +7,17 @@ from wakepy import keep
 import math
 import queue
 import datetime
+import time
 from cProfile import Profile
 from pstats import SortKey, Stats
 
-from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
-from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
+#from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QRunnable, QThreadPool
+#from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
+#from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QStackedWidget
+
+from PyQt6.QtGui import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
 
 from gt7telepoint import Point
 from helpers import loadLap
@@ -21,7 +26,21 @@ from helpers import Lap
 import gt7telemetryreceiver as tele
 from gt7widgets import *
 
+def someDelay():
+    time.sleep(5)
 
+class Worker(QRunnable):
+    finished = pyqtSignal()
+
+    def __init__(self, func):
+        super(Worker, self).__init__()
+        self.func = func
+
+
+    @pyqtSlot()
+    def run(self):
+        self.func()
+        self.finished.emit()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -413,8 +432,21 @@ class MainWindow(QMainWindow):
 
         # Lvl 1
         masterLayout = QGridLayout()
-        self.masterWidget = QWidget()
-        self.masterWidget.setLayout(masterLayout)
+        self.masterWidget = QStackedWidget()
+        self.dashWidget = QWidget()
+        self.masterWidget.addWidget(self.dashWidget)
+        self.uiMsg = QLabel("Welcome to GT7 Speedboard")
+        self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.uiMsg.setAutoFillBackground(True)
+        font = self.uiMsg.font()
+        font.setPointSize(64)
+        font.setBold(True)
+        self.uiMsg.setFont(font)
+
+        self.masterWidget.addWidget(self.uiMsg)
+
+        self.dashWidget.setLayout(masterLayout)
+
         masterLayout.setColumnStretch(0, 1)
         masterLayout.setColumnStretch(1, 1)
         masterLayout.setRowStretch(0, 1)
@@ -533,6 +565,18 @@ class MainWindow(QMainWindow):
 
         self.debugCount = 0
         self.noThrottleCount = 0
+
+    def showUiMsg(self):
+        self.masterWidget.setCurrentIndex(1)
+        self.returnTimer = QTimer()
+        self.returnTimer.setInterval(1500)
+        self.returnTimer.setSingleShot(True)
+        self.returnTimer.timeout.connect(self.returnToDash)
+        self.returnTimer.start()
+
+
+    def returnToDash(self):
+        self.masterWidget.setCurrentIndex(0)
 
     def stopDash(self):
         if not self.receiver is None:
@@ -1360,6 +1404,9 @@ class MainWindow(QMainWindow):
                 print("store message positions")
                 saveThread = threading.Thread(target=self.saveMessages)
                 saveThread.start()
+            elif e.key() == Qt.Key.Key_T.value:
+                tester = Worker(someDelay)
+                tester.finished.connect(self.showUiMsg)
 
     def saveAllLaps(self, name):
         print("store all laps:", name)
