@@ -26,27 +26,29 @@ from helpers import Lap
 import gt7telemetryreceiver as tele
 from gt7widgets import *
 
-def someDelay():
-    time.sleep(5)
+class WorkerSignals(QObject):
+    finished = pyqtSignal(str, float)
 
-class Worker(QRunnable):
-    finished = pyqtSignal()
-
-    def __init__(self, func):
+class Worker(QRunnable, QObject):
+    def __init__(self, func, msg, t, args=()):
         super(Worker, self).__init__()
         self.func = func
-
+        self.msg = msg
+        self.t = t
+        self.args = args
+        self.signals = WorkerSignals()
 
     @pyqtSlot()
     def run(self):
-        self.func()
-        self.finished.emit()
+        self.func(*self.args)
+        self.signals.finished.emit(self.msg, self.t)
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.masterWidget = None
+        self.threadpool = QThreadPool()
 
         self.startWindow = StartWindow()
         self.startWindow.starter.clicked.connect(self.startDash)
@@ -566,10 +568,12 @@ class MainWindow(QMainWindow):
         self.debugCount = 0
         self.noThrottleCount = 0
 
-    def showUiMsg(self):
+    def showUiMsg(self, msg, t):
+        print("showUiMsg")
+        self.uiMsg.setText(msg)
         self.masterWidget.setCurrentIndex(1)
         self.returnTimer = QTimer()
-        self.returnTimer.setInterval(1500)
+        self.returnTimer.setInterval(int(1000 * t))
         self.returnTimer.setSingleShot(True)
         self.returnTimer.timeout.connect(self.returnToDash)
         self.returnTimer.start()
@@ -1386,27 +1390,34 @@ class MainWindow(QMainWindow):
                 self.newMessage = "CAUTION"
             elif e.key() == Qt.Key.Key_B.value:
                 if self.bestLap >= 0:
-                    saveThread = threading.Thread(target=self.saveLap, args=(self.bestLap, "best"))
-                    saveThread.start()
+                    saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.bestLap, "best",))
+                    saveThread.signals.finished.connect(self.showUiMsg)
+                    self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_L.value:
                 if len(self.previousLaps) > 0:
-                    saveThread = threading.Thread(target=self.saveLap, args=(-1, "last"))
-                    saveThread.start()
+                    saveThread = Worker(self.saveAllLaps, "Last lap saved.", 1.0, (-1, "last",))
+                    saveThread.signals.finished.connect(self.showUiMsg)
+                    self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_M.value:
                 if self.medianLap >= 0:
-                    saveThread = threading.Thread(target=self.saveLap, args=(self.medianLap, "median"))
-                    saveThread.start()
+                    saveThread = Worker(self.saveAllLaps, "Median lap saved.", 1.0, (self.medianLap, "median",))
+                    saveThread.signals.finished.connect(self.showUiMsg)
+                    self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_A.value:
                 if len(self.previousLaps) > 0:
-                    saveThread = threading.Thread(target=self.saveAllLaps, args=("combined",))
-                    saveThread.start()
+                    saveThread = Worker(self.saveAllLaps, "All laps saved.", 1.0, ("combined",))
+                    saveThread.signals.finished.connect(self.showUiMsg)
+                    self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_W.value:
                 print("store message positions")
-                saveThread = threading.Thread(target=self.saveMessages)
-                saveThread.start()
-            elif e.key() == Qt.Key.Key_T.value:
-                tester = Worker(someDelay)
-                tester.finished.connect(self.showUiMsg)
+                saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
+                saveThread.signals.finished.connect(self.showUiMsg)
+                self.threadpool.start(saveThread)
+            #elif e.key() == Qt.Key.Key_T.value:
+                #tester = Worker(someDelay, "Complete", 0.2)
+                #tester.signals.finished.connect(self.showUiMsg)
+                #self.threadpool.start(tester)
+
 
     def saveAllLaps(self, name):
         print("store all laps:", name)
@@ -1428,6 +1439,7 @@ class MainWindow(QMainWindow):
                 f.write(p.raw)
 
     def saveMessages(self):
+        print("Save messages")
         d = []
         for m in self.messages:
             d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
