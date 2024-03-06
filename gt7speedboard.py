@@ -145,6 +145,135 @@ class MainWindow(QMainWindow):
         self.fontSizeNormal = 64
         self.fontSizeLarge = 72
 
+        if os.path.exists("gt7speedboardinternals.json"):
+            with open("gt7speedboardinternals.json", "r") as f:
+                j = f.read()
+            d = json.loads(j)
+
+            if "foregroundColor" in d: self.foregroundColor = QColor(d["foregroundColor"])
+            if "backgroundColor" in d: self.backgroundColor = QColor(d["backgroundColor"])
+            if "brightBackgroundColor" in d: self.brightBackgroundColor = QColor(d["brightBackgroundColor"])
+
+            if "warningColor1" in d: self.warningColor1 = QColor(d["warningColor1"])
+            if "warningColor2" in d: self.warningColor2 = QColor(d["warningColor2"])
+            if "advanceWarningColor" in d: self.advanceWarningColor = QColor(d["advanceWarningColor"])
+
+            if "countdownColor3" in d: self.countdownColor3 = QColor(d["countdownColor3"])
+            if "countdownColor2" in d: self.countdownColor2 = QColor(d["countdownColor2"])
+            if "countdownColor1" in d: self.countdownColor1 = QColor(d["countdownColor1"])
+
+            if "tyreTempMinHue" in d: self.tyreTempMinHue = d["tyreTempMinHue"]
+            if "tyreTempMaxHue" in d: self.tyreTempMaxHue = d["tyreTempMaxHue"]
+            if "tyreTempCenterHue" in d: self.tyreTempCenterHue = d["tyreTempCenterHue"]
+            if "tyreTempCenter" in d: self.tyreTempCenter = d["tyreTempCenter"]
+            if "tyreTempSpread" in d: self.tyreTempSpread = d["tyreTempSpread"]
+            if "tyreTempSaturation" in d: self.tyreTempSaturation = d["tyreTempSaturation"]
+            if "tyreTempValue" in d: self.tyreTempValue = d["tyreTempValue"]
+
+            if "brakeColorHue" in d: self.brakeColorHue = d["brakeColorHue"]
+            if "brakeColorSaturation" in d: self.brakeColorSaturation = d["brakeColorSaturation"]
+            if "brakeColorMinValue" in d: self.brakeColorMinValue = d["brakeColorMinValue"]
+
+            if "brakeMinimumLevel" in d: self.brakeMinimumLevel = d["brakeMinimumLevel"]
+
+            if "circuitExperienceEndPointPurgeDistance" in d: self.circuitExperienceEndPointPurgeDistance = d["circuitExperienceEndPointPurgeDistance"]
+            if "circuitExperienceShortLapSecondsThreshold" in d: self.circuitExperienceShortLapSecondsThreshold = d["circuitExperienceShortLapSecondsThreshold"]
+            if "circuitExperienceNoThrottleTimeout" in d: self.circuitExperienceNoThrottleTimeout = d["circuitExperienceNoThrottleTimeout"]
+            if "circuitExperienceJumpDistance" in d: self.circuitExperienceJumpDistance = d["circuitExperienceJumpDistance"]
+
+            if "validLapEndpointDistance" in d: self.validLapEndpointDistance = d["validLapEndpointDistance"]
+
+            if "fuelStatisticsLaps" in d: self.fuelStatisticsLaps = d["fuelStatisticsLaps"]
+            if "fuelLastLapFactor" in d: self.fuelLastLapFactor = d["fuelLastLapFactor"]
+
+            if "messageDisplayDistance" in d: self.messageDisplayDistance = d["messageDisplayDistance"]
+            if "messageAdvanceTime" in d: self.messageAdvanceTime = d["messageAdvanceTime"]
+            if "messageBlinkingPhase" in d: self.messageBlinkingPhase = d["messageBlinkingPhase"]
+
+            if "mapCurrentColor" in d: self.mapCurrentColor = QColor(d["mapCurrentColor"])
+            if "mapStandingColor" in d: self.mapStandingColor = QColor(d["mapStandingColor"])
+
+            if "speedDiffMinHue" in d: self.speedDiffMinHue = d["speedDiffMinHue"]
+            if "speedDiffMaxHue" in d: self.speedDiffMaxHue = d["speedDiffMaxHue"]
+            if "speedDiffCenterHue" in d: self.speedDiffCenterHue = d["speedDiffCenterHue"]
+            if "speedDiffColorSaturation" in d: self.speedDiffColorSaturation = d["speedDiffColorSaturation"]
+            if "speedDiffColorValue" in d: self.speedDiffColorValue = d["speedDiffColorValue"]
+            if "speedDiffSpread" in d: self.speedDiffSpread = d["speedDiffSpread"]
+
+            if "closestPointValidDistance" in d: self.closestPointValidDistance = d["closestPointValidDistance"]
+            if "closestPointGetAwayDistance" in d: self.closestPointGetAwayDistance = d["closestPointGetAwayDistance"]
+            if "closestPointCancelSearchDistance" in d: self.closestPointCancelSearchDistance = d["closestPointCancelSearchDistance"]
+
+            if "pollInterval" in d: self.pollInterval = d["pollInterval"]
+
+            if "fontSizeNormal" in d: self.fontSizeNormal = d["fontSizeNormal"]
+            if "fontSizeLarge" in d: self.fontSizeLarge = d["fontSizeLarge"]
+
+        if False:
+            d = {}
+            d["foregroundColor"] = self.foregroundColor.name()
+            d["backgroundColor"] = self.backgroundColor.name()
+            d["brightBackgroundColor"] = self.brightBackgroundColor.name()
+
+            d["warningColor1"] = self.warningColor1.name()
+            d["warningColor2"] = self.warningColor2.name()
+            d["advanceWarningColor"] = self.advanceWarningColor.name()
+
+            d["countdownColor3"] = self.countdownColor3.name()
+            d["countdownColor2"] = self.countdownColor2.name()
+            d["countdownColor1"] = self.countdownColor1.name()
+
+            d["tyreTempMinHue"] = self.tyreTempMinHue
+            d["tyreTempMaxHue"] = self.tyreTempMaxHue
+            d["tyreTempCenterHue"] = self.tyreTempCenterHue
+            d["tyreTempCenter"] = self.tyreTempCenter
+            d["tyreTempSpread"] = self.tyreTempSpread
+            d["tyreTempSaturation"] = self.tyreTempSaturation
+            d["tyreTempValue"] = self.tyreTempValue
+
+            d["brakeColorHue"] = self.brakeColorHue
+            d["brakeColorSaturation"] = self.brakeColorSaturation
+            d["brakeColorMinValue"] = self.brakeColorMinValue
+
+            d["brakeMinimumLevel"] = self.brakeMinimumLevel
+
+            d["circuitExperienceEndPointPurgeDistance"] = self.circuitExperienceEndPointPurgeDistance
+            d["circuitExperienceShortLapSecondsThreshold"] = self.circuitExperienceShortLapSecondsThreshold
+            d["circuitExperienceNoThrottleTimeout"] = self.circuitExperienceNoThrottleTimeout
+            d["circuitExperienceJumpDistance"] = self.circuitExperienceJumpDistance
+
+            d["validLapEndpointDistance"] = self.validLapEndpointDistance
+
+            d["fuelStatisticsLaps"] = self.fuelStatisticsLaps
+            d["fuelLastLapFactor"] = self.fuelLastLapFactor
+
+            d["messageDisplayDistance"] = self.messageDisplayDistance
+            d["messageAdvanceTime"] = self.messageAdvanceTime
+            d["messageBlinkingPhase"] = self.messageBlinkingPhase
+
+            d["mapCurrentColor"] = self.mapCurrentColor.name()
+            d["mapStandingColor"] = self.mapStandingColor.name()
+
+            d["speedDiffMinHue"] = self.speedDiffMinHue
+            d["speedDiffMaxHue"] = self.speedDiffMaxHue
+            d["speedDiffCenterHue"] = self.speedDiffCenterHue
+            d["speedDiffColorSaturation"] = self.speedDiffColorSaturation
+            d["speedDiffColorValue"] = self.speedDiffColorValue
+            d["speedDiffSpread"] = self.speedDiffSpread
+
+            d["closestPointValidDistance"] = self.closestPointValidDistance
+            d["closestPointGetAwayDistance"] = self.closestPointGetAwayDistance
+            d["closestPointCancelSearchDistance"] = self.closestPointCancelSearchDistance
+
+            d["pollInterval"] = self.pollInterval
+
+            d["fontSizeNormal"] = self.fontSizeNormal
+            d["fontSizeLarge"] = self.fontSizeLarge
+            j = json.dumps(d, indent=4)
+            with open("gt7speedboardinternals.json", "w") as f:
+                f.write(j)
+
+
     def makeDashWidget(self):
         # Lvl 4
         self.fuel = QLabel("?%")
