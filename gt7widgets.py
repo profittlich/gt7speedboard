@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox
 import math
 
 class StartWindow(QWidget):
@@ -240,6 +240,17 @@ class StartWindow(QWidget):
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
         self.maxFuelConsumption.setValue(int(settings.value("maxFuelConsumption", 150)))
+
+        self.brakepoints.stateChanged.connect(self.brakePointWarning)
+        self.linecomp.stateChanged.connect(self.racingLineWarning)
+
+    def racingLineWarning(self, on):
+        if on:
+            QMessageBox.warning(self, "Please note", "Please be respectful about the rules of online races. Sometimes, racing line helpers are not allowed.")
+
+    def brakePointWarning(self, on):
+        if on:
+            QMessageBox.warning(self, "Please note", "Please be respectful about the rules of online races. Sometimes, brake point helpers are not allowed.")
 
     def chooseStorage(self):
         chosen = QFileDialog.getExistingDirectory()

@@ -635,7 +635,16 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.uiMsg.setFont(font)
 
+        self.mapPage = QLabel("Map page not available, yet")
+        self.mapPage.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mapPage.setAutoFillBackground(True)
+        font = self.mapPage.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setBold(True)
+        self.mapPage.setFont(font)
+
         self.masterWidget.addWidget(self.uiMsg)
+        self.masterWidget.addWidget(self.mapPage)
 
         self.dashWidget.setLayout(masterLayout)
 
@@ -1571,11 +1580,17 @@ class MainWindow(QMainWindow):
                 saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
                 saveThread.signals.finished.connect(self.showUiMsg)
                 self.threadpool.start(saveThread)
+            elif e.key() == Qt.Key.Key_Tab.value:
+                self.masterWidget.setCurrentIndex(2)
             #elif e.key() == Qt.Key.Key_T.value:
                 #tester = Worker(someDelay, "Complete", 0.2)
                 #tester.signals.finished.connect(self.showUiMsg)
                 #self.threadpool.start(tester)
 
+    def keyReleaseEvent(self, e):
+        if self.centralWidget() == self.masterWidget:
+            if e.key() == Qt.Key.Key_Tab.value:
+                self.returnToDash()
 
     def saveAllLaps(self, name):
         print("store all laps:", name)
