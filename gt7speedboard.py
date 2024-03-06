@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.masterWidget = None
+        self.loadConstants()
         self.threadpool = QThreadPool()
 
         self.startWindow = StartWindow()
@@ -84,13 +85,73 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.startWindow)
 
+    def loadConstants(self):
+        self.foregroundColor = QColor("#FFF")
+        self.backgroundColor = QColor("#222")
+        self.brightBackgroundColor = QColor("#333")
+
+        self.warningColor1 = QColor("#f00")
+        self.warningColor2 = QColor("#ff0")
+        self.advanceWarningColor = QColor("#f80")
+
+        self.countdownColor3 = QColor("#22F")
+        self.countdownColor2 = QColor("#2FF")
+        self.countdownColor1 = QColor("#FFF")
+
+        self.tyreTempMinHue = 0
+        self.tyreTempMaxHue = 0.667
+        self.tyreTempCenterHue = 0.5 * (self.tyreTempMaxHue + self.tyreTempMinHue)
+        self.tyreTempCenter = 70
+        self.tyreTempSpread = 16.6667
+        self.tyreTempSaturation = 1
+        self.tyreTempValue = 1
+
+        self.brakeColorHue = 0
+        self.brakeColorSaturation = 1
+        self.brakeColorMinValue = 0x22/0xff
+
+        self.brakeMinimumLevel = 0.1
+
+        self.circuitExperienceEndPointPurgeDistance = 15
+        self.circuitExperienceShortLapSecondsThreshold = 10
+        self.circuitExperienceNoThrottleTimeout = 10
+        self.circuitExperienceJumpDistance = 10
+
+        self.validLapEndpointDistance = 30
+
+        self.fuelStatisticsLaps = 5
+        self.fuelLastLapFactor = 0.667
+
+        self.messageDisplayDistance = 100
+        self.messageAdvanceTime = 5
+        self.messageBlinkingPhase = 100000
+
+        self.mapCurrentColor = QColor("#F00")
+        self.mapStandingColor = QColor("#000")
+
+        self.speedDiffMinHue = 0
+        self.speedDiffMaxHue = 120/360
+        self.speedDiffCenterHue = 0.5 * (self.speedDiffMaxHue + self.speedDiffMinHue)
+        self.speedDiffColorSaturation = 1
+        self.speedDiffColorValue = 1
+        self.speedDiffSpread = 10
+
+        self.closestPointValidDistance = 15
+        self.closestPointGetAwayDistance = 20
+        self.closestPointCancelSearchDistance = 500
+
+        self.pollInterval = 20
+
+        self.fontSizeNormal = 64
+        self.fontSizeLarge = 72
+
     def makeDashWidget(self):
         # Lvl 4
         self.fuel = QLabel("?%")
         self.fuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.fuel.setAutoFillBackground(True)
         font = self.fuel.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.fuel.setFont(font)
 
@@ -103,84 +164,84 @@ class MainWindow(QMainWindow):
             self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.laps.setAutoFillBackground(True)
             font = self.laps.font()
-            font.setPointSize(64)
+            font.setPointSize(self.fontSizeNormal)
             font.setBold(True)
             self.laps.setFont(font)
             pal = self.laps.palette()
-            pal.setColor(self.laps.backgroundRole(), QColor("#222"))
-            pal.setColor(self.laps.foregroundRole(), QColor("#fff"))
+            pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
+            pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
             self.laps.setPalette(pal)
 
         self.tyreFR = QLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreFR.setAutoFillBackground(True)
         font = self.tyreFR.font()
-        font.setPointSize(72)
+        font.setPointSize(self.fontSizeLarge)
         font.setBold(True)
         self.tyreFR.setFont(font)
         pal = self.tyreFR.palette()
-        pal.setColor(self.tyreFR.backgroundRole(), QColor('#222'))
-        pal.setColor(self.tyreFR.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.tyreFR.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.tyreFR.foregroundRole(), self.foregroundColor)
         self.tyreFR.setPalette(pal)
 
         self.tyreFL = QLabel("?°C")
         self.tyreFL.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreFL.setAutoFillBackground(True)
         font = self.tyreFL.font()
-        font.setPointSize(72)
+        font.setPointSize(self.fontSizeLarge)
         font.setBold(True)
         self.tyreFL.setFont(font)
         pal = self.tyreFL.palette()
-        pal.setColor(self.tyreFL.backgroundRole(), QColor('#222'))
-        pal.setColor(self.tyreFL.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.tyreFL.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.tyreFL.foregroundRole(), self.foregroundColor)
         self.tyreFL.setPalette(pal)
         
         self.tyreRR = QLabel("?°C")
         self.tyreRR.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreRR.setAutoFillBackground(True)
         font = self.tyreRR.font()
-        font.setPointSize(72)
+        font.setPointSize(self.fontSizeLarge)
         font.setBold(True)
         self.tyreRR.setFont(font)
         pal = self.tyreRR.palette()
-        pal.setColor(self.tyreRR.backgroundRole(), QColor('#222'))
-        pal.setColor(self.tyreRR.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.tyreRR.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.tyreRR.foregroundRole(), self.foregroundColor)
         self.tyreRR.setPalette(pal)
 
         self.tyreRL = QLabel("?°C")
         self.tyreRL.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreRL.setAutoFillBackground(True)
         font = self.tyreRL.font()
-        font.setPointSize(72)
+        font.setPointSize(self.fontSizeLarge)
         font.setBold(True)
         self.tyreRL.setFont(font)
         pal = self.tyreRL.palette()
-        pal.setColor(self.tyreRL.backgroundRole(), QColor('#222'))
-        pal.setColor(self.tyreRL.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.tyreRL.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.tyreRL.foregroundRole(), self.foregroundColor)
         self.tyreRL.setPalette(pal)
 
         self.pedalBest = QLabel("")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalBest.setAutoFillBackground(True)
         font = self.pedalBest.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.pedalBest.setFont(font)
         pal = self.pedalBest.palette()
-        pal.setColor(self.pedalBest.backgroundRole(), QColor('#222'))
-        pal.setColor(self.pedalBest.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalBest.foregroundRole(), self.foregroundColor)
         self.pedalBest.setPalette(pal)
 
         self.speedBest = QLabel("BEST")
         self.speedBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedBest.setAutoFillBackground(True)
         font = self.speedBest.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.speedBest.setFont(font)
         pal = self.speedBest.palette()
-        pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
-        pal.setColor(self.speedBest.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.speedBest.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedBest.foregroundRole(), self.foregroundColor)
         self.speedBest.setPalette(pal)
 
         self.lineBest = LineDeviation()
@@ -189,24 +250,24 @@ class MainWindow(QMainWindow):
         self.pedalLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalLast.setAutoFillBackground(True)
         font = self.pedalLast.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.pedalLast.setFont(font)
         pal = self.pedalLast.palette()
-        pal.setColor(self.pedalLast.backgroundRole(), QColor('#222'))
-        pal.setColor(self.pedalLast.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.pedalLast.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalLast.foregroundRole(), self.foregroundColor)
         self.pedalLast.setPalette(pal)
 
         self.speedLast = QLabel("LAST")
         self.speedLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedLast.setAutoFillBackground(True)
         font = self.speedLast.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.speedLast.setFont(font)
         pal = self.speedLast.palette()
-        pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
-        pal.setColor(self.speedLast.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.speedLast.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedLast.foregroundRole(), self.foregroundColor)
         self.speedLast.setPalette(pal)
 
         self.lineLast = LineDeviation()
@@ -215,24 +276,24 @@ class MainWindow(QMainWindow):
         self.pedalRefA.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalRefA.setAutoFillBackground(True)
         font = self.pedalRefA.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.pedalRefA.setFont(font)
         pal = self.pedalRefA.palette()
-        pal.setColor(self.pedalRefA.backgroundRole(), QColor('#222'))
-        pal.setColor(self.pedalRefA.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalRefA.foregroundRole(), self.foregroundColor)
         self.pedalRefA.setPalette(pal)
 
         self.speedRefA = QLabel("REF A")
         self.speedRefA.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefA.setAutoFillBackground(True)
         font = self.speedRefA.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.speedRefA.setFont(font)
         pal = self.speedRefA.palette()
-        pal.setColor(self.speedRefA.backgroundRole(), QColor('#222'))
-        pal.setColor(self.speedRefA.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.speedRefA.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedRefA.foregroundRole(), self.foregroundColor)
         self.speedRefA.setPalette(pal)
 
         self.lineRefA = LineDeviation()
@@ -241,24 +302,24 @@ class MainWindow(QMainWindow):
         self.pedalRefB.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalRefB.setAutoFillBackground(True)
         font = self.pedalRefB.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.pedalRefB.setFont(font)
         pal = self.pedalRefB.palette()
-        pal.setColor(self.pedalRefB.backgroundRole(), QColor('#222'))
-        pal.setColor(self.pedalRefB.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalRefB.foregroundRole(), self.foregroundColor)
         self.pedalRefB.setPalette(pal)
 
         self.speedRefB = QLabel("REF B")
         self.speedRefB.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefB.setAutoFillBackground(True)
         font = self.speedRefB.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.speedRefB.setFont(font)
         pal = self.speedRefB.palette()
-        pal.setColor(self.speedRefB.backgroundRole(), QColor('#222'))
-        pal.setColor(self.speedRefB.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.speedRefB.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedRefB.foregroundRole(), self.foregroundColor)
         self.speedRefB.setPalette(pal)
 
         self.lineRefB = LineDeviation()
@@ -267,24 +328,24 @@ class MainWindow(QMainWindow):
         self.pedalRefC.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalRefC.setAutoFillBackground(True)
         font = self.pedalRefC.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.pedalRefC.setFont(font)
         pal = self.pedalRefC.palette()
-        pal.setColor(self.pedalRefC.backgroundRole(), QColor('#222'))
-        pal.setColor(self.pedalRefC.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalRefC.foregroundRole(), self.foregroundColor)
         self.pedalRefC.setPalette(pal)
 
         self.speedRefC = QLabel("REF C")
         self.speedRefC.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefC.setAutoFillBackground(True)
         font = self.speedRefC.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.speedRefC.setFont(font)
         pal = self.speedRefC.palette()
-        pal.setColor(self.speedRefC.backgroundRole(), QColor('#222'))
-        pal.setColor(self.speedRefC.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.speedRefC.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedRefC.foregroundRole(), self.foregroundColor)
         self.speedRefC.setPalette(pal)
 
         self.lineRefC = LineDeviation()
@@ -293,24 +354,24 @@ class MainWindow(QMainWindow):
         self.pedalMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalMedian.setAutoFillBackground(True)
         font = self.pedalMedian.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.pedalMedian.setFont(font)
         pal = self.pedalMedian.palette()
-        pal.setColor(self.pedalMedian.backgroundRole(), QColor('#222'))
-        pal.setColor(self.pedalMedian.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.pedalMedian.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalMedian.foregroundRole(), self.foregroundColor)
         self.pedalMedian.setPalette(pal)
 
         self.speedMedian = QLabel("MEDIAN")
         self.speedMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedMedian.setAutoFillBackground(True)
         font = self.speedMedian.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.speedMedian.setFont(font)
         pal = self.speedMedian.palette()
-        pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
-        pal.setColor(self.speedMedian.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.speedMedian.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedMedian.foregroundRole(), self.foregroundColor)
         self.speedMedian.setPalette(pal)
 
         self.lineMedian = LineDeviation()
@@ -318,8 +379,8 @@ class MainWindow(QMainWindow):
         # Lvl 3
         fuelWidget = QWidget()
         pal = self.fuel.palette()
-        pal.setColor(self.fuel.backgroundRole(), QColor("#222"))
-        pal.setColor(self.fuel.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.fuel.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.fuel.foregroundRole(), self.foregroundColor)
         self.fuel.setPalette(pal)
         fuelLayout = QGridLayout()
         fuelLayout.setContentsMargins(11,11,11,11)
@@ -390,46 +451,46 @@ class MainWindow(QMainWindow):
         # Lvl 2
         self.header = QLabel("? LAPS LEFT")
         font = self.header.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.header.setFont(font)
         self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pal = self.header.palette()
-        pal.setColor(self.header.backgroundRole(), QColor('#222'))
-        pal.setColor(self.header.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.header.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.header.foregroundRole(), self.foregroundColor)
         self.header.setPalette(pal)
 
         headerFuel = QLabel("FUEL")
         font = headerFuel.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         headerFuel.setFont(font)
         headerFuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pal = headerFuel.palette()
-        pal.setColor(headerFuel.backgroundRole(), QColor('#222'))
-        pal.setColor(headerFuel.foregroundRole(), QColor("#fff"))
+        pal.setColor(headerFuel.backgroundRole(), self.backgroundColor)
+        pal.setColor(headerFuel.foregroundRole(), self.foregroundColor)
         headerFuel.setPalette(pal)
 
         headerTyres = QLabel("TYRES")
         font = headerTyres.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         headerTyres.setFont(font)
         headerTyres.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pal = headerTyres.palette()
-        pal.setColor(headerTyres.backgroundRole(), QColor('#222'))
-        pal.setColor(headerTyres.foregroundRole(), QColor("#fff"))
+        pal.setColor(headerTyres.backgroundRole(), self.backgroundColor)
+        pal.setColor(headerTyres.foregroundRole(), self.foregroundColor)
         headerTyres.setPalette(pal)
 
         self.headerSpeed = QLabel("SPEED")
         font = self.headerSpeed.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.headerSpeed.setFont(font)
         self.headerSpeed.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.headerSpeed.setAutoFillBackground(True)
         pal = self.headerSpeed.palette()
-        pal.setColor(self.headerSpeed.foregroundRole(), QColor("#fff"))
+        pal.setColor(self.headerSpeed.foregroundRole(), self.foregroundColor)
         self.headerSpeed.setPalette(pal)
 
         # Lvl 1
@@ -441,7 +502,7 @@ class MainWindow(QMainWindow):
         self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.uiMsg.setAutoFillBackground(True)
         font = self.uiMsg.font()
-        font.setPointSize(64)
+        font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.uiMsg.setFont(font)
 
@@ -465,7 +526,7 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
 
         pal = self.palette()
-        pal.setColor(self.backgroundRole(), QColor('#333'))
+        pal.setColor(self.backgroundRole(), self.brightBackgroundColor)
         self.setPalette(pal)
 
     def startDash(self):
@@ -561,7 +622,7 @@ class MainWindow(QMainWindow):
 
         # Timer
         self.timer = QTimer()
-        self.timer.setInterval(20)
+        self.timer.setInterval(self.pollInterval)
         self.timer.timeout.connect(self.updateDisplay)
         self.timer.start()
 
@@ -585,7 +646,7 @@ class MainWindow(QMainWindow):
     def stopDash(self):
         if not self.receiver is None:
             pal = self.palette()
-            pal.setColor(self.backgroundRole(), QColor("#333"))
+            pal.setColor(self.backgroundRole(), self.brightBackgroundColor)
             self.setPalette(pal)
 
             self.timer.stop()
@@ -619,17 +680,17 @@ class MainWindow(QMainWindow):
 
         pal = self.pedalLast.palette()
         self.pedalLast.setText("")
-        pal.setColor(self.pedalLast.backgroundRole(), QColor("#222"))
+        pal.setColor(self.pedalLast.backgroundRole(), self.backgroundColor)
         self.pedalLast.setPalette(pal)
 
         pal = self.pedalBest.palette()
         self.pedalBest.setText("")
-        pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+        pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
         self.pedalBest.setPalette(pal)
 
         pal = self.pedalMedian.palette()
         self.pedalMedian.setText("")
-        pal.setColor(self.pedalMedian.backgroundRole(), QColor("#222"))
+        pal.setColor(self.pedalMedian.backgroundRole(), self.backgroundColor)
         self.pedalMedian.setPalette(pal)
 
         self.lineBest.setPoints(None,None)
@@ -641,53 +702,32 @@ class MainWindow(QMainWindow):
         self.lineMedian.setPoints(None,None)
         self.lineMedian.update()
 
-    def tyreTempColor(self, temp):
-        col = QColor()
-        hue = 0.333 - (temp - 70)/50
-        if hue < 0:
-            hue = 0
-        if hue > 0.666:
-            hue = 0.666
-        col.setHsvF (hue, 1, 1)
-
-        return "background-color: " + col.name() + ";"
-
     def tyreTempQColor(self, temp):
         col = QColor()
-        hue = 0.333 - (temp - 70)/50
-        if hue < 0:
-            hue = 0
-        if hue > 0.666:
-            hue = 0.666
-        col.setHsvF (hue, 1, 1)
+        hue = self.tyreTempCenterHue - (temp - self.tyreTempCenter)/(self.tyreTempSpread/self.tyreTempCenterHue)
+        if hue < self.tyreTempMinHue:
+            hue = self.tyreTempMinHue
+        if hue > self.tyreTempMaxHue:
+            hue = self.tyreTempMiaxnHue
+        col.setHsvF (hue, self.tyreTempSaturation, self.tyreTempValue)
 
         return col
 
-    def speedDiffColor(self, d):
-        col = QColor()
-        hue = -d/60 + 60/360
-        if hue < 0:
-            hue = 0
-        if hue > 120/360:
-            hue = 120/360
-        col.setHsvF (hue, 1, 1)
-
-        return "background-color: " + col.name() + ";"
-
     def speedDiffQColor(self, d):
         col = QColor()
-        hue = -d/60 + 60/360
-        if hue < 0:
-            hue = 0
-        if hue > 120/360:
-            hue = 120/360
-        col.setHsvF (hue, 1, 1)
+        hue = self.speedDiffCenterHue - d/(self.speedDiffSpread/self.speedDiffCenterHue) 
+        if hue < self.speedDiffMinHue:
+            hue = self.speedDiffMinHue
+        if hue > self.speedDiffMaxHue:
+            hue = self.speedDiffMaxHue
+        print(hue)
+        col.setHsvF (hue, self.speedDiffColorSaturation, self.speedDiffColorValue)
 
         return col
 
     def brakeQColor(self, d):
         col = QColor()
-        col.setHsvF (0, 1, (0x22/0xff) + d * (1 - 0x22/0xff)/100)
+        col.setHsvF (self.brakeColorHue, self.brakeColorSaturation, self.brakeColorMinValue + d * (1 - self.brakeColorMinValue)/100)
 
         return col
 
@@ -698,15 +738,15 @@ class MainWindow(QMainWindow):
         shortestDistance = 100000000
         result = None
         dbgCount = 0
-        for p2 in range(startIdx, len(lap)-10):
+        for p2 in range(startIdx, len(lap)-10): #TODO why -10? Confusion the the finish line... Maybe do dynamic length
             dbgCount+=1
             curDist = self.distance(p, lap[p2])
-            if curDist < 15 and curDist < shortestDistance:
+            if curDist < self.closestPointValidDistance and curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
-            if not result is None and curDist > 20:
+            if not result is None and curDist > self.closestPointGetAwayDistance:
                 break
-            if curDist >= 500:
+            if curDist >= self.closestPointCancelSearchDistance:
                 break
 
         if result is None:
@@ -728,7 +768,7 @@ class MainWindow(QMainWindow):
         #print("findNextBrake", startI)
         for i in range(startI, min(startI + 60 * 3, len(lap))):
             #print(startI, i, min(startI + 60, len(lap)))
-            if lap[i].brake > 0.1:
+            if lap[i].brake > self.brakeMinimumLevel:
                 return i-startI
         return None
 
@@ -763,29 +803,26 @@ class MainWindow(QMainWindow):
                 if not c3 is None:
                     d3 = self.distance(l.points[-1], c3)
                 print("End distance:", d)
-                if d > 15:
+                if d > self.circuitExperienceEndPointPurgeDistance:
                     print("PURGE lap", len(l.points)/60, d)
                 else:
                     temp.append(l)
             self.previousLaps = temp
-
-
-
 
     def cleanUpLap(self, lap):
         print("Input:", len(lap.points))
         if len(lap.points) == 0:
             print("Lap is empty")
             return lap
-        if len(lap.points) < 600:
+        if len(lap.points) < self.circuitExperienceShortLapSecondsThreshold * 60:
             print("\nLap is short")
             return lap
-        if (lap.points[-1].throttle > 0):# or lap[-1].brake > 0):
+        if (lap.points[-1].throttle > 0):
             print("Throttle to the end")
             return lap
         afterLap = 0
         for i in range(1, len(lap.points)):
-            if lap.points[-i].throttle == 0:# and lap[-i].brake == 0:
+            if lap.points[-i].throttle == 0:
                 afterLap+=1
             else:
                 break
@@ -889,10 +926,6 @@ class MainWindow(QMainWindow):
 
         self.fuel.setTextFormat(Qt.TextFormat.RichText)
         self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
-        if False:
-            refuelLaps = "<br>" + str (3.12) + " SINCE REFUEL" + "<br>" + str (14.2) + " FULL RANGE"
-            fuelLapPercent = "<br>" + str(7.7) + "% PER LAP"
-            self.fuel.setText("<font size=6>" + str(round(100 * 80 / 100)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
         if not self.previousPoint is None:
             fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
             fuelConsumption *= 60 * 60 * 60 # l per hour
@@ -908,14 +941,14 @@ class MainWindow(QMainWindow):
         messageShown = False
         if self.messagesEnabled: # TODO: put at end and remove messageShown?
             for m in self.messages:
-                if not self.circuitExperience and self.distance(curPoint, m[0]) < 100:
+                if not self.circuitExperience and self.distance(curPoint, m[0]) < self.messageDisplayDistance:
                     pal = self.laps.palette()
-                    if (datetime.datetime.now().microsecond + 100000) % 500000 < 250000:
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    if (datetime.datetime.now().microsecond + self.messageBlinkingPhase) % 500000 < 250000:
+                        pal.setColor(self.laps.backgroundRole(), self.warningColor1)
+                        pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                     else:
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.white)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.red)
+                        pal.setColor(self.laps.backgroundRole(), self.foregroundColor)
+                        pal.setColor(self.laps.foregroundRole(), self.warningColor1)
                     self.laps.setPalette(pal)
                     self.laps.setText(m[1])
                     messageShown = True
@@ -936,38 +969,38 @@ class MainWindow(QMainWindow):
                 if self.lapDecimals and round(lapsFuel, 2) < 1 and lapsFuel < lapValue:
                     pal = self.laps.palette()
                     if datetime.datetime.now().microsecond < 500000:
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                        pal.setColor(self.laps.backgroundRole(), self.warningColor1)
+                        pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                     else:
-                        pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.yellow)
-                        pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.black)
+                        pal.setColor(self.laps.backgroundRole(), self.warningColor2)
+                        pal.setColor(self.laps.foregroundRole(), self.backgroundColor)
                     self.laps.setPalette(pal)
                 elif round(lapsFuel, 2) < 1:
                     pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), Qt.GlobalColor.red)
-                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    pal.setColor(self.laps.backgroundRole(), self.warningColor1)
+                    pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                     self.laps.setPalette(pal)
                 elif round(lapsFuel, 2) < 2:
                     pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                    pal.setColor(self.laps.foregroundRole(), QColor('#f80'))
+                    pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
+                    pal.setColor(self.laps.foregroundRole(), self.advanceWarningColor)
                     self.laps.setPalette(pal)
                 else:
                     pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                    pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                    pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
+                    pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                     self.laps.setPalette(pal)
             elif curPoint.current_fuel == curPoint.fuel_capacity:
                 self.laps.setText("<font size=1>FOREVER</font>")
                 pal = self.laps.palette()
-                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
+                pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                 self.laps.setPalette(pal)
             else:
                 self.laps.setText("<font size=1>MEASURING</font>")
                 pal = self.laps.palette()
-                pal.setColor(self.laps.backgroundRole(), QColor('#222'))
-                pal.setColor(self.laps.foregroundRole(), Qt.GlobalColor.white)
+                pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
+                pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                 self.laps.setPalette(pal)
 
     def updateSpeed(self, curPoint):
@@ -1003,17 +1036,17 @@ class MainWindow(QMainWindow):
                     pal.setColor(self.pedalLast.backgroundRole(), self.brakeQColor(closestPLast.brake))
                 else:
                     self.pedalLast.setText("")
-                    pal.setColor(self.pedalLast.backgroundRole(), QColor("#222"))
+                    pal.setColor(self.pedalLast.backgroundRole(), self.backgroundColor)
                 self.pedalLast.setPalette(pal)
                 self.lineLast.setPoints(curPoint, closestPLast)
                 self.lineLast.update()
         else:
             pal = self.speedLast.palette()
-            pal.setColor(self.speedLast.backgroundRole(), QColor('#222'))
+            pal.setColor(self.speedLast.backgroundRole(), self.backgroundColor)
             self.speedLast.setPalette(pal)
 
         pal = self.palette()
-        pal.setColor(self.pedalBest.backgroundRole(), QColor("#333"))
+        pal.setColor(self.pedalBest.backgroundRole(), self.brightBackgroundColor)
         self.setPalette(pal)
 
         if not closestPRefA is None:
@@ -1033,34 +1066,34 @@ class MainWindow(QMainWindow):
                     self.pedalRefA.setText(str(math.ceil (nextBrakeRefA/60)))
                     if nextBrakeRefA >= 120:
                         if nextBrakeRefA%60 >= 30:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor3)
                             if self.bigCountdownBrakepoint == 2:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
                     elif nextBrakeRefA >= 60:
                         if nextBrakeRefA%60 >= 30:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#2FF"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor2)
                             if self.bigCountdownBrakepoint == 2:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeRefA%30 >= 15:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#FFF"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor1)
                             if self.bigCountdownBrakepoint == 2:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefA.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
                 else:
                     self.pedalRefA.setText("")
-                    pal.setColor(self.pedalRefA.backgroundRole(), QColor("#222"))
+                    pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
                 self.pedalRefA.setPalette(pal)
                 self.lineRefA.setPoints(curPoint, closestPRefA)
                 self.lineRefA.update()
         else:
             pal = self.speedRefA.palette()
-            pal.setColor(self.speedRefA.backgroundRole(), QColor('#222'))
+            pal.setColor(self.speedRefA.backgroundRole(), self.backgroundColor)
             self.speedRefA.setPalette(pal)
 
         if not closestPRefB is None:
@@ -1080,34 +1113,34 @@ class MainWindow(QMainWindow):
                     self.pedalRefB.setText(str(math.ceil (nextBrakeRefB/60)))
                     if nextBrakeRefB >= 120:
                         if nextBrakeRefB%60 >= 30:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor3)
                             if self.bigCountdownBrakepoint == 3:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
                     elif nextBrakeRefB >= 60:
                         if nextBrakeRefB%60 >= 30:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#2FF"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor2)
                             if self.bigCountdownBrakepoint == 3:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeRefB%30 >= 15:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#FFF"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor1)
                             if self.bigCountdownBrakepoint == 3:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefB.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
                 else:
                     self.pedalRefB.setText("")
-                    pal.setColor(self.pedalRefB.backgroundRole(), QColor("#222"))
+                    pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
                 self.pedalRefB.setPalette(pal)
                 self.lineRefB.setPoints(curPoint, closestPRefB)
                 self.lineRefB.update()
         else:
             pal = self.speedRefB.palette()
-            pal.setColor(self.speedRefB.backgroundRole(), QColor('#222'))
+            pal.setColor(self.speedRefB.backgroundRole(), self.backgroundColor)
             self.speedRefB.setPalette(pal)
 
         if not closestPRefC is None:
@@ -1127,34 +1160,34 @@ class MainWindow(QMainWindow):
                     self.pedalRefC.setText(str(math.ceil (nextBrakeRefC/60)))
                     if nextBrakeRefC >= 120:
                         if nextBrakeRefC%60 >= 30:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor3)
                             if self.bigCountdownBrakepoint == 4:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
                     elif nextBrakeRefC >= 60:
                         if nextBrakeRefC%60 >= 30:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#2FF"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor2)
                             if self.bigCountdownBrakepoint == 4:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeRefC%30 >= 15:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#FFF"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor1)
                             if self.bigCountdownBrakepoint == 4:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalRefC.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
                 else:
                     self.pedalRefC.setText("")
-                    pal.setColor(self.pedalRefC.backgroundRole(), QColor("#222"))
+                    pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
                 self.pedalRefC.setPalette(pal)
                 self.lineRefC.setPoints(curPoint, closestPRefC)
                 self.lineRefC.update()
         else:
             pal = self.speedRefC.palette()
-            pal.setColor(self.speedRefC.backgroundRole(), QColor('#222'))
+            pal.setColor(self.speedRefC.backgroundRole(), self.backgroundColor)
             self.speedRefC.setPalette(pal)
 
         if not closestPBest is None:
@@ -1174,36 +1207,36 @@ class MainWindow(QMainWindow):
                     self.pedalBest.setText(str(math.ceil (nextBrakeBest/60)))
                     if nextBrakeBest >= 120:
                         if nextBrakeBest%60 >= 30:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#22F"))
+                            pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor3)
                             if self.bigCountdownBrakepoint == 1:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
                     elif nextBrakeBest >= 60:
                         if nextBrakeBest%60 >= 30:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#2FF"))
+                            pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor2)
                             if self.bigCountdownBrakepoint == 1:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeBest%30 >= 15:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#FFF"))
+                            pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor1)
                             if self.bigCountdownBrakepoint == 1:
                                 self.setPalette(pal)
                         else:
-                            pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                            pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
 
                 else:
                     self.pedalBest.setText("")
-                    pal.setColor(self.pedalBest.backgroundRole(), QColor("#222"))
+                    pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
                 self.pedalBest.setPalette(pal)
 
                 self.lineBest.setPoints(curPoint, closestPBest)
                 self.lineBest.update()
         else:
             pal = self.speedBest.palette()
-            pal.setColor(self.speedBest.backgroundRole(), QColor('#222'))
+            pal.setColor(self.speedBest.backgroundRole(), self.backgroundColor)
             self.speedBest.setPalette(pal)
 
         if not closestPMedian is None:
@@ -1216,30 +1249,26 @@ class MainWindow(QMainWindow):
                 if closestPMedian.brake > 0:
                     self.pedalMedian.setText("BRAKE")
                     pal.setColor(self.pedalMedian.backgroundRole(), self.brakeQColor(closestPMedian.brake))
-                #elif closestPMedian.throttle > 0:
                 else:
                     self.pedalMedian.setText("")
-                    pal.setColor(self.pedalMedian.backgroundRole(), QColor("#222"))
-                #else:
-                    #self.pedalMedian.setText("COAST")
-                    #pal.setColor(self.pedalMedian.backgroundRole(), self.speedDiffQColor(0))
+                    pal.setColor(self.pedalMedian.backgroundRole(), self.backgroundColor)
                 self.pedalMedian.setPalette(pal)
                 self.lineMedian.setPoints(curPoint, closestPMedian)
                 self.lineMedian.update()
         else:
             pal = self.speedMedian.palette()
-            pal.setColor(self.speedMedian.backgroundRole(), QColor('#222'))
+            pal.setColor(self.speedMedian.backgroundRole(), self.backgroundColor)
             self.speedMedian.setPalette(pal)
 
     def updateMap(self, curPoint):
         if self.circuitExperience and not self.previousPoint is None:
-            color = Qt.GlobalColor.red
+            color = self.mapCurrentColor
             if len(self.previousLaps) > 0:
-                #speedDiff = self.previousLaps[self.bestLap].points[self.closestIBest].car_speed - curPoint.car_speed
-                speedDiff = 10*((self.closestIBest - self.oldIBest) - 1)
+                speedDiff = self.previousLaps[self.bestLap].points[self.closestIBest].car_speed - curPoint.car_speed
+                #speedDiff = 10*((self.closestIBest - self.oldIBest) - 1) # TODO const
                 self.oldIBest = self.closestIBest
                 if speedDiff == 0:
-                    color = Qt.GlobalColor.black
+                    color = self.mapStandingColor
                 else:
                     color = self.speedDiffQColor(speedDiff)
             self.mapView.setPoints(self.previousPoint, curPoint, color)
@@ -1252,9 +1281,9 @@ class MainWindow(QMainWindow):
             self.noThrottleCount=0
 
     def handleLapChanges(self, curPoint):
-        if self.circuitExperience and self.noThrottleCount == 60 * 10:
-            print("Lap ended 10 seconds ago")
-        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > 10 or self.noThrottleCount == 60 * 10)):
+        if self.circuitExperience and self.noThrottleCount == 60 * self.circuitExperienceNoThrottleTimeout:
+            print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
+        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount == 60 * self.circuitExperienceNoThrottleTimeout)):
             if self.circuitExperience:
                 cleanLap = self.cleanUpLap(self.curLap)
                 self.mapView.endLap(cleanLap.points)
@@ -1263,7 +1292,7 @@ class MainWindow(QMainWindow):
                 cleanLap = self.curLap
             lapLen = cleanLap.length()
             
-            if lapLen < 10:
+            if lapLen < 10: # TODO const
                 print("LAP CHANGE short")
             else:
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap.points) / 60,3), "s")
@@ -1279,7 +1308,7 @@ class MainWindow(QMainWindow):
                     else:
                         lastLapTime = curPoint.last_lap
                     print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
-                    if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < 30: 
+                    if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
                         self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True))
                         print("Append valid lap", lastLapTime, len(cleanLap.points), len(self.previousLaps))
                     else:
@@ -1313,14 +1342,14 @@ class MainWindow(QMainWindow):
                         self.refueled += 1
                     elif fuelDiff < 0:
                         self.refueled = 0
-                    if len(self.lastFuelUsage) > 5:
+                    if len(self.lastFuelUsage) > self.fuelStatisticsLaps:
                         self.lastFuelUsage = self.lastFuelUsage[1:]
                 self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
 
                 if len(self.lastFuelUsage) > 0:
                     self.fuelFactor = self.lastFuelUsage[0]
                     for i in range(1, len(self.lastFuelUsage)):
-                        self.fuelFactor = 0.333 * self.fuelFactor + 0.666 * self.lastFuelUsage[i]
+                        self.fuelFactor = (1-self.fuelLastLapFactor) * self.fuelFactor + self.fuelLastLapFactor * self.lastFuelUsage[i]
 
             self.lastLap = curPoint.current_lap
         elif not self.keepLaps and (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
@@ -1334,7 +1363,7 @@ class MainWindow(QMainWindow):
             curPoint = Point(d[0], d[1])
 
             if self.messagesEnabled and not self.newMessage is None:
-                self.messages.append([self.curLap.points[-min(60*5,len(self.curLap.points)-1)], self.newMessage])
+                self.messages.append([self.curLap.points[-min(60*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
                 self.newMessage = None
                 print(self.messages)
 
