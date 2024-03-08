@@ -11,10 +11,6 @@ import time
 from cProfile import Profile
 from pstats import SortKey, Stats
 
-#from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QRunnable, QThreadPool
-#from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-#from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QStackedWidget
-
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
