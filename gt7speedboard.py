@@ -36,8 +36,11 @@ class Worker(QRunnable, QObject):
 
     @pyqtSlot()
     def run(self):
-        self.func(*self.args)
-        self.signals.finished.emit(self.msg, self.t)
+        altMsg = self.func(*self.args)
+        if altMsg is None:
+            self.signals.finished.emit(self.msg, self.t)
+        else:
+            self.signals.finished.emit(altMsg, self.t)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -1530,6 +1533,9 @@ class MainWindow(QMainWindow):
                 self.isRecording = False
                 self.receiver.stopRecording()
             else:
+                if not os.path.exists(self.storageLocation):
+                    self.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
+                    return
                 prefix = self.storageLocation + "/"
                 if len(self.sessionName) > 0:
                     prefix += self.sessionName + "-"
@@ -1590,6 +1596,8 @@ class MainWindow(QMainWindow):
 
     def saveAllLaps(self, name):
         print("store all laps:", name)
+        if not os.path.exists(self.storageLocation):
+            return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
@@ -1600,6 +1608,8 @@ class MainWindow(QMainWindow):
 
     def saveLap(self, index, name):
         print("store lap:", name)
+        if not os.path.exists(self.storageLocation):
+            return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
@@ -1609,6 +1619,8 @@ class MainWindow(QMainWindow):
 
     def saveMessages(self):
         print("Save messages")
+        if not os.path.exists(self.storageLocation):
+            return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         d = []
         for m in self.messages:
             d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
