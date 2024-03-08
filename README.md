@@ -30,7 +30,7 @@ Features:
 
 ### gt7playbackserver
 
-Can act as a virtual PlayStation running GT7 to serve pre-recorded telemetry data to any app that can receive it.
+Can act as a virtual PlayStation running GT7 to serve pre-recorded telemetry data to any app that can receive it. Use 127.0.0.1 as the PlayStation IP address to connect to the playback server.
 
 ![Playback server](doc/playbackserver.png)
 
@@ -44,6 +44,8 @@ Load two pre-recorded laps and compare them in a visual way.
 - Throttle
 - Time gains/losses
 - Gears
+
+Drag the track around with the mouse and use the mouse wheel to zoom. Keyboard shortcuts to show or hide elements are listed in the top right corner.
 
 #### Racing line
 ![Racing line](doc/raceline.png)
@@ -62,5 +64,8 @@ Load two pre-recorded laps and compare them in a visual way.
 #### Modern art
 ![Modern art](doc/modernart.png)
 
+### gt7toxl/gt7tocsv
+
+Command line tools to export gt7 telemetry data to XLSX or CSV tables.
 
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
