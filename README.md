@@ -68,4 +68,6 @@ Drag the track around with the mouse and use the mouse wheel to zoom. Keyboard s
 
 Command line tools to export gt7 telemetry data to XLSX or CSV tables.
 
+## License
+
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
