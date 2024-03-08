@@ -41,6 +41,13 @@ Load two pre-recorded laps and compare them in a visual way.
 - Gears
 
 ![Racing line](doc/raceline.png)
+![Racing line](doc/raceline2.png)
+![Racing line](doc/brakepoints.png)
+![Racing line](doc/timeatbrakepoints.png)
+![Racing line](doc/throttle.png)
+![Racing line](doc/timegains.png)
+![Racing line](doc/gearpoints.png)
+![Racing line](doc/details.png)
 
 
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
