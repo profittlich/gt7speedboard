@@ -40,13 +40,19 @@ Load two pre-recorded laps and compare them in a visual way.
 - Time gains/losses
 - Gears
 
+#### Racing line
 ![Racing line](doc/raceline.png)
 ![Racing line](doc/raceline2.png)
+#### Brake points
 ![Racing line](doc/brakepoints.png)
 ![Racing line](doc/timeatbrakepoints.png)
+#### Throttle
 ![Racing line](doc/throttle.png)
+#### Time gains/losses
 ![Racing line](doc/timegains.png)
+#### Gears
 ![Racing line](doc/gearpoints.png)
+#### Details
 ![Racing line](doc/details.png)
 
 
