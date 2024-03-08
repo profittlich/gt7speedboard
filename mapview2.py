@@ -26,6 +26,7 @@ class MapView2(QWidget):
         self.showGroups = {}
         self.dragging = False
         self.temporaryMarkers = []
+        self.manualSplitPoints = []
 
 
     def setLaps(self, lap1, lap2):
@@ -665,6 +666,9 @@ class MapView2(QWidget):
             self.layers[self.lap1Markers].append(mk4)
             self.temporaryMarkers.append(mk3)
             self.temporaryMarkers.append(mk4)
+
+            self.manualSplitPoints.append((lp1, lp2))
+
             self.update()
             
 
@@ -757,6 +761,7 @@ class MapView2(QWidget):
                     if m in ly:
                         ly.remove (m)
             self.temporaryMarkers = []
+            self.manualSplitPoints = []
             self.update()
 
         elif e.key() == Qt.Key.Key_1.value:
