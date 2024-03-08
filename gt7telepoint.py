@@ -150,7 +150,6 @@ class Point:
         struct.pack_into ('i', newPkt, 0x7C, self.last_lap)
         struct.pack_into ('h', newPkt, 0x74, self.current_lap)
         gearfield = self.current_gear + (self.suggested_gear << 4)
-        print(gearfield, self.current_gear, self.suggested_gear)
         struct.pack_into ('B', newPkt, 0x90, gearfield)
         struct.pack_into ('f', newPkt, 0x48, self.fuel_capacity)
         struct.pack_into ('f', newPkt, 0x44, self.current_fuel)
@@ -237,7 +236,6 @@ class Point:
         struct.pack_into ('B', newPkt, 0x8E, self.is_paused)
         struct.pack_into ('B', newPkt, 0x8E, self.in_race)
 
-        print(self.unknown)
         struct.pack_into('f', newPkt, 0x28, self.unknown[0])
 
         struct.pack_into('B', newPkt, 0x8E, int(self.unknown[1],2))

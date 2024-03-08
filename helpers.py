@@ -46,6 +46,7 @@ def loadLap(fn):
                 ddata = salsa20_dec(data)
                 curPoint = Point(ddata, data)
                 lap.points.append(curPoint)
+    print(len(lap.points))
     return lap
 
 def loadLaps(fn):

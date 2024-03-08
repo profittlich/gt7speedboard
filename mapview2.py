@@ -400,7 +400,6 @@ class MapView2(QWidget):
         qp.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         for ly in range(len(self.layers)):
-            print("Paint", len(self.layers[ly]), "elements")
             if self.showLayers[ly]:
                 for l in self.layers[ly]:
                     qp.setBrush(Qt.BrushStyle.NoBrush)
@@ -667,7 +666,7 @@ class MapView2(QWidget):
             self.temporaryMarkers.append(mk3)
             self.temporaryMarkers.append(mk4)
 
-            self.manualSplitPoints.append((lp1, lp2))
+            self.manualSplitPoints.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2)))
 
             self.update()
             
@@ -711,6 +710,47 @@ class MapView2(QWidget):
                 self.zoomOut(1.01)
                 self.offsetX -= rx / 1.01 - rx
                 self.offsetZ -= rz / 1.01 - rz
+    
+    def writeFlippingLaps(self):
+        fromPts = (0, 0)
+        lapA = Lap()
+        lapB = Lap()
+        flip = False
+        for p in self.manualSplitPoints:
+            if flip:
+                lapB.points += self.lap1.points[fromPts[0]:p[0]]
+                lapA.points += self.lap2.points[fromPts[1]:p[1]]
+            else:
+                lapA.points += self.lap1.points[fromPts[0]:p[0]]
+                lapB.points += self.lap2.points[fromPts[1]:p[1]]
+
+            flip = not flip
+            fromPts = p
+
+        if flip:
+            lapB.points += self.lap1.points[fromPts[0]:]
+            lapA.points += self.lap2.points[fromPts[1]:]
+        else:
+            lapA.points += self.lap1.points[fromPts[0]:]
+            lapB.points += self.lap2.points[fromPts[1]:]
+
+        for p in lapA.points:
+            p.current_lap = 1
+            p.recreatePackage()
+        
+        for p in lapB.points:
+            p.current_lap = 1
+            p.recreatePackage()
+
+        now = datetime.datetime.now()
+        with open ( "./synthlap-A-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+            for p in lapA.points:
+                f.write(p.raw)
+        with open ( "./synthlap-B-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+            for p in lapB.points:
+                f.write(p.raw)
+            
+
 
     def delegateKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Right.value:
@@ -754,6 +794,8 @@ class MapView2(QWidget):
                 self.showGroups['gear'] = True
             self.showGroups['gear'] = not self.showGroups['gear']
             self.update()
+        elif e.key() == Qt.Key.Key_W.value:
+            self.writeFlippingLaps()
 
         elif e.key() == Qt.Key.Key_C.value:
             for m in self.temporaryMarkers:
