@@ -40,5 +40,7 @@ Load two pre-recorded laps and compare them in a visual way.
 - Time gains/losses
 - Gears
 
+![Racing line](doc/raceline.png)
+
 
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
