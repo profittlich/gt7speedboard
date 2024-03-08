@@ -25,6 +25,9 @@ Features:
 - Save the best, last or all laps to a file
 - The location-based markers
 
+![SpeedBoard](doc/speedboard.png)
+![SpeedBoard configuration](doc/speedboardconfig.png)
+
 ### gt7playbackserver
 
 Can act as a virtual PlayStation running GT7 to serve pre-recorded telemetry data to any app that can receive it.
