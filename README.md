@@ -54,6 +54,8 @@ Load two pre-recorded laps and compare them in a visual way.
 ![Racing line](doc/gearpoints.png)
 #### Details
 ![Racing line](doc/details.png)
+#### Modern art
+![Racing line](doc/modernart.png)
 
 
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
