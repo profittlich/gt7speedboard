@@ -29,6 +29,8 @@ Features:
 
 Can act as a virtual PlayStation running GT7 to serve pre-recorded telemetry data to any app that can receive it.
 
+![Playback server](doc/playbackserver.png)
+
 ### graphicallapcomparison
 
 Load two pre-recorded laps and compare them in a visual way.
@@ -44,18 +46,18 @@ Load two pre-recorded laps and compare them in a visual way.
 ![Racing line](doc/raceline.png)
 ![Racing line](doc/raceline2.png)
 #### Brake points
-![Racing line](doc/brakepoints.png)
-![Racing line](doc/timeatbrakepoints.png)
+![Brake poiunts](doc/brakepoints.png)
+![Brake poiunts](doc/timeatbrakepoints.png)
 #### Throttle
-![Racing line](doc/throttle.png)
+![Throttle](doc/throttle.png)
 #### Time gains/losses
-![Racing line](doc/timegains.png)
+![Time gains and losses](doc/timegains.png)
 #### Gears
-![Racing line](doc/gearpoints.png)
+![Gears](doc/gearpoints.png)
 #### Details
-![Racing line](doc/details.png)
+![Details](doc/details.png)
 #### Modern art
-![Racing line](doc/modernart.png)
+![Modern art](doc/modernart.png)
 
 
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
