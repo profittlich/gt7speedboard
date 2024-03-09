@@ -5,12 +5,13 @@ import socket
 import sys
 import struct
 from PyQt6.QtCore import Qt 
+from PyQt6.QtCore import *
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog
 from helpers import salsa20_dec, salsa20_enc
 
 class GT7PlaybackServer:
 
-    def __init__(self, ip):
+    def __init__(self, ip, stopCallback=None):
         # ports for send and receive data
         self.SendPort = 33739
         self.ReceivePort = 33740
@@ -19,6 +20,7 @@ class GT7PlaybackServer:
         self.fps = 60
         self.filename = None
         self.simulateFrameDrops = False
+        self.stopCallback = stopCallback
 
     def setFPS(self, b):
         self.fps = b
@@ -28,15 +30,33 @@ class GT7PlaybackServer:
     
     def stop(self):
         self.running=False
+        if not self.stopCallback is None:
+            self.stopCallback()
 
     def setSimulateFrameDrops(self, on):
         self.simulateFrameDrops = on
+
+    def checkHeartBeat(self):
+        print("Heartbeat watchdog started")
+        while self.running:
+            try:
+                data, address = self.s.recvfrom(4096)
+                print("Received heartbeat from " + address[0])
+                connected = True
+            except TimeoutError as e:
+                print("No heartbeat received.")
+                self.stop()
+            except Exception as e:
+                print(type(e))
+                self.stop()
+                print('HB Exception: {}'.format(e))
+
 
     def runPlaybackServer(self):
         # Create a UDP socket and bind it
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.s.bind(('0.0.0.0', self.SendPort))
-        self.s.settimeout(2)
+        self.s.settimeout(12)
 
         f = open(self.filename, "rb")
         allData = f.read()
@@ -55,6 +75,9 @@ class GT7PlaybackServer:
                 print('Exception: {}'.format(e))
         if connected:
             print("Connected to ", address)
+
+        hbt = threading.Thread(target = self.checkHeartBeat)
+        hbt.start()
 
         curIndex = 0
         oldPc = 0
@@ -121,9 +144,11 @@ class StartWindowPS(QWidget):
 
 
 class MainWindow(QMainWindow):
+    remoteStopSignal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
-        self.server = GT7PlaybackServer ("127.0.0.1")
+        self.server = GT7PlaybackServer ("127.0.0.1", self.remoteStop)
         self.thread = None
         self.startWidget = StartWindowPS()
         self.startWidget.starter.clicked.connect(self.serve)
@@ -131,15 +156,23 @@ class MainWindow(QMainWindow):
         self.startWidget.bRec.clicked.connect(self.chooseRecording)
         self.startWidget.sFps.valueChanged.connect(self.updateRate)
 
+        self.remoteStopSignal.connect(self.cleanUpAfterStop)
+
         self.setCentralWidget(self.startWidget)
 
-    def stop(self):
-        self.server.stop()
+    def remoteStop(self):
+        self.remoteStopSignal.emit()
+
+    def cleanUpAfterStop(self):
         if not self.thread is None:
             self.thread.join()
             self.thread = None
         self.startWidget.stopper.hide()
         self.startWidget.starter.show()
+
+    def stop(self):
+        self.server.stop()
+        self.cleanUpAfterStop()
 
     def chooseRecording(self):
         chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")

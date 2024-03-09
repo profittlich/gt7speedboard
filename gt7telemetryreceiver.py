@@ -5,6 +5,7 @@ import sys
 import struct
 import threading
 import queue
+import time
 from helpers import salsa20_dec
 
 class GT7TelemetryReceiver:
@@ -16,7 +17,7 @@ class GT7TelemetryReceiver:
         self.ip = ip
         self.prevlap = -1
         self.pktid = 0
-        self.pknt = 0
+        self.pknt = time.perf_counter()
         self.s = None
         self.running = False
         self.queue = None
@@ -75,7 +76,6 @@ class GT7TelemetryReceiver:
                 if not self.record is None:
                     self.record.write(data)
                 
-                self.pknt = self.pknt + 1
                 ddata = salsa20_dec(data)
                 newPktId = struct.unpack('i', ddata[0x70:0x70+4])[0]
                 if len(ddata) > 0 and (self.ignorePktId or newPktId > self.pktid):
@@ -86,11 +86,12 @@ class GT7TelemetryReceiver:
                     if not self.queue is None:
                         self.queue.put((ddata, data))
 
-                if self.pknt > 100:
+                newPknt = time.perf_counter()
+                if newPknt - self.pknt > 5:
                     self.send_hb()
-                    self.pknt = 0
+                    self.pknt = time.perf_counter()
             except Exception as e:
                 print('Exception: {}'.format(e))
                 self.send_hb()
-                self.pknt = 0
+                self.pknt = time.perf_counter()
 
