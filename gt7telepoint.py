@@ -145,7 +145,7 @@ class Point:
     def recreatePackage(self):
         newPkt = bytearray(296)
 
-        struct.pack_into ('i', newPkt, 0x70, int(self.package_id))
+        struct.pack_into ('i', newPkt, 0x70, self.package_id)
         struct.pack_into ('i', newPkt, 0x78, self.best_lap)
         struct.pack_into ('i', newPkt, 0x7C, self.last_lap)
         struct.pack_into ('h', newPkt, 0x74, self.current_lap)
@@ -176,11 +176,11 @@ class Point:
 
         struct.pack_into ('i', newPkt, 0x124, self.car_id)
 
-        struct.pack_into ('B', newPkt, 0x91, int(self.throttle * 2.55))
+        struct.pack_into ('B', newPkt, 0x91, int(round(self.throttle * 2.55)))
         struct.pack_into ('f', newPkt, 0x3C, self.rpm)
         struct.pack_into ('H', newPkt, 0x88, self.rpm_rev_warning)
 
-        struct.pack_into ('B', newPkt, 0x92, int(self.brake * 2.55))
+        struct.pack_into ('B', newPkt, 0x92, int(round(self.brake * 2.55)))
 
         struct.pack_into ('H', newPkt, 0x8A, self.rpm_rev_limiter)
 
@@ -382,7 +382,7 @@ class Point:
         self.recreatePackage()
 
     def str(self):
-        return str(self.brake) + " " + str(self.is_paused) + " " + str (self.in_race) + " " + str(self.current_lap)
+        return str(self.position_x) + " " + str(self.position_y) + " " + str (self.position_z) + " " + str(self.current_lap)
 
 
 

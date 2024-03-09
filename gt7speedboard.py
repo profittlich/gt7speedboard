@@ -1,4 +1,5 @@
 import sys
+import copy
 import os
 import threading
 import traceback
@@ -1502,28 +1503,47 @@ class MainWindow(QMainWindow):
             self.debugCount += 1
             d = self.queue.get()
 
-            curPoint = Point(d[0], d[1])
+            newPoint = Point(d[0], d[1])
 
-            if self.messagesEnabled and not self.newMessage is None:
-                self.messages.append([self.curLap.points[-min(60*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
-                self.newMessage = None
+            if not self.previousPoint is None:
+                diff = newPoint.package_id - self.previousPoint.package_id
+            else:
+                diff = 1
 
-            if curPoint.is_paused or not curPoint.in_race:
-                continue
+            pointsToHandle = []
 
-            if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
-                self.initRace()
-                continue
+            if diff > 10:
+                print("Too many frame drops! Data will be corrupted.")
+            elif diff > 1:
+                print("Frame drops propagated:", diff-1)
+                for i in range(diff-1):
+                    pi = copy.deepcopy(self.previousPoint)
+                    pi.interpolate(newPoint, (i+1)/diff)
+                    pointsToHandle.append(pi)
 
-            self.updateTyreTemps(curPoint)
-            self.handleLapChanges(curPoint)
-            self.updateFuelAndWarnings(curPoint)
-            self.updateSpeed(curPoint)
-            self.updateMap(curPoint)
-            self.updateLaps(curPoint)
+            pointsToHandle.append(newPoint)
 
-            self.previousPoint = curPoint
-            self.curLap.points.append(curPoint)
+            for curPoint in pointsToHandle:
+                if self.messagesEnabled and not self.newMessage is None:
+                    self.messages.append([self.curLap.points[-min(60*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
+                    self.newMessage = None
+
+                if curPoint.is_paused or not curPoint.in_race:
+                    continue
+
+                if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
+                    self.initRace()
+                    continue
+
+                self.updateTyreTemps(curPoint)
+                self.handleLapChanges(curPoint)
+                self.updateFuelAndWarnings(curPoint)
+                self.updateSpeed(curPoint)
+                self.updateMap(curPoint)
+                self.updateLaps(curPoint)
+
+                self.previousPoint = curPoint
+                self.curLap.points.append(curPoint)
 
 
     def closeEvent(self, event):
@@ -1568,12 +1588,12 @@ class MainWindow(QMainWindow):
                     self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_L.value:
                 if len(self.previousLaps) > 0:
-                    saveThread = Worker(self.saveAllLaps, "Last lap saved.", 1.0, (-1, "last",))
+                    saveThread = Worker(self.saveLap, "Last lap saved.", 1.0, (-1, "last",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_M.value:
                 if self.medianLap >= 0:
-                    saveThread = Worker(self.saveAllLaps, "Median lap saved.", 1.0, (self.medianLap, "median",))
+                    saveThread = Worker(self.saveLap, "Median lap saved.", 1.0, (self.medianLap, "median",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_A.value:

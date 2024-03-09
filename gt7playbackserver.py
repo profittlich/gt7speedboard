@@ -18,6 +18,7 @@ class GT7PlaybackServer:
         self.running = False
         self.fps = 60
         self.filename = None
+        self.simulateFrameDrops = False
 
     def setFPS(self, b):
         self.fps = b
@@ -27,6 +28,9 @@ class GT7PlaybackServer:
     
     def stop(self):
         self.running=False
+
+    def setSimulateFrameDrops(self, on):
+        self.simulateFrameDrops = on
 
     def runPlaybackServer(self):
         # Create a UDP socket and bind it
@@ -71,7 +75,9 @@ class GT7PlaybackServer:
                     print("Serve index", curIndex//296, "pkt", newPktId, "new pkt", newNewPktId)
                 encr = salsa20_enc(decr, 296)
 
-                self.s.sendto(encr, (self.ip, self.ReceivePort))
+                if not self.simulateFrameDrops or pktIdCounter % 8 == 0:
+                    self.s.sendto(encr, (self.ip, self.ReceivePort))
+
                 curIndex += 296
                 if curIndex >= len(allData):
                     print("Loop")
@@ -189,6 +195,8 @@ if __name__ == '__main__':
             fps = float(sys.argv[i+1])
             window.server.setFPS(fps)
             i+=1
+        if sys.argv[i] == "--simulate-frame-drops":
+            window.server.setSimulateFrameDrops(True)
         else:
             ready = True
             window.server.setFilename(sys.argv[i])
