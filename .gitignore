@@ -10,6 +10,7 @@ build/gt7speedboard/Analysis-00.toc
 /dist
 /build
 /venv
+/local
 *.log
 *.gt7
 /win
