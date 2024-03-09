@@ -13,8 +13,9 @@ class GT7PlaybackServer:
 
     def __init__(self, ip, stopCallback=None):
         # ports for send and receive data
-        self.SendPort = 33739
-        self.ReceivePort = 33740
+        self.s = None
+        self.InPort = 33739
+        self.OutPort = 33740
         self.ip = ip
         self.running = False
         self.fps = 60
@@ -30,6 +31,9 @@ class GT7PlaybackServer:
     
     def stop(self):
         self.running=False
+
+    def internalStop(self):
+        self.stop()
         if not self.stopCallback is None:
             self.stopCallback()
 
@@ -38,39 +42,45 @@ class GT7PlaybackServer:
 
     def checkHeartBeat(self):
         print("Heartbeat watchdog started")
+        noHeartBeat = 0
         while self.running:
             try:
                 data, address = self.s.recvfrom(4096)
                 print("Received heartbeat from " + address[0])
+                noHeartBeat = 0
                 connected = True
             except TimeoutError as e:
-                print("No heartbeat received.")
-                self.stop()
+                noHeartBeat += 1
             except Exception as e:
-                print(type(e))
-                self.stop()
+                self.internalStop()
                 print('HB Exception: {}'.format(e))
+            if noHeartBeat >= 12:
+                print("No heartbeat received.")
+                self.internalStop()
 
 
     def runPlaybackServer(self):
+        print("Running server...")
         # Create a UDP socket and bind it
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.s.bind(('0.0.0.0', self.SendPort))
-        self.s.settimeout(12)
+        if self.s is None:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.s.bind(('0.0.0.0', self.InPort))
+            self.s.settimeout(1)
 
-        f = open(self.filename, "rb")
-        allData = f.read()
-        f.close()
+            f = open(self.filename, "rb")
+            self.allData = f.read()
+            f.close()
 
-        print("Samples:", len(allData)/296)
+            print("Frames:", len(self.allData)/296)
 
         self.running = True
         connected = False
         while not connected and self.running:
             try:
                 data, address = self.s.recvfrom(4096)
-                print(address)
                 connected = True
+            except TimeoutError as e:
+                pass
             except Exception as e:
                 print('Exception: {}'.format(e))
         if connected:
@@ -90,7 +100,7 @@ class GT7PlaybackServer:
                     pc = time.perf_counter()
                 oldPc = pc
 
-                decr = bytearray(salsa20_dec(allData[curIndex:curIndex+296]))
+                decr = bytearray(salsa20_dec(self.allData[curIndex:curIndex+296]))
                 newPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
                 struct.pack_into('i', decr, 0x70, pktIdCounter)
                 newNewPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
@@ -99,10 +109,10 @@ class GT7PlaybackServer:
                 encr = salsa20_enc(decr, 296)
 
                 if not self.simulateFrameDrops or pktIdCounter % 8 == 0:
-                    self.s.sendto(encr, (self.ip, self.ReceivePort))
+                    self.s.sendto(encr, (self.ip, self.OutPort))
 
                 curIndex += 296
-                if curIndex >= len(allData):
+                if curIndex >= len(self.allData):
                     print("Loop")
                     curIndex = 0
                 pktIdCounter += 1
@@ -156,12 +166,18 @@ class MainWindow(QMainWindow):
         self.startWidget.bRec.clicked.connect(self.chooseRecording)
         self.startWidget.sFps.valueChanged.connect(self.updateRate)
 
-        self.remoteStopSignal.connect(self.cleanUpAfterStop)
+        self.remoteStopSignal.connect(self.restartServer)
 
         self.setCentralWidget(self.startWidget)
 
     def remoteStop(self):
         self.remoteStopSignal.emit()
+
+    def restartServer(self):
+        if not self.thread is None:
+            self.thread.join()
+            self.thread = None
+        self.serve()
 
     def cleanUpAfterStop(self):
         if not self.thread is None:
