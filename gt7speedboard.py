@@ -18,6 +18,7 @@ from PyQt6.QtCore import *
 from gt7telepoint import Point
 from helpers import loadLap
 from helpers import Lap
+from helpers import PositionPoint
 
 import gt7telemetryreceiver as tele
 from gt7widgets import *
@@ -692,6 +693,8 @@ class MainWindow(QMainWindow):
         self.storageLocation = self.startWindow.storageLocation
         
         self.linecomp = self.startWindow.linecomp.isChecked()
+        self.loadMessagesFromFile = self.startWindow.cbCaution.isChecked()
+        self.messageFile = self.startWindow.cautionFile
         
         self.brakepoints = self.startWindow.brakepoints.isChecked()
         self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
@@ -728,6 +731,8 @@ class MainWindow(QMainWindow):
         settings.setValue("storageLocation", self.storageLocation)
 
         settings.setValue("linecomp", self.linecomp)
+        settings.setValue("loadMessagesFromFile", self.loadMessagesFromFile)
+        settings.setValue("messageFile", self.messageFile)
 
         settings.setValue("brakepoints", self.brakepoints)
         settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
@@ -751,6 +756,7 @@ class MainWindow(QMainWindow):
         self.receiver = tele.GT7TelemetryReceiver(ip)
 
         self.refLaps = [ loadLap(self.refAFile), loadLap(self.refBFile), loadLap(self.refCFile) ]
+
 
         self.receiver.setQueue(self.queue)
         self.receiver.setIgnorePktId(self.allowLoop)
@@ -839,6 +845,8 @@ class MainWindow(QMainWindow):
         self.lineMedian.setPoints(None,None)
         self.lineMedian.update()
 
+        self.loadMessages(self.messageFile)
+
     def tyreTempQColor(self, temp):
         col = QColor()
         hue = self.tyreTempCenterHue - (temp - self.tyreTempCenter)/(self.tyreTempSpread/self.tyreTempCenterHue)
@@ -857,7 +865,6 @@ class MainWindow(QMainWindow):
             hue = self.speedDiffMinHue
         if hue > self.speedDiffMaxHue:
             hue = self.speedDiffMaxHue
-        print(hue)
         col.setHsvF (hue, self.speedDiffColorSaturation, self.speedDiffColorValue)
 
         return col
@@ -902,9 +909,7 @@ class MainWindow(QMainWindow):
         return result
 
     def findNextBrake(self, lap, startI):
-        #print("findNextBrake", startI)
         for i in range(startI, min(startI + 60 * 3, len(lap))):
-            #print(startI, i, min(startI + 60, len(lap)))
             if lap[i].brake > self.brakeMinimumLevel:
                 return i-startI
         return None
@@ -1502,7 +1507,6 @@ class MainWindow(QMainWindow):
             if self.messagesEnabled and not self.newMessage is None:
                 self.messages.append([self.curLap.points[-min(60*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
                 self.newMessage = None
-                print(self.messages)
 
             if curPoint.is_paused or not curPoint.in_race:
                 continue
@@ -1630,8 +1634,24 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".json", "w") as f:
+        with open ( prefix + "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
             f.write(j)
+
+    def loadMessages(self, fn):
+        self.messages = []
+        if self.loadMessagesFromFile:
+            with open (fn, "r") as f:
+                j = f.read()
+                print(j)
+                d = json.loads(j)
+                print(d)
+                for m in d:
+                    p = PositionPoint()
+                    p.position_x = m['X']
+                    p.position_y = m['Y']
+                    p.position_z = m['Z']
+                    self.messages.append([p, m['message']])
+                    print("Message:", m)
 
 
 def excepthook(exc_type, exc_value, exc_tb):

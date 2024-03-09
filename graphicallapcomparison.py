@@ -52,7 +52,7 @@ class StartWindowVLC(QWidget):
             print("None")
         else:
             self.refAFile = chosen[0]
-            self.lRefA.setText("Red lap: " + chosen[0][chosen[0].rfind("/")+1:])
+            self.lRefA.setText("Violet lap: " + chosen[0][chosen[0].rfind("/")+1:])
             self.aLaps = loadLaps(self.refAFile)
             for l in self.aLaps:
                 self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
@@ -63,7 +63,7 @@ class StartWindowVLC(QWidget):
             print("None")
         else:
             self.refBFile = chosen[0]
-            self.lRefB.setText("Green lap: " + chosen[0][chosen[0].rfind("/")+1:])
+            self.lRefB.setText("Blue lap: " + chosen[0][chosen[0].rfind("/")+1:])
             self.bLaps = loadLaps(self.refBFile)
             for l in self.bLaps:
                 self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))

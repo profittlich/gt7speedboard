@@ -104,8 +104,12 @@ class StartWindow(QWidget):
         self.linecomp = QCheckBox("Show racing line comparisons (experimental)")
         self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing [space] (experimental)")
         
+        self.cbCaution = QCheckBox("Use pre-loaded warning locations")
+        self.cautionFile = ""
+
         rlLayout.addWidget(self.linecomp)
         rlLayout.addWidget(self.messagesEnabled)
+        rlLayout.addWidget(self.cbCaution)
 
         # BRAKE POINTS
         bpGroup = QGroupBox("Brake points")
@@ -230,6 +234,12 @@ class StartWindow(QWidget):
         self.saveSessionName.setChecked(settings.value("saveSessionName") in [ True, "true"])
 
         self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
+        self.cautionFile = settings.value("messageFile")
+        self.cbCaution.setChecked(settings.value("loadMessagesFromFile") in [ True, "true"])
+        if self.cbCaution.isChecked() and self.cautionFile != "":
+            self.cbCaution.setText("Warning locations: " + self.cautionFile[self.cautionFile.rfind("/")+1:])
+        elif self.cautionFile == "":
+            self.cbCaution.setChecked(False)
         
         self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
         self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
@@ -243,6 +253,7 @@ class StartWindow(QWidget):
 
         self.brakepoints.stateChanged.connect(self.brakePointWarning)
         self.linecomp.stateChanged.connect(self.racingLineWarning)
+        self.cbCaution.stateChanged.connect(self.chooseCautionFile)
 
     def racingLineWarning(self, on):
         if on:
@@ -296,6 +307,18 @@ class StartWindow(QWidget):
                 self.cbRefC.setText("Reference lap C: " + chosen[0][chosen[0].rfind("/")+1:])
         else:
             self.cbRefC.setText("Reference lap C")
+
+    def chooseCautionFile(self, on):
+        if on:
+            chosen = QFileDialog.getOpenFileName(filter="Location messages (*.sblm)")
+            if chosen[0] == "":
+                print("None")
+                self.cbCaution.setCheckState(Qt.CheckState.Unchecked)
+            else:
+                self.cautionFile = chosen[0]
+                self.cbCaution.setText("Warning locations: " + chosen[0][chosen[0].rfind("/")+1:])
+        else:
+            self.cbCaution.setText("Use pre-loaded warning locations")
 
 
 

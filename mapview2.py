@@ -713,6 +713,34 @@ class MapView2(QWidget):
     
     def writeFlippingLaps(self):
         fromPts = (0, 0)
+        optLap = Lap()
+        for p in self.manualSplitPoints:
+            flip = (p[0]-fromPts[0]) > (p[1]-fromPts[1])
+            if flip:
+                optLap.points += self.lap2.points[fromPts[1]:p[1]]
+            else:
+                optLap.points += self.lap1.points[fromPts[0]:p[0]]
+
+            flip = not flip
+            fromPts = p
+
+        flip = (len(self.lap1.points)-fromPts[0]) > (len(self.lap2.points)-fromPts[1])
+        if flip:
+            optLap.points += self.lap2.points[fromPts[1]:]
+        else:
+            optLap.points += self.lap1.points[fromPts[0]:]
+
+        for p in optLap.points:
+            p.current_lap = 1
+            p.recreatePackage()
+        
+        now = datetime.datetime.now()
+        with open ( "./optlap-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+            for p in optLap.points:
+                f.write(p.raw)
+            
+    def writeFlippingLapsTwo(self):
+        fromPts = (0, 0)
         lapA = Lap()
         lapB = Lap()
         flip = False
