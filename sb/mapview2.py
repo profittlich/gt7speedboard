@@ -5,10 +5,10 @@ import datetime
 from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QEvent
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient, QPainterPath, QStaticText, QTextOption
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
-from gt7widgets import *
-from drawelements import *
-from helpers import loadLap, loadLaps, indexToTime
-from helpers import Lap, PositionPoint
+from sb.gt7widgets import *
+from sb.drawelements import *
+from sb.helpers import loadLap, loadLaps, indexToTime
+from sb.helpers import Lap, PositionPoint
 
 class MapView2(QWidget):
 

@@ -8,12 +8,12 @@ from cProfile import Profile
 from PyQt6.QtCore import Qt 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QFileDialog
 
-from gt7telepoint import Point
-from helpers import loadLap, loadLaps, indexToTime
-from helpers import Lap, PositionPoint
+from sb.gt7telepoint import Point
+from sb.helpers import loadLap, loadLaps, indexToTime
+from sb.helpers import Lap, PositionPoint
 
-import gt7telemetryreceiver as tele
-from mapview2 import MapView2
+import sb.gt7telemetryreceiver as tele
+from sb.mapview2 import MapView2
 
 class StartWindowVLC(QWidget):
     def __init__(self):

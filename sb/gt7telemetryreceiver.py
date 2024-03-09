@@ -6,7 +6,7 @@ import struct
 import threading
 import queue
 import time
-from helpers import salsa20_dec
+from sb.crypt import salsa20_dec
 
 class GT7TelemetryReceiver:
 

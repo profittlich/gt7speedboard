@@ -1,6 +1,6 @@
 import struct
 from datetime import timedelta as td
-from crypt import salsa20_dec, salsa20_enc
+from sb.crypt import salsa20_dec, salsa20_enc
 
 class Point:
 

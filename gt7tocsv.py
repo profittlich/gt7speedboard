@@ -1,7 +1,7 @@
 import sys
-from gt7telepoint import Point
-from helpers import loadLap
-from helpers import Lap
+from sb.gt7telepoint import Point
+from sb.helpers import loadLap
+from sb.helpers import Lap
 
 
 def convertGT7toCSV (fni, fno):
@@ -163,5 +163,8 @@ def convertGT7toCSV (fni, fno):
 
 
 if __name__ == '__main__':
-    convertGT7toCSV(sys.argv[1], sys.argv[2])
+    if len(sys.argv) == 3:
+        convertGT7toCSV(sys.argv[1], sys.argv[2])
+    else:
+        print("usage: " + sys.argv[0] + " <infile> <outfile>")
 

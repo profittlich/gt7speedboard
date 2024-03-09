@@ -16,13 +16,13 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
-from gt7telepoint import Point
-from helpers import loadLap
-from helpers import Lap
-from helpers import PositionPoint
+from sb.gt7telepoint import Point
+from sb.helpers import loadLap
+from sb.helpers import Lap
+from sb.helpers import PositionPoint
 
-import gt7telemetryreceiver as tele
-from gt7widgets import *
+import sb.gt7telemetryreceiver as tele
+from sb.gt7widgets import *
 
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)

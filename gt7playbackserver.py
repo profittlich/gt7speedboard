@@ -7,7 +7,7 @@ import struct
 from PyQt6.QtCore import Qt 
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog
-from helpers import salsa20_dec, salsa20_enc
+from sb.crypt import salsa20_dec, salsa20_enc
 
 class GT7PlaybackServer:
 

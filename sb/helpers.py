@@ -1,7 +1,7 @@
 import math
 
-from crypt import salsa20_dec, salsa20_enc
-from gt7telepoint import Point
+from sb.crypt import salsa20_dec, salsa20_enc
+from sb.gt7telepoint import Point
 
 
 class PositionPoint:
