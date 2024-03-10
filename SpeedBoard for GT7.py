@@ -1700,6 +1700,11 @@ if __name__ == '__main__':
         if sys.argv[i] == "--ip" and i < len(sys.argv)-1:
             window.startWindow.ip.setText(sys.argv[i+1])
             i+=1
+        elif sys.argv[i] == "--clearsettings":
+            settings = QSettings()
+            settings.clear()
+            print("Settings cleared")
+            sys.exit(0)
         i+=1
     
     window.show()
