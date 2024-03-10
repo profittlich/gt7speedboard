@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['gt7speedboard.py'],
+    ['SpeedBoard for GT7.py'],
     pathex=[],
     binaries=[],
     datas=[],
@@ -20,7 +20,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='gt7speedboard',
+    name='SpeedBoard for GT7',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -39,11 +39,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='gt7speedboard',
+    name='SpeedBoard for GT7',
 )
 app = BUNDLE(
     coll,
-    name='gt7speedboard.app',
+    name='SpeedBoard for GT7.app',
     icon=None,
     bundle_identifier=None,
 )

@@ -1,11 +1,11 @@
-# GT7 SpeedBoard
+# SpeedBoard for GT7
 A simple dashboard for Gran Turismo 7. Also includes a graphical lap comparison tool and a playback server.
 
 Based on code from https://github.com/Bornhall/gt7telemetry and https://github.com/snipem/gt7dashboard.
 
 ## Apps
 
-### gt7speedboard
+### SpeedBoard for GT7
 
 The actual dashboard for racing. 
 
