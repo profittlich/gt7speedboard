@@ -209,7 +209,7 @@ class MainWindow(QMainWindow):
             if "fontSizeNormal" in d: self.fontSizeNormal = d["fontSizeNormal"]
             if "fontSizeLarge" in d: self.fontSizeLarge = d["fontSizeLarge"]
 
-        if False:
+        if False: # write default file, only activate on demand
             d = {}
             d["foregroundColor"] = self.foregroundColor.name()
             d["backgroundColor"] = self.backgroundColor.name()
@@ -1026,8 +1026,15 @@ class MainWindow(QMainWindow):
             self.header.setText("CIRCUIT EXPERIENCE" + lapSuffix)
         elif curPoint.total_laps > 0:
             lapValue = curPoint.total_laps - curPoint.current_lap + 1
-            if self.lapDecimals and self.closestILast > 0:
-                lapValue -= (
+            if self.lapDecimals:
+                if self.closestIRefA > 0:
+                    lapValue -= self.closestIRefA / len(self.refLaps[0].points)
+                elif self.closestIRefB > 0:
+                    lapValue -= self.closestIRefB / len(self.refLaps[1].points)
+                elif self.closestIRefC > 0:
+                    lapValue -= self.closestIRefC / len(self.refLaps[2].points)
+                elif self.closestILast > 0:
+                    lapValue -= (
                         self.closestILast / len(self.previousLaps[-1].points) +
                         self.closestIBest / len(self.previousLaps[self.bestLap].points) +
                         self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
@@ -1035,8 +1042,15 @@ class MainWindow(QMainWindow):
             self.header.setText(str(lapValue) + " LAPS LEFT" + lapSuffix)
         else:
             lapValue = curPoint.current_lap
-            if self.lapDecimals and self.closestILast > 0:
-                lapValue += (
+            if self.lapDecimals:
+                if self.closestIRefA > 0:
+                    lapValue += self.closestIRefA / len(self.refLaps[0].points)
+                elif self.closestIRefB > 0:
+                    lapValue += self.closestIRefB / len(self.refLaps[1].points)
+                elif self.closestIRefC > 0:
+                    lapValue += self.closestIRefC / len(self.refLaps[2].points)
+                elif self.closestILast > 0:
+                    lapValue += (
                         self.closestILast / len(self.previousLaps[-1].points) +
                         self.closestIBest / len(self.previousLaps[self.bestLap].points) +
                         self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
@@ -1046,8 +1060,15 @@ class MainWindow(QMainWindow):
     def updateFuelAndWarnings(self, curPoint):
         if self.refueled > 0:
             lapValue = self.refueled
-            if self.lapDecimals and self.closestILast > 0:
-                lapValue += (
+            if self.lapDecimals:
+                if self.closestIRefA > 0:
+                    lapValue -= self.closestIRefA / len(self.refLaps[0].points)
+                elif self.closestIRefB > 0:
+                    lapValue -= self.closestIRefB / len(self.refLaps[1].points)
+                elif self.closestIRefC > 0:
+                    lapValue -= self.closestIRefC / len(self.refLaps[2].points)
+                elif self.closestILast > 0:
+                    lapValue += (
                         self.closestILast / len(self.previousLaps[-1].points) +
                         self.closestIBest / len(self.previousLaps[self.bestLap].points) +
                         self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
@@ -1186,6 +1207,7 @@ class MainWindow(QMainWindow):
         pal.setColor(self.pedalBest.backgroundRole(), self.brightBackgroundColor)
         self.setPalette(pal)
 
+        # TODO refactor
         if not closestPRefA is None:
             speedDiff = closestPRefA.car_speed - curPoint.car_speed
             pal = self.speedRefA.palette()
@@ -1600,6 +1622,8 @@ class MainWindow(QMainWindow):
                 saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
                 saveThread.signals.finished.connect(self.showUiMsg)
                 self.threadpool.start(saveThread)
+            elif e.key() == Qt.Key.Key_C.value:
+                self.initRace()
             elif e.key() == Qt.Key.Key_Tab.value:
                 self.masterWidget.setCurrentIndex(2)
             #elif e.key() == Qt.Key.Key_T.value:

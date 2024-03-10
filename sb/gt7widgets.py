@@ -172,6 +172,7 @@ class StartWindow(QWidget):
                                   "M - save median lap\n"+
                                   "A - save all laps\n"+
                                   "W - save warning messages\n"
+                                  "C - clear previous lap data\n"
                                   ))
 
         # CONNECT
