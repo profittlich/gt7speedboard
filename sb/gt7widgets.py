@@ -48,7 +48,7 @@ class StartWindow(QWidget):
         vwLayout = QVBoxLayout()
         vwGroup.setLayout(vwLayout)
 
-        self.lapDecimals = QCheckBox("Show decimals in lap displays (experimental)")
+        self.lapDecimals = QCheckBox("Show decimals in lap displays")
         self.cbOptimal = QCheckBox("Optimal lap")
         self.cbOptimal.setEnabled(False)
         self.cbBest = QCheckBox("Best lap")
@@ -101,8 +101,8 @@ class StartWindow(QWidget):
         rlLayout = QVBoxLayout()
         rlGroup.setLayout(rlLayout)
 
-        self.linecomp = QCheckBox("Show racing line comparisons (experimental)")
-        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing [space] (experimental)")
+        self.linecomp = QCheckBox("Show racing line comparisons")
+        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing SPACE")
         
         self.cbCaution = QCheckBox("Use pre-loaded warning locations")
         self.cautionFile = ""
@@ -118,7 +118,7 @@ class StartWindow(QWidget):
         mainLayoutR.addWidget(bpGroup)
 
         self.brakepoints = QCheckBox("Show brake points")
-        self.countdownBrakepoint = QCheckBox("Count down to best brake points (experimental)")
+        self.countdownBrakepoint = QCheckBox("Count down to best brake points")
         self.bigCountdownBrakepoint = QLabel("Whole screen brake point colors for:")
         self.bigCountdownTarget = QComboBox()
         self.bigCountdownTarget.addItem("Nothing")
@@ -132,16 +132,6 @@ class StartWindow(QWidget):
         bpLayout.addWidget(self.bigCountdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownTarget)
         
-        # NETWORK
-        netGroup = QGroupBox("Network")
-        netLayout = QVBoxLayout()
-        netGroup.setLayout(netLayout)
-        mainLayoutR.addWidget(netGroup)
-
-        self.allowLoop = QCheckBox("Allow looping telemetry from playback (experimental)")
-        
-        netLayout.addWidget(self.allowLoop)
-
         # FUEL
         fuGroup = QGroupBox("Fuel")
         fuLayout = QVBoxLayout()
@@ -245,8 +235,6 @@ class StartWindow(QWidget):
         self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
         self.bigCountdownTarget.setCurrentIndex(int(settings.value("bigCountdownTarget",0)))
 
-        self.allowLoop.setChecked(settings.value("allowLoop") in [True, "true"])
-        
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
         self.maxFuelConsumption.setValue(int(settings.value("maxFuelConsumption", 150)))

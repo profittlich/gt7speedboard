@@ -67,7 +67,6 @@ class MainWindow(QMainWindow):
         self.messagesEnabled = False
         self.linecomp = False
         self.brakepoints = False
-        self.allowLoop = False
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = 0
 
@@ -701,8 +700,6 @@ class MainWindow(QMainWindow):
         self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
         self.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
         
-        self.allowLoop = self.startWindow.allowLoop.isChecked()
-
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
         fuelWarning = self.startWindow.fuelWarning.value()
@@ -739,8 +736,6 @@ class MainWindow(QMainWindow):
         settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
         settings.setValue("bigCountdownTarget", self.bigCountdownBrakepoint)
 
-        settings.setValue("allowLoop", self.allowLoop)
-        
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
         settings.setValue("fuelWarning", self.startWindow.fuelWarning.value())
@@ -760,7 +755,6 @@ class MainWindow(QMainWindow):
 
 
         self.receiver.setQueue(self.queue)
-        self.receiver.setIgnorePktId(self.allowLoop)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
 
@@ -1703,6 +1697,7 @@ if __name__ == '__main__':
         elif sys.argv[i] == "--clearsettings":
             settings = QSettings()
             settings.clear()
+            settings.sync()
             print("Settings cleared")
             sys.exit(0)
         i+=1
