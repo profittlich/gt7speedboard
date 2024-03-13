@@ -848,7 +848,7 @@ class MainWindow(QMainWindow):
         if hue < self.tyreTempMinHue:
             hue = self.tyreTempMinHue
         if hue > self.tyreTempMaxHue:
-            hue = self.tyreTempMiaxnHue
+            hue = self.tyreTempMaxHue
         col.setHsvF (hue, self.tyreTempSaturation, self.tyreTempValue)
 
         return col
