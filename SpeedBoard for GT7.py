@@ -802,6 +802,7 @@ class MainWindow(QMainWindow):
         self.refueled = 0
 
         self.previousPoint = None
+        self.previousPackageId = 0
 
         self.curLap = Lap()
         self.previousLaps = []
@@ -1062,11 +1063,11 @@ class MainWindow(QMainWindow):
             lapValue = self.refueled
             if self.lapDecimals:
                 if self.closestIRefA > 0:
-                    lapValue -= self.closestIRefA / len(self.refLaps[0].points)
+                    lapValue += self.closestIRefA / len(self.refLaps[0].points)
                 elif self.closestIRefB > 0:
-                    lapValue -= self.closestIRefB / len(self.refLaps[1].points)
+                    lapValue += self.closestIRefB / len(self.refLaps[1].points)
                 elif self.closestIRefC > 0:
-                    lapValue -= self.closestIRefC / len(self.refLaps[2].points)
+                    lapValue += self.closestIRefC / len(self.refLaps[2].points)
                 elif self.closestILast > 0:
                     lapValue += (
                         self.closestILast / len(self.previousLaps[-1].points) +
@@ -1482,7 +1483,6 @@ class MainWindow(QMainWindow):
                     self.medianLap = self.findMedianLap()
                     print("Reset cur lap storage")
                     self.curLap = Lap()
-                    print("Should be 0:", len(self.curLap.points))
                     self.closestILast = 0
                     self.closestIBest = 0
                     self.closestIMedian = 0
@@ -1493,6 +1493,9 @@ class MainWindow(QMainWindow):
                     print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap].time, "of", len(self.previousLaps))
                     print("Median lap:", self.medianLap, self.previousLaps[self.medianLap].time)
                     print("Last lap:", len(self.previousLaps)-1, self.previousLaps[-1].time)
+                else:
+                    print("Ignore pre-lap")
+                    self.curLap = Lap()
 
                 if self.lastFuel != -1:
                     fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
@@ -1522,9 +1525,11 @@ class MainWindow(QMainWindow):
             newPoint = Point(d[0], d[1])
 
             if not self.previousPoint is None:
-                diff = newPoint.package_id - self.previousPoint.package_id
+                diff = newPoint.package_id - self.previousPackageId
             else:
                 diff = 1
+
+            self.previousPackageId = newPoint.package_id
 
             pointsToHandle = []
 
