@@ -1,4 +1,5 @@
 import math
+import csv
 
 from sb.crypt import salsa20_dec, salsa20_enc
 from sb.gt7telepoint import Point
@@ -26,11 +27,27 @@ class Lap:
     def distance(self, p1, p2):
         return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
 
+    def angle(self, p1, p2):
+        a = min(1,(p1.velocity_x * p2.velocity_x + p1.velocity_y * p2.velocity_y + p1.velocity_z * p2.velocity_z) / (math.sqrt(p1.velocity_x**2 + p1.velocity_y**2 + p1.velocity_z**2) * math.sqrt(p2.velocity_x**2 + p2.velocity_y**2 + p2.velocity_z**2)))
+        r = math.acos(a)
+        return r
+
     def length(self):
         totalDist = 0
         for i in range(1, len(self.points)):
             totalDist += self.distance(self.points[i-1], self.points[i])
         return totalDist
+
+    def findClosestPointNoLimit(self, p):
+        shortestDistance = 100000000
+        result = None
+        for p2 in range(len(self.points)):
+            curDist = self.distance(p, self.points[p2])
+            if curDist < shortestDistance:
+                shortestDistance = curDist
+                result = p2
+
+        return self.points[result], result, shortestDistance
 
 def loadLap(fn):
     lap = Lap()
@@ -39,7 +56,7 @@ def loadLap(fn):
         with open(fn, "rb") as f:
             allData = f.read()
             curIndex = 0
-            print(len(allData))
+            print(len(allData)/296, "frames")
             while curIndex < len(allData):
                 data = allData[curIndex:curIndex + 296]
                 curIndex += 296
@@ -57,7 +74,7 @@ def loadLaps(fn):
             allData = f.read()
             curIndex = 0
             curLap = -10
-            print(len(allData))
+            print(len(allData)/296, "frames")
             while curIndex < len(allData):
                 data = allData[curIndex:curIndex + 296]
                 curIndex += 296
@@ -71,13 +88,58 @@ def loadLaps(fn):
 
 def indexToTime(i, compensate=1):
     i += 0.5 * compensate
-    minu = i // (60*60)
-    sec = str(i // 60 - minu*60)
-    if len(sec) < 2:
-        sec = "0" * (2-len(sec)) + sec
-    msec = str((i % 60) * 1/60)[2:5]
-    if len(msec) < 3:
-        msec += "0" * (3-len(msec))
-    result = "{minu:1.0f}:{sec}:{msec}".format(minu = minu, sec = sec, msec = msec)
+
+    fsec = i * 1/59.94
+    
+    minu = fsec // 60
+    sec = fsec - minu * 60
+    #sec = str(int(i // 59.94 - minu*60))
+    #msec = str((i % 60) * 1/59.94)[2:5]
+
+    #if len(sec) < 2:
+        #sec = "0" * (2-len(sec)) + sec
+    #if len(msec) < 3:
+        #msec += "0" * (3-len(msec))
+    
+    result = "p={minu:1.0f}:{sec:2.3f}".format(minu = minu, sec = sec)
     return result
+
+def msToTime (ms):
+    tm = int((ms/1000) // 60)
+    ts = int((ms/1000) % 60)
+    tms = int(round((ms/1000 % 60 - ts) * 1000))
+
+    ts = str(ts)
+    if len(ts) < 2:
+        ts = "0" * (2-len(ts)) + ts
+    tms = str(tms)
+    if len(tms) < 3:
+        tms = "0" * (3-len(tms)) + tms
+
+    lt = "t={minu:1.0f}:{sec}.{msec}".format(minu = tm, sec = ts, msec = tms)
+    return lt
+
+carIds = {}
+carMakers = {}
+
+def loadCarIds():
+    global carIds
+    global carMakers
+    with open("makers.csv", 'r') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        for row in csv_reader:
+            carMakers[row[0]] = row[1]
+
+
+    with open("cars.csv", 'r') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        for row in csv_reader:
+            carIds[row[0]] = row
+
+    print(carIds)
+
+def idToCar(i):
+    global carIds
+    global carMakers
+    return carMakers[str(carIds[str(i)][2])] + " - " + carIds[str(i)][1]
 
