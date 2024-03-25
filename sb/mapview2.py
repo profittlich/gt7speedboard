@@ -244,6 +244,8 @@ class MapView2(QWidget):
         #self.layers[self.lap2Markers].append(CircleMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.l2ColorBright, 2))
         self.layers[self.lap2Markers].append(LeftLineMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.lap2.points[-2].position_x, self.lap2.points[-2].position_z, 0x00ffffff, 2))
 
+        l1Alt = False
+        l2Alt = False
         # handle all data points in the laps
         while i1 < len(self.lap1.points)-1 or i2 < len(self.lap2.points)-1:
 
@@ -385,11 +387,19 @@ class MapView2(QWidget):
 
             # Draw laps
             if i1Incremented:
-                self.layers[self.lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, self.l1Color))
-                self.layers[self.lap1Layer].append(CrossMarker("line", p1.position_x, p1.position_z, self.l1Color, 1, 2))
+                if l1Alt:
+                    l1col = self.l1ColorDark
+                else:
+                    l1col = self.l1Color
+                l1Alt = not l1Alt
+                self.layers[self.lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, l1col))
             if i2Incremented:
-                self.layers[self.lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.l2Color))
-                self.layers[self.lap2Layer].append(CrossMarker("line", p2.position_x, p2.position_z, self.l2Color, 1, 2))
+                if l2Alt:
+                    l2col = self.l2ColorDark
+                else:
+                    l2col = self.l2Color
+                l2Alt = not l2Alt
+                self.layers[self.lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, l2col))
             
             # Go to next points
             p1 = self.lap1.points[i1]
