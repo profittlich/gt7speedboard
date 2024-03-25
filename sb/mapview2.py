@@ -98,11 +98,11 @@ class MapView2(QWidget):
     def findClosestPointNoLimit(self, lap, p):
         shortestDistance = 100000000
         result = None
-        for p2 in lap:
-            curDist = self.lap1.flatDistance(p, p2)
+        for p2 in range(len(lap)):
+            curDist = self.lap1.flatDistance(p, lap[p2])
             if curDist < shortestDistance:
                 shortestDistance = curDist
-                result = p2
+                result = (lap[p2], p2)
 
         return result
 
@@ -234,13 +234,13 @@ class MapView2(QWidget):
         #self.layers[self.lap1Markers].append(CircleMarker("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, self.l1ColorBright, 2))
         self.layers[self.lap1Markers].append(LeftLineMarker("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, self.lap1.points[-2].position_x, self.lap1.points[-2].position_z, 0x00ffffff, 2))
         self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "FINISH:", 10, 20, 0x00ffffff, 2))
-        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, indexToTime(len(self.lap1.points), 2) + " ± 0.017s", 10, 35, self.l1Color, 2))
-        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, indexToTime(len(self.lap2.points), 2) + " ± 0.017s", 10, 50, self.l2Color, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, indexToTime(len(self.lap1.points)) + " (est.)", 10, 35, self.l1Color, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, indexToTime(len(self.lap2.points)) + " (est.)", 10, 50, self.l2Color, 2))
         if len(self.lap1.points) < len(self.lap2.points):
             signPre = "+"
         else:
             signPre = "-"
-        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, signPre + indexToTime(abs(len(self.lap1.points)-len(self.lap2.points)), 0), 10, 65, 0x00ffffff, 2))
+        self.layers[self.textLayer].append(Text("finish", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, signPre + indexToTime(abs(len(self.lap1.points)-len(self.lap2.points))), 10, 65, 0x00ffffff, 2))
         #self.layers[self.lap2Markers].append(CircleMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.l2ColorBright, 2))
         self.layers[self.lap2Markers].append(LeftLineMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.lap2.points[-2].position_x, self.lap2.points[-2].position_z, 0x00ffffff, 2))
 
@@ -321,8 +321,8 @@ class MapView2(QWidget):
             # Mark brake points
             if b1 == i1:
                 self.layers[self.lap1Markers].append(CrossMarker("brake", p1next.position_x, p1next.position_z, self.l1ColorBright))
-                self.layers[self.textLayer].append(Text("brake", p1next.position_x, p1next.position_z, indexToTime(i1) + " ± 0.017s", 0, 20, self.l1Color, 2))
-                self.layers[self.textLayer].append(Text("brake", p1next.position_x, p1next.position_z, indexToTime(i2) + " ± 0.017s", 0, 35, self.l2Color, 2))
+                self.layers[self.textLayer].append(Text("brake", p1next.position_x, p1next.position_z, indexToTime(i1) + " (est.)", 0, 20, self.l1Color, 2))
+                self.layers[self.textLayer].append(Text("brake", p1next.position_x, p1next.position_z, indexToTime(i2) + " (est.)", 0, 35, self.l2Color, 2))
                 if i1 <= i2:
                     signPre = "+"
                 else:
@@ -332,7 +332,7 @@ class MapView2(QWidget):
                     cSignPre = "-"
                 else:
                     cSignPre = "+"
-                self.layers[self.textLayer].append(Text("brake", p1next.position_x, p1next.position_z, signPre + indexToTime(abs(i1-i2),0) + " (" + cSignPre + indexToTime(abs(change),0) + ")", 0, 50, 0x00ffffff, 2))
+                self.layers[self.textLayer].append(Text("brake", p1next.position_x, p1next.position_z, signPre + indexToTime(abs(i1-i2)) + " (" + cSignPre + indexToTime(abs(change)) + ")", 0, 50, 0x00ffffff, 2))
                 prevDelta = i1-i2
                 b1 = self.findNextBrake(self.lap1.points, b1+1)
             if bo1 == i1:
@@ -340,8 +340,8 @@ class MapView2(QWidget):
                 bo1 = self.findNextBrakeOff(self.lap1.points, bo1+1)
             if b2 == i2:
                 self.layers[self.lap2Markers].append(CrossMarker("brake", p2next.position_x, p2next.position_z, self.l2ColorBright))
-                self.layers[self.textLayer].append(Text("brake", p2next.position_x, p2next.position_z, indexToTime(i2) + " ± 0.017s", 0, -20, self.l2Color, 2))
-                self.layers[self.textLayer].append(Text("brake", p2next.position_x, p2next.position_z, indexToTime(i1) + " ± 0.017s", 0, -35, self.l1Color, 2))
+                self.layers[self.textLayer].append(Text("brake", p2next.position_x, p2next.position_z, indexToTime(i2) + " (est.)", 0, -20, self.l2Color, 2))
+                self.layers[self.textLayer].append(Text("brake", p2next.position_x, p2next.position_z, indexToTime(i1) + " (est.)", 0, -35, self.l1Color, 2))
                 if i1 <= i2:
                     signPre = "+"
                 else:
@@ -351,7 +351,7 @@ class MapView2(QWidget):
                     cSignPre = "-"
                 else:
                     cSignPre = "+"
-                self.layers[self.textLayer].append(Text("brake", p2next.position_x, p2next.position_z, signPre + indexToTime(abs(i1-i2), 0) + " (" + cSignPre + indexToTime(abs(change),0) + ")", 0, -50, 0x00ffffff, 2))
+                self.layers[self.textLayer].append(Text("brake", p2next.position_x, p2next.position_z, signPre + indexToTime(abs(i1-i2)) + " (" + cSignPre + indexToTime(abs(change)) + ")", 0, -50, 0x00ffffff, 2))
                 prevDelta = i1-i2
                 b2 = self.findNextBrake(self.lap2.points, b2+1)
             if bo2 == i2:
@@ -365,7 +365,7 @@ class MapView2(QWidget):
                 #else:
                     #cSignPre = "+"
                 #prevDelta = i1-i2
-                #self.layers[self.textLayer].append(Text("brake", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "(" + cSignPre + indexToTime(abs(change), 0) + ")", 10, 80, 0x00ffffff, 2))
+                #self.layers[self.textLayer].append(Text("brake", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "(" + cSignPre + indexToTime(abs(change)) + ")", 10, 80, 0x00ffffff, 2))
 
             if i2 == len(self.lap2.points)-1:
                 change = prevDelta - (i1 - i2)
@@ -374,7 +374,7 @@ class MapView2(QWidget):
                 else:
                     cSignPre = "+"
                 prevDelta = i1-i2
-                self.layers[self.textLayer].append(Text("brake", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "(" + cSignPre + indexToTime(abs(change), 0) + ")", 10, 80, 0x00ffffff, 2))
+                self.layers[self.textLayer].append(Text("brake", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "(" + cSignPre + indexToTime(abs(change)) + ")", 10, 80, 0x00ffffff, 2))
 
 
             # Mark throttle points
@@ -386,8 +386,10 @@ class MapView2(QWidget):
             # Draw laps
             if i1Incremented:
                 self.layers[self.lap1Layer].append(Line("line", p1.position_x, p1.position_z, p1next.position_x, p1next.position_z, self.l1Color))
+                self.layers[self.lap1Layer].append(CrossMarker("line", p1.position_x, p1.position_z, self.l1Color, 1, 2))
             if i2Incremented:
                 self.layers[self.lap2Layer].append(Line("line", p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.l2Color))
+                self.layers[self.lap2Layer].append(CrossMarker("line", p2.position_x, p2.position_z, self.l2Color, 1, 2))
             
             # Go to next points
             p1 = self.lap1.points[i1]
@@ -411,8 +413,8 @@ class MapView2(QWidget):
                         qp.setPen(pen)
                         x1 = self.width() / 2 - self.zoom * -((l.x1 + self.offsetX) - self.midX)/((self.maxX - self.minX)/self.width())
                         z1 = self.height() / 2 - self.zoom*self.aspectRatio * -((l.z1 + self.offsetZ) - self.midZ)/((self.maxZ - self.minZ)/self.height())
-                        qp.drawLine(int(x1+10), int(z1+10), int(x1-10), int(z1-10))
-                        qp.drawLine(int(x1-10), int(z1+10), int(x1+10), int(z1-10))
+                        qp.drawLine(int(x1+ l.length), int(z1+ l.length), int(x1- l.length), int(z1- l.length))
+                        qp.drawLine(int(x1- l.length), int(z1+ l.length), int(x1+ l.length), int(z1- l.length))
                     elif isinstance(l, PlusMarker):
                         pen = QPen(l.color)
                         pen.setWidth(l.bold)
@@ -650,19 +652,21 @@ class MapView2(QWidget):
             mp.position_x = wx
             mp.position_z = wz
             
-            lp2 = self.findClosestPointNoLimit (self.lap2.points, mp)
+            lp2, ip2 = self.findClosestPointNoLimit (self.lap2.points, mp)
             mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
-            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%", 20, 0, self.l2Color, 2)
+            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "% lap " + str(lp2.current_lap), 20, 0, self.l2Color, 2)
             self.layers[self.lap2Markers].append(mk1)
             self.layers[self.lap2Markers].append(mk2)
             self.temporaryMarkers.append(mk1)
             self.temporaryMarkers.append(mk2)
 
-            lp1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
+            lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
-            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%", 20, 15, self.l1Color, 2)
+            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "% lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
+            mk5 = Text("Mouse", lp1.position_x, lp1.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 15, self.l1Color, 2)
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
+            self.layers[self.lap2Markers].append(mk5)
             self.temporaryMarkers.append(mk3)
             self.temporaryMarkers.append(mk4)
 
@@ -690,7 +694,10 @@ class MapView2(QWidget):
             self.update()
 
     def resizeEvent(self, e):
-        self.aspectRatio = e.size().width() / e.size().height()
+        trackAspect = (self.maxZ- self.minZ)/(self.maxX-self.minX)
+        self.aspectRatio = trackAspect * e.size().width() / e.size().height()
+        print("Width:", self.width(), "Height:", self.height())
+        print("New aspect ratio:", self.aspectRatio)
 
     def wheelEvent(self, e):
         dx = e.position().x()

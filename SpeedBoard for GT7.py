@@ -20,6 +20,8 @@ from sb.gt7telepoint import Point
 from sb.helpers import loadLap
 from sb.helpers import Lap
 from sb.helpers import PositionPoint
+from sb.helpers import loadCarIds, idToCar
+from sb.helpers import indexToTime, msToTime
 
 import sb.gt7telemetryreceiver as tele
 from sb.gt7widgets import *
@@ -47,6 +49,10 @@ class Worker(QRunnable, QObject):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        loadCarIds()
+
+        self.carStats = {}
 
         self.masterWidget = None
         self.loadConstants()
@@ -145,6 +151,8 @@ class MainWindow(QMainWindow):
         self.fontSizeNormal = 64
         self.fontSizeLarge = 72
 
+        self.psFPS = 59.94
+
         if os.path.exists("gt7speedboardinternals.json"):
             with open("gt7speedboardinternals.json", "r") as f:
                 j = f.read()
@@ -209,6 +217,8 @@ class MainWindow(QMainWindow):
             if "fontSizeNormal" in d: self.fontSizeNormal = d["fontSizeNormal"]
             if "fontSizeLarge" in d: self.fontSizeLarge = d["fontSizeLarge"]
 
+            if "playStationFPS" in d: self.psFPS = d["playStationFPS"]
+
         if False: # write default file, only activate on demand
             d = {}
             d["foregroundColor"] = self.foregroundColor.name()
@@ -269,6 +279,9 @@ class MainWindow(QMainWindow):
 
             d["fontSizeNormal"] = self.fontSizeNormal
             d["fontSizeLarge"] = self.fontSizeLarge
+
+            d["playStationFPS"] = self.psFPS
+            
             j = json.dumps(d, indent=4)
             with open("gt7speedboardinternals.json", "w") as f:
                 f.write(j)
@@ -635,7 +648,7 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.uiMsg.setFont(font)
 
-        self.mapPage = QLabel("Map page not available, yet")
+        self.mapPage = QLabel("Car stats not available, yet")
         self.mapPage.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mapPage.setAutoFillBackground(True)
         font = self.mapPage.font()
@@ -794,6 +807,7 @@ class MainWindow(QMainWindow):
 
 
     def initRace(self):
+        self.oldLapTime = datetime.datetime.now()
         print("INIT RACE")
         self.lastLap = -1
         self.lastFuel = -1
@@ -905,7 +919,7 @@ class MainWindow(QMainWindow):
         return result
 
     def findNextBrake(self, lap, startI):
-        for i in range(startI, min(startI + 60 * 3, len(lap))):
+        for i in range(startI, min(startI + self.psFPS * 3, len(lap))):
             if lap[i].brake > self.brakeMinimumLevel:
                 return i-startI
         return None
@@ -942,7 +956,7 @@ class MainWindow(QMainWindow):
                     d3 = self.distance(l.points[-1], c3)
                 print("End distance:", d)
                 if d > self.circuitExperienceEndPointPurgeDistance:
-                    print("PURGE lap", len(l.points)/60, d)
+                    print("PURGE lap", indexToTime (len(l.points)), d)
                 else:
                     temp.append(l)
             self.previousLaps = temp
@@ -952,7 +966,7 @@ class MainWindow(QMainWindow):
         if len(lap.points) == 0:
             print("Lap is empty")
             return lap
-        if len(lap.points) < self.circuitExperienceShortLapSecondsThreshold * 60:
+        if len(lap.points) < self.circuitExperienceShortLapSecondsThreshold * self.psFPS:
             print("\nLap is short")
             return lap
         if (lap.points[-1].throttle > 0):
@@ -976,11 +990,9 @@ class MainWindow(QMainWindow):
         bestIndex = 0
         bestTime = 100000000.0
         for t in range(len(self.previousLaps)):
-            print("Check", bestTime, "against", self.previousLaps[t].time)
             if self.previousLaps[t].valid and self.previousLaps[t].time < bestTime:
                 bestTime = self.previousLaps[t].time
                 bestIndex = t
-                print("This one's better")
         return bestIndex
 
     def findMedianLap(self):
@@ -1087,7 +1099,7 @@ class MainWindow(QMainWindow):
         self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
         if not self.previousPoint is None:
             fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
-            fuelConsumption *= 60 * 60 * 60 # l per hour
+            fuelConsumption *= self.psFPS * 60 * 60 # l per hour
             if curPoint.car_speed > 0:
                 fuelConsumption /= curPoint.car_speed # l per km
                 fuelConsumption *= 100 # l per 100 km
@@ -1441,9 +1453,9 @@ class MainWindow(QMainWindow):
             self.noThrottleCount=0
 
     def handleLapChanges(self, curPoint):
-        if self.circuitExperience and self.noThrottleCount == 60 * self.circuitExperienceNoThrottleTimeout:
+        if self.circuitExperience and self.noThrottleCount == self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
-        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount == 60 * self.circuitExperienceNoThrottleTimeout)):
+        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount == self.psFPS * self.circuitExperienceNoThrottleTimeout)):
             if self.circuitExperience:
                 cleanLap = self.cleanUpLap(self.curLap)
                 self.mapView.endLap(cleanLap.points)
@@ -1455,24 +1467,37 @@ class MainWindow(QMainWindow):
             if lapLen < 10: # TODO const
                 print("LAP CHANGE short")
             else:
-                print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", round(len (cleanLap.points) / 60,3), "s")
-                if (len(self.curLap.points)>0):
-                    print("start", self.curLap.points[0].position_x, self.curLap.points[0].position_y, self.curLap.points[0].position_z)
-                if not self.previousPoint is None:
-                    print("end", self.previousPoint.position_x, self.previousPoint.position_y, self.previousPoint.position_z)
+                newLapTime = datetime.datetime.now()
+                print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), newLapTime - self.oldLapTime)
+                self.oldLapTime = newLapTime
 
             if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0:
                     if self.circuitExperience:
-                        lastLapTime = len(cleanLap.points)/60.0
+                        lastLapTime = 1000 * (len(cleanLap.points)/self.psFPS + 1/(2*self.psFPS))
                     else:
                         lastLapTime = curPoint.last_lap
+
                     print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
                     if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
                         self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True))
-                        print("Append valid lap", lastLapTime, len(cleanLap.points), len(self.previousLaps))
+                        it = indexToTime(len(cleanLap.points))
+                        mst = msToTime(lastLapTime)
+                        tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
+                        print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
+                        if not curPoint.car_id in self.carStats:
+                            self.carStats[curPoint.car_id] = 1000000000000
+                        if lastLapTime > 0 and self.carStats[curPoint.car_id] > lastLapTime:
+                            self.carStats[curPoint.car_id] = lastLapTime
+
+                        carStatTxt = ""
+                        for i in self.carStats:
+                            if self.carStats[i] < 1000000000000:
+                                lt = msToTime(self.carStats[i])
+                                carStatTxt += idToCar(i) + ": " + lt + "\n"
+                        self.mapPage.setText(carStatTxt)
                     else:
-                        print("Append invalid lap", lastLapTime, len(cleanLap.points), len(self.previousLaps))
+                        print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
                         self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False))
                     print("Laps:", len(self.previousLaps))
                     if self.circuitExperience:
@@ -1490,9 +1515,9 @@ class MainWindow(QMainWindow):
                     self.closestIRefB = 0
                     self.closestIRefC = 0
 
-                    print("\nBest lap:", self.bestLap, self.previousLaps[self.bestLap].time, "of", len(self.previousLaps))
-                    print("Median lap:", self.medianLap, self.previousLaps[self.medianLap].time)
-                    print("Last lap:", len(self.previousLaps)-1, self.previousLaps[-1].time)
+                    print("\nBest lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
+                    print("Median lap:", self.medianLap, msToTime(self.previousLaps[self.medianLap].time))
+                    print("Last lap:", len(self.previousLaps)-1, msToTime (self.previousLaps[-1].time))
                 else:
                     print("Ignore pre-lap")
                     self.curLap = Lap()
@@ -1546,7 +1571,7 @@ class MainWindow(QMainWindow):
 
             for curPoint in pointsToHandle:
                 if self.messagesEnabled and not self.newMessage is None:
-                    self.messages.append([self.curLap.points[-min(60*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
+                    self.messages.append([self.curLap.points[-min(self.psFPS*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
                     self.newMessage = None
 
                 if curPoint.is_paused or not curPoint.in_race:

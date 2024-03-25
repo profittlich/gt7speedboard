@@ -1,10 +1,11 @@
 class CrossMarker:
-    def __init__(self, group, x1, z1, color, bold=2):
+    def __init__(self, group, x1, z1, color, bold=2, length=10):
         self.group = group
         self.x1 = x1
         self.z1 = z1
         self.color = color
         self.bold = bold
+        self.length = length
 
 class PlusMarker:
     def __init__(self, group, x1, z1, color, bold=2):

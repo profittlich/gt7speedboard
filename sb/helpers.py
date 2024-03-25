@@ -86,23 +86,17 @@ def loadLaps(fn):
                 result[-1].points.append(curPoint)
     return result
 
-def indexToTime(i, compensate=1):
-    i += 0.5 * compensate
-
+def indexToTime(i):
     fsec = i * 1/59.94
     
     minu = fsec // 60
     sec = fsec - minu * 60
-    #sec = str(int(i // 59.94 - minu*60))
-    #msec = str((i % 60) * 1/59.94)[2:5]
 
-    #if len(sec) < 2:
-        #sec = "0" * (2-len(sec)) + sec
-    #if len(msec) < 3:
-        #msec += "0" * (3-len(msec))
+    spref = ""
+    if sec < 10:
+        spref = "0"
     
-    result = "p={minu:1.0f}:{sec:2.3f}".format(minu = minu, sec = sec)
-    return result
+    return "{minu:1.0f}:{spref}{sec:2.3f}".format(minu = minu, spref=spref, sec = sec)
 
 def msToTime (ms):
     tm = int((ms/1000) // 60)
@@ -116,7 +110,7 @@ def msToTime (ms):
     if len(tms) < 3:
         tms = "0" * (3-len(tms)) + tms
 
-    lt = "t={minu:1.0f}:{sec}.{msec}".format(minu = tm, sec = ts, msec = tms)
+    lt = "{minu:1.0f}:{sec}.{msec}".format(minu = tm, sec = ts, msec = tms)
     return lt
 
 carIds = {}

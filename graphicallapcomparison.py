@@ -6,7 +6,7 @@ import datetime
 from cProfile import Profile
 
 from PyQt6.QtCore import Qt 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QFileDialog
+from PyQt6.QtWidgets import *
 
 from sb.gt7telepoint import Point
 from sb.helpers import loadLap, loadLaps, indexToTime
@@ -53,7 +53,10 @@ class StartWindowVLC(QWidget):
         else:
             self.refAFile = chosen[0]
             self.lRefA.setText("Violet lap: " + chosen[0][chosen[0].rfind("/")+1:])
-            self.aLaps = loadLaps(self.refAFile)
+            if self.refAFile == self.refBFile:
+                self.aLaps = self.bLaps
+            else:
+                self.aLaps = loadLaps(self.refAFile)
             for l in self.aLaps:
                 self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
 
@@ -64,7 +67,10 @@ class StartWindowVLC(QWidget):
         else:
             self.refBFile = chosen[0]
             self.lRefB.setText("Blue lap: " + chosen[0][chosen[0].rfind("/")+1:])
-            self.bLaps = loadLaps(self.refBFile)
+            if self.refAFile == self.refBFile:
+                self.bLaps = self.aLaps
+            else:
+                self.bLaps = loadLaps(self.refBFile)
             for l in self.bLaps:
                 self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
 
@@ -73,22 +79,30 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.stackWidget = QStackedWidget()
         self.masterWidget = MapView2()
         self.startWidget = StartWindowVLC()
         self.startWidget.starter.clicked.connect(self.compare)
 
+        self.stackWidget.addWidget(self.startWidget)
+        self.stackWidget.addWidget(self.masterWidget)
+
         self.setWindowTitle("GT7 Graphical Lap Comparison")
 
-        self.setCentralWidget(self.startWidget)
+        self.setCentralWidget(self.stackWidget)
 
     def compare(self):
         lap1 = self.startWidget.aLaps[self.startWidget.idxRefA.currentIndex()]
         lap2 = self.startWidget.bLaps[self.startWidget.idxRefB.currentIndex()]
         self.masterWidget.setLaps(lap1, lap2)
-        self.setCentralWidget(self.masterWidget)
+        
+        self.stackWidget.setCurrentIndex(1)
 
     def keyPressEvent(self, e):
-        self.masterWidget.delegateKeyPressEvent(e)
+        if e.key() == Qt.Key.Key_Escape.value:
+            self.stackWidget.setCurrentIndex(0)
+        else:
+            self.masterWidget.delegateKeyPressEvent(e)
 
 
 
