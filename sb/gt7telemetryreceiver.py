@@ -95,3 +95,5 @@ class GT7TelemetryReceiver:
                 self.send_hb()
                 self.pknt = time.perf_counter()
 
+        self.s.close()
+

@@ -919,7 +919,7 @@ class MainWindow(QMainWindow):
         return result
 
     def findNextBrake(self, lap, startI):
-        for i in range(startI, min(startI + self.psFPS * 3, len(lap))):
+        for i in range(startI, min(int(math.ceil(startI + self.psFPS * 3)), len(lap))):
             if lap[i].brake > self.brakeMinimumLevel:
                 return i-startI
         return None
@@ -1046,7 +1046,7 @@ class MainWindow(QMainWindow):
                     lapValue -= self.closestIRefB / len(self.refLaps[1].points)
                 elif self.closestIRefC > 0:
                     lapValue -= self.closestIRefC / len(self.refLaps[2].points)
-                elif self.closestILast > 0:
+                elif self.closestIBest > 0:
                     lapValue -= (
                         self.closestILast / len(self.previousLaps[-1].points) +
                         self.closestIBest / len(self.previousLaps[self.bestLap].points) +
@@ -1062,7 +1062,7 @@ class MainWindow(QMainWindow):
                     lapValue += self.closestIRefB / len(self.refLaps[1].points)
                 elif self.closestIRefC > 0:
                     lapValue += self.closestIRefC / len(self.refLaps[2].points)
-                elif self.closestILast > 0:
+                elif self.closestIBest > 0:
                     lapValue += (
                         self.closestILast / len(self.previousLaps[-1].points) +
                         self.closestIBest / len(self.previousLaps[self.bestLap].points) +
@@ -1080,7 +1080,7 @@ class MainWindow(QMainWindow):
                     lapValue += self.closestIRefB / len(self.refLaps[1].points)
                 elif self.closestIRefC > 0:
                     lapValue += self.closestIRefC / len(self.refLaps[2].points)
-                elif self.closestILast > 0:
+                elif self.closestIBest > 0:
                     lapValue += (
                         self.closestILast / len(self.previousLaps[-1].points) +
                         self.closestIBest / len(self.previousLaps[self.bestLap].points) +
@@ -1453,9 +1453,9 @@ class MainWindow(QMainWindow):
             self.noThrottleCount=0
 
     def handleLapChanges(self, curPoint):
-        if self.circuitExperience and self.noThrottleCount == self.psFPS * self.circuitExperienceNoThrottleTimeout:
+        if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
-        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount == self.psFPS * self.circuitExperienceNoThrottleTimeout)):
+        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout)):
             if self.circuitExperience:
                 cleanLap = self.cleanUpLap(self.curLap)
                 self.mapView.endLap(cleanLap.points)
@@ -1472,7 +1472,7 @@ class MainWindow(QMainWindow):
                 self.oldLapTime = newLapTime
 
             if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
-                if self.lastLap > 0:
+                if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
                     if self.circuitExperience:
                         lastLapTime = 1000 * (len(cleanLap.points)/self.psFPS + 1/(2*self.psFPS))
                     else:
@@ -1571,7 +1571,7 @@ class MainWindow(QMainWindow):
 
             for curPoint in pointsToHandle:
                 if self.messagesEnabled and not self.newMessage is None:
-                    self.messages.append([self.curLap.points[-min(self.psFPS*self.messageAdvanceTime,len(self.curLap.points)-1)], self.newMessage])
+                    self.messages.append([self.curLap.points[-min(int(self.psFPS*self.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
                     self.newMessage = None
 
                 if curPoint.is_paused or not curPoint.in_race:

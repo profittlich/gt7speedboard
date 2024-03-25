@@ -130,8 +130,6 @@ def loadCarIds():
         for row in csv_reader:
             carIds[row[0]] = row
 
-    print(carIds)
-
 def idToCar(i):
     global carIds
     global carMakers
