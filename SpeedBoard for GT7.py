@@ -70,6 +70,16 @@ class Session:
         return fastest
 
     def medianLap(self):
+        sorter = []
+        for e in self.lapTimes:
+            sorter.append(e)
+
+        if len(sorter) > 0:
+            sorter = sorted(sorter)
+            target = sorter[len(sorter)//2]
+            for e in self.lapTimes:
+                if e == target:
+                    return e
         return 0
 
 class MainWindow(QMainWindow):
@@ -175,6 +185,7 @@ class MainWindow(QMainWindow):
 
         self.pollInterval = 20
 
+        self.fontSizeSmall = 48
         self.fontSizeNormal = 64
         self.fontSizeLarge = 72
 
@@ -676,10 +687,10 @@ class MainWindow(QMainWindow):
         self.uiMsg.setFont(font)
 
         self.mapPage = QLabel("Session stats not available, yet")
-        self.mapPage.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #self.mapPage.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mapPage.setAutoFillBackground(True)
         font = self.mapPage.font()
-        font.setPointSize(self.fontSizeNormal)
+        font.setPointSize(self.fontSizeSmall)
         font.setBold(True)
         self.mapPage.setFont(font)
 
@@ -1522,17 +1533,24 @@ class MainWindow(QMainWindow):
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
                         if lastLapTime > 0:
+                            if len(self.sessionStats) == 0: # Started app during lap
+                                self.initSession()
                             self.sessionStats[-1].carId = curPoint.car_id
                             self.sessionStats[-1].addLapTime(lastLapTime)
                             print(len(self.sessionStats), "sessions")
                             for i in self.sessionStats:
                                 print("Best:", msToTime(i.bestLap()))
+                                print("Median:", msToTime(i.medianLap()))
 
-                        carStatTxt = ""
+                        carStatTxt = "Sessions:\n"
                         sessionI = 1
                         for i in self.sessionStats:
-                            lt = msToTime(i.bestLap())
-                            carStatTxt += str(sessionI) + " - " + idToCar(i.carId) + ": " + lt + "\n"
+                            bst = msToTime(i.bestLap())
+                            mdn = msToTime(i.medianLap())
+                            lapsWith = " laps with "
+                            if len(i.lapTimes) == 1:
+                                lapsWith = " lap with "
+                            carStatTxt += "S" + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + bst + " | Median: " + mdn + "\n"
                             sessionI += 1
                         self.mapPage.setText(carStatTxt)
                     else:
@@ -1698,8 +1716,11 @@ class MainWindow(QMainWindow):
                 self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_C.value:
                 self.initRace()
-            elif e.key() == Qt.Key.Key_Tab.value:
-                self.masterWidget.setCurrentIndex(2)
+            elif e.key() == Qt.Key.Key_S.value:
+                if self.masterWidget.currentIndex() == 2:
+                    self.returnToDash()
+                else:
+                    self.masterWidget.setCurrentIndex(2)
             #elif e.key() == Qt.Key.Key_T.value:
                 #tester = Worker(someDelay, "Complete", 0.2)
                 #tester.signals.finished.connect(self.showUiMsg)
