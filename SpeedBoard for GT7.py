@@ -46,13 +46,40 @@ class Worker(QRunnable, QObject):
         else:
             self.signals.finished.emit(altMsg, self.t)
 
+class Session:
+    def __init__(self, sessionStart):
+        self.carId = None
+        self.lapTimes = []
+        self.sessionStart = sessionStart
+    
+    def addLapTime(self, t):
+        self.lapTimes.append(t)
+
+    def lastLap(self):
+        return self.sessionStart + len(self.lapTimes)
+
+    def startLap(self):
+        return self.sessionStart
+
+    def bestLap(self):
+        fastest = 1000000000000
+        for t in self.lapTimes:
+            if t < fastest:
+                fastest = t
+
+        return fastest
+
+    def medianLap(self):
+        return 0
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         loadCarIds()
 
-        self.carStats = {}
+        print("Clear sessions")
+        self.sessionStats = []
 
         self.masterWidget = None
         self.loadConstants()
@@ -648,7 +675,7 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.uiMsg.setFont(font)
 
-        self.mapPage = QLabel("Car stats not available, yet")
+        self.mapPage = QLabel("Session stats not available, yet")
         self.mapPage.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mapPage.setAutoFillBackground(True)
         font = self.mapPage.font()
@@ -806,6 +833,10 @@ class MainWindow(QMainWindow):
             self.receiver = None
 
 
+    def initSession(self):
+        print("initSession", self.sessionStats)
+        self.sessionStats.append (Session(len(self.previousLaps)))
+
     def initRace(self):
         self.oldLapTime = datetime.datetime.now()
         print("INIT RACE")
@@ -856,6 +887,9 @@ class MainWindow(QMainWindow):
         self.lineMedian.update()
 
         self.loadMessages(self.messageFile)
+
+        print("Clear sessions")
+        self.sessionStats = []
 
     def tyreTempQColor(self, temp):
         col = QColor()
@@ -1470,6 +1504,8 @@ class MainWindow(QMainWindow):
                 newLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), newLapTime - self.oldLapTime)
                 self.oldLapTime = newLapTime
+                if curPoint.current_lap == 1:
+                    self.initSession()
 
             if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
@@ -1485,16 +1521,19 @@ class MainWindow(QMainWindow):
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
-                        if not curPoint.car_id in self.carStats:
-                            self.carStats[curPoint.car_id] = 1000000000000
-                        if lastLapTime > 0 and self.carStats[curPoint.car_id] > lastLapTime:
-                            self.carStats[curPoint.car_id] = lastLapTime
+                        if lastLapTime > 0:
+                            self.sessionStats[-1].carId = curPoint.car_id
+                            self.sessionStats[-1].addLapTime(lastLapTime)
+                            print(len(self.sessionStats), "sessions")
+                            for i in self.sessionStats:
+                                print("Best:", msToTime(i.bestLap()))
 
                         carStatTxt = ""
-                        for i in self.carStats:
-                            if self.carStats[i] < 1000000000000:
-                                lt = msToTime(self.carStats[i])
-                                carStatTxt += idToCar(i) + ": " + lt + "\n"
+                        sessionI = 1
+                        for i in self.sessionStats:
+                            lt = msToTime(i.bestLap())
+                            carStatTxt += str(sessionI) + " - " + idToCar(i.carId) + ": " + lt + "\n"
+                            sessionI += 1
                         self.mapPage.setText(carStatTxt)
                     else:
                         print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
@@ -1541,6 +1580,9 @@ class MainWindow(QMainWindow):
             self.lastLap = curPoint.current_lap
         elif not self.keepLaps and (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
             self.initRace()
+        elif self.keepLaps and (self.lastLap > curPoint.current_lap) and not self.circuitExperience:
+            print("Note to dev: initSession")
+            self.initSession()
 
     def updateDisplay(self):
         while not self.queue.empty():
@@ -1580,6 +1622,8 @@ class MainWindow(QMainWindow):
                 if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
                     self.initRace()
                     continue
+                #elif self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
+                    #self.initSession()
 
                 self.updateTyreTemps(curPoint)
                 self.handleLapChanges(curPoint)
