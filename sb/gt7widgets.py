@@ -42,6 +42,9 @@ class StartWindow(QWidget):
         self.keepLaps = QCheckBox("Keep laps through setup changes and sessions (experimental)")
         gnLayout.addWidget(self.keepLaps)
 
+        self.saveRuns = QCheckBox("Save runs to CSV file (experimental)")
+        gnLayout.addWidget(self.saveRuns)
+
         # VIEW
         vwGroup = QGroupBox("View")
         mainLayoutL.addWidget(vwGroup)
@@ -207,6 +210,7 @@ class StartWindow(QWidget):
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
 
         self.keepLaps.setChecked(settings.value("keepLaps") in [ True, "true"])
+        self.saveRuns.setChecked(settings.value("saveRuns") in [ True, "true"])
 
         self.ip.setText(settings.value("ip", ""))
         self.storageLocation = settings.value("storageLocation", "")

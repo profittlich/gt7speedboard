@@ -46,14 +46,14 @@ class Worker(QRunnable, QObject):
         else:
             self.signals.finished.emit(altMsg, self.t)
 
-class Session:
+class Run:
     def __init__(self, sessionStart):
         self.carId = None
         self.lapTimes = []
         self.sessionStart = sessionStart
     
-    def addLapTime(self, t):
-        self.lapTimes.append(t)
+    def addLapTime(self, t, l):
+        self.lapTimes.append((t, l))
 
     def lastLap(self):
         return self.sessionStart + len(self.lapTimes)
@@ -62,9 +62,9 @@ class Session:
         return self.sessionStart
 
     def bestLap(self):
-        fastest = 1000000000000
+        fastest = (1000000000000, 0)
         for t in self.lapTimes:
-            if t < fastest:
+            if t[0] < fastest[0]:
                 fastest = t
 
         return fastest
@@ -72,15 +72,15 @@ class Session:
     def medianLap(self):
         sorter = []
         for e in self.lapTimes:
-            sorter.append(e)
+            sorter.append(e[0])
 
         if len(sorter) > 0:
             sorter = sorted(sorter)
             target = sorter[len(sorter)//2]
             for e in self.lapTimes:
-                if e == target:
+                if e[0] == target:
                     return e
-        return 0
+        return (0,0)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -122,6 +122,7 @@ class MainWindow(QMainWindow):
         self.showOptimalLap = False # TODO implement
 
         self.keepLaps = False
+        self.saveRuns = False
 
         self.newMessage = None
         self.messages = []
@@ -686,16 +687,20 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.uiMsg.setFont(font)
 
-        self.mapPage = QLabel("Session stats not available, yet")
-        #self.mapPage.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.mapPage.setAutoFillBackground(True)
-        font = self.mapPage.font()
+        self.statsPage = QLabel(self.sessionName + "\nSession stats not available, yet")
+        self.statsPage.setMargin(15)
+        self.statsPage.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.statsPage.setAutoFillBackground(True)
+        font = self.statsPage.font()
         font.setPointSize(self.fontSizeSmall)
         font.setBold(True)
-        self.mapPage.setFont(font)
+        self.statsPage.setFont(font)
+        self.statsPage.setTextFormat(Qt.TextFormat.RichText)
+        self.liveStats = ""
+        self.runStats = ""
 
         self.masterWidget.addWidget(self.uiMsg)
-        self.masterWidget.addWidget(self.mapPage)
+        self.masterWidget.addWidget(self.statsPage)
 
         self.dashWidget.setLayout(masterLayout)
 
@@ -724,6 +729,7 @@ class MainWindow(QMainWindow):
         ip = self.startWindow.ip.text()
 
         self.keepLaps = self.startWindow.keepLaps.isChecked()
+        self.saveRuns = self.startWindow.saveRuns.isChecked()
 
         self.lapDecimals = self.startWindow.lapDecimals.isChecked()
         self.showOptimalLap = self.startWindow.cbOptimal.isChecked()
@@ -763,6 +769,7 @@ class MainWindow(QMainWindow):
         settings.setValue("ip", ip)
         
         settings.setValue("keepLaps", self.keepLaps)
+        settings.setValue("saveRuns", self.saveRuns)
 
         settings.setValue("lapDecimals", self.lapDecimals)
         settings.setValue("showOptimalLap", self.showOptimalLap)
@@ -844,13 +851,14 @@ class MainWindow(QMainWindow):
             self.receiver = None
 
 
-    def initSession(self):
-        print("initSession", self.sessionStats)
-        self.sessionStats.append (Session(len(self.previousLaps)))
+    def initRun(self):
+        print("initRun", self.sessionStats)
+        self.sessionStats.append (Run(len(self.previousLaps)))
 
     def initRace(self):
         self.oldLapTime = datetime.datetime.now()
         print("INIT RACE")
+        self.newMessage = None
         self.lastLap = -1
         self.lastFuel = -1
         self.lastFuelUsage = []
@@ -901,6 +909,7 @@ class MainWindow(QMainWindow):
 
         print("Clear sessions")
         self.sessionStats = []
+        self.sessionStart = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     def tyreTempQColor(self, temp):
         col = QColor()
@@ -1053,6 +1062,19 @@ class MainWindow(QMainWindow):
                 if self.previousLaps[e].time == target:
                     return e
         return 0
+
+    def updateStats(self):
+        statTxt = '<font size="5">' + self.sessionName + '</font>' + self.liveStats + self.runStats
+        self.statsPage.setText(statTxt)
+
+
+    def updateRunStats(self, runStats):
+        self.runStats = runStats
+        self.updateStats()
+
+    def updateLiveStats(self, liveStats):
+        self.liveStats = liveStats
+        self.updateStats()
 
     def updateTyreTemps(self, curPoint):
         self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
@@ -1277,28 +1299,28 @@ class MainWindow(QMainWindow):
                 if closestPRefA.brake > 0:
                     self.pedalRefA.setText("BRAKE")
                     pal.setColor(self.pedalRefA.backgroundRole(), self.brakeQColor(closestPRefA.brake))
-                    if self.bigCountdownBrakepoint == 2:
+                    if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
                         self.setPalette(pal)
                 elif self.countdownBrakepoint and not nextBrakeRefA is None:
                     self.pedalRefA.setText(str(math.ceil (nextBrakeRefA/60)))
                     if nextBrakeRefA >= 120:
                         if nextBrakeRefA%60 >= 30:
                             pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 2:
+                            if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
                     elif nextBrakeRefA >= 60:
                         if nextBrakeRefA%60 >= 30:
                             pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 2:
+                            if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeRefA%30 >= 15:
                             pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 2:
+                            if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
@@ -1324,28 +1346,28 @@ class MainWindow(QMainWindow):
                 if closestPRefB.brake > 0:
                     self.pedalRefB.setText("BRAKE")
                     pal.setColor(self.pedalRefB.backgroundRole(), self.brakeQColor(closestPRefB.brake))
-                    if self.bigCountdownBrakepoint == 3:
+                    if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
                         self.setPalette(pal)
                 elif self.countdownBrakepoint and not nextBrakeRefB is None:
                     self.pedalRefB.setText(str(math.ceil (nextBrakeRefB/60)))
                     if nextBrakeRefB >= 120:
                         if nextBrakeRefB%60 >= 30:
                             pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 3:
+                            if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
                     elif nextBrakeRefB >= 60:
                         if nextBrakeRefB%60 >= 30:
                             pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 3:
+                            if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeRefB%30 >= 15:
                             pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 3:
+                            if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
@@ -1371,28 +1393,28 @@ class MainWindow(QMainWindow):
                 if closestPRefC.brake > 0:
                     self.pedalRefC.setText("BRAKE")
                     pal.setColor(self.pedalRefC.backgroundRole(), self.brakeQColor(closestPRefC.brake))
-                    if self.bigCountdownBrakepoint == 4:
+                    if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
                         self.setPalette(pal)
                 elif self.countdownBrakepoint and not nextBrakeRefC is None:
                     self.pedalRefC.setText(str(math.ceil (nextBrakeRefC/60)))
                     if nextBrakeRefC >= 120:
                         if nextBrakeRefC%60 >= 30:
                             pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 4:
+                            if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
                     elif nextBrakeRefC >= 60:
                         if nextBrakeRefC%60 >= 30:
                             pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 4:
+                            if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeRefC%30 >= 15:
                             pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 4:
+                            if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
@@ -1418,28 +1440,28 @@ class MainWindow(QMainWindow):
                 if closestPBest.brake > 0:
                     self.pedalBest.setText("BRAKE")
                     pal.setColor(self.pedalBest.backgroundRole(), self.brakeQColor(closestPBest.brake))
-                    if self.bigCountdownBrakepoint == 1:
+                    if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
                         self.setPalette(pal)
                 elif self.countdownBrakepoint and not nextBrakeBest is None:
                     self.pedalBest.setText(str(math.ceil (nextBrakeBest/60)))
                     if nextBrakeBest >= 120:
                         if nextBrakeBest%60 >= 30:
                             pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 1:
+                            if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
                     elif nextBrakeBest >= 60:
                         if nextBrakeBest%60 >= 30:
                             pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 1:
+                            if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
                     else:
                         if nextBrakeBest%30 >= 15:
                             pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 1:
+                            if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
                                 self.setPalette(pal)
                         else:
                             pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
@@ -1516,7 +1538,7 @@ class MainWindow(QMainWindow):
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), newLapTime - self.oldLapTime)
                 self.oldLapTime = newLapTime
                 if curPoint.current_lap == 1:
-                    self.initSession()
+                    self.initRun()
 
             if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
@@ -1534,25 +1556,33 @@ class MainWindow(QMainWindow):
                         print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
-                                self.initSession()
+                                self.initRun()
                             self.sessionStats[-1].carId = curPoint.car_id
-                            self.sessionStats[-1].addLapTime(lastLapTime)
+                            self.sessionStats[-1].addLapTime(lastLapTime, self.lastLap)
                             print(len(self.sessionStats), "sessions")
                             for i in self.sessionStats:
-                                print("Best:", msToTime(i.bestLap()))
-                                print("Median:", msToTime(i.medianLap()))
+                                print("Best:", msToTime(i.bestLap()[0]))
+                                print("Median:", msToTime(i.medianLap()[0]))
 
-                        carStatTxt = "Sessions:\n"
+                        carStatTxt = '<br><font size="3">RUNS:</font><br>'
+                        carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms)\n"
                         sessionI = 1
                         for i in self.sessionStats:
-                            bst = msToTime(i.bestLap())
-                            mdn = msToTime(i.medianLap())
+                            bst = i.bestLap()
+                            mdn = i.medianLap()
                             lapsWith = " laps with "
                             if len(i.lapTimes) == 1:
                                 lapsWith = " lap with "
-                            carStatTxt += "S" + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + bst + " | Median: " + mdn + "\n"
+                            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + "</font><br>"
+                            carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + "\n"
                             sessionI += 1
-                        self.mapPage.setText(carStatTxt)
+                        self.updateRunStats(carStatTxt)
+                        if self.saveRuns:
+                            prefix = self.storageLocation + "/"
+                            if len(self.sessionName) > 0:
+                                prefix += self.sessionName + "-"
+                            with open ( prefix + "runs-" + self.sessionStart + ".csv", "w") as f:
+                                f.write(carStatCSV)
                     else:
                         print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
                         self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False))
@@ -1579,6 +1609,16 @@ class MainWindow(QMainWindow):
                     print("Ignore pre-lap")
                     self.curLap = Lap()
 
+                liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+                liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
+                liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
+                if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
+                    liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
+                if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
+                    liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
+                liveStats += "</font>"
+                self.updateLiveStats(liveStats)
+
                 if self.lastFuel != -1:
                     fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
                     if fuelDiff > 0:
@@ -1599,8 +1639,8 @@ class MainWindow(QMainWindow):
         elif not self.keepLaps and (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
             self.initRace()
         elif self.keepLaps and (self.lastLap > curPoint.current_lap) and not self.circuitExperience:
-            print("Note to dev: initSession")
-            self.initSession()
+            print("Note to dev: initRun")
+            self.initRun()
 
     def updateDisplay(self):
         while not self.queue.empty():
@@ -1641,7 +1681,7 @@ class MainWindow(QMainWindow):
                     self.initRace()
                     continue
                 #elif self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
-                    #self.initSession()
+                    #self.initRun()
 
                 self.updateTyreTemps(curPoint)
                 self.handleLapChanges(curPoint)

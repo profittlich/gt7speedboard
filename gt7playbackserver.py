@@ -129,7 +129,7 @@ class StartWindowPS(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        self.lRec = QLabel("Recording:")
+        self.lRec = QLabel("File:")
         layout.addWidget(self.lRec)
         self.bRec = QPushButton("Select file")
         layout.addWidget(self.bRec)
@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
             print("None")
         else:
             self.startWidget.recFile = chosen[0]
-            self.startWidget.lRec.setText("Recording: " + chosen[0][chosen[0].rfind("/")+1:])
+            self.startWidget.lRec.setText("File: " + chosen[0][chosen[0].rfind("/")+1:])
             self.stop()
 
     def updateRate(self, rate):
