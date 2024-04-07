@@ -267,7 +267,7 @@ class StartWindow(QWidget):
 
     def chooseReferenceLapA(self, on):
         if on:
-            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7l)")
             if chosen[0] == "":
                 print("None")
                 self.cbRefA.setCheckState(Qt.CheckState.Unchecked)
@@ -279,7 +279,7 @@ class StartWindow(QWidget):
 
     def chooseReferenceLapB(self, on):
         if on:
-            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7l)")
             if chosen[0] == "":
                 print("None")
                 self.cbRefB.setCheckState(Qt.CheckState.Unchecked)

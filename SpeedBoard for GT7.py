@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("GT7 SpeedBoard 1.0")
+        self.setWindowTitle("GT7 SpeedBoard")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -1038,7 +1038,7 @@ class MainWindow(QMainWindow):
         else:
             result = lap.points
         print("Got", len(result))
-        return Lap(lap.time, result, lap.valid)
+        return Lap(lap.time, result, lap.valid, preceeding=lap.preceeding)
 
     def findBestLap(self):
         bestIndex = 0
@@ -1549,7 +1549,10 @@ class MainWindow(QMainWindow):
 
                     print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
                     if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
-                        self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True))
+                        if len(self.previousLaps) > 0:
+                            self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
+                        else:
+                            self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint))
                         it = indexToTime(len(cleanLap.points))
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
@@ -1585,7 +1588,10 @@ class MainWindow(QMainWindow):
                                 f.write(carStatCSV)
                     else:
                         print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
-                        self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False))
+                        if len(self.previousLaps) > 0:
+                            self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
+                        else:
+                            self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint))
                     print("Laps:", len(self.previousLaps))
                     if self.circuitExperience:
                         self.purgeBadLaps()
@@ -1790,9 +1796,16 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+        with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7l", "wb") as f:
+            if not self.previousLaps[index].preceeding is None:
+                print("Going from", self.previousLaps[index].preceeding.current_lap)
+                f.write(self.previousLaps[index].preceeding.raw)
+            print("via", self.previousLaps[index].points[0].current_lap)
             for p in self.previousLaps[index].points:
                 f.write(p.raw)
+            if not self.previousLaps[index].following is None:
+                print("to", self.previousLaps[index].following.current_lap)
+                f.write(self.previousLaps[index].following.raw)
 
     def saveMessages(self):
         print("Save messages")

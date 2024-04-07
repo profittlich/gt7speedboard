@@ -47,7 +47,7 @@ class StartWindowVLC(QWidget):
         layout.addWidget(self.starter)
 
     def chooseReferenceLapA(self):
-        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7t)")
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7t; *.gt7l)")
         if chosen[0] == "":
             print("None")
         else:
@@ -61,7 +61,7 @@ class StartWindowVLC(QWidget):
                 self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
 
     def chooseReferenceLapB(self):
-        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7t)")
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7t; *.gt7l)")
         if chosen[0] == "":
             print("None")
         else:

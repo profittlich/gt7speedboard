@@ -13,13 +13,15 @@ class PositionPoint:
 
 # TODO own file
 class Lap:
-    def __init__(self, time = None, pts = None, valid=True):
+    def __init__(self, time = None, pts = None, valid=True, following=None, preceeding=None):
         self.time = time
         if pts is None:
             self.points = []
         else:
             self.points = pts
         self.valid = valid
+        self.following = following
+        self.preceeding = preceeding
 
     def flatDistance(self, p1, p2):
         return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_z-p2.position_z)**2)
@@ -62,7 +64,16 @@ def loadLap(fn):
                 curIndex += 296
                 ddata = salsa20_dec(data)
                 curPoint = Point(ddata, data)
+                if len(lap.points) == 1 and curPoint.current_lap != lap.points[0].current_lap:
+                    print("Found preceeding point")
+                    lap.preceeding = lap.points[0]
+                    lap.points = []
                 lap.points.append(curPoint)
+            if len(lap.points) > 1 and lap.points[-1].current_lap != lap.points[-2].current_lap:
+                print("Found following point")
+                lap.following = lap.points[-1]
+                lap.points.pop(-1)
+            
     print(len(lap.points))
     return lap
 
@@ -84,6 +95,12 @@ def loadLaps(fn):
                     curLap = curPoint.current_lap
                     result.append(Lap())
                 result[-1].points.append(curPoint)
+    for i in range(1, len(result)):
+        if result[i].points[0].current_lap == result[i-1].points[-1].current_lap+1:
+            print("Found preceeding/following points")
+            result[i].preceeding = result[i-1].points[-1]
+            result[i-1].following = result[i].points[0]
+        
     return result
 
 def indexToTime(i):
