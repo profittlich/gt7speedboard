@@ -86,6 +86,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.defaultPalette = self.palette()
+
         loadCarIds()
 
         print("Clear sessions")
@@ -1732,6 +1734,7 @@ class MainWindow(QMainWindow):
                 self.startWindow = StartWindow()
                 self.startWindow.starter.clicked.connect(self.startDash)
                 self.startWindow.ip.returnPressed.connect(self.startDash)
+                self.setPalette(self.defaultPalette)
                 self.setCentralWidget(self.startWindow)
             elif e.key() == Qt.Key.Key_Space.value:
                 self.newMessage = "CAUTION"

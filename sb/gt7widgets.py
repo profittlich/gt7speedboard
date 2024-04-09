@@ -105,9 +105,9 @@ class StartWindow(QWidget):
         rlGroup.setLayout(rlLayout)
 
         self.linecomp = QCheckBox("Show racing line comparisons")
-        self.messagesEnabled = QCheckBox("Allow adding warning locations by pressing SPACE")
+        self.messagesEnabled = QCheckBox("Allow adding warning markers by pressing SPACE")
         
-        self.cbCaution = QCheckBox("Use pre-loaded warning locations")
+        self.cbCaution = QCheckBox("Use pre-loaded warning markers")
         self.cautionFile = ""
 
         rlLayout.addWidget(self.linecomp)
@@ -169,13 +169,13 @@ class StartWindow(QWidget):
 
         ksLayout.addWidget(QLabel("ESC - return to configuration\n"+
                                   "R - start/stop recording\n"+
-                                  "SPACE - set CAUTION marker to current location\n"+
                                   "B - save best lap\n"+
                                   "L - save last lap\n"+
                                   "M - save median lap\n"+
                                   "A - save all laps\n"+
-                                  "W - save warning messages\n"
                                   "C - clear previous lap data\n"
+                                  "SPACE - set warning marker to current location\n"+
+                                  "W - save warning markers\n"
                                   ))
 
         # CONNECT
