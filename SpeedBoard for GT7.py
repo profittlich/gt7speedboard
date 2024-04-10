@@ -1789,8 +1789,9 @@ class MainWindow(QMainWindow):
             prefix += self.sessionName + "-"
         with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
             for index in range(len(self.previousLaps)):
-                for p in self.previousLaps[index].points:
-                    f.write(p.raw)
+                if self.previousLaps[index].valid:
+                    for p in self.previousLaps[index].points:
+                        f.write(p.raw)
 
     def saveLap(self, index, name):
         print("store lap:", name)

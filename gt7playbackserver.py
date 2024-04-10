@@ -18,7 +18,7 @@ class GT7PlaybackServer:
         self.OutPort = 33740
         self.ip = ip
         self.running = False
-        self.fps = 60
+        self.fps = 59.94
         self.filename = None
         self.simulateFrameDrops = False
         self.stopCallback = stopCallback
@@ -90,15 +90,16 @@ class GT7PlaybackServer:
         hbt.start()
 
         curIndex = 0
-        oldPc = 0
+        oldPc = time.perf_counter()
+        pcCounter = 0
         pktIdCounter = 0
         while self.running:
             try:
                 pc = time.perf_counter()
-                while pc-1/self.fps < oldPc:
-                    time.sleep(1/(10*self.fps))
+                pcCounter += 1
+                while pc-1/self.fps < pcCounter/self.fps + oldPc:
+                    time.sleep(1/(100*self.fps))
                     pc = time.perf_counter()
-                oldPc = pc
 
                 decr = bytearray(salsa20_dec(self.allData[curIndex:curIndex+296]))
                 newPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
@@ -200,12 +201,12 @@ class MainWindow(QMainWindow):
             self.stop()
 
     def updateRate(self, rate):
-        print("Set rate to", rate, "(" + str(60*rate) + " fps)")
-        self.server.setFPS(60 * rate)
+        print("Set rate to", rate, "(" + str(59.94*rate) + " fps)")
+        self.server.setFPS(59.94 * rate)
 
     def serve(self):
         if self.startWidget.recFile != "":
-            self.server.setFPS(60 * self.startWidget.sFps.value())
+            self.server.setFPS(59.94 * self.startWidget.sFps.value())
             self.server.setFilename(self.startWidget.recFile)
             self.thread = threading.Thread(target=self.server.runPlaybackServer)
             self.thread.start()
