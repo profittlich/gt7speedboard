@@ -570,13 +570,14 @@ class MainWindow(QMainWindow):
         fuelWidget.setLayout(fuelLayout)
         fuelLayout.setColumnStretch(0, 1)
         fuelLayout.setColumnStretch(1, 1)
+        fuelLayout.setColumnStretch(2, 1)
 
-        fuelLayout.addWidget(self.fuel, 0, 0, 1, 1)
-        fuelLayout.addWidget(self.fuelBar, 0, 1, 1, 1)
+        fuelLayout.addWidget(self.fuel, 0, 0, 1, 2)
+        fuelLayout.addWidget(self.fuelBar, 0, 2, 1, 1)
         if self.circuitExperience:
-            fuelLayout.addWidget(self.mapView, 1, 0, 1, 2)
+            fuelLayout.addWidget(self.mapView, 1, 0, 1, 3)
         else:
-            fuelLayout.addWidget(self.laps, 1, 0, 1, 2)
+            fuelLayout.addWidget(self.laps, 1, 0, 1, 3)
 
         tyreWidget = QWidget()
         tyreLayout = QGridLayout()
@@ -778,6 +779,13 @@ class MainWindow(QMainWindow):
         settings.setValue("showBestLap", self.showBestLap)
         settings.setValue("showMedianLap", self.showMedianLap)
         settings.setValue("showLastLap", self.showLastLap)
+
+        settings.setValue("showRefALap", self.showRefALap)
+        settings.setValue("showRefBLap", self.showRefBLap)
+        settings.setValue("showRefCLap", self.showRefCLap)
+        settings.setValue("refAFile", self.refAFile)
+        settings.setValue("refBFile", self.refBFile)
+        settings.setValue("refCFile", self.refCFile)
         
         settings.setValue("recordingEnabled", self.recordingEnabled)
         settings.setValue("messagesEnabled", self.messagesEnabled)
@@ -877,7 +885,7 @@ class MainWindow(QMainWindow):
 
         self.closestILast = 0
         self.closestIBest = 0
-        self.oldIBest = 0
+        #self.oldIBest = 0
         self.closestIMedian = 0
         self.closestIRefA = 0
         self.closestIRefB = 0
@@ -1197,7 +1205,7 @@ class MainWindow(QMainWindow):
         if not self.circuitExperience and not messageShown:
             if self.fuelFactor > 0:
                 lapsFuel = curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor
-                self.laps.setText("<font size=6>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>")
+                self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>")
 
                 lapValue = 1
                 if self.lapDecimals and self.closestILast > 0:
@@ -1257,7 +1265,7 @@ class MainWindow(QMainWindow):
         nextBrakeRefA = self.findNextBrake(self.refLaps[0].points, self.closestIRefA)
         nextBrakeRefB = self.findNextBrake(self.refLaps[1].points, self.closestIRefB)
         nextBrakeRefC = self.findNextBrake(self.refLaps[2].points, self.closestIRefC)
-        if len(self.previousLaps) > 0:
+        if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
             closestPLast, self.closestILast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
             closestPBest, self.closestIBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
             closestPMedian, self.closestIMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
@@ -1507,7 +1515,7 @@ class MainWindow(QMainWindow):
             if len(self.previousLaps) > 0:
                 speedDiff = self.previousLaps[self.bestLap].points[self.closestIBest].car_speed - curPoint.car_speed
                 #speedDiff = 10*((self.closestIBest - self.oldIBest) - 1) # TODO const
-                self.oldIBest = self.closestIBest
+                #self.oldIBest = self.closestIBest
                 if speedDiff == 0:
                     color = self.mapStandingColor
                 else:
@@ -1535,6 +1543,8 @@ class MainWindow(QMainWindow):
             
             if lapLen < 10: # TODO const
                 print("LAP CHANGE short")
+                if curPoint.fuel_capacity > 0: # TODO how are e-vehicles handled in telemetry
+			self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
             else:
                 newLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), newLapTime - self.oldLapTime)

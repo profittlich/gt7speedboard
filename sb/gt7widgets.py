@@ -221,6 +221,22 @@ class StartWindow(QWidget):
         self.cbBest.setChecked(settings.value("showBestLap") in [ True, "true"])
         self.cbMedian.setChecked(settings.value("showMedianLap") in [ True, "true"])
         self.cbLast.setChecked(settings.value("showLastLap") in [ True, "true"])
+
+        self.cbRefA.blockSignals(True)
+        self.cbRefA.setChecked(settings.value("showRefALap") in [ True, "true"])
+        self.cbRefA.blockSignals(False)
+        self.cbRefB.blockSignals(True)
+        self.cbRefB.setChecked(settings.value("showRefBLap") in [ True, "true"])
+        self.cbRefB.blockSignals(False)
+        self.cbRefC.blockSignals(True)
+        self.cbRefC.setChecked(settings.value("showRefCLap") in [ True, "true"])
+        self.cbRefC.blockSignals(False)
+        if self.cbRefA.isChecked():
+            self.refAFile = settings.value("refAFile", "")
+        if self.cbRefB.isChecked():
+            self.refBFile = settings.value("refBFile", "")
+        if self.cbRefC.isChecked():
+            self.refCFile = settings.value("refCFile", "")
         
 
         self.recordingEnabled.setChecked(settings.value("recordingEnabled") in [ True, "true"])
