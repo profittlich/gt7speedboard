@@ -85,6 +85,10 @@ def convertGT7toXL (fni, fno):
                 "in_race", 
                 ]
     ws.append(header)
+    if not lap.preceeding is None:
+        lap.points.insert(0, lap.preceeding)
+    if not lap.following is None:
+        lap.points.append(lap.following)
     i = 0
     for p in lap.points:
         row = [

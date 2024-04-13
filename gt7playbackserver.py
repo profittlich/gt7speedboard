@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
         self.cleanUpAfterStop()
 
     def chooseRecording(self):
-        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7)")
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
         if chosen[0] == "":
             print("None")
         else:

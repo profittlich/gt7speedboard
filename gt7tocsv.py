@@ -81,6 +81,10 @@ def convertGT7toCSV (fni, fno):
                 "in_race" + sep + 
                 "\n").encode("utf-8"))
 
+        if not lap.preceeding is None:
+            lap.points.insert(0, lap.preceeding)
+        if not lap.following is None:
+            lap.points.append(lap.following)
         i = 0
         for p in lap.points:
             f.write((

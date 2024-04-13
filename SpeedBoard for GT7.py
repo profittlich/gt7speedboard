@@ -1797,7 +1797,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+        with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
             for index in range(len(self.previousLaps)):
                 if self.previousLaps[index].valid:
                     for p in self.previousLaps[index].points:
@@ -1810,7 +1810,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7l", "wb") as f:
+        with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
             if not self.previousLaps[index].preceeding is None:
                 print("Going from", self.previousLaps[index].preceeding.current_lap)
                 f.write(self.previousLaps[index].preceeding.raw)

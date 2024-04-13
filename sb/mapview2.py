@@ -731,6 +731,14 @@ class MapView2(QWidget):
     def writeFlippingLaps(self):
         fromPts = (0, 0)
         optLap = Lap()
+
+        if len(self.manualSplitPoints) > 0:
+            flip = self.manualSplitPoints[0][0] > self.manualSplitPoints[0][1]
+            if flip:
+                optLap.preceeding = self.lap2.preceeding
+            else:
+                optLap.preceeding = self.lap1.preceeding
+
         for p in self.manualSplitPoints:
             flip = (p[0]-fromPts[0]) > (p[1]-fromPts[1])
             if flip:
@@ -744,59 +752,28 @@ class MapView2(QWidget):
         flip = (len(self.lap1.points)-fromPts[0]) > (len(self.lap2.points)-fromPts[1])
         if flip:
             optLap.points += self.lap2.points[fromPts[1]:]
+            optLap.following = self.lap2.following
         else:
             optLap.points += self.lap1.points[fromPts[0]:]
+            optLap.following = self.lap1.following
 
         for p in optLap.points:
             p.current_lap = 1
             p.recreatePackage()
         
         now = datetime.datetime.now()
-        with open ( "./optlap-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
+        with open ( "./optlap-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
+            if not optLap.preceeding is None:
+                optLap.preceeding.current_lap = 0
+                optLap.preceeding.recreatePackage()
+                f.write(optLap.preceeding.raw)
             for p in optLap.points:
                 f.write(p.raw)
+            if not optLap.following is None:
+                optLap.following.current_lap = 2
+                optLap.following.recreatePackage()
+                f.write(optLap.following.raw)
             
-    def writeFlippingLapsTwo(self):
-        fromPts = (0, 0)
-        lapA = Lap()
-        lapB = Lap()
-        flip = False
-        for p in self.manualSplitPoints:
-            if flip:
-                lapB.points += self.lap1.points[fromPts[0]:p[0]]
-                lapA.points += self.lap2.points[fromPts[1]:p[1]]
-            else:
-                lapA.points += self.lap1.points[fromPts[0]:p[0]]
-                lapB.points += self.lap2.points[fromPts[1]:p[1]]
-
-            flip = not flip
-            fromPts = p
-
-        if flip:
-            lapB.points += self.lap1.points[fromPts[0]:]
-            lapA.points += self.lap2.points[fromPts[1]:]
-        else:
-            lapA.points += self.lap1.points[fromPts[0]:]
-            lapB.points += self.lap2.points[fromPts[1]:]
-
-        for p in lapA.points:
-            p.current_lap = 1
-            p.recreatePackage()
-        
-        for p in lapB.points:
-            p.current_lap = 1
-            p.recreatePackage()
-
-        now = datetime.datetime.now()
-        with open ( "./synthlap-A-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
-            for p in lapA.points:
-                f.write(p.raw)
-        with open ( "./synthlap-B-" + now.strftime("%Y-%m-%d_%H-%M-%S") + ".gt7", "wb") as f:
-            for p in lapB.points:
-                f.write(p.raw)
-            
-
-
     def delegateKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Right.value:
             self.moveRight()
