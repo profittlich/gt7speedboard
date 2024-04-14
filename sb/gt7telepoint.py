@@ -6,6 +6,9 @@ class Point:
 
     def __init__(self, ddata, encRaw):
         self.raw = encRaw
+
+	# TODO handle indexes 0, 0x40 and 0x100
+        self.magic = struct.unpack('i', ddata[0x00:0x00 + 4])[0]
         
         # from https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
         self.package_id = struct.unpack('i', ddata[0x70:0x70 + 4])[0]
@@ -28,7 +31,7 @@ class Point:
         self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
         self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * struct.unpack('f', ddata[0xB0:0xB0 + 4])[0])
 
-        self.car_speed = 3.6 * struct.unpack('f', ddata[0x4C:0x4C + 4])[0]
+        self.car_speed = 3.6 * struct.unpack('f', ddata[0x4C:0x4C + 4])[0] # m/s to km/h
 
         if self.car_speed > 0:
             self.tyre_slip_ratio_FL = '{:6.2f}'.format(self.tyre_speed_FL / self.car_speed)
@@ -117,7 +120,10 @@ class Point:
         self.in_race = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-1] == '1'
 
         self.unknown = []
+	# TODO store index along with value
         self.unknown.append( struct.unpack('f', ddata[0x28:0x28+4])[0])					# rot ???
+
+        self.unknown.append( struct.unpack('f', ddata[0x40:0x40+4])[0])			# 0x40 = ???
 
         self.unknown.append( bin(struct.unpack('B', ddata[0x8E:0x8E+1])[0])[2:])	# various flags (see https://github.com/Nenkai/PDTools/blob/master/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs)
         self.unknown.append( bin(struct.unpack('B', ddata[0x8F:0x8F+1])[0])[2:])	# various flags (see https://github.com/Nenkai/PDTools/blob/master/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs)
@@ -138,6 +144,8 @@ class Point:
         self.unknown.append( struct.unpack('f', ddata[0xEC:0xEC+4])[0])			# 0xEC = ???
         self.unknown.append( struct.unpack('f', ddata[0xF0:0xF0+4])[0])			# 0xF0 = ???
 
+        self.unknown.append( struct.unpack('f', ddata[0x100:0x100+4])[0])		# 0x1000 = ???
+
         # end of https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
 
         self.message = None
@@ -145,6 +153,7 @@ class Point:
     def recreatePackage(self):
         newPkt = bytearray(296)
 
+        struct.pack_into ('i', newPkt, 0x00, self.magic)
         struct.pack_into ('i', newPkt, 0x70, self.package_id)
         struct.pack_into ('i', newPkt, 0x78, self.best_lap)
         struct.pack_into ('i', newPkt, 0x7C, self.last_lap)
@@ -238,24 +247,28 @@ class Point:
 
         struct.pack_into('f', newPkt, 0x28, self.unknown[0])
 
-        struct.pack_into('B', newPkt, 0x8E, int(self.unknown[1],2))
-        struct.pack_into('B', newPkt, 0x8F, int(self.unknown[2],2))
-        struct.pack_into('B', newPkt, 0x93, int(self.unknown[3],2))
+        struct.pack_into('f', newPkt, 0x40, self.unknown[1])
 
-        struct.pack_into('f', newPkt, 0x94, self.unknown[4])
-        struct.pack_into('f', newPkt, 0x98, self.unknown[5])
-        struct.pack_into('f', newPkt, 0x9C, self.unknown[6])
-        struct.pack_into('f', newPkt, 0xA0, self.unknown[7])
+        struct.pack_into('B', newPkt, 0x8E, int(self.unknown[2],2))
+        struct.pack_into('B', newPkt, 0x8F, int(self.unknown[3],2))
+        struct.pack_into('B', newPkt, 0x93, int(self.unknown[4],2))
 
-        struct.pack_into('f', newPkt, 0xD4, self.unknown[8])
-        struct.pack_into('f', newPkt, 0xD8, self.unknown[9])
-        struct.pack_into('f', newPkt, 0xDC, self.unknown[10])
-        struct.pack_into('f', newPkt, 0xE0, self.unknown[11])
+        struct.pack_into('f', newPkt, 0x94, self.unknown[5])
+        struct.pack_into('f', newPkt, 0x98, self.unknown[6])
+        struct.pack_into('f', newPkt, 0x9C, self.unknown[7])
+        struct.pack_into('f', newPkt, 0xA0, self.unknown[8])
 
-        struct.pack_into('f', newPkt, 0xE4, self.unknown[12])
-        struct.pack_into('f', newPkt, 0xE8, self.unknown[13])
-        struct.pack_into('f', newPkt, 0xEC, self.unknown[14])
-        struct.pack_into('f', newPkt, 0xF0, self.unknown[15])
+        struct.pack_into('f', newPkt, 0xD4, self.unknown[9])
+        struct.pack_into('f', newPkt, 0xD8, self.unknown[10])
+        struct.pack_into('f', newPkt, 0xDC, self.unknown[11])
+        struct.pack_into('f', newPkt, 0xE0, self.unknown[12])
+
+        struct.pack_into('f', newPkt, 0xE4, self.unknown[13])
+        struct.pack_into('f', newPkt, 0xE8, self.unknown[14])
+        struct.pack_into('f', newPkt, 0xEC, self.unknown[15])
+        struct.pack_into('f', newPkt, 0xF0, self.unknown[16])
+
+        struct.pack_into('f', newPkt, 0x100, self.unknown[17])
 
         encr = salsa20_enc(newPkt, 296)
         self.raw = encr
@@ -264,6 +277,7 @@ class Point:
     def interpolate(self, other, alpha):
         newdat = bytearray(296)
 
+        self.magic = other.magic
         self.package_id = int(alpha * other.package_id + (1-alpha) * self.package_id)
         self.best_lap = other.best_lap
         self.last_lap = other.last_lap
@@ -360,24 +374,28 @@ class Point:
 
         self.unknown[0] = ( alpha * other.unknown[0] + (1-alpha) * self.unknown[0])
 
-        self.unknown[1] = other.unknown[1]
+        self.unknown[1] = ( alpha * other.unknown[1] + (1-alpha) * self.unknown[1])
+
         self.unknown[2] = other.unknown[2]
         self.unknown[3] = other.unknown[3]
+        self.unknown[4] = other.unknown[4]
 
-        self.unknown[4] = ( alpha * other.unknown[4] + (1-alpha) * self.unknown[4])
         self.unknown[5] = ( alpha * other.unknown[5] + (1-alpha) * self.unknown[5])
         self.unknown[6] = ( alpha * other.unknown[6] + (1-alpha) * self.unknown[6])
         self.unknown[7] = ( alpha * other.unknown[7] + (1-alpha) * self.unknown[7])
-
         self.unknown[8] = ( alpha * other.unknown[8] + (1-alpha) * self.unknown[8])
+
         self.unknown[9] = ( alpha * other.unknown[9] + (1-alpha) * self.unknown[9])
         self.unknown[10] = ( alpha * other.unknown[10] + (1-alpha) * self.unknown[10])
         self.unknown[11] = ( alpha * other.unknown[11] + (1-alpha) * self.unknown[11])
-
         self.unknown[12] = ( alpha * other.unknown[12] + (1-alpha) * self.unknown[12])
+
         self.unknown[13] = ( alpha * other.unknown[13] + (1-alpha) * self.unknown[13])
         self.unknown[14] = ( alpha * other.unknown[14] + (1-alpha) * self.unknown[14])
         self.unknown[15] = ( alpha * other.unknown[15] + (1-alpha) * self.unknown[15])
+        self.unknown[16] = ( alpha * other.unknown[16] + (1-alpha) * self.unknown[16])
+
+        self.unknown[17] = ( alpha * other.unknown[17] + (1-alpha) * self.unknown[17])
 
         self.recreatePackage()
 

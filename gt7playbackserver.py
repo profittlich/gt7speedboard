@@ -24,6 +24,8 @@ class GT7PlaybackServer:
         self.stopCallback = stopCallback
 
     def setFPS(self, b):
+        self.oldPc = time.perf_counter()
+        self.pcCounter = 0
         self.fps = b
 
     def setFilename(self, f):
@@ -90,14 +92,14 @@ class GT7PlaybackServer:
         hbt.start()
 
         curIndex = 0
-        oldPc = time.perf_counter()
-        pcCounter = 0
+        self.oldPc = time.perf_counter()
+        self.pcCounter = 0
         pktIdCounter = 0
         while self.running:
             try:
                 pc = time.perf_counter()
-                pcCounter += 1
-                while pc-1/self.fps < pcCounter/self.fps + oldPc:
+                self.pcCounter += 1
+                while pc-1/self.fps < self.pcCounter/self.fps + self.oldPc:
                     time.sleep(1/(100*self.fps))
                     pc = time.perf_counter()
 

@@ -1544,7 +1544,7 @@ class MainWindow(QMainWindow):
             if lapLen < 10: # TODO const
                 print("LAP CHANGE short")
                 if curPoint.fuel_capacity > 0: # TODO how are e-vehicles handled in telemetry
-			self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
+                    self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
             else:
                 newLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), newLapTime - self.oldLapTime)

@@ -2,11 +2,11 @@
 
 
 a = Analysis(
-    ['SpeedBoard for GT7.py'],
+    ['gt7playbackserver.py'],
     pathex=[],
     binaries=[],
-    datas=[('cars.csv', '.'), ('makers.csv', '.')],
-    hiddenimports=['_salsa20', 'wakepy._deprecated._darwin'],
+    datas=[],
+    hiddenimports=['_salsa20'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -20,7 +20,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='SpeedBoard for GT7',
+    name='GT7 telemetry playback server',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -39,11 +39,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='SpeedBoard for GT7',
+    name='GT7 telemetry playback server',
 )
 app = BUNDLE(
     coll,
-    name='SpeedBoard for GT7.app',
+    name='GT7 telemetry playback server.app',
     icon=None,
     bundle_identifier=None,
 )
