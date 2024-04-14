@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['SpeedBoard for GT7.py'],
+    ['graphicallapcomparison.py'],
     pathex=[],
     binaries=[],
     datas=[('cars.csv', '.'), ('makers.csv', '.')],
@@ -21,7 +21,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='SpeedBoard for GT7',
+    name='Graphical lap comparison',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

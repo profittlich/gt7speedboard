@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['SpeedBoard for GT7.py'],
+    ['gt7playbackserver.py'],
     pathex=[],
     binaries=[],
-    datas=[('cars.csv', '.'), ('makers.csv', '.')],
+    datas=[],
     hiddenimports=['_salsa20', 'wakepy._deprecated._windows'],
     hookspath=[],
     hooksconfig={},
@@ -21,7 +21,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='SpeedBoard for GT7',
+    name='GT7 telemetry playback server',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

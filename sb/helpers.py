@@ -137,13 +137,13 @@ carMakers = {}
 def loadCarIds():
     global carIds
     global carMakers
-    with open(os.path.dirname(__file__).replace("/sb","") + "/makers.csv", 'r') as csv_file:
+    with open(os.path.dirname(__file__).replace("/sb","").replace("\\sb", "") + "/makers.csv", 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             carMakers[row[0]] = row[1]
 
 
-    with open(os.path.dirname(__file__).replace("/sb","") + "/cars.csv", 'r') as csv_file:
+    with open(os.path.dirname(__file__).replace("/sb","").replace("\\sb", "") + "/cars.csv", 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             carIds[row[0]] = row
