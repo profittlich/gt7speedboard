@@ -1,6 +1,5 @@
 import math
 import csv
-import os
 
 from sb.crypt import salsa20_dec, salsa20_enc
 from sb.gt7telepoint import Point
@@ -41,6 +40,14 @@ class Lap:
             totalDist += self.distance(self.points[i-1], self.points[i])
         return totalDist
 
+    def updateTime(self):
+        if self.following is None:
+            self.time = len(self.points) * 1/59.94
+            print("Estimate time", len(self.points), self.time)
+        else:
+            self.time = self.following.last_lap
+            print("Use following time", self.time)
+
     def findClosestPointNoLimit(self, p):
         shortestDistance = 100000000
         result = None
@@ -76,6 +83,7 @@ def loadLap(fn):
                 lap.points.pop(-1)
             
     print(len(lap.points))
+    lap.updateTime()
     return lap
 
 def loadLaps(fn):
@@ -137,13 +145,13 @@ carMakers = {}
 def loadCarIds():
     global carIds
     global carMakers
-    with open(os.path.dirname(__file__).replace("/sb","").replace("\\sb", "") + "/makers.csv", 'r') as csv_file:
+    with open("makers.csv", 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             carMakers[row[0]] = row[1]
 
 
-    with open(os.path.dirname(__file__).replace("/sb","").replace("\\sb", "") + "/cars.csv", 'r') as csv_file:
+    with open("cars.csv", 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             carIds[row[0]] = row

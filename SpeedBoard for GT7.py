@@ -114,6 +114,7 @@ class MainWindow(QMainWindow):
         self.brakepoints = False
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = 0
+        self.switchToBestLap = True # TODO cfg
 
         self.showBestLap = True
         self.showLastLap = True
@@ -759,6 +760,7 @@ class MainWindow(QMainWindow):
         self.brakepoints = self.startWindow.brakepoints.isChecked()
         self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
         self.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
+        self.switchToBestLap = self.startWindow.switchToBestLap.isChecked()
         
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
@@ -803,6 +805,7 @@ class MainWindow(QMainWindow):
         settings.setValue("brakepoints", self.brakepoints)
         settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
         settings.setValue("bigCountdownTarget", self.bigCountdownBrakepoint)
+        settings.setValue("switchToBestLap", self.switchToBestLap)
 
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
@@ -821,6 +824,7 @@ class MainWindow(QMainWindow):
 
         self.refLaps = [ loadLap(self.refAFile), loadLap(self.refBFile), loadLap(self.refCFile) ]
 
+        print("Ref A:", msToTime(self.refLaps[0].time))
 
         self.receiver.setQueue(self.queue)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
@@ -1569,6 +1573,17 @@ class MainWindow(QMainWindow):
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
+                        if self.switchToBestLap:
+                            print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
+                            if self.bigCountdownBrakepoint == 2 and not self.refLaps[0] is None and self.refLaps[0].time > curPoint.last_lap:
+                                print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
+                                self.bigCountdownBrakepoint = 1
+                            elif self.bigCountdownBrakepoint == 3 and not self.refLaps[1] is None and self.refLaps[1].time > curPoint.last_lap:
+                                print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
+                                self.bigCountdownBrakepoint = 1
+                            elif self.bigCountdownBrakepoint == 4 and not self.refLaps[2] is None and self.refLaps[2].time > curPoint.last_lap:
+                                print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
+                                self.bigCountdownBrakepoint = 1
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
                                 self.initRun()

@@ -129,11 +129,13 @@ class StartWindow(QWidget):
         self.bigCountdownTarget.addItem("Reference lap A")
         self.bigCountdownTarget.addItem("Reference lap B")
         self.bigCountdownTarget.addItem("Reference lap C")
+        self.switchToBestLap = QCheckBox("Switch to best lap once it's faster")
         
         bpLayout.addWidget(self.brakepoints)
         bpLayout.addWidget(self.countdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownTarget)
+        bpLayout.addWidget(self.switchToBestLap)
         
         # FUEL
         fuGroup = QGroupBox("Fuel")
@@ -255,6 +257,7 @@ class StartWindow(QWidget):
         self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
         self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
         self.bigCountdownTarget.setCurrentIndex(int(settings.value("bigCountdownTarget",0)))
+        self.switchToBestLap.setChecked(settings.value("switchToBestLap") in [ True, "true" ])
 
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))
         self.fuelWarning.setValue(int(settings.value("fuelWarning", 50)))
