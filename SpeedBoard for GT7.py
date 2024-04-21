@@ -49,6 +49,7 @@ class Worker(QRunnable, QObject):
 class Run:
     def __init__(self, sessionStart):
         self.carId = None
+        self.topSpeed = 0
         self.lapTimes = []
         self.sessionStart = sessionStart
     
@@ -1573,6 +1574,7 @@ class MainWindow(QMainWindow):
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
+
                         if self.switchToBestLap:
                             print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
                             if self.bigCountdownBrakepoint == 2 and not self.refLaps[0] is None and self.refLaps[0].time > curPoint.last_lap:
@@ -1584,11 +1586,15 @@ class MainWindow(QMainWindow):
                             elif self.bigCountdownBrakepoint == 4 and not self.refLaps[2] is None and self.refLaps[2].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
                                 self.bigCountdownBrakepoint = 1
+
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
                                 self.initRun()
                             self.sessionStats[-1].carId = curPoint.car_id
                             self.sessionStats[-1].addLapTime(lastLapTime, self.lastLap)
+                            pTop = self.previousLaps[0].topSpeed()
+                            if self.sessionStats[-1].topSpeed < pTop:
+                                self.sessionStats[-1].topSpeed = pTop
                             print(len(self.sessionStats), "sessions")
                             for i in self.sessionStats:
                                 print("Best:", msToTime(i.bestLap()[0]))
@@ -1603,7 +1609,7 @@ class MainWindow(QMainWindow):
                             lapsWith = " laps with "
                             if len(i.lapTimes) == 1:
                                 lapsWith = " lap with "
-                            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + "</font><br>"
+                            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Speed: " + str (i.topSpeed) + "</font><br>"
                             carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + "\n"
                             sessionI += 1
                         self.updateRunStats(carStatTxt)

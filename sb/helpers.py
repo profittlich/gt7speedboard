@@ -59,6 +59,14 @@ class Lap:
 
         return self.points[result], result, shortestDistance
 
+    def topSpeed(self):
+        topSpeed = 0
+        for p2 in range(len(self.points)):
+            if topSpeed < p2.car_speed:
+                topSpeed = p2.car_speed
+
+        return topSpeed
+
 def loadLap(fn):
     lap = Lap()
     if len(fn)>0:
