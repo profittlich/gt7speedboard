@@ -92,7 +92,7 @@ class StartWindow(QWidget):
         recLayout = QVBoxLayout()
         recGroup.setLayout(recLayout)
 
-        self.recordingEnabled = QCheckBox("Allow recording data by pressing [R]")
+        self.recordingEnabled = QCheckBox("Allow recording raw data by pressing [R]")
         self.sessionName = QLineEdit()
         self.saveSessionName = QCheckBox("Remember session name")
         pbChooseStorage = QPushButton("Choose storage location")
@@ -179,15 +179,17 @@ class StartWindow(QWidget):
         ksGroup.setLayout(ksLayout)
         mainLayoutR.addWidget(ksGroup)
 
-        ksLayout.addWidget(QLabel("ESC - return to configuration\n"+
-                                  "R - start/stop recording\n"+
-                                  "B - save best lap\n"+
-                                  "L - save last lap\n"+
-                                  "M - save median lap\n"+
-                                  "A - save all laps\n"+
+        ksLayout.addWidget(QLabel("ESC - return to configuration\n"
+                                  "B - save best lap\n"
+                                  "L - save last lap\n"
+                                  "M - save median lap\n"
+                                  "A - save all laps\n"
                                   "C - clear previous lap data\n"
-                                  "SPACE - set warning marker to current location\n"+
+                                  "SPACE - set warning marker to current location\n"
                                   "W - save warning markers\n"
+                                  "D - Set a description for the current run\n"
+                                  "S - Show runs and statistics\n" 
+                                  "R - start/stop raw recording (not recommended)\n"
                                   ))
 
         # CONNECT
