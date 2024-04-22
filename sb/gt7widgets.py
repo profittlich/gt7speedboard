@@ -66,6 +66,7 @@ class StartWindow(QWidget):
         self.cbRefC.stateChanged.connect(self.chooseReferenceLapC)
         self.refCFile = ""
         self.cbLast = QCheckBox("Last lap")
+        self.timecomp = QCheckBox("Show graphical lap time comparisons")
         
         vwLayout.addWidget(self.lapDecimals)
         #vwLayout.addWidget(self.cbOptimal)
@@ -75,6 +76,7 @@ class StartWindow(QWidget):
         vwLayout.addWidget(self.cbRefB)
         vwLayout.addWidget(self.cbRefC)
         vwLayout.addWidget(self.cbLast)
+        vwLayout.addWidget(self.timecomp)
 
         # RECORDING
         recGroup = QGroupBox("Recording")
@@ -247,6 +249,7 @@ class StartWindow(QWidget):
         self.saveSessionName.setChecked(settings.value("saveSessionName") in [ True, "true"])
 
         self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
+        self.timecomp.setChecked(settings.value("timecomp") in [ True, "true"])
         self.cautionFile = settings.value("messageFile")
         self.cbCaution.setChecked(settings.value("loadMessagesFromFile") in [ True, "true"])
         if self.cbCaution.isChecked() and self.cautionFile != "":
@@ -590,6 +593,52 @@ class LineDeviation(QWidget):
                 qp.fillRect(int(self.width()/2), 0, int(clippedDist/self.maxDist * self.width() / 2), int(self.height()), self.greenGradient)
                 qp.drawLine(int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), int(self.height()))
         qp.drawLine(int(self.width()/2), 0, int(self.width()/2), int (self.height()))
+        qp.end()
+
+
+
+class TimeDeviation(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.maxDiff = 0.5 * 59.94
+        self.difference = 0
+        self.redGradient = QLinearGradient (0, 10,0,120);
+        self.redGradient.setColorAt(0.0, QColor("#222"))
+        self.redGradient.setColorAt(0.2, QColor("#222"))
+        self.redGradient.setColorAt(1.0, Qt.GlobalColor.red);
+        self.greenGradient = QLinearGradient (0, 10,0,120);
+        self.greenGradient.setColorAt(0.0, QColor("#222"))
+        self.greenGradient.setColorAt(0.2, QColor("#222"))
+        self.greenGradient.setColorAt(1.0, Qt.GlobalColor.green);
+
+    def setDiff(self, d):
+        self.difference = -d
+
+    def paintEvent(self, event):
+
+        qp = QPainter()
+        qp.begin(self)
+        qp.fillRect(0, 0, int(self.width()), int(self.height()), QColor("#222"))
+        pen = QPen(Qt.GlobalColor.white)
+        pen.setWidth(5)
+        qp.setPen(pen)
+        font = self.font()
+        font.setPointSize(36)
+        font.setBold(True)
+        self.setFont(font)
+        clippedDifference = min(self.maxDiff, max(-self.maxDiff, self.difference))
+        if self.difference > 0:
+            self.redGradient.setStart(0, self.height()/2)
+            self.redGradient.setFinalStop(0, self.height()/2 + clippedDifference/self.maxDiff * self.height() / 2)
+            qp.fillRect(0, int(self.height()/2), int(self.width()), int(clippedDifference/self.maxDiff * self.height() / 2), self.redGradient)
+            qp.drawLine(0, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2), int(self.width()), int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2))
+        else:
+            self.greenGradient.setStart(0, self.height()/2)
+            self.greenGradient.setFinalStop(0, self.height()/2 + clippedDifference/self.maxDiff * self.height() / 2)
+            qp.fillRect(0, int(self.height()/2), int(self.width()), int(clippedDifference/self.maxDiff * self.height() / 2), self.greenGradient)
+            qp.drawLine(0, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2), int(self.width()), int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2))
+        qp.drawLine(0, int(self.height()/2), int (self.width()), int(self.height()/2))
         qp.end()
 
 

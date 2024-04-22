@@ -112,6 +112,7 @@ class MainWindow(QMainWindow):
         self.recordingEnabled = False
         self.messagesEnabled = False
         self.linecomp = False
+        self.timecomp = False
         self.brakepoints = False
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = 0
@@ -430,6 +431,7 @@ class MainWindow(QMainWindow):
         self.speedBest.setPalette(pal)
 
         self.lineBest = LineDeviation()
+        self.timeDiffBest = TimeDeviation()
 
         self.pedalLast = QLabel("")
         self.pedalLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -456,6 +458,7 @@ class MainWindow(QMainWindow):
         self.speedLast.setPalette(pal)
 
         self.lineLast = LineDeviation()
+        self.timeDiffLast = TimeDeviation()
 
         self.pedalRefA = QLabel("")
         self.pedalRefA.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -482,6 +485,7 @@ class MainWindow(QMainWindow):
         self.speedRefA.setPalette(pal)
 
         self.lineRefA = LineDeviation()
+        self.timeDiffRefA = TimeDeviation()
 
         self.pedalRefB = QLabel("")
         self.pedalRefB.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -508,6 +512,7 @@ class MainWindow(QMainWindow):
         self.speedRefB.setPalette(pal)
 
         self.lineRefB = LineDeviation()
+        self.timeDiffRefB = TimeDeviation()
 
         self.pedalRefC = QLabel("")
         self.pedalRefC.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -534,6 +539,7 @@ class MainWindow(QMainWindow):
         self.speedRefC.setPalette(pal)
 
         self.lineRefC = LineDeviation()
+        self.timeDiffRefC = TimeDeviation()
 
         self.pedalMedian = QLabel("")
         self.pedalMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -560,6 +566,7 @@ class MainWindow(QMainWindow):
         self.speedMedian.setPalette(pal)
 
         self.lineMedian = LineDeviation()
+        self.timeDiffMedian = TimeDeviation()
 
         # Lvl 3
         fuelWidget = QWidget()
@@ -604,6 +611,7 @@ class MainWindow(QMainWindow):
             speedLayout.addWidget(self.speedRefC , 2, 4)
         if self.showLastLap:
             speedLayout.addWidget(self.speedLast, 2, 5)
+
         if self.linecomp:
             if self.showBestLap:
                 speedLayout.addWidget(self.lineBest, 1, 0)
@@ -618,6 +626,21 @@ class MainWindow(QMainWindow):
             if self.showLastLap:
                 speedLayout.addWidget(self.lineLast, 1, 5)
             speedLayout.setRowStretch(1, 1)
+        if self.timecomp:
+            speedLayout.setRowStretch(3, 6)
+            if self.showBestLap:
+                speedLayout.addWidget(self.timeDiffBest, 3, 0)
+            if self.showMedianLap:
+                speedLayout.addWidget(self.timeDiffMedian, 3, 1)
+            if self.showRefALap:
+                speedLayout.addWidget(self.timeDiffRefA, 3, 2)
+            if self.showRefBLap:
+                speedLayout.addWidget(self.timeDiffRefB, 3, 3)
+            if self.showRefCLap:
+                speedLayout.addWidget(self.timeDiffRefC, 3, 4)
+            if self.showLastLap:
+                speedLayout.addWidget(self.timeDiffLast, 3, 5)
+
         if self.brakepoints:
             if self.showBestLap:
                 speedLayout.addWidget(self.pedalBest, 0, 0)
@@ -755,6 +778,7 @@ class MainWindow(QMainWindow):
         self.storageLocation = self.startWindow.storageLocation
         
         self.linecomp = self.startWindow.linecomp.isChecked()
+        self.timecomp = self.startWindow.timecomp.isChecked()
         self.loadMessagesFromFile = self.startWindow.cbCaution.isChecked()
         self.messageFile = self.startWindow.cautionFile
         
@@ -800,6 +824,7 @@ class MainWindow(QMainWindow):
         settings.setValue("storageLocation", self.storageLocation)
 
         settings.setValue("linecomp", self.linecomp)
+        settings.setValue("timecomp", self.timecomp)
         settings.setValue("loadMessagesFromFile", self.loadMessagesFromFile)
         settings.setValue("messageFile", self.messageFile)
 
@@ -914,11 +939,20 @@ class MainWindow(QMainWindow):
         self.lineBest.setPoints(None,None)
         self.lineBest.update()
 
+        self.timeDiffBest.setDiff(0)
+        self.timeDiffBest.update()
+
         self.lineLast.setPoints(None,None)
         self.lineLast.update()
 
+        self.timeDiffLast.setDiff(0)
+        self.timeDiffLast.update()
+
         self.lineMedian.setPoints(None,None)
         self.lineMedian.update()
+
+        self.timeDiffMedian.setDiff(0)
+        self.timeDiffMedian.update()
 
         self.loadMessages(self.messageFile)
 
@@ -1293,6 +1327,9 @@ class MainWindow(QMainWindow):
                 self.pedalLast.setPalette(pal)
                 self.lineLast.setPoints(curPoint, closestPLast)
                 self.lineLast.update()
+
+                self.timeDiffLast.setDiff(self.closestILast - len(self.curLap.points))
+                self.timeDiffLast.update()
         else:
             pal = self.speedLast.palette()
             pal.setColor(self.speedLast.backgroundRole(), self.backgroundColor)
@@ -1345,6 +1382,9 @@ class MainWindow(QMainWindow):
                 self.pedalRefA.setPalette(pal)
                 self.lineRefA.setPoints(curPoint, closestPRefA)
                 self.lineRefA.update()
+
+                self.timeDiffRefA.setDiff(self.closestIRefA - len(self.curLap.points))
+                self.timeDiffRefA.update()
         else:
             pal = self.speedRefA.palette()
             pal.setColor(self.speedRefA.backgroundRole(), self.backgroundColor)
@@ -1392,6 +1432,9 @@ class MainWindow(QMainWindow):
                 self.pedalRefB.setPalette(pal)
                 self.lineRefB.setPoints(curPoint, closestPRefB)
                 self.lineRefB.update()
+
+                self.timeDiffRefB.setDiff(self.closestIRefB - len(self.curLap.points))
+                self.timeDiffRefB.update()
         else:
             pal = self.speedRefB.palette()
             pal.setColor(self.speedRefB.backgroundRole(), self.backgroundColor)
@@ -1439,6 +1482,9 @@ class MainWindow(QMainWindow):
                 self.pedalRefC.setPalette(pal)
                 self.lineRefC.setPoints(curPoint, closestPRefC)
                 self.lineRefC.update()
+
+                self.timeDiffRefC.setDiff(self.closestIRefC - len(self.curLap.points))
+                self.timeDiffRefC.update()
         else:
             pal = self.speedRefC.palette()
             pal.setColor(self.speedRefC.backgroundRole(), self.backgroundColor)
@@ -1488,6 +1534,9 @@ class MainWindow(QMainWindow):
 
                 self.lineBest.setPoints(curPoint, closestPBest)
                 self.lineBest.update()
+
+                self.timeDiffBest.setDiff(self.closestIBest - len(self.curLap.points))
+                self.timeDiffBest.update()
         else:
             pal = self.speedBest.palette()
             pal.setColor(self.speedBest.backgroundRole(), self.backgroundColor)
@@ -1509,6 +1558,9 @@ class MainWindow(QMainWindow):
                 self.pedalMedian.setPalette(pal)
                 self.lineMedian.setPoints(curPoint, closestPMedian)
                 self.lineMedian.update()
+
+                self.timeDiffMedian.setDiff(self.closestIMedian - len(self.curLap.points))
+                self.timeDiffMedian.update()
         else:
             pal = self.speedMedian.palette()
             pal.setColor(self.speedMedian.backgroundRole(), self.backgroundColor)
@@ -1592,7 +1644,7 @@ class MainWindow(QMainWindow):
                                 self.initRun()
                             self.sessionStats[-1].carId = curPoint.car_id
                             self.sessionStats[-1].addLapTime(lastLapTime, self.lastLap)
-                            pTop = self.previousLaps[0].topSpeed()
+                            pTop = self.previousLaps[-1].topSpeed()
                             if self.sessionStats[-1].topSpeed < pTop:
                                 self.sessionStats[-1].topSpeed = pTop
                             print(len(self.sessionStats), "sessions")
@@ -1601,7 +1653,7 @@ class MainWindow(QMainWindow):
                                 print("Median:", msToTime(i.medianLap()[0]))
 
                         carStatTxt = '<br><font size="3">RUNS:</font><br>'
-                        carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms)\n"
+                        carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h)\n"
                         sessionI = 1
                         for i in self.sessionStats:
                             bst = i.bestLap()
@@ -1609,8 +1661,8 @@ class MainWindow(QMainWindow):
                             lapsWith = " laps with "
                             if len(i.lapTimes) == 1:
                                 lapsWith = " lap with "
-                            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Speed: " + str (i.topSpeed) + "</font><br>"
-                            carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + "\n"
+                            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + " km/h</font><br>"
+                            carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + ";" + str(i.topSpeed) + "\n"
                             sessionI += 1
                         self.updateRunStats(carStatTxt)
                         if self.saveRuns:

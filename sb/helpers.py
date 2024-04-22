@@ -61,7 +61,7 @@ class Lap:
 
     def topSpeed(self):
         topSpeed = 0
-        for p2 in range(len(self.points)):
+        for p2 in self.points:
             if topSpeed < p2.car_speed:
                 topSpeed = p2.car_speed
 
