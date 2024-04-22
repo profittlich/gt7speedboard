@@ -52,6 +52,7 @@ class Run:
         self.topSpeed = 0
         self.lapTimes = []
         self.sessionStart = sessionStart
+        self.description = ""
     
     def addLapTime(self, t, l):
         self.lapTimes.append((t, l))
@@ -191,9 +192,11 @@ class MainWindow(QMainWindow):
 
         self.pollInterval = 20
 
-        self.fontSizeSmall = 48
-        self.fontSizeNormal = 64
-        self.fontSizeLarge = 72
+        self.fontScale = 1
+
+        self.fontSizeSmallPreset = 48
+        self.fontSizeNormalPreset = 64
+        self.fontSizeLargePreset = 72
 
         self.psFPS = 59.94
 
@@ -258,8 +261,10 @@ class MainWindow(QMainWindow):
 
             if "pollInterval" in d: self.pollInterval = d["pollInterval"]
 
-            if "fontSizeNormal" in d: self.fontSizeNormal = d["fontSizeNormal"]
-            if "fontSizeLarge" in d: self.fontSizeLarge = d["fontSizeLarge"]
+            #if "fontScale" in d: self.fontScale = d["fontScale"]
+            if "fontSizeSmall" in d: self.fontSizeSmallPreset = d["fontSizeSmall"]
+            if "fontSizeNormal" in d: self.fontSizeNormalPreset = d["fontSizeNormal"]
+            if "fontSizeLarge" in d: self.fontSizeLargePreset = d["fontSizeLarge"]
 
             if "playStationFPS" in d: self.psFPS = d["playStationFPS"]
 
@@ -321,8 +326,10 @@ class MainWindow(QMainWindow):
 
             d["pollInterval"] = self.pollInterval
 
-            d["fontSizeNormal"] = self.fontSizeNormal
-            d["fontSizeLarge"] = self.fontSizeLarge
+            #d["fontScale"] = self.fontScale
+            d["fontSizeSmall"] = self.fontSizeSmallPreset
+            d["fontSizeNormal"] = self.fontSizeNormalPreset
+            d["fontSizeLarge"] = self.fontSizeLargePreset
 
             d["playStationFPS"] = self.psFPS
             
@@ -790,6 +797,13 @@ class MainWindow(QMainWindow):
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
         fuelWarning = self.startWindow.fuelWarning.value()
+
+        self.fontScale = self.startWindow.fontScale.value()
+
+        self.fontSizeSmall = int(round(self.fontSizeSmallPreset * self.fontScale))
+        self.fontSizeNormal = int(round(self.fontSizeNormalPreset * self.fontScale))
+        self.fontSizeLarge = int(round(self.fontSizeLargePreset * self.fontScale))
+
         
 
         settings = QSettings()
@@ -801,6 +815,7 @@ class MainWindow(QMainWindow):
         settings.setValue("keepLaps", self.keepLaps)
         settings.setValue("saveRuns", self.saveRuns)
 
+        settings.setValue("fontScale", self.fontScale)
         settings.setValue("lapDecimals", self.lapDecimals)
         settings.setValue("showOptimalLap", self.showOptimalLap)
         settings.setValue("showBestLap", self.showBestLap)
@@ -904,6 +919,8 @@ class MainWindow(QMainWindow):
         self.lastFuelUsage = []
         self.fuelFactor = 0
         self.refueled = 0
+
+        self.newRunDescription = None
 
         self.previousPoint = None
         self.previousPackageId = 0
@@ -1117,8 +1134,26 @@ class MainWindow(QMainWindow):
         self.statsPage.setText(statTxt)
 
 
-    def updateRunStats(self, runStats):
-        self.runStats = runStats
+    def updateRunStats(self):
+        carStatTxt = '<br><font size="3">RUNS:</font><br>'
+        carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h);Description\n"
+        sessionI = 1
+        for i in self.sessionStats:
+            bst = i.bestLap()
+            mdn = i.medianLap()
+            lapsWith = " laps with "
+            if len(i.lapTimes) == 1:
+                lapsWith = " lap with "
+            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font><br><font size="1">' + i.description + "</font><br>"
+            carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + ";" + str(i.topSpeed) + ";" + i.description + "\n"
+            sessionI += 1
+        if self.saveRuns:
+            prefix = self.storageLocation + "/"
+            if len(self.sessionName) > 0:
+                prefix += self.sessionName + "-"
+            with open ( prefix + "runs-" + self.sessionStart + ".csv", "w") as f:
+                f.write(carStatCSV)
+        self.runStats = carStatTxt
         self.updateStats()
 
     def updateLiveStats(self, liveStats):
@@ -1652,25 +1687,7 @@ class MainWindow(QMainWindow):
                                 print("Best:", msToTime(i.bestLap()[0]))
                                 print("Median:", msToTime(i.medianLap()[0]))
 
-                        carStatTxt = '<br><font size="3">RUNS:</font><br>'
-                        carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h)\n"
-                        sessionI = 1
-                        for i in self.sessionStats:
-                            bst = i.bestLap()
-                            mdn = i.medianLap()
-                            lapsWith = " laps with "
-                            if len(i.lapTimes) == 1:
-                                lapsWith = " lap with "
-                            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + " km/h</font><br>"
-                            carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + ";" + str(i.topSpeed) + "\n"
-                            sessionI += 1
-                        self.updateRunStats(carStatTxt)
-                        if self.saveRuns:
-                            prefix = self.storageLocation + "/"
-                            if len(self.sessionName) > 0:
-                                prefix += self.sessionName + "-"
-                            with open ( prefix + "runs-" + self.sessionStart + ".csv", "w") as f:
-                                f.write(carStatCSV)
+                        self.updateRunStats()
                     else:
                         print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
                         if len(self.previousLaps) > 0:
@@ -1781,6 +1798,11 @@ class MainWindow(QMainWindow):
                 self.updateMap(curPoint)
                 self.updateLaps(curPoint)
 
+                if not self.newRunDescription is None and len(self.sessionStats) > 0:
+                    self.sessionStats[-1].description = self.newRunDescription
+                    self.newRunDescription = None
+                    self.updateRunStats()
+
                 self.previousPoint = curPoint
                 self.curLap.points.append(curPoint)
 
@@ -1846,6 +1868,10 @@ class MainWindow(QMainWindow):
                 saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
                 saveThread.signals.finished.connect(self.showUiMsg)
                 self.threadpool.start(saveThread)
+            elif e.key() == Qt.Key.Key_D.value:
+                text, ok = QInputDialog().getText(self, "Set run description", "Description:")
+                if ok:
+                    self.newRunDescription = text
             elif e.key() == Qt.Key.Key_C.value:
                 self.initRace()
             elif e.key() == Qt.Key.Key_S.value:

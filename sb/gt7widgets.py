@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox
 import math
 
 class StartWindow(QWidget):
@@ -51,6 +51,12 @@ class StartWindow(QWidget):
         vwLayout = QVBoxLayout()
         vwGroup.setLayout(vwLayout)
 
+        self.fontScale = QDoubleSpinBox()
+        self.fontScale.setMinimum(0.1)
+        self.fontScale.setMaximum(2)
+        self.fontScale.setSingleStep(0.1)
+        self.fontScale.setValue(1)
+
         self.lapDecimals = QCheckBox("Show decimals in lap displays")
         self.cbOptimal = QCheckBox("Optimal lap")
         self.cbOptimal.setEnabled(False)
@@ -68,6 +74,8 @@ class StartWindow(QWidget):
         self.cbLast = QCheckBox("Last lap")
         self.timecomp = QCheckBox("Show graphical lap time comparisons")
         
+        vwLayout.addWidget(QLabel("Font scale:"))
+        vwLayout.addWidget(self.fontScale)
         vwLayout.addWidget(self.lapDecimals)
         #vwLayout.addWidget(self.cbOptimal)
         vwLayout.addWidget(self.cbBest)
@@ -220,6 +228,7 @@ class StartWindow(QWidget):
         self.storageLocation = settings.value("storageLocation", "")
         self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
 
+        self.fontScale.setValue(settings.value("fontScale",1))
         self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
         self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
         self.cbBest.setChecked(settings.value("showBestLap") in [ True, "true"])
