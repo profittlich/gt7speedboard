@@ -248,11 +248,13 @@ class StartWindow(QWidget):
         self.cbRefC.blockSignals(False)
         if self.cbRefA.isChecked():
             self.refAFile = settings.value("refAFile", "")
+            self.cbRefA.setText("Reference lap A: " + self.refAFile[self.refAFile.rfind("/")+1:])
         if self.cbRefB.isChecked():
             self.refBFile = settings.value("refBFile", "")
+            self.cbRefB.setText("Reference lap B: " + self.refBFile[self.refBFile.rfind("/")+1:])
         if self.cbRefC.isChecked():
             self.refCFile = settings.value("refCFile", "")
-        
+            self.cbRefC.setText("Reference lap C: " + self.refCFile[self.refCFile.rfind("/")+1:])
 
         self.recordingEnabled.setChecked(settings.value("recordingEnabled") in [ True, "true"])
         self.messagesEnabled.setChecked(settings.value("messagesEnabled") in [ True, "true"])
@@ -303,11 +305,13 @@ class StartWindow(QWidget):
             chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
                 print("None")
+                self.refAFile = ""
                 self.cbRefA.setCheckState(Qt.CheckState.Unchecked)
             else:
                 self.refAFile = chosen[0]
                 self.cbRefA.setText("Reference lap A: " + chosen[0][chosen[0].rfind("/")+1:])
         else:
+            self.refAFile = ""
             self.cbRefA.setText("Reference lap A")
 
     def chooseReferenceLapB(self, on):
@@ -315,11 +319,13 @@ class StartWindow(QWidget):
             chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
                 print("None")
+                self.refBFile = ""
                 self.cbRefB.setCheckState(Qt.CheckState.Unchecked)
             else:
                 self.refBFile = chosen[0]
                 self.cbRefB.setText("Reference lap B: " + chosen[0][chosen[0].rfind("/")+1:])
         else:
+            self.refBFile = ""
             self.cbRefB.setText("Reference lap B")
 
     def chooseReferenceLapC(self, on):
@@ -327,11 +333,13 @@ class StartWindow(QWidget):
             chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
                 print("None")
+                self.refCFile = ""
                 self.cbRefC.setCheckState(Qt.CheckState.Unchecked)
             else:
                 self.refCFile = chosen[0]
                 self.cbRefC.setText("Reference lap C: " + chosen[0][chosen[0].rfind("/")+1:])
         else:
+            self.refCFile = ""
             self.cbRefC.setText("Reference lap C")
 
     def chooseCautionFile(self, on):

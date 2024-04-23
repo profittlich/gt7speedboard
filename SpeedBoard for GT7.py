@@ -805,6 +805,21 @@ class MainWindow(QMainWindow):
         self.fontSizeLarge = int(round(self.fontSizeLargePreset * self.fontScale))
 
         
+        if not os.path.exists(self.storageLocation):
+            QMessageBox.critical(self, "Cannot start", "Storage location not found. Please choose a storage location before starting.")
+            return
+
+        if self.refAFile != "" and not os.path.exists(self.refAFile):
+            QMessageBox.critical(self, "File not found", "Reference lap A not found. Please choose a file or disable the reference lap A.")
+            return
+
+        if self.refBFile != "" and not os.path.exists(self.refBFile):
+            QMessageBox.critical(self, "File not found", "Reference lap B not found. Please choose a file or disable the reference lap B.")
+            return
+
+        if self.refCFile != "" and not os.path.exists(self.refCFile):
+            QMessageBox.critical(self, "File not found", "Reference lap C not found. Please choose a file or disable the reference lap C.")
+            return
 
         settings = QSettings()
 
