@@ -620,7 +620,7 @@ class TimeDeviation(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.maxDiff = 0.5 * 59.94
+        self.maxDiff = 1.0 * 59.94
         self.difference = 0
         self.redGradient = QLinearGradient (0, 10,0,120);
         self.redGradient.setColorAt(0.0, QColor("#222"))

@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
         self.brakepoints = False
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = 0
-        self.switchToBestLap = True # TODO cfg
+        self.switchToBestLap = True
 
         self.showBestLap = True
         self.showLastLap = True
@@ -792,6 +792,7 @@ class MainWindow(QMainWindow):
         self.brakepoints = self.startWindow.brakepoints.isChecked()
         self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
         self.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
+        self.initialBigCountdownBrakepoint = self.bigCountdownBrakepoint
         self.switchToBestLap = self.startWindow.switchToBestLap.isChecked()
         
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
@@ -934,6 +935,8 @@ class MainWindow(QMainWindow):
         self.lastFuelUsage = []
         self.fuelFactor = 0
         self.refueled = 0
+
+        self.bigCountdownBrakepoint = self.initialBigCountdownBrakepoint
 
         self.newRunDescription = None
 
