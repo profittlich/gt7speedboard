@@ -47,6 +47,7 @@ class Lap:
         else:
             self.time = self.following.last_lap
             print("Use following time", self.time)
+        print(msToTime(self.time))
 
     def findClosestPointNoLimit(self, p):
         shortestDistance = 100000000
@@ -167,5 +168,8 @@ def loadCarIds():
 def idToCar(i):
     global carIds
     global carMakers
-    return carMakers[str(carIds[str(i)][2])] + " - " + carIds[str(i)][1]
+    try:
+        return carMakers[str(carIds[str(i)][2])] + " - " + carIds[str(i)][1]
+    except:
+        return "Unknown car"
 

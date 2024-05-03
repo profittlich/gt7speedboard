@@ -1343,281 +1343,154 @@ class MainWindow(QMainWindow):
                 pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                 self.laps.setPalette(pal)
 
-    def updateSpeed(self, curPoint):
-        closestPLast = None
-        closestPBest = None
-        closestPMedian = None
-        closestPRefA = None
-        closestPRefB = None
-        closestPRefC = None
-        nextBrakeBest = None
-        closestPRefA, self.closestIRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
-        closestPRefB, self.closestIRefB = self.findClosestPoint (self.refLaps[1].points, curPoint, self.closestIRefB)
-        closestPRefC, self.closestIRefC = self.findClosestPoint (self.refLaps[2].points, curPoint, self.closestIRefC)
-        nextBrakeRefA = self.findNextBrake(self.refLaps[0].points, self.closestIRefA)
-        nextBrakeRefB = self.findNextBrake(self.refLaps[1].points, self.closestIRefB)
-        nextBrakeRefC = self.findNextBrake(self.refLaps[2].points, self.closestIRefC)
-        if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
-            closestPLast, self.closestILast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
-            closestPBest, self.closestIBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
-            closestPMedian, self.closestIMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
-            nextBrakeBest = self.findNextBrake(self.previousLaps[self.bestLap].points, self.closestIBest)
-
-        if not closestPLast is None:
-            speedDiff = closestPLast.car_speed - curPoint.car_speed
-            pal = self.speedLast.palette()
-            pal.setColor(self.speedLast.backgroundRole(), self.speedDiffQColor(speedDiff))
-            self.speedLast.setPalette(pal)
+    def updateOneSpeedEntry(self, refLap, curPoint):
+        if not refLap.closestPoint is None:
+            speedDiff = refLap.closestPoint.car_speed - curPoint.car_speed
+            pal = refLap.speedWidget.palette()
+            pal.setColor(refLap.speedWidget.backgroundRole(), self.speedDiffQColor(speedDiff))
+            refLap.speedWidget.setPalette(pal)
 
             if self.brakepoints:
-                pal = self.pedalLast.palette()
-                if closestPLast.brake > 0:
-                    self.pedalLast.setText("BRAKE")
-                    pal.setColor(self.pedalLast.backgroundRole(), self.brakeQColor(closestPLast.brake))
+                pal = refLap.pedalWidget.palette()
+                if refLap.closestPoint.brake > 0:
+                    refLap.pedalWidget.setText("BRAKE")
+                    pal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestPoint.brake))
+                    if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                        self.setPalette(pal)
+                elif self.countdownBrakepoint and not refLap.nextBrake is None:
+                    refLap.pedalWidget.setText(str(math.ceil (refLap.nextBrake/60)))
+                    if refLap.nextBrake >= 120:
+                        if refLap.nextBrake%60 >= 30:
+                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor3)
+                            if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                                self.setPalette(pal)
+                        else:
+                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+                    elif refLap.nextBrake >= 60:
+                        if refLap.nextBrake%60 >= 30:
+                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor2)
+                            if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                                self.setPalette(pal)
+                        else:
+                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+                    else:
+                        if refLap.nextBrake%30 >= 15:
+                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor1)
+                            if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                                self.setPalette(pal)
+                        else:
+                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+                elif refLap.closestPoint.throttle > 98:
+                    refLap.pedalWidget.setText("GAS")
+                    if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                        pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#525"))
+                        self.setPalette(pal)
+                    pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#f2f"))
                 else:
-                    self.pedalLast.setText("")
-                    pal.setColor(self.pedalLast.backgroundRole(), self.backgroundColor)
-                self.pedalLast.setPalette(pal)
-                self.lineLast.setPoints(curPoint, closestPLast)
-                self.lineLast.update()
+                    refLap.pedalWidget.setText("")
+                    pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+                refLap.pedalWidget.setPalette(pal)
+                refLap.lineWidget.setPoints(curPoint, refLap.closestPoint)
+                refLap.lineWidget.update()
 
-                self.timeDiffLast.setDiff(self.closestILast - len(self.curLap.points))
-                self.timeDiffLast.update()
+                refLap.timeDiffWidget.setDiff(refLap.closestIndex - len(self.curLap.points))
+                refLap.timeDiffWidget.update()
         else:
-            pal = self.speedLast.palette()
-            pal.setColor(self.speedLast.backgroundRole(), self.backgroundColor)
-            self.speedLast.setPalette(pal)
+            pal = refLap.speedWidget.palette()
+            pal.setColor(refLap.speedWidget.backgroundRole(), self.backgroundColor)
+            refLap.speedWidget.setPalette(pal)
+
+    def updateSpeed(self, curPoint):
+        class SpeedData:
+            def __init__(self):
+                self.closestPoint = None
+                self.nextBrake = None
+                self.closestIndex = None
+                self.speedWidget = None
+                self.pedalWidget = None
+                self.lineWidget = None
+                self.timeDiffWidget = None
+                self.id = None
+
+        best = SpeedData()
+        best.closestIndex = self.closestIBest
+        best.speedWidget = self.speedBest
+        best.pedalWidget = self.pedalBest
+        best.lineWidget = self.lineBest
+        best.timeDiffWidget = self.timeDiffBest
+        best.id = 1
+             
+        median = SpeedData()
+        median.closestIndex = self.closestIMedian
+        median.speedWidget = self.speedMedian
+        median.pedalWidget = self.pedalMedian
+        median.lineWidget = self.lineMedian
+        median.timeDiffWidget = self.timeDiffMedian
+        median.id = 101
+             
+        last = SpeedData()
+        last.closestIndex = self.closestILast
+        last.speedWidget = self.speedLast
+        last.pedalWidget = self.pedalLast
+        last.lineWidget = self.lineLast
+        last.timeDiffWidget = self.timeDiffLast
+        last.id = 102
+             
+        refA = SpeedData()
+        refA.closestIndex = self.closestIRefA
+        refA.speedWidget = self.speedRefA
+        refA.pedalWidget = self.pedalRefA
+        refA.lineWidget = self.lineRefA
+        refA.timeDiffWidget = self.timeDiffRefA
+        refA.id = 2
+             
+        refB = SpeedData()
+        refB.closestIndex = self.closestIRefB
+        refB.speedWidget = self.speedRefB
+        refB.pedalWidget = self.pedalRefB
+        refB.lineWidget = self.lineRefB
+        refB.timeDiffWidget = self.timeDiffRefB
+        refB.id = 3
+             
+        refC = SpeedData()
+        refC.closestIndex = self.closestIRefC
+        refC.speedWidget = self.speedRefC
+        refC.pedalWidget = self.pedalRefC
+        refC.lineWidget = self.lineRefC
+        refC.timeDiffWidget = self.timeDiffRefC
+        refC.id = 4
+             
+        refA.closestPoint, refA.closestIndex = self.findClosestPoint (self.refLaps[0].points, curPoint, refA.closestIndex)
+        self.closestIRefA = refA.closestIndex 
+        refB.closestPoint, refB.closestIndex = self.findClosestPoint (self.refLaps[1].points, curPoint, refB.closestIndex)
+        self.closestIRefB = refB.closestIndex 
+        refC.closestPoint, refC.closestIndex = self.findClosestPoint (self.refLaps[2].points, curPoint, refC.closestIndex)
+        self.closestIRefC = refC.closestIndex 
+        
+        refA.nextBrake = self.findNextBrake(self.refLaps[0].points, refA.closestIndex)
+        refB.nextBrake = self.findNextBrake(self.refLaps[1].points, refB.closestIndex)
+        refC.nextBrake = self.findNextBrake(self.refLaps[2].points, refC.closestIndex)
+
+        if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
+            last.closestPoint, last.closestIndex = self.findClosestPoint (self.previousLaps[-1].points, curPoint, last.closestIndex)
+            self.closestILast = last.closestIndex 
+            best.closestPoint, best.closestIndex = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, best.closestIndex)
+            self.closestIBest = best.closestIndex 
+            median.closestPoint, median.closestIndex = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, median.closestIndex)
+            self.closestIMedian = median.closestIndex 
+            best.nextBrake = self.findNextBrake(self.previousLaps[self.bestLap].points, best.closestIndex)
 
         pal = self.palette()
         pal.setColor(self.pedalBest.backgroundRole(), self.brightBackgroundColor)
         self.setPalette(pal)
 
         # TODO refactor
-        if not closestPRefA is None:
-            speedDiff = closestPRefA.car_speed - curPoint.car_speed
-            pal = self.speedRefA.palette()
-            pal.setColor(self.speedRefA.backgroundRole(), self.speedDiffQColor(speedDiff))
-            self.speedRefA.setPalette(pal)
-
-            if self.brakepoints:
-                pal = self.pedalRefA.palette()
-                if closestPRefA.brake > 0:
-                    self.pedalRefA.setText("BRAKE")
-                    pal.setColor(self.pedalRefA.backgroundRole(), self.brakeQColor(closestPRefA.brake))
-                    if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
-                        self.setPalette(pal)
-                elif self.countdownBrakepoint and not nextBrakeRefA is None:
-                    self.pedalRefA.setText(str(math.ceil (nextBrakeRefA/60)))
-                    if nextBrakeRefA >= 120:
-                        if nextBrakeRefA%60 >= 30:
-                            pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
-                    elif nextBrakeRefA >= 60:
-                        if nextBrakeRefA%60 >= 30:
-                            pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
-                    else:
-                        if nextBrakeRefA%30 >= 15:
-                            pal.setColor(self.pedalRefA.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 2 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
-                else:
-                    self.pedalRefA.setText("")
-                    pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
-                self.pedalRefA.setPalette(pal)
-                self.lineRefA.setPoints(curPoint, closestPRefA)
-                self.lineRefA.update()
-
-                self.timeDiffRefA.setDiff(self.closestIRefA - len(self.curLap.points))
-                self.timeDiffRefA.update()
-        else:
-            pal = self.speedRefA.palette()
-            pal.setColor(self.speedRefA.backgroundRole(), self.backgroundColor)
-            self.speedRefA.setPalette(pal)
-
-        if not closestPRefB is None:
-            speedDiff = closestPRefB.car_speed - curPoint.car_speed
-            pal = self.speedRefB.palette()
-            pal.setColor(self.speedRefB.backgroundRole(), self.speedDiffQColor(speedDiff))
-            self.speedRefB.setPalette(pal)
-
-            if self.brakepoints:
-                pal = self.pedalRefB.palette()
-                if closestPRefB.brake > 0:
-                    self.pedalRefB.setText("BRAKE")
-                    pal.setColor(self.pedalRefB.backgroundRole(), self.brakeQColor(closestPRefB.brake))
-                    if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
-                        self.setPalette(pal)
-                elif self.countdownBrakepoint and not nextBrakeRefB is None:
-                    self.pedalRefB.setText(str(math.ceil (nextBrakeRefB/60)))
-                    if nextBrakeRefB >= 120:
-                        if nextBrakeRefB%60 >= 30:
-                            pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
-                    elif nextBrakeRefB >= 60:
-                        if nextBrakeRefB%60 >= 30:
-                            pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
-                    else:
-                        if nextBrakeRefB%30 >= 15:
-                            pal.setColor(self.pedalRefB.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 3 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
-                else:
-                    self.pedalRefB.setText("")
-                    pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
-                self.pedalRefB.setPalette(pal)
-                self.lineRefB.setPoints(curPoint, closestPRefB)
-                self.lineRefB.update()
-
-                self.timeDiffRefB.setDiff(self.closestIRefB - len(self.curLap.points))
-                self.timeDiffRefB.update()
-        else:
-            pal = self.speedRefB.palette()
-            pal.setColor(self.speedRefB.backgroundRole(), self.backgroundColor)
-            self.speedRefB.setPalette(pal)
-
-        if not closestPRefC is None:
-            speedDiff = closestPRefC.car_speed - curPoint.car_speed
-            pal = self.speedRefC.palette()
-            pal.setColor(self.speedRefC.backgroundRole(), self.speedDiffQColor(speedDiff))
-            self.speedRefC.setPalette(pal)
-
-            if self.brakepoints:
-                pal = self.pedalRefC.palette()
-                if closestPRefC.brake > 0:
-                    self.pedalRefC.setText("BRAKE")
-                    pal.setColor(self.pedalRefC.backgroundRole(), self.brakeQColor(closestPRefC.brake))
-                    if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
-                        self.setPalette(pal)
-                elif self.countdownBrakepoint and not nextBrakeRefC is None:
-                    self.pedalRefC.setText(str(math.ceil (nextBrakeRefC/60)))
-                    if nextBrakeRefC >= 120:
-                        if nextBrakeRefC%60 >= 30:
-                            pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
-                    elif nextBrakeRefC >= 60:
-                        if nextBrakeRefC%60 >= 30:
-                            pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
-                    else:
-                        if nextBrakeRefC%30 >= 15:
-                            pal.setColor(self.pedalRefC.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 4 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
-                else:
-                    self.pedalRefC.setText("")
-                    pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
-                self.pedalRefC.setPalette(pal)
-                self.lineRefC.setPoints(curPoint, closestPRefC)
-                self.lineRefC.update()
-
-                self.timeDiffRefC.setDiff(self.closestIRefC - len(self.curLap.points))
-                self.timeDiffRefC.update()
-        else:
-            pal = self.speedRefC.palette()
-            pal.setColor(self.speedRefC.backgroundRole(), self.backgroundColor)
-            self.speedRefC.setPalette(pal)
-
-        if not closestPBest is None:
-            speedDiff = closestPBest.car_speed - curPoint.car_speed
-
-            pal = self.speedBest.palette()
-            pal.setColor(self.speedBest.backgroundRole(), self.speedDiffQColor(speedDiff))
-            self.speedBest.setPalette(pal)
-            if self.brakepoints:
-                pal = self.pedalBest.palette()
-                if closestPBest.brake > 0:
-                    self.pedalBest.setText("BRAKE")
-                    pal.setColor(self.pedalBest.backgroundRole(), self.brakeQColor(closestPBest.brake))
-                    if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
-                        self.setPalette(pal)
-                elif self.countdownBrakepoint and not nextBrakeBest is None:
-                    self.pedalBest.setText(str(math.ceil (nextBrakeBest/60)))
-                    if nextBrakeBest >= 120:
-                        if nextBrakeBest%60 >= 30:
-                            pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor3)
-                            if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
-                    elif nextBrakeBest >= 60:
-                        if nextBrakeBest%60 >= 30:
-                            pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor2)
-                            if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
-                    else:
-                        if nextBrakeBest%30 >= 15:
-                            pal.setColor(self.pedalBest.backgroundRole(), self.countdownColor1)
-                            if self.bigCountdownBrakepoint == 1 and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
-
-                else:
-                    self.pedalBest.setText("")
-                    pal.setColor(self.pedalBest.backgroundRole(), self.backgroundColor)
-                self.pedalBest.setPalette(pal)
-
-                self.lineBest.setPoints(curPoint, closestPBest)
-                self.lineBest.update()
-
-                self.timeDiffBest.setDiff(self.closestIBest - len(self.curLap.points))
-                self.timeDiffBest.update()
-        else:
-            pal = self.speedBest.palette()
-            pal.setColor(self.speedBest.backgroundRole(), self.backgroundColor)
-            self.speedBest.setPalette(pal)
-
-        if not closestPMedian is None:
-            speedDiff = closestPMedian.car_speed - curPoint.car_speed
-            pal = self.speedMedian.palette()
-            pal.setColor(self.speedMedian.backgroundRole(), self.speedDiffQColor(speedDiff))
-            self.speedMedian.setPalette(pal)
-            if self.brakepoints:
-                pal = self.pedalMedian.palette()
-                if closestPMedian.brake > 0:
-                    self.pedalMedian.setText("BRAKE")
-                    pal.setColor(self.pedalMedian.backgroundRole(), self.brakeQColor(closestPMedian.brake))
-                else:
-                    self.pedalMedian.setText("")
-                    pal.setColor(self.pedalMedian.backgroundRole(), self.backgroundColor)
-                self.pedalMedian.setPalette(pal)
-                self.lineMedian.setPoints(curPoint, closestPMedian)
-                self.lineMedian.update()
-
-                self.timeDiffMedian.setDiff(self.closestIMedian - len(self.curLap.points))
-                self.timeDiffMedian.update()
-        else:
-            pal = self.speedMedian.palette()
-            pal.setColor(self.speedMedian.backgroundRole(), self.backgroundColor)
-            self.speedMedian.setPalette(pal)
+        self.updateOneSpeedEntry(last, curPoint)
+        self.updateOneSpeedEntry(refA, curPoint)
+        self.updateOneSpeedEntry(refB, curPoint)
+        self.updateOneSpeedEntry(refC, curPoint)
+        self.updateOneSpeedEntry(best, curPoint)
+        self.updateOneSpeedEntry(median, curPoint)
 
     def updateMap(self, curPoint):
         if self.circuitExperience and not self.previousPoint is None:
