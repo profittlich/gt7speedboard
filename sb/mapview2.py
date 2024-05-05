@@ -7,8 +7,9 @@ from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
 from sb.gt7widgets import *
 from sb.drawelements import *
-from sb.helpers import loadLap, loadLaps, indexToTime
+from sb.helpers import loadLap, loadLaps, indexToTime, msToTime
 from sb.helpers import Lap, PositionPoint
+from sb.helpers import loadCarIds, idToCar
 
 class MapView2(QWidget):
 
@@ -27,13 +28,17 @@ class MapView2(QWidget):
         self.dragging = False
         self.temporaryMarkers = []
         self.manualSplitPoints = []
+        self.fileA = ""
+        self.fileB = ""
 
-
-    def setLaps(self, lap1, lap2):
+    def setLaps(self, a, lap1, b, lap2):
+        self.fileA = a
+        self.fileB = b
         self.lap1 = lap1
         self.lap2 = lap2
         self.findExtents()
         self.makeGraphic()
+        self.makeLapInfo()
 
     # MAP CONTROL
     def moveLeft(self):
@@ -183,6 +188,53 @@ class MapView2(QWidget):
                 else:
                     return self.findNextThrottleOff(lap, i+1)
         return None
+
+    def makeLapInfo(self):
+        loadCarIds()
+        self.lap1.updateTime()
+        self.lap2.updateTime()
+
+        y = 60
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "File: " + self.fileB, 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Lap: " + str(self.lap2.points[0].current_lap), 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Car: " + idToCar(self.lap2.points[0].car_id), 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Lap time: " + msToTime(self.lap2.time), 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Estimation-based time: "+ msToTime(len(self.lap2.points) * 1000/59.94), 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Time estimation error: " + msToTime(abs(self.lap2.time - len(self.lap2.points) * 1000/59.94)), 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Top speed: " + str(round(self.lap2.topSpeed(),1)) + " km/h", 10, y, self.l2Color, 2))
+        y += 15
+        fuelCon = self.lap2.points[0].fuel_capacity / 100.0 * (self.lap2.points[0].current_fuel - self.lap2.points[-1].current_fuel)
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel consumption: " + str(round(fuelCon, 2)) + "%", 10, y, self.l2Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel range: " + str(round(100/fuelCon, 2)) + " laps", 10, y, self.l2Color, 2))
+        y += 15
+        y += 15
+
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "File: " + self.fileA, 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Lap: " + str(self.lap1.points[0].current_lap), 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Car: " + idToCar(self.lap1.points[0].car_id), 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Lap time: " + msToTime(self.lap1.time), 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Estimation-based time: "+ msToTime(len(self.lap1.points) * 1000/59.94), 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Time estimation error: " + msToTime(abs(self.lap1.time - len(self.lap1.points) * 1000/59.94)), 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Top speed: " + str(round(self.lap1.topSpeed(),1)) + " km/h", 10, y, self.l1Color, 2))
+        y += 15
+        fuelCon = self.lap1.points[0].fuel_capacity / 100.0 * (self.lap1.points[0].current_fuel - self.lap1.points[-1].current_fuel)
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel consumption: " + str(round(fuelCon, 2)) + "%", 10, y, self.l1Color, 2))
+        y += 15
+        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel range: " + str(round(100/fuelCon, 2)) + " laps", 10, y, self.l1Color, 2))
+        y += 15
 
     def makeGraphic(self):
         # init
@@ -570,8 +622,14 @@ class MapView2(QWidget):
                     elif isinstance(l, Text) and self.showText:
                         fm = qp.fontMetrics()
                         br = fm.boundingRect(l.text)
-                        x1 = self.width() / 2 - self.zoom * -((l.x1 + self.offsetX) - self.midX)/((self.maxX - self.minX)/self.width())
-                        z1 = self.height() / 2 - self.zoom*self.aspectRatio * -((l.z1 + self.offsetZ) - self.midZ)/((self.maxZ - self.minZ)/self.height())
+                        if not l.x1 is None:
+                            x1 = self.width() / 2 - self.zoom * -((l.x1 + self.offsetX) - self.midX)/((self.maxX - self.minX)/self.width())
+                        else:
+                            x1 = 0
+                        if not l.x1 is None:
+                            z1 = self.height() / 2 - self.zoom*self.aspectRatio * -((l.z1 + self.offsetZ) - self.midZ)/((self.maxZ - self.minZ)/self.height())
+                        else:
+                            z1 = 0
                         qp.setBrush(QColor(0, 0, 0, 127))
                         qp.setPen(Qt.PenStyle.NoPen)
                         qp.drawRect(int(x1 + br.left() + l.offsetx), int(z1 + br.top() + l.offsetz), int(br.width()), int(br.height()))
@@ -632,9 +690,14 @@ class MapView2(QWidget):
             typeInfo += "<b>[G] gears</b> | "
 
         if 'finish' in self.showGroups and not self.showGroups['finish']:
-            typeInfo += "<span style='color:gray'>[F] finish line</span>"
+            typeInfo += "<span style='color:gray'>[F] finish line</span> | "
         else:
-            typeInfo += "<b>[F] finish line</b>"
+            typeInfo += "<b>[F] finish line</b> | "
+
+        if 'lapinfo' in self.showGroups and not self.showGroups['lapinfo']:
+            typeInfo += "<span style='color:gray'>[I] lap info</span>"
+        else:
+            typeInfo += "<b>[I] lap info</b>"
 
         if not typeInfo == self.typeInfo:
             self.typeInfoTxt = QStaticText(typeInfo)
@@ -673,12 +736,13 @@ class MapView2(QWidget):
             lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
             mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "% lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
-            mk5 = Text("Mouse", lp1.position_x, lp1.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 15, self.l1Color, 2)
+            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 30, self.l1Color, 2)
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
-            self.layers[self.lap2Markers].append(mk5)
+            self.layers[self.lap1Markers].append(mk5)
             self.temporaryMarkers.append(mk3)
             self.temporaryMarkers.append(mk4)
+            self.temporaryMarkers.append(mk5)
 
             self.manualSplitPoints.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2)))
 
@@ -810,6 +874,11 @@ class MapView2(QWidget):
             if not 'throttle' in self.showGroups:
                 self.showGroups['throttle'] = True
             self.showGroups['throttle'] = not self.showGroups['throttle']
+            self.update()
+        elif e.key() == Qt.Key.Key_I.value:
+            if not 'lapinfo' in self.showGroups:
+                self.showGroups['lapinfo'] = True
+            self.showGroups['lapinfo'] = not self.showGroups['lapinfo']
             self.update()
         elif e.key() == Qt.Key.Key_G.value:
             if not 'gear' in self.showGroups:

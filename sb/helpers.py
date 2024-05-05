@@ -119,6 +119,11 @@ def loadLaps(fn):
             result[i].preceeding = result[i-1].points[-1]
             result[i-1].following = result[i].points[0]
         
+    if (len(result[0].points) == 1):
+        result.pop(0)
+    if (len(result[-1].points) == 1):
+        result.pop(-1)
+
     return result
 
 def indexToTime(i):

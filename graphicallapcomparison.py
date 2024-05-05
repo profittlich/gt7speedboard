@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
     def compare(self):
         lap1 = self.startWidget.aLaps[self.startWidget.idxRefA.currentIndex()]
         lap2 = self.startWidget.bLaps[self.startWidget.idxRefB.currentIndex()]
-        self.masterWidget.setLaps(lap1, lap2)
+        self.masterWidget.setLaps(self.startWidget.refAFile, lap1, self.startWidget.refBFile, lap2)
         
         self.stackWidget.setCurrentIndex(1)
 
