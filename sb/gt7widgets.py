@@ -131,8 +131,9 @@ class StartWindow(QWidget):
         mainLayoutR.addWidget(bpGroup)
 
         self.brakepoints = QCheckBox("Show brake points")
+        self.throttlepoints = QCheckBox("Show throttle points")
         self.countdownBrakepoint = QCheckBox("Count down to best brake points")
-        self.bigCountdownBrakepoint = QLabel("Whole screen brake point colors for:")
+        self.bigCountdownBrakepoint = QLabel("Whole screen brake/throttle point colors for:")
         self.bigCountdownTarget = QComboBox()
         self.bigCountdownTarget.addItem("Nothing")
         self.bigCountdownTarget.addItem("Best lap")
@@ -142,6 +143,7 @@ class StartWindow(QWidget):
         self.switchToBestLap = QCheckBox("Switch to best lap once it's faster")
         
         bpLayout.addWidget(self.brakepoints)
+        bpLayout.addWidget(self.throttlepoints)
         bpLayout.addWidget(self.countdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownTarget)
@@ -271,6 +273,7 @@ class StartWindow(QWidget):
             self.cbCaution.setChecked(False)
         
         self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
+        self.throttlepoints.setChecked(settings.value("throttlepoints") in [ True, "true"])
         self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
         self.bigCountdownTarget.setCurrentIndex(int(settings.value("bigCountdownTarget",0)))
         self.switchToBestLap.setChecked(settings.value("switchToBestLap") in [ True, "true" ])
@@ -280,6 +283,7 @@ class StartWindow(QWidget):
         self.maxFuelConsumption.setValue(int(settings.value("maxFuelConsumption", 150)))
 
         self.brakepoints.stateChanged.connect(self.brakePointWarning)
+        self.throttlepoints.stateChanged.connect(self.brakePointWarning)
         self.linecomp.stateChanged.connect(self.racingLineWarning)
         self.cbCaution.stateChanged.connect(self.chooseCautionFile)
 
@@ -289,7 +293,7 @@ class StartWindow(QWidget):
 
     def brakePointWarning(self, on):
         if on:
-            QMessageBox.warning(self, "Please note", "Please be respectful about the rules of online races. Sometimes, brake point helpers are not allowed.")
+            QMessageBox.warning(self, "Please note", "Please be respectful about the rules of online races. Sometimes, brake/throttle point helpers are not allowed.")
 
     def chooseStorage(self):
         chosen = QFileDialog.getExistingDirectory()

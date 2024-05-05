@@ -115,6 +115,7 @@ class MainWindow(QMainWindow):
         self.linecomp = False
         self.timecomp = False
         self.brakepoints = False
+        self.throttlepoints = False
         self.countdownBrakepoint = False
         self.bigCountdownBrakepoint = 0
         self.switchToBestLap = True
@@ -648,7 +649,7 @@ class MainWindow(QMainWindow):
             if self.showLastLap:
                 speedLayout.addWidget(self.timeDiffLast, 3, 5)
 
-        if self.brakepoints:
+        if self.brakepoints or self.throttlepoints:
             if self.showBestLap:
                 speedLayout.addWidget(self.pedalBest, 0, 0)
             if self.showMedianLap:
@@ -790,6 +791,7 @@ class MainWindow(QMainWindow):
         self.messageFile = self.startWindow.cautionFile
         
         self.brakepoints = self.startWindow.brakepoints.isChecked()
+        self.throttlepoints = self.startWindow.throttlepoints.isChecked()
         self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
         self.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
         self.initialBigCountdownBrakepoint = self.bigCountdownBrakepoint
@@ -860,6 +862,7 @@ class MainWindow(QMainWindow):
         settings.setValue("messageFile", self.messageFile)
 
         settings.setValue("brakepoints", self.brakepoints)
+        settings.setValue("throttlepoints", self.throttlepoints)
         settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
         settings.setValue("bigCountdownTarget", self.bigCountdownBrakepoint)
         settings.setValue("switchToBestLap", self.switchToBestLap)
@@ -1345,60 +1348,72 @@ class MainWindow(QMainWindow):
 
     def updateOneSpeedEntry(self, refLap, curPoint):
         if not refLap.closestPoint is None:
+            # SPEED
             speedDiff = refLap.closestPoint.car_speed - curPoint.car_speed
             pal = refLap.speedWidget.palette()
             pal.setColor(refLap.speedWidget.backgroundRole(), self.speedDiffQColor(speedDiff))
             refLap.speedWidget.setPalette(pal)
 
-            if self.brakepoints:
+            # BRAKE POINTS
+            bgPal = self.palette()
+            bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+
+            if self.throttlepoints or self.brakepoints:
+                refLap.pedalWidget.setText("")
                 pal = refLap.pedalWidget.palette()
+                pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+
+            if self.throttlepoints:
+                if refLap.closestPoint.throttle > 98:
+                    refLap.pedalWidget.setText("GAS")
+                    pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#f2f"))
+                    if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#424"))
+
+            if self.brakepoints:
                 if refLap.closestPoint.brake > 0:
                     refLap.pedalWidget.setText("BRAKE")
                     pal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestPoint.brake))
                     if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                        self.setPalette(pal)
+                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestPoint.brake))
                 elif self.countdownBrakepoint and not refLap.nextBrake is None:
                     refLap.pedalWidget.setText(str(math.ceil (refLap.nextBrake/60)))
                     if refLap.nextBrake >= 120:
                         if refLap.nextBrake%60 >= 30:
                             pal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor3)
                             if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+                                bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor3)
                     elif refLap.nextBrake >= 60:
                         if refLap.nextBrake%60 >= 30:
                             pal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor2)
                             if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+                                bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor2)
                     else:
                         if refLap.nextBrake%30 >= 15:
                             pal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor1)
                             if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                                self.setPalette(pal)
-                        else:
-                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
-                elif refLap.closestPoint.throttle > 98:
-                    refLap.pedalWidget.setText("GAS")
-                    if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                        pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#525"))
-                        self.setPalette(pal)
-                    pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#f2f"))
-                else:
-                    refLap.pedalWidget.setText("")
-                    pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
-                refLap.pedalWidget.setPalette(pal)
-                refLap.lineWidget.setPoints(curPoint, refLap.closestPoint)
-                refLap.lineWidget.update()
+                                bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.countdownColor1)
 
-                refLap.timeDiffWidget.setDiff(refLap.closestIndex - len(self.curLap.points))
-                refLap.timeDiffWidget.update()
+            refLap.pedalWidget.setPalette(pal)
+            refLap.lineWidget.setPoints(curPoint, refLap.closestPoint)
+            refLap.lineWidget.update()
+
+            if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                self.setPalette(bgPal)
+
+            # TIME DIFF
+            refLap.timeDiffWidget.setDiff(refLap.closestIndex - len(self.curLap.points))
+            refLap.timeDiffWidget.update()
         else:
             pal = refLap.speedWidget.palette()
             pal.setColor(refLap.speedWidget.backgroundRole(), self.backgroundColor)
             refLap.speedWidget.setPalette(pal)
+            refLap.pedalWidget.setPalette(pal)
+            refLap.pedalWidget.setText("")
+            if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
+                self.setPalette(pal)
+            refLap.timeDiffWidget.setDiff(0)
+            refLap.timeDiffWidget.update()
 
     def updateSpeed(self, curPoint):
         class SpeedData:
