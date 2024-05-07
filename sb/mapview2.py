@@ -210,10 +210,11 @@ class MapView2(QWidget):
         self.layers[self.textLayer].append(Text("lapinfo", None, None, "Top speed: " + str(round(self.lap2.topSpeed(),1)) + " km/h", 10, y, self.l2Color, 2))
         y += 15
         fuelCon = self.lap2.points[0].fuel_capacity / 100.0 * (self.lap2.points[0].current_fuel - self.lap2.points[-1].current_fuel)
-        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel consumption: " + str(round(fuelCon, 2)) + "%", 10, y, self.l2Color, 2))
-        y += 15
-        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel range: " + str(round(100/fuelCon, 2)) + " laps", 10, y, self.l2Color, 2))
-        y += 15
+        if fuelCon > 0:
+            self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel consumption: " + str(round(fuelCon, 2)) + "%", 10, y, self.l2Color, 2))
+            y += 15
+            self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel range: " + str(round(100/fuelCon, 2)) + " laps", 10, y, self.l2Color, 2))
+            y += 15
         y += 15
 
         self.layers[self.textLayer].append(Text("lapinfo", None, None, "File: " + self.fileA, 10, y, self.l1Color, 2))
@@ -231,10 +232,11 @@ class MapView2(QWidget):
         self.layers[self.textLayer].append(Text("lapinfo", None, None, "Top speed: " + str(round(self.lap1.topSpeed(),1)) + " km/h", 10, y, self.l1Color, 2))
         y += 15
         fuelCon = self.lap1.points[0].fuel_capacity / 100.0 * (self.lap1.points[0].current_fuel - self.lap1.points[-1].current_fuel)
-        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel consumption: " + str(round(fuelCon, 2)) + "%", 10, y, self.l1Color, 2))
-        y += 15
-        self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel range: " + str(round(100/fuelCon, 2)) + " laps", 10, y, self.l1Color, 2))
-        y += 15
+        if fuelCon > 0:
+            self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel consumption: " + str(round(fuelCon, 2)) + "%", 10, y, self.l1Color, 2))
+            y += 15
+            self.layers[self.textLayer].append(Text("lapinfo", None, None, "Fuel range: " + str(round(100/fuelCon, 2)) + " laps", 10, y, self.l1Color, 2))
+            y += 15
 
     def makeGraphic(self):
         # init
@@ -461,6 +463,7 @@ class MapView2(QWidget):
     def paintEvent(self, event):
         qp = QPainter()
         qp.begin(self)
+        qp.fillRect(0, 0, int(self.width()), int(self.height()), QColor("#222"))
         qp.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         for ly in range(len(self.layers)):

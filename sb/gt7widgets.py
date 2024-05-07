@@ -232,7 +232,7 @@ class StartWindow(QWidget):
         self.storageLocation = settings.value("storageLocation", "")
         self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
 
-        self.fontScale.setValue(settings.value("fontScale",1))
+        self.fontScale.setValue(float(settings.value("fontScale",1)))
         self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
         self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
         self.cbBest.setChecked(settings.value("showBestLap") in [ True, "true"])
