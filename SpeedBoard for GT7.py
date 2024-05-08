@@ -1356,7 +1356,7 @@ class MainWindow(QMainWindow):
 
             # BRAKE POINTS
             bgPal = self.palette()
-            bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
+            bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brightBackgroundColor)
 
             if self.throttlepoints or self.brakepoints:
                 refLap.pedalWidget.setText("")
