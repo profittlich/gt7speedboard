@@ -1347,6 +1347,9 @@ class MainWindow(QMainWindow):
                 self.laps.setPalette(pal)
 
     def updateOneSpeedEntry(self, refLap, curPoint):
+        bgPal = self.palette()
+        bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brightBackgroundColor)
+
         if not refLap.closestPoint is None:
             # SPEED
             speedDiff = refLap.closestPoint.car_speed - curPoint.car_speed
@@ -1355,9 +1358,6 @@ class MainWindow(QMainWindow):
             refLap.speedWidget.setPalette(pal)
 
             # BRAKE POINTS
-            bgPal = self.palette()
-            bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brightBackgroundColor)
-
             if self.throttlepoints or self.brakepoints:
                 refLap.pedalWidget.setText("")
                 pal = refLap.pedalWidget.palette()
@@ -1411,7 +1411,7 @@ class MainWindow(QMainWindow):
             refLap.pedalWidget.setPalette(pal)
             refLap.pedalWidget.setText("")
             if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                self.setPalette(pal)
+                self.setPalette(bgPal)
             refLap.timeDiffWidget.setDiff(0)
             refLap.timeDiffWidget.update()
 
