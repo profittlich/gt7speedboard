@@ -5,7 +5,7 @@ a = Analysis(
     ['graphicallapcomparison.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('cars.csv', '.'), ('makers.csv', '.')],
     hiddenimports=['_salsa20'],
     hookspath=[],
     hooksconfig={},

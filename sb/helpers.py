@@ -1,4 +1,7 @@
 import math
+import sys
+import os
+import platform
 import csv
 
 from sb.crypt import salsa20_dec, salsa20_enc
@@ -159,16 +162,37 @@ carMakers = {}
 def loadCarIds():
     global carIds
     global carMakers
-    with open("makers.csv", 'r') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            carMakers[row[0]] = row[1]
+       
+    try:
+        with open("makers.csv", 'r') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            for row in csv_reader:
+                carMakers[row[0]] = row[1]
+    except:
+        if platform.system() == "Darwin":
+            altFile = sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/makers.csv"
+            with open(altFile, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                for row in csv_reader:
+                    carMakers[row[0]] = row[1]
+        else:
+            raise
 
 
-    with open("cars.csv", 'r') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            carIds[row[0]] = row
+    try:
+        with open("cars.csv", 'r') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            for row in csv_reader:
+                carIds[row[0]] = row
+    except:
+        if platform.system() == "Darwin":
+            altFile = sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/cars.csv"
+            with open(altFile, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                for row in csv_reader:
+                    carIds[row[0]] = row
+        else:
+            raise
 
 def idToCar(i):
     global carIds
