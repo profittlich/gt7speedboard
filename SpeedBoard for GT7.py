@@ -22,9 +22,12 @@ from sb.helpers import Lap
 from sb.helpers import PositionPoint
 from sb.helpers import loadCarIds, idToCar
 from sb.helpers import indexToTime, msToTime
+from sb.trackdetector import TrackDetector
 
 import sb.gt7telemetryreceiver as tele
 from sb.gt7widgets import *
+
+reverseEngineeringMode = False
 
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)
@@ -688,7 +691,10 @@ class MainWindow(QMainWindow):
         pal.setColor(headerFuel.foregroundRole(), self.foregroundColor)
         headerFuel.setPalette(pal)
 
-        headerTyres = QLabel("TYRES")
+        if reverseEngineeringMode:
+            headerTyres = QLabel("MYSTERY")
+        else:
+            headerTyres = QLabel("TYRES")
         font = headerTyres.font()
         font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
@@ -738,6 +744,25 @@ class MainWindow(QMainWindow):
         self.masterWidget.addWidget(self.uiMsg)
         self.masterWidget.addWidget(self.statsPage)
 
+        if reverseEngineeringMode:
+            self.reverseEngineering = QWidget()
+            revELayout = QHBoxLayout()
+            self.reverseEngineering.setLayout(revELayout)
+    
+            self.reverseEngineering1 = TimeDeviation()
+            self.reverseEngineering2 = TimeDeviation()
+            self.reverseEngineering3 = TimeDeviation()
+            self.reverseEngineering4 = TimeDeviation()
+            self.reverseEngineering5 = TimeDeviation()
+            self.reverseEngineering6 = TimeDeviation()
+    
+            revELayout.addWidget(self.reverseEngineering1)
+            revELayout.addWidget(self.reverseEngineering2)
+            revELayout.addWidget(self.reverseEngineering3)
+            revELayout.addWidget(self.reverseEngineering4)
+            revELayout.addWidget(self.reverseEngineering5)
+            revELayout.addWidget(self.reverseEngineering6)
+
         self.dashWidget.setLayout(masterLayout)
 
         masterLayout.setColumnStretch(0, 1)
@@ -752,7 +777,13 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(headerTyres, 3, 0, 1, 1)
         masterLayout.addWidget(self.headerSpeed, 1, 0, 1, 1)
         masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
-        masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
+
+        if reverseEngineeringMode:
+            self.masterWidget.addWidget(tyreWidget)
+            masterLayout.addWidget(self.reverseEngineering, 4, 0, 1, 1)
+        else:
+            masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
+
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
 
         pal = self.palette()
@@ -930,6 +961,10 @@ class MainWindow(QMainWindow):
         self.sessionStats.append (Run(len(self.previousLaps)))
 
     def initRace(self):
+        self.trackDetector = TrackDetector()
+        self.trackDetector.loadRefsFromDirectory("./tracks") # TODO correct relartive path for packaged versions
+        self.trackIdentified = False
+
         self.oldLapTime = datetime.datetime.now()
         print("INIT RACE")
         self.newMessage = None
@@ -1180,6 +1215,41 @@ class MainWindow(QMainWindow):
     def updateLiveStats(self, liveStats):
         self.liveStats = liveStats
         self.updateStats()
+
+    def updateReverseEngineering(self, curPoint):
+        self.reverseEngineering1.maxDiff = 1.0
+        self.reverseEngineering1.setDiff(curPoint.unknown[0])
+        self.reverseEngineering1.update()
+
+        #self.reverseEngineering2.maxDiff = 0.3
+        #self.reverseEngineering2.setDiff(curPoint.unknown[5])
+        #self.reverseEngineering2.update()
+
+        #self.reverseEngineering3.maxDiff = 0.05
+        #self.reverseEngineering3.setDiff(curPoint.unknown[6]-0.975)
+        #self.reverseEngineering3.update()
+
+        #self.reverseEngineering4.maxDiff = 0.3
+        #self.reverseEngineering4.setDiff(curPoint.unknown[7])
+        #self.reverseEngineering4.update()
+
+        self.reverseEngineering5.maxDiff = 250.0
+        self.reverseEngineering5.setDiff(curPoint.unknown[8])
+        self.reverseEngineering5.update()
+
+        self.reverseEngineering6.maxDiff = 0.15
+
+        self.reverseEngineering2.maxDiff = 1
+        self.reverseEngineering2.setDiff(curPoint.rotation_yaw)
+        self.reverseEngineering2.update()
+
+        self.reverseEngineering3.maxDiff = 1
+        self.reverseEngineering3.setDiff(curPoint.rotation_roll)
+        self.reverseEngineering3.update()
+
+        self.reverseEngineering4.maxDiff = 1
+        self.reverseEngineering4.setDiff(curPoint.rotation_pitch)
+        self.reverseEngineering4.update()
 
     def updateTyreTemps(self, curPoint):
         self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
@@ -1527,6 +1597,19 @@ class MainWindow(QMainWindow):
         elif self.noThrottleCount > 0:
             self.noThrottleCount=0
 
+    def handleTrackDetect(self, curPoint):
+        if not self.trackIdentified:
+            self.trackDetector.addPoint(curPoint)
+
+            if len(self.trackDetector.tracks) == 1 and self.trackDetector.pointsAdded > 10:
+                print("Track:", self.trackDetector.tracks[0].name)
+                self.trackIdentified = True
+
+            if len(self.trackDetector.tracks) == 0:
+                print("Unknown track!")
+                self.trackIdentified = True
+                
+
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
@@ -1697,8 +1780,11 @@ class MainWindow(QMainWindow):
                 #elif self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
                     #self.initRun()
 
+                if reverseEngineeringMode:
+                    self.updateReverseEngineering(curPoint)
                 self.updateTyreTemps(curPoint)
                 self.handleLapChanges(curPoint)
+                self.handleTrackDetect(curPoint)
                 self.updateFuelAndWarnings(curPoint)
                 self.updateSpeed(curPoint)
                 self.updateMap(curPoint)
