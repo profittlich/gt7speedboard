@@ -16,23 +16,32 @@ class TrackInfo:
 
 class TrackDetector:
     def __init__(self):
-        self.lap = Lap()
+        self.curLap = Lap()
+        self.loadedTracks = []
         self.tracks = []
         self.eliminateDistance = 30
         self.validAngle = 15
         self.maxGapLength = 10
-        self.pointsAdded = 0
+        self.lastTrack =  "Multiple track candidates"
+
+    def reset(self):
+        self.curLap = Lap()
+        self.tracks = copy.deepcopy(self.loadedTracks)
+
 
     def loadRefs(self, refs):
+        self.loadedTracks = []
         for r in refs:
             curTrack = TrackInfo()
             curTrack.lap = loadLap(r)
             curTrack.hits = [ False ] * len(curTrack.lap.points)
             curTrack.name = r.replace(".gt7track", "")
             curTrack.name = curTrack.name[curTrack.name.rfind("/")+1:]
-            self.tracks.append(curTrack)
+            self.loadedTracks.append(curTrack)
+        self.tracks = copy.deepcopy(self.loadedTracks)
 
     def loadRefsFromDirectory(self, drctry):
+        self.loadedTracks = []
         fns = glob.glob('*.gt7track', root_dir=drctry)
         for fn in fns:
             curTrack = TrackInfo()
@@ -40,7 +49,8 @@ class TrackDetector:
             curTrack.hits = [ False ] * len(curTrack.lap.points)
             curTrack.name = fn.replace(".gt7track", "")
             #curTrack.name = curTrack.name[curTrack.name.rfind("/")+1:]
-            self.tracks.append(curTrack)
+            self.loadedTracks.append(curTrack)
+        self.tracks = copy.deepcopy(self.loadedTracks)
             
 
     def loadTarget (self, fni):
@@ -67,23 +77,45 @@ class TrackDetector:
         curPrefix = self.tracks[0].name[:self.tracks[0].name.index(" - ")]
         match = True
         for t in self.tracks:
-            print(t.name, curPrefix)
             if t.name[:len(curPrefix)] != curPrefix:
                 match = False
 
         return match
 
+    def getTrack(self):
+        if len(self.tracks) == 0:
+            return "Unknown track"
+        elif len(self.tracks) == 1:
+            self.lastTrack = self.tracks[0].name
+            return self.lastTrack
+        elif self.checkPrefix():
+            self.lastTrack = self.tracks[0].name[:self.tracks[0].name.index(" - ")]
+            return self.lastTrack
+        else:
+            return "Multiple track candidates"
+
+    def getLastTrack(self):
+        return self.lastTrack
+
+    def trackIdentified(self):    
+        if len(self.tracks) == 0:
+            return False
+        elif len(self.tracks) == 1 and len(self.curLap.points) > 10:
+            return True
+        elif len(self.curLap.points) > 10 and self.checkPrefix():
+            return True
+        else:
+            return False
+
     def addPoint(self, p):
-        self.pointsAdded += 1
-        self.lap.points.append(p)
+        self.curLap.points.append(p)
+
+    def detect(self):
         for t in self.tracks:
             # TODO detect finish line position
-            lp, pi, d = t.lap.findClosestPointNoLimit(p)
+            lp, pi, d = t.lap.findClosestPointNoLimit(self.curLap.points[-1])
             if d > self.eliminateDistance:
                 print("Eliminate", t.name, pi, d, lp.current_lap)
-                print(p.position_x, p.position_y, p.position_z)
-                print(lp.position_x, lp.position_y, lp.position_z)
-                print("")
                 self.tracks.remove(t)
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
@@ -97,7 +129,7 @@ class TrackDetector:
                 if len(self.tracks) == 1:
                     print("Remaining track:", self.tracks[0].name)
             else:
-                a = self.lap.angle(lp, p)
+                a = self.curLap.angle(lp, self.curLap.points[-1])
                 if a < (3.14159 * self.validAngle / 180):
                     t.forwardCount += 1
                     t.hits[pi] = True
@@ -127,7 +159,7 @@ class TrackDetector:
                 break
 
         print ("")
-        print ("Finished after", count, "points of", len(self.lap.points))
+        print ("Finished after", count, "points of", len(self.curLap.points))
         print ("")
         best = 0
         count = -1

@@ -963,7 +963,6 @@ class MainWindow(QMainWindow):
     def initRace(self):
         self.trackDetector = TrackDetector()
         self.trackDetector.loadRefsFromDirectory("./tracks") # TODO correct relartive path for packaged versions
-        self.trackIdentified = False
 
         self.oldLapTime = datetime.datetime.now()
         print("INIT RACE")
@@ -1207,7 +1206,7 @@ class MainWindow(QMainWindow):
             prefix = self.storageLocation + "/"
             if len(self.sessionName) > 0:
                 prefix += self.sessionName + "-"
-            with open ( prefix + "runs-" + self.sessionStart + ".csv", "w") as f:
+            with open ( prefix + self.trackDetector.getLastTrack() + "-runs-" + self.sessionStart + ".csv", "w") as f:
                 f.write(carStatCSV)
         self.runStats = carStatTxt
         self.updateStats()
@@ -1598,17 +1597,25 @@ class MainWindow(QMainWindow):
             self.noThrottleCount=0
 
     def handleTrackDetect(self, curPoint):
-        if not self.trackIdentified:
+        if not self.trackDetector.trackIdentified():
             self.trackDetector.addPoint(curPoint)
+            self.trackDetector.detect()
 
-            if len(self.trackDetector.tracks) == 1 and self.trackDetector.pointsAdded > 10:
+            if self.trackDetector.trackIdentified():
                 print("Track:", self.trackDetector.tracks[0].name)
-                self.trackIdentified = True
-
-            if len(self.trackDetector.tracks) == 0:
+                liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+                liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
+                liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
+                liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
+                if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
+                    liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
+                if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
+                    liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
+                liveStats += "</font>"
+                self.updateLiveStats(liveStats)
+            elif len(self.trackDetector.tracks) == 0:
                 print("Unknown track!")
-                self.trackIdentified = True
-                
+
 
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
@@ -1632,6 +1639,20 @@ class MainWindow(QMainWindow):
                 self.oldLapTime = newLapTime
                 if curPoint.current_lap == 1:
                     self.initRun()
+
+            self.trackDetector.reset()
+
+            liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+            liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
+            liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
+            liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
+            if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
+                liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
+            if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
+                liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
+            liveStats += "</font>"
+            self.updateLiveStats(liveStats)
+
 
             if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
@@ -1707,6 +1728,7 @@ class MainWindow(QMainWindow):
                     self.curLap = Lap()
 
                 liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+                liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
                 liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
                 liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
                 if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
@@ -1784,11 +1806,11 @@ class MainWindow(QMainWindow):
                     self.updateReverseEngineering(curPoint)
                 self.updateTyreTemps(curPoint)
                 self.handleLapChanges(curPoint)
-                self.handleTrackDetect(curPoint)
                 self.updateFuelAndWarnings(curPoint)
                 self.updateSpeed(curPoint)
                 self.updateMap(curPoint)
                 self.updateLaps(curPoint)
+                self.handleTrackDetect(curPoint)
 
                 if not self.newRunDescription is None and len(self.sessionStats) > 0:
                     self.sessionStats[-1].description = self.newRunDescription
@@ -1888,7 +1910,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
+        with open ( prefix + self.trackDetector.getLastTrack() + "-laps-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
             for index in range(len(self.previousLaps)):
                 if self.previousLaps[index].valid:
                     for p in self.previousLaps[index].points:
@@ -1901,7 +1923,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
+        with open ( prefix + self.trackDetector.getLastTrack() + "-lap-" + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
             if not self.previousLaps[index].preceeding is None:
                 print("Going from", self.previousLaps[index].preceeding.current_lap)
                 f.write(self.previousLaps[index].preceeding.raw)
@@ -1925,7 +1947,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + "-"
-        with open ( prefix + "messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
+        with open ( prefix + self.trackDetector.getLastTrack() + "-messages-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
             f.write(j)
 
     def loadMessages(self, fn):
