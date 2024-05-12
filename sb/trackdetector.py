@@ -11,8 +11,6 @@ class TrackInfo:
         self.name = None
         self.hits = []
         self.curPos = 0
-        #self.aggregateDist = 0
-        #self.numAggregateDist = 0
         self.forwardCount = 0
         self.reverseCount = 0
 
@@ -22,7 +20,6 @@ class TrackDetector:
         self.tracks = []
         self.eliminateDistance = 30
         self.validAngle = 15
-        #self.maxPointSkip = 5
         self.maxGapLength = 10
         self.pointsAdded = 0
 
@@ -100,11 +97,6 @@ class TrackDetector:
                 if len(self.tracks) == 1:
                     print("Remaining track:", self.tracks[0].name)
             else:
-                #if pi != t.curPos:
-                    #diffp = (pi - t.curPos)
-                    #if abs(diffp) < self.maxPointSkip:
-                        #t.aggregateDist += d
-                        #t.numAggregateDist += 1
                 a = self.lap.angle(lp, p)
                 if a < (3.14159 * self.validAngle / 180):
                     t.forwardCount += 1
