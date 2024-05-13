@@ -63,17 +63,19 @@ class GT7PlaybackServer:
 
     def runPlaybackServer(self):
         print("Running server...")
+
+        print("Load", self.filename)
+        f = open(self.filename, "rb")
+        self.allData = f.read()
+        f.close()
+
+        print("Frames:", len(self.allData)/296)
+
         # Create a UDP socket and bind it
         if self.s is None:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.s.bind(('0.0.0.0', self.InPort))
             self.s.settimeout(1)
-
-            f = open(self.filename, "rb")
-            self.allData = f.read()
-            f.close()
-
-            print("Frames:", len(self.allData)/296)
 
         self.running = True
         connected = False

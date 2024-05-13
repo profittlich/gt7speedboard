@@ -1613,8 +1613,6 @@ class MainWindow(QMainWindow):
                     liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
                 liveStats += "</font>"
                 self.updateLiveStats(liveStats)
-            elif len(self.trackDetector.tracks) == 0:
-                print("Unknown track!")
 
 
     def handleLapChanges(self, curPoint):
