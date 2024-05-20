@@ -729,7 +729,15 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.uiMsg.setFont(font)
 
+        self.statsPageScroller = QScrollArea()
         self.statsPage = QLabel(self.sessionName + "\nSession stats not available, yet")
+
+        self.statsPageScroller.setWidget(self.statsPage)
+        #self.statsPageScroller.setSizeAdjustPolicy(Qt.QAbstractScrollArea.AdjustToContents)
+        self.statsPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.statsPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.statsPageScroller.setWidgetResizable(True)
+
         self.statsPage.setMargin(15)
         self.statsPage.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.statsPage.setAutoFillBackground(True)
@@ -742,7 +750,7 @@ class MainWindow(QMainWindow):
         self.runStats = ""
 
         self.masterWidget.addWidget(self.uiMsg)
-        self.masterWidget.addWidget(self.statsPage)
+        self.masterWidget.addWidget(self.statsPageScroller)
 
         if reverseEngineeringMode:
             self.reverseEngineering = QWidget()
@@ -1612,6 +1620,7 @@ class MainWindow(QMainWindow):
                 if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
                     liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
                 liveStats += "</font>"
+
                 self.updateLiveStats(liveStats)
 
 
