@@ -1772,7 +1772,6 @@ class MainWindow(QMainWindow):
         while not self.queue.empty():
             self.debugCount += 1
             d = self.queue.get()
-
             newPoint = Point(d[0], d[1])
 
             if not self.previousPoint is None:
@@ -1800,7 +1799,7 @@ class MainWindow(QMainWindow):
                     self.messages.append([self.curLap.points[-min(int(self.psFPS*self.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
                     self.newMessage = None
 
-                if curPoint.is_paused or not curPoint.in_race:
+                if curPoint.is_paused: # or not curPoint.in_race:
                     continue
 
                 if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:

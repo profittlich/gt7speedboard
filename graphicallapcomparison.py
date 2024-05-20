@@ -9,7 +9,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
 
 from sb.gt7telepoint import Point
-from sb.helpers import loadLap, loadLaps, indexToTime
+from sb.helpers import loadLap, loadLaps, indexToTime, msToTime
 from sb.helpers import Lap, PositionPoint
 
 import sb.gt7telemetryreceiver as tele
@@ -57,8 +57,10 @@ class StartWindowVLC(QWidget):
                 self.aLaps = self.bLaps
             else:
                 self.aLaps = loadLaps(self.refAFile)
+            self.idxRefA.clear()
             for l in self.aLaps:
-                self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
+                l.updateTime()
+                self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
     def chooseReferenceLapB(self):
         chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps)")
@@ -71,8 +73,10 @@ class StartWindowVLC(QWidget):
                 self.bLaps = self.aLaps
             else:
                 self.bLaps = loadLaps(self.refBFile)
+            self.idxRefB.clear()
             for l in self.bLaps:
-                self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(indexToTime(len(l.points))))
+                l.updateTime()
+                self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
 
 class MainWindow(QMainWindow):
