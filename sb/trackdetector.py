@@ -84,7 +84,8 @@ class TrackDetector:
 
     def getTrack(self):
         if len(self.tracks) == 0:
-            return "Unknown track"
+            self.lastTrack = "Unknown track"
+            return self.lastTrack
         elif len(self.tracks) == 1:
             self.lastTrack = self.tracks[0].name
             return self.lastTrack
@@ -100,9 +101,9 @@ class TrackDetector:
     def trackIdentified(self):    
         if len(self.tracks) == 0:
             return False
-        elif len(self.tracks) == 1 and len(self.curLap.points) > 10:
+        elif len(self.tracks) == 1 and len(self.curLap.points) > 100:
             return True
-        elif len(self.curLap.points) > 10 and self.checkPrefix():
+        elif len(self.curLap.points) > 100 and self.checkPrefix():
             return True
         else:
             return False
@@ -110,24 +111,26 @@ class TrackDetector:
     def addPoint(self, p):
         self.curLap.points.append(p)
 
-    def detect(self):
+    def detect(self): # TODO use threading or are reference tracks small enough?
         for t in self.tracks:
             # TODO detect finish line position
             lp, pi, d = t.lap.findClosestPointNoLimit(self.curLap.points[-1])
             if d > self.eliminateDistance:
-                print("Eliminate", t.name, pi, d, lp.current_lap)
+                print("Eliminate", t.name, pi, d, lp.current_lap, "after", len(self.curLap.points))
                 self.tracks.remove(t)
+                print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
                 if len(self.tracks) == 1:
-                    print("Remaining track:", self.tracks[0].name)
+                    print("Remaining track:", self.tracks[0].name, "after", len(self.curLap.points))
             elif self.hasGaps(t.hits):
-                print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap)
+                print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", len(self.curLap.points))
                 self.tracks.remove(t)
+                print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
                 if len(self.tracks) == 1:
-                    print("Remaining track:", self.tracks[0].name)
+                    print("Remaining track:", self.tracks[0].name, "after", len(self.curLap.points))
             else:
                 a = self.curLap.angle(lp, self.curLap.points[-1])
                 if a < (3.14159 * self.validAngle / 180):

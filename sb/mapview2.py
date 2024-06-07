@@ -114,10 +114,10 @@ class MapView2(QWidget):
     def findNextBrake(self, lap, startI):
         j = startI
         for j in range(startI, len(lap)):
-            if lap[j].brake <= 0.1:
+            if lap[j].brake <= 50:
                 break
         for i in range(j, len(lap)):
-            if lap[i].brake > 0.1:
+            if lap[i].brake > 50:
                 return i
         return None
 
@@ -125,11 +125,11 @@ class MapView2(QWidget):
         j = startI
         found = False
         for j in range(startI, len(lap)):
-            if lap[j].brake > 0.1:
+            if lap[j].brake > 50:
                 found = True
                 break
         for i in range(j, len(lap)):
-            if lap[i].brake <= 0.1 and found:
+            if lap[i].brake <= 50 and found:
                 return i
         return None
 
@@ -730,7 +730,7 @@ class MapView2(QWidget):
             
             lp2, ip2 = self.findClosestPointNoLimit (self.lap2.points, mp)
             mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
-            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "% lap " + str(lp2.current_lap), 20, 0, self.l2Color, 2)
+            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%, brake " + str(int(lp2.brake)) + "%, lap " + str(lp2.current_lap) + " (" + str(lp2.position_x) + " / " + str(lp2.position_y) + " / " + str(lp2.position_z) +  ")", 20, 0, self.l2Color, 2)
             self.layers[self.lap2Markers].append(mk1)
             self.layers[self.lap2Markers].append(mk2)
             self.temporaryMarkers.append(mk1)
@@ -738,7 +738,7 @@ class MapView2(QWidget):
 
             lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
-            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "% lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
+            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
             mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 30, self.l1Color, 2)
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
@@ -779,11 +779,13 @@ class MapView2(QWidget):
     def wheelEvent(self, e):
         dx = e.position().x()
         dz = e.position().y()
+        print(dx, dz)
         wx = (dx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
         wz = (dz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
         rx = wx - self.midX + self.offsetX
         rz = wz - self.midZ + self.offsetZ
-        d = e.angleDelta().y()
+        d = e.pixelDelta().y()
+        print(d, e.pixelDelta().y())
         if d > 0:
             for i in range(d):
                 self.zoomIn(1.01)
