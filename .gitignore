@@ -23,3 +23,4 @@ salsatest.py
 *.csv
 *.json
 *.txt
+/othersdata
