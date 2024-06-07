@@ -203,5 +203,5 @@ def idToCar(i):
     try:
         return carMakers[str(carIds[str(i)][2])] + " - " + carIds[str(i)][1]
     except:
-        return "Unknown car"
+        return "Unknown car (" + str(i) + ")"
 
