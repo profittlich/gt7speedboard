@@ -1350,7 +1350,7 @@ class MainWindow(QMainWindow):
         if curPoint.fuel_capacity > 0:
             self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
         else:
-            self.fuel.setText("<font size=6>" + str(100) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
+            self.fuel.setText("<font size=6>unknown</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>") # TODO handle EVs correctly
         if not self.previousPoint is None:
             fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
             fuelConsumption *= self.psFPS * 60 * 60 # l per hour
@@ -1803,7 +1803,7 @@ class MainWindow(QMainWindow):
                     self.messages.append([self.curLap.points[-min(int(self.psFPS*self.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
                     self.newMessage = None
 
-                if curPoint.is_paused: # or not curPoint.in_race: # TODO detect replay
+                if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
                     continue
 
                 #print(curPoint.position_x, curPoint.position_z)
