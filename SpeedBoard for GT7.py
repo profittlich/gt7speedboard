@@ -974,6 +974,9 @@ class MainWindow(QMainWindow):
         self.trackDetector.loadRefsFromDirectory("./tracks") # TODO correct relative path for packaged versions
         self.trackPreviouslyIdentified = ""
 
+        self.brakeOffset = 0
+        self.headerSpeed.setText("SPEED")
+
         self.oldLapTime = datetime.datetime.now()
         print("INIT RACE")
         self.newMessage = None
@@ -1089,8 +1092,8 @@ class MainWindow(QMainWindow):
                 break
 
         if result is None:
-            return None, startIdx
-        return lap[result], result
+            return None, startIdx, None
+        return lap[result], result, lap[min(len(lap)-1, max(0,result+self.brakeOffset))]
 
     def findClosestPointNoLimit(self, lap, p):
         shortestDistance = 100000000
@@ -1104,9 +1107,10 @@ class MainWindow(QMainWindow):
         return result
 
     def findNextBrake(self, lap, startI):
-        for i in range(startI, min(int(math.ceil(startI + self.psFPS * 3)), len(lap))):
+        startI += self.brakeOffset
+        for i in range(max(startI,0), min(int(math.ceil(startI + self.psFPS * 3)), len(lap))):
             if lap[i].brake > self.brakeMinimumLevel:
-                return i-startI
+                return max(i-startI,0)
         return None
 
     def getLapLength(self, lap):
@@ -1446,19 +1450,20 @@ class MainWindow(QMainWindow):
                 pal.setColor(refLap.pedalWidget.backgroundRole(), self.backgroundColor)
 
             if self.throttlepoints:
-                if refLap.closestPoint.throttle > 98:
+                if refLap.closestOffsetPoint.throttle > 98:
                     refLap.pedalWidget.setText("GAS")
                     pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#f2f"))
                     if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
                         bgPal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#424"))
 
             if self.brakepoints:
-                if refLap.closestPoint.brake > 0:
+                if refLap.closestOffsetPoint.brake > 0:
                     refLap.pedalWidget.setText("BRAKE")
-                    pal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestPoint.brake))
+                    pal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestOffsetPoint.brake))
                     if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestPoint.brake))
-                elif self.countdownBrakepoint and not refLap.nextBrake is None:
+                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestOffsetPoint.brake))
+
+                if self.countdownBrakepoint and not refLap.nextBrake is None:
                     refLap.pedalWidget.setText(str(math.ceil (refLap.nextBrake/60)))
                     if refLap.nextBrake >= 120:
                         if refLap.nextBrake%60 >= 30:
@@ -1501,6 +1506,7 @@ class MainWindow(QMainWindow):
         class SpeedData:
             def __init__(self):
                 self.closestPoint = None
+                self.closestOffsetPoint = None
                 self.nextBrake = None
                 self.closestIndex = None
                 self.speedWidget = None
@@ -1557,11 +1563,11 @@ class MainWindow(QMainWindow):
         refC.timeDiffWidget = self.timeDiffRefC
         refC.id = 4
              
-        refA.closestPoint, refA.closestIndex = self.findClosestPoint (self.refLaps[0].points, curPoint, refA.closestIndex)
+        refA.closestPoint, refA.closestIndex, refA.closestOffsetPoint = self.findClosestPoint (self.refLaps[0].points, curPoint, refA.closestIndex)
         self.closestIRefA = refA.closestIndex 
-        refB.closestPoint, refB.closestIndex = self.findClosestPoint (self.refLaps[1].points, curPoint, refB.closestIndex)
+        refB.closestPoint, refB.closestIndex, refB.closestOffsetPoint = self.findClosestPoint (self.refLaps[1].points, curPoint, refB.closestIndex)
         self.closestIRefB = refB.closestIndex 
-        refC.closestPoint, refC.closestIndex = self.findClosestPoint (self.refLaps[2].points, curPoint, refC.closestIndex)
+        refC.closestPoint, refC.closestIndex, refC.closestOffsetPoint = self.findClosestPoint (self.refLaps[2].points, curPoint, refC.closestIndex)
         self.closestIRefC = refC.closestIndex 
         
         refA.nextBrake = self.findNextBrake(self.refLaps[0].points, refA.closestIndex)
@@ -1569,11 +1575,11 @@ class MainWindow(QMainWindow):
         refC.nextBrake = self.findNextBrake(self.refLaps[2].points, refC.closestIndex)
 
         if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
-            last.closestPoint, last.closestIndex = self.findClosestPoint (self.previousLaps[-1].points, curPoint, last.closestIndex)
+            last.closestPoint, last.closestIndex, last.closestOffsetPoint = self.findClosestPoint (self.previousLaps[-1].points, curPoint, last.closestIndex)
             self.closestILast = last.closestIndex 
-            best.closestPoint, best.closestIndex = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, best.closestIndex)
+            best.closestPoint, best.closestIndex, best.closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, best.closestIndex)
             self.closestIBest = best.closestIndex 
-            median.closestPoint, median.closestIndex = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, median.closestIndex)
+            median.closestPoint, median.closestIndex, median.closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, median.closestIndex)
             self.closestIMedian = median.closestIndex 
             best.nextBrake = self.findNextBrake(self.previousLaps[self.bestLap].points, best.closestIndex)
 
@@ -1630,7 +1636,7 @@ class MainWindow(QMainWindow):
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
-        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout)):
+        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout)): # TODO Null error in circuit experience mode when doing laps: AttributeError: 'NoneType' object has no attribute 'position_x'
             if self.circuitExperience:
                 cleanLap = self.cleanUpLap(self.curLap)
                 self.mapView.endLap(cleanLap.points)
@@ -1672,6 +1678,8 @@ class MainWindow(QMainWindow):
                     else:
                         lastLapTime = curPoint.last_lap
 
+                    showBestLapMessage = True
+
                     print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
                     if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
                         if len(self.previousLaps) > 0:
@@ -1687,12 +1695,18 @@ class MainWindow(QMainWindow):
                             print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
                             if self.bigCountdownBrakepoint == 2 and not self.refLaps[0] is None and self.refLaps[0].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
+                                self.showUiMsg("BEAT REFERENCE LAP", 2)
+                                showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                             elif self.bigCountdownBrakepoint == 3 and not self.refLaps[1] is None and self.refLaps[1].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
+                                self.showUiMsg("BEAT REFERENCE LAP", 2)
+                                showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                             elif self.bigCountdownBrakepoint == 4 and not self.refLaps[2] is None and self.refLaps[2].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
+                                self.showUiMsg("BEAT REFERENCE LAP", 2)
+                                showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
 
                         if lastLapTime > 0:
@@ -1720,7 +1734,10 @@ class MainWindow(QMainWindow):
                         self.purgeBadLaps()
                     print("Laps after purge:", len(self.previousLaps))
                 
-                    self.bestLap = self.findBestLap()
+                    newBestLap = self.findBestLap()
+                    if self.bestLap != newBestLap and showBestLapMessage:
+                        self.showUiMsg("BEST LAP", 2)
+                    self.bestLap = newBestLap
                     self.medianLap = self.findMedianLap()
                     print("Reset cur lap storage")
                     self.curLap = Lap()
@@ -1900,6 +1917,22 @@ class MainWindow(QMainWindow):
                     self.newRunDescription = text
             elif e.key() == Qt.Key.Key_C.value:
                 self.initRace()
+            elif e.key() == Qt.Key.Key_Up.value:
+                self.brakeOffset -= 6
+                print("Brake offset", self.brakeOffset)
+                if self.brakeOffset != 0:
+                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 1)) + "] SPEED")
+                else:
+                    self.headerSpeed.setText("SPEED")
+                self.headerSpeed.update()
+            elif e.key() == Qt.Key.Key_Down.value:
+                self.brakeOffset += 6
+                print("Brake offset", self.brakeOffset)
+                if self.brakeOffset != 0:
+                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 1)) + "] SPEED")
+                else:
+                    self.headerSpeed.setText("SPEED")
+                self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_S.value:
                 if self.masterWidget.currentIndex() == 2:
                     self.returnToDash()

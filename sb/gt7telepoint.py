@@ -7,9 +7,8 @@ class Point:
     def __init__(self, ddata, encRaw):
         self.raw = encRaw
 
-        self.unknown = []
+        self.unknown = {}
 
-	# TODO handle indexes 0, 0x40 and 0x100
         self.magic = struct.unpack('i', ddata[0x00:0x00 + 4])[0] # 0x47375330
 
         # based on https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
@@ -26,8 +25,7 @@ class Point:
         self.rotation_yaw = struct.unpack('f', ddata[0x20:0x20 + 4])[0]  # rot Yaw
         self.rotation_roll = struct.unpack('f', ddata[0x24:0x24 + 4])[0]  # rot Roll
 
-	# TODO store index along with value
-        self.unknown.append( struct.unpack('f', ddata[0x28:0x28+4])[0])					# rot ??? (TODO RelativeOrientationToNorth????)
+        self.unknown[0x28] = struct.unpack('f', ddata[0x28:0x28+4])[0]					# rot ??? (TODO RelativeOrientationToNorth????)
 
         self.angular_velocity_x = struct.unpack('f', ddata[0x2C:0x2C + 4])[0]  # angular velocity X
         self.angular_velocity_y = struct.unpack('f', ddata[0x30:0x30 + 4])[0]  # angular velocity Y
@@ -36,7 +34,7 @@ class Point:
         self.ride_height = 1000 * struct.unpack('f', ddata[0x38:0x38 + 4])[0]  # ride height
         self.rpm = struct.unpack('f', ddata[0x3C:0x3C + 4])[0]  # rpm
 
-        self.unknown.append(struct.unpack('I', ddata[0x40:0x40+4])[0])		# Unknown/empty?
+        self.unknown[0x40] = struct.unpack('I', ddata[0x40:0x40+4])[0]		# Unknown/empty?
 
         self.current_fuel = struct.unpack('f', ddata[0x44:0x44 + 4])[0]  # fuel
         self.fuel_capacity = struct.unpack('f', ddata[0x48:0x48 + 4])[0]
@@ -68,24 +66,24 @@ class Point:
 
         self.estimated_top_speed = struct.unpack('h', ddata[0x8C:0x8C + 2])[0]  # estimated top speed
 
-        self.in_race = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-1] == '1' # "car on track"
-        self.is_paused = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-2] == '1'
+        self.in_race = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b1 == 0b1 # "car on track"
+        self.is_paused = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b10 == 0b10
 
-        self.loading_or_processing = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-3] == '1'
+        self.loading_or_processing = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b100 == 0b100
 
-        self.in_gear = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-4] == '1'
-        self.has_turbo = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-5] == '1'
-        self.rev_limiter_blink_alert_active = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-6] == '1'
-        self.hand_brake_active = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-7] == '1'
-        self.lights_active = bin(struct.unpack('B', ddata[0x8E:0x8E + 1])[0])[-8] == '1'
-        self.high_beam_active = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-1] == '1'
-        self.low_beam_active = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-2] == '1'
-        self.asm_active = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-3] == '1'
-        self.tcs_active = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-4] == '1'
-        self.reserved_flag_13 = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-5] == '1'
-        self.reserved_flag_14 = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-6] == '1'
-        self.reserved_flag_15 = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-7] == '1'
-        self.reserved_flag_16 = bin(struct.unpack('B', ddata[0x8F:0x8F + 1])[0])[-8] == '1'
+        self.in_gear = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b1000 == 0b1000
+        self.has_turbo = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b10000 == 0b10000
+        self.rev_limiter_blink_alert_active = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b100000 == 0b100000
+        self.hand_brake_active = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b1000000 == 0b1000000
+        self.lights_active = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b10000000 == 0b10000000
+        self.high_beam_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b1 == 0b1
+        self.low_beam_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b10 == 0b10
+        self.asm_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b100 == 0b100
+        self.tcs_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b1000 == 0b1000
+        self.reserved_flag_13 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b10000 == 0b10000
+        self.reserved_flag_14 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b100000 == 0b100000
+        self.reserved_flag_15 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b1000000 == 0b1000000
+        self.reserved_flag_16 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b10000000 == 0b10000000
 
         self.current_gear = struct.unpack('B', ddata[0x90:0x90 + 1])[0] & 0b00001111
         self.suggested_gear = struct.unpack('B', ddata[0x90:0x90 + 1])[0] >> 4
@@ -94,44 +92,44 @@ class Point:
 
         self.brake = struct.unpack('B', ddata[0x92:0x92 + 1])[0] / 2.55  # brake
 
-        self.unknown.append( bin(struct.unpack('B', ddata[0x93:0x93+1])[0])[2:])	# 0x93 = ???, always 0?
+        self.unknown[0x93] = bin(struct.unpack('B', ddata[0x93:0x93+1])[0])[2:]	# 0x93 = ???, always 0?
 
         self.normal_x = struct.unpack('f', ddata[0x94:0x94+4])[0]			# 0x94 = CAR NORMAL X
         self.normal_y = struct.unpack('f', ddata[0x98:0x98+4])[0]			# 0x98 = CAR NORMAL Y
         self.normal_z = struct.unpack('f', ddata[0x9C:0x9C+4])[0]			# 0x9C = CAR NORMAL Z
 
-        self.unknown.append( struct.unpack('f', ddata[0xA0:0xA0+4])[0])			# 0xA0 = ??? (TODO RoadPlaneDistance???)
-
-        self.tyre_speed_FL = abs(3.6 * self.tyre_diameter_FL * struct.unpack('f', ddata[0xA4:0xA4 + 4])[0])
-        self.tyre_speed_FR = abs(3.6 * self.tyre_diameter_FR * struct.unpack('f', ddata[0xA8:0xA8 + 4])[0])
-        self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
-        self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * struct.unpack('f', ddata[0xB0:0xB0 + 4])[0])
+        self.unknown[0xA0] =  struct.unpack('f', ddata[0xA0:0xA0+4])[0]			# 0xA0 = ??? (TODO RoadPlaneDistance???)
 
         self.tyre_diameter_FL = struct.unpack('f', ddata[0xB4:0xB4 + 4])[0]
         self.tyre_diameter_FR = struct.unpack('f', ddata[0xB8:0xB8 + 4])[0]
         self.tyre_diameter_RL = struct.unpack('f', ddata[0xBC:0xBC + 4])[0]
         self.tyre_diameter_RR = struct.unpack('f', ddata[0xC0:0xC0 + 4])[0]
 
+        self.tyre_speed_FL = abs(3.6 * self.tyre_diameter_FL * struct.unpack('f', ddata[0xA4:0xA4 + 4])[0])
+        self.tyre_speed_FR = abs(3.6 * self.tyre_diameter_FR * struct.unpack('f', ddata[0xA8:0xA8 + 4])[0])
+        self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
+        self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * struct.unpack('f', ddata[0xB0:0xB0 + 4])[0])
+
         self.suspension_FL = struct.unpack('f', ddata[0xC4:0xC4 + 4])[0]  # suspension FL
         self.suspension_FR = struct.unpack('f', ddata[0xC8:0xC8 + 4])[0]  # suspension FR
         self.suspension_RL = struct.unpack('f', ddata[0xCC:0xCC + 4])[0]  # suspension RL
         self.suspension_RR = struct.unpack('f', ddata[0xD0:0xD0 + 4])[0]  # suspension RR
 
-        self.unknown.append( struct.unpack('f', ddata[0xD4:0xD4+4])[0])			# 0xD4 = ???, always 0?
-        self.unknown.append( struct.unpack('f', ddata[0xD8:0xD8+4])[0])			# 0xD8 = ???, always 0?
-        self.unknown.append( struct.unpack('f', ddata[0xDC:0xDC+4])[0])			# 0xDC = ???, always 0?
-        self.unknown.append( struct.unpack('f', ddata[0xE0:0xE0+4])[0])			# 0xE0 = ???, always 0?
+        self.unknown[0xD4] = struct.unpack('f', ddata[0xD4:0xD4+4])[0]			# 0xD4 = ???, always 0?
+        self.unknown[0xD8] = struct.unpack('f', ddata[0xD8:0xD8+4])[0]			# 0xD8 = ???, always 0?
+        self.unknown[0xDC] = struct.unpack('f', ddata[0xDC:0xDC+4])[0]			# 0xDC = ???, always 0?
+        self.unknown[0xE0] = struct.unpack('f', ddata[0xE0:0xE0+4])[0]			# 0xE0 = ???, always 0?
 
-        self.unknown.append( struct.unpack('f', ddata[0xE4:0xE4+4])[0])			# 0xE4 = ???, always 0?
-        self.unknown.append( struct.unpack('f', ddata[0xE8:0xE8+4])[0])			# 0xE8 = ???, always 0?
-        self.unknown.append( struct.unpack('f', ddata[0xEC:0xEC+4])[0])			# 0xEC = ???, always 0?
-        self.unknown.append( struct.unpack('f', ddata[0xF0:0xF0+4])[0])			# 0xF0 = ???, always 0?
+        self.unknown[0xE4] = struct.unpack('f', ddata[0xE4:0xE4+4])[0]			# 0xE4 = ???, always 0?
+        self.unknown[0xE8] = struct.unpack('f', ddata[0xE8:0xE8+4])[0]			# 0xE8 = ???, always 0?
+        self.unknown[0xEC] = struct.unpack('f', ddata[0xEC:0xEC+4])[0]			# 0xEC = ???, always 0?
+        self.unknown[0xF0] = struct.unpack('f', ddata[0xF0:0xF0+4])[0]			# 0xF0 = ???, always 0?
 
         self.clutch = struct.unpack('f', ddata[0xF4:0xF4 + 4])[0]  # clutch
         self.clutch_engaged = struct.unpack('f', ddata[0xF8:0xF8 + 4])[0]  # clutch engaged
         self.rpm_after_clutch = struct.unpack('f', ddata[0xFC:0xFC + 4])[0]  # rpm after clutch
 
-        self.unknown.append(struct.unpack('f', ddata[0x100:0x100+4])[0])		# 0x100 = ??? (TODO TransmissionTopSpeed???)
+        self.unknown[0x100] = struct.unpack('f', ddata[0x100:0x100+4])[0]		# 0x100 = ??? (TODO TransmissionTopSpeed???)
 
         self.gear_1 = struct.unpack('f', ddata[0x104:0x104 + 4])[0]  # 1st gear
         self.gear_2 = struct.unpack('f', ddata[0x108:0x108 + 4])[0]  # 2nd gear
@@ -160,7 +158,6 @@ class Point:
         self.message = None
 
     def recreatePackage(self):
-# TODO Update based on __init__ updates
         newPkt = bytearray(296)
 
         struct.pack_into ('i', newPkt, 0x00, self.magic)
@@ -252,40 +249,76 @@ class Point:
         struct.pack_into ('f', newPkt, 0x30, self.angular_velocity_y)
         struct.pack_into ('f', newPkt, 0x34, self.angular_velocity_z)
 
-        struct.pack_into ('B', newPkt, 0x8E, self.is_paused)
-        struct.pack_into ('B', newPkt, 0x8E, self.in_race)
+        bits0x8E = 0
+        if self.is_paused:
+            bits0x8E += 1
+        if self.in_race:
+            bits0x8E += 2
 
-        struct.pack_into('f', newPkt, 0x28, self.unknown[0])
+        if self.loading_or_processing:
+            bits0x8E += 4
 
-        #struct.pack_into('I', newPkt, 0x40, int(self.unknown[1])) TODO: fix
+        if self.in_gear:
+            bits0x8E += 8
+        if self.has_turbo:
+            bits0x8E += 16
+        if self.rev_limiter_blink_alert_active:
+            bits0x8E += 32
+        if self.hand_brake_active:
+            bits0x8E += 64
+        if self.lights_active:
+            bits0x8E += 128
 
-        struct.pack_into('B', newPkt, 0x8E, int(self.unknown[2],2))
-        struct.pack_into('B', newPkt, 0x8F, int(self.unknown[3],2))
-        struct.pack_into('B', newPkt, 0x93, int(self.unknown[4],2))
+        bits0x8F = 0
+        if self.high_beam_active:
+            bits0x8F += 1
+        if self.low_beam_active:
+            bits0x8F += 2
+        if self.asm_active:
+            bits0x8F += 4
+        if self.tcs_active:
+            bits0x8F += 8
+        if self.reserved_flag_13:
+            bits0x8F += 16
+        if self.reserved_flag_14:
+            bits0x8F += 32
+        if self.reserved_flag_15:
+            bits0x8F += 64
+        if self.reserved_flag_16:
+            bits0x8F += 128
 
-        struct.pack_into('f', newPkt, 0x94, self.unknown[5])
-        struct.pack_into('f', newPkt, 0x98, self.unknown[6])
-        struct.pack_into('f', newPkt, 0x9C, self.unknown[7])
-        struct.pack_into('f', newPkt, 0xA0, self.unknown[8])
+        struct.pack_into ('B', newPkt, 0x8E, bits0x8E)
+        struct.pack_into ('B', newPkt, 0x8F, bits0x8F)
 
-        struct.pack_into('f', newPkt, 0xD4, self.unknown[9])
-        struct.pack_into('f', newPkt, 0xD8, self.unknown[10])
-        struct.pack_into('f', newPkt, 0xDC, self.unknown[11])
-        struct.pack_into('f', newPkt, 0xE0, self.unknown[12])
+        struct.pack_into('f', newPkt, 0x28, self.unknown[0x28])
 
-        struct.pack_into('f', newPkt, 0xE4, self.unknown[13])
-        struct.pack_into('f', newPkt, 0xE8, self.unknown[14])
-        struct.pack_into('f', newPkt, 0xEC, self.unknown[15])
-        struct.pack_into('f', newPkt, 0xF0, self.unknown[16])
+        struct.pack_into('I', newPkt, 0x40, self.unknown[0x40]) 
 
-        struct.pack_into('f', newPkt, 0x100, self.unknown[17])
+        struct.pack_into('B', newPkt, 0x93, int(self.unknown[0x93],2))
+
+        struct.pack_into('f', newPkt, 0x94, self.normal_x)
+        struct.pack_into('f', newPkt, 0x98, self.normal_y)
+        struct.pack_into('f', newPkt, 0x9C, self.normal_z)
+        struct.pack_into('f', newPkt, 0xA0, self.unknown[0xA0])
+
+        struct.pack_into('f', newPkt, 0xD4, self.unknown[0xD4])
+        struct.pack_into('f', newPkt, 0xD8, self.unknown[0xD8])
+        struct.pack_into('f', newPkt, 0xDC, self.unknown[0xDC])
+        struct.pack_into('f', newPkt, 0xE0, self.unknown[0xE0])
+
+        struct.pack_into('f', newPkt, 0xE4, self.unknown[0xE4])
+        struct.pack_into('f', newPkt, 0xE8, self.unknown[0xE8])
+        struct.pack_into('f', newPkt, 0xEC, self.unknown[0xEC])
+        struct.pack_into('f', newPkt, 0xF0, self.unknown[0xF0])
+
+        struct.pack_into('f', newPkt, 0x100, self.unknown[0x100])
 
         encr = salsa20_enc(newPkt, 296)
         self.raw = encr
 
 
     def interpolate(self, other, alpha):
-# TODO Update based on __init__ updates
+
         newdat = bytearray(296)
 
         self.magic = other.magic
@@ -380,33 +413,48 @@ class Point:
         self.angular_velocity_y = alpha * other.angular_velocity_y + (1-alpha) * self.angular_velocity_y
         self.angular_velocity_z = alpha * other.angular_velocity_z + (1-alpha) * self.angular_velocity_z
 
+        self.normal_x = alpha * other.normal_x + (1-alpha) * self.normal_x
+        self.normal_y = alpha * other.normal_y + (1-alpha) * self.normal_y
+        self.normal_z = alpha * other.normal_z + (1-alpha) * self.normal_z
+
         self.is_paused = other.is_paused or self.is_paused
         self.in_race = other.in_race and self.in_race
 
-        self.unknown[0] = ( alpha * other.unknown[0] + (1-alpha) * self.unknown[0])
+        self.loading_or_processing = other.loading_or_processing or self.loading_or_processing
 
-        self.unknown[1] = other.unknown[1]
+        self.in_gear = other.in_gear or self.in_gear
+        self.has_turbo = other.has_turbo or self.has_turbo
+        self.rev_limiter_blink_alert_active = other.rev_limiter_blink_alert_active or self.rev_limiter_blink_alert_active
+        self.hand_brake_active = other.hand_brake_active or self.hand_brake_active
+        self.lights_active = other.lights_active or self.lights_active
+        self.high_beam_active = other.high_beam_active or self.high_beam_active
+        self.low_beam_active = other.low_beam_active or self.low_beam_active
+        self.asm_active = other.asm_active or self.asm_active
+        self.tcs_active = other.tcs_active or self.tcs_active
+        self.reserved_flag_13 = other.reserved_flag_13 or self.reserved_flag_13
+        self.reserved_flag_14 = other.reserved_flag_14 or self.reserved_flag_14
+        self.reserved_flag_15 = other.reserved_flag_15 or self.reserved_flag_15
+        self.reserved_flag_16 = other.reserved_flag_16 or self.reserved_flag_16
 
-        self.unknown[2] = other.unknown[2]
-        self.unknown[3] = other.unknown[3]
-        self.unknown[4] = other.unknown[4]
+        self.unknown[0x28] = ( alpha * other.unknown[0x28] + (1-alpha) * self.unknown[0x28])
 
-        self.unknown[5] = ( alpha * other.unknown[5] + (1-alpha) * self.unknown[5])
-        self.unknown[6] = ( alpha * other.unknown[6] + (1-alpha) * self.unknown[6])
-        self.unknown[7] = ( alpha * other.unknown[7] + (1-alpha) * self.unknown[7])
-        self.unknown[8] = ( alpha * other.unknown[8] + (1-alpha) * self.unknown[8])
+        self.unknown[0x40] = other.unknown[0x40]
+        self.unknown[0x93] = other.unknown[0x93]
 
-        self.unknown[9] = ( alpha * other.unknown[9] + (1-alpha) * self.unknown[9])
-        self.unknown[10] = ( alpha * other.unknown[10] + (1-alpha) * self.unknown[10])
-        self.unknown[11] = ( alpha * other.unknown[11] + (1-alpha) * self.unknown[11])
-        self.unknown[12] = ( alpha * other.unknown[12] + (1-alpha) * self.unknown[12])
+        self.unknown[0xA0] = ( alpha * other.unknown[0xA0] + (1-alpha) * self.unknown[0xA0])
 
-        self.unknown[13] = ( alpha * other.unknown[13] + (1-alpha) * self.unknown[13])
-        self.unknown[14] = ( alpha * other.unknown[14] + (1-alpha) * self.unknown[14])
-        self.unknown[15] = ( alpha * other.unknown[15] + (1-alpha) * self.unknown[15])
-        self.unknown[16] = ( alpha * other.unknown[16] + (1-alpha) * self.unknown[16])
+        self.unknown[0xD4] = ( alpha * other.unknown[0xD4] + (1-alpha) * self.unknown[0xD4])
+        self.unknown[0xD8] = ( alpha * other.unknown[0xD8] + (1-alpha) * self.unknown[0xD8])
+        self.unknown[0xDC] = ( alpha * other.unknown[0xDC] + (1-alpha) * self.unknown[0xDC])
+        self.unknown[0xE0] = ( alpha * other.unknown[0xE0] + (1-alpha) * self.unknown[0xE0])
 
-        self.unknown[17] = ( alpha * other.unknown[17] + (1-alpha) * self.unknown[17])
+        self.unknown[0xE4] = ( alpha * other.unknown[0xE4] + (1-alpha) * self.unknown[0xE4])
+        self.unknown[0xE8] = ( alpha * other.unknown[0xE8] + (1-alpha) * self.unknown[0xE8])
+        self.unknown[0xEC] = ( alpha * other.unknown[0xEC] + (1-alpha) * self.unknown[0xEC])
+        self.unknown[0xF0] = ( alpha * other.unknown[0xF0] + (1-alpha) * self.unknown[0xF0])
+
+        self.unknown[0x100] = ( alpha * other.unknown[0x100] + (1-alpha) * self.unknown[0x100])
+
 
         self.recreatePackage()
 
