@@ -969,6 +969,32 @@ class MainWindow(QMainWindow):
         print("initRun", self.sessionStats)
         self.sessionStats.append (Run(len(self.previousLaps)))
 
+    def markBigCountdownField(self):
+        itBest = self.bigCountdownBrakepoint == 1
+        itRefA = self.bigCountdownBrakepoint == 2
+        itRefB = self.bigCountdownBrakepoint == 3
+        itRefC = self.bigCountdownBrakepoint == 4
+
+        font = self.speedBest.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setUnderline(itBest)
+        self.speedBest.setFont(font)
+
+        font = self.speedRefA.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setUnderline(itRefA)
+        self.speedRefA.setFont(font)
+
+        font = self.speedRefB.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setUnderline(itRefB)
+        self.speedRefB.setFont(font)
+
+        font = self.speedRefC.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setUnderline(itRefC)
+        self.speedRefC.setFont(font)
+
     def initRace(self):
         self.trackDetector = TrackDetector()
         self.trackDetector.loadRefsFromDirectory("./tracks") # TODO correct relative path for packaged versions
@@ -987,6 +1013,7 @@ class MainWindow(QMainWindow):
         self.refueled = 0
 
         self.bigCountdownBrakepoint = self.initialBigCountdownBrakepoint
+        self.markBigCountdownField()
 
         self.newRunDescription = None
 
@@ -1698,16 +1725,19 @@ class MainWindow(QMainWindow):
                                 self.showUiMsg("BEAT REFERENCE LAP", 2)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
+                                self.markBigCountdownField()
                             elif self.bigCountdownBrakepoint == 3 and not self.refLaps[1] is None and self.refLaps[1].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
                                 self.showUiMsg("BEAT REFERENCE LAP", 2)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
+                                self.markBigCountdownField()
                             elif self.bigCountdownBrakepoint == 4 and not self.refLaps[2] is None and self.refLaps[2].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
                                 self.showUiMsg("BEAT REFERENCE LAP", 2)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
+                                self.markBigCountdownField()
 
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
@@ -1737,6 +1767,10 @@ class MainWindow(QMainWindow):
                     newBestLap = self.findBestLap()
                     if self.bestLap != newBestLap and showBestLapMessage:
                         self.showUiMsg("BEST LAP", 2)
+                    if self.bestLap != newBestLap:
+                        self.brakeOffset = 0
+                        self.headerSpeed.setText("SPEED")
+                        self.headerSpeed.update()
                     self.bestLap = newBestLap
                     self.medianLap = self.findMedianLap()
                     print("Reset cur lap storage")
@@ -1917,6 +1951,11 @@ class MainWindow(QMainWindow):
                     self.newRunDescription = text
             elif e.key() == Qt.Key.Key_C.value:
                 self.initRace()
+            elif e.key() == Qt.Key.Key_0.value:
+                self.brakeOffset = 0
+                print("Brake offset", self.brakeOffset)
+                self.headerSpeed.setText("SPEED")
+                self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Up.value:
                 self.brakeOffset -= 6
                 print("Brake offset", self.brakeOffset)

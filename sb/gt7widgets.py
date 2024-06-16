@@ -191,6 +191,9 @@ class StartWindow(QWidget):
                                   "W - save warning markers\n"
                                   "D - Set a description for the current run\n"
                                   "S - Show runs and statistics\n" 
+                                  "UP - Show brake point notifications a bit later\n" 
+                                  "DOWN - Show brake point notifications a bit earlier\n" 
+                                  "0 - Reset brake point notification timing\n" 
                                   "R - start/stop raw recording (not recommended)\n"
                                   ))
 
