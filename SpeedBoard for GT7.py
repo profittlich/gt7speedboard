@@ -918,6 +918,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.masterWidget)
 
         self.initRace()
+        self.messageWaitsForKey = False
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
 
@@ -938,15 +939,25 @@ class MainWindow(QMainWindow):
         self.debugCount = 0
         self.noThrottleCount = 0
 
-    def showUiMsg(self, msg, t):
+    def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
         print("showUiMsg")
         self.uiMsg.setText(msg)
+        if leftAlign:
+            self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            self.uiMsg.setMargin(15)
+        else:
+            self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.uiMsg.setMargin(0)
         self.masterWidget.setCurrentIndex(1)
-        self.returnTimer = QTimer()
-        self.returnTimer.setInterval(int(1000 * t))
-        self.returnTimer.setSingleShot(True)
-        self.returnTimer.timeout.connect(self.returnToDash)
-        self.returnTimer.start()
+        if waitForKey:
+            self.messageWaitsForKey = True
+        else:
+            self.messageWaitsForKey = False
+            self.returnTimer = QTimer()
+            self.returnTimer.setInterval(int(1000 * t))
+            self.returnTimer.setSingleShot(True)
+            self.returnTimer.timeout.connect(self.returnToDash)
+            self.returnTimer.start()
 
 
     def returnToDash(self):
@@ -1905,7 +1916,11 @@ class MainWindow(QMainWindow):
                 self.isRecording = True
 
     def keyPressEvent(self, e):
-        if self.centralWidget() == self.masterWidget:
+        if self.centralWidget() == self.masterWidget and self.messageWaitsForKey:
+            if e.key() != Qt.Key.Key_Shift.value:
+                self.messageWaitsForKey = False
+                self.returnToDash()
+        elif self.centralWidget() == self.masterWidget:
             if e.key() == Qt.Key.Key_R.value:
                 self.toggleRecording()
             elif e.key() == Qt.Key.Key_Escape.value:
@@ -1977,6 +1992,8 @@ class MainWindow(QMainWindow):
                     self.returnToDash()
                 else:
                     self.masterWidget.setCurrentIndex(2)
+            elif e.key() == Qt.Key.Key_Question:
+                self.showUiMsg (shortcutText, 0, leftAlign=True, waitForKey=True)
             #elif e.key() == Qt.Key.Key_T.value:
                 #tester = Worker(someDelay, "Complete", 0.2)
                 #tester.signals.finished.connect(self.showUiMsg)
