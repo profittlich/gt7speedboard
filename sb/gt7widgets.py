@@ -3,6 +3,22 @@ from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox
 import math
 
+shortcutText = "ESC \t return to configuration\n" \
+             + "? \t show keyboard shortcuts\n" \
+             + "B \t save best lap\n" \
+             + "L \t save last lap\n" \
+             + "M \t save median lap\n" \
+             + "A \t save all laps\n" \
+             + "C \t clear previous lap data\n" \
+             + "SPACE \t set warning marker to current location\n" \
+             + "W \t save warning markers\n" \
+             + "D \t Set a description for the current run\n" \
+             + "S \t Show runs and statistics\n"  \
+             + "UP \t Show brake point notifications a bit later\n"  \
+             + "DOWN \t Show brake point notifications a bit earlier\n"  \
+             + "0 \t Reset brake point notification timing\n"  \
+             + "R \t start/stop raw recording (not recommended)\n"
+
 class StartWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -58,7 +74,7 @@ class StartWindow(QWidget):
         self.fontScale.setValue(1)
 
         self.lapDecimals = QCheckBox("Show decimals in lap displays")
-        self.cbOptimal = QCheckBox("Optimal lap")
+        self.cbOptimal = QCheckBox("Optimized lap")
         self.cbOptimal.setEnabled(False)
         self.cbBest = QCheckBox("Best lap")
         self.cbMedian = QCheckBox("Median lap")
@@ -140,6 +156,7 @@ class StartWindow(QWidget):
         self.bigCountdownTarget.addItem("Reference lap A")
         self.bigCountdownTarget.addItem("Reference lap B")
         self.bigCountdownTarget.addItem("Reference lap C")
+        #self.bigCountdownTarget.addItem("Optimized lap")
         self.switchToBestLap = QCheckBox("Switch to best lap once it's faster")
         
         bpLayout.addWidget(self.brakepoints)
@@ -181,21 +198,7 @@ class StartWindow(QWidget):
         ksGroup.setLayout(ksLayout)
         mainLayoutR.addWidget(ksGroup)
 
-        ksLayout.addWidget(QLabel("ESC - return to configuration\n"
-                                  "B - save best lap\n"
-                                  "L - save last lap\n"
-                                  "M - save median lap\n"
-                                  "A - save all laps\n"
-                                  "C - clear previous lap data\n"
-                                  "SPACE - set warning marker to current location\n"
-                                  "W - save warning markers\n"
-                                  "D - Set a description for the current run\n"
-                                  "S - Show runs and statistics\n" 
-                                  "UP - Show brake point notifications a bit later\n" 
-                                  "DOWN - Show brake point notifications a bit earlier\n" 
-                                  "0 - Reset brake point notification timing\n" 
-                                  "R - start/stop raw recording (not recommended)\n"
-                                  ))
+        ksLayout.addWidget(QLabel(shortcutText))
 
         # CONNECT
         self.starter = QPushButton("Start")

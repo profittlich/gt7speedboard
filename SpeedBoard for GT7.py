@@ -1776,7 +1776,7 @@ class MainWindow(QMainWindow):
                     print("Laps after purge:", len(self.previousLaps))
                 
                     newBestLap = self.findBestLap()
-                    if self.bestLap != newBestLap and showBestLapMessage:
+                    if self.bestLap != newBestLap and showBestLapMessage and self.previousLaps[newBestLap].valid:
                         self.showUiMsg("BEST LAP", 2)
                     if self.bestLap != newBestLap:
                         self.brakeOffset = 0
