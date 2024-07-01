@@ -51,32 +51,38 @@ class StartWindowVLC(QWidget):
         if chosen[0] == "":
             print("None")
         else:
-            self.refAFile = chosen[0]
-            self.lRefA.setText("Violet lap: " + chosen[0][chosen[0].rfind("/")+1:])
-            if self.refAFile == self.refBFile:
-                self.aLaps = self.bLaps
-            else:
-                self.aLaps = loadLaps(self.refAFile)
-            self.idxRefA.clear()
-            for l in self.aLaps:
-                l.updateTime()
-                self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
+            self.loadReferenceLapA(chosen[0])
+
+    def loadReferenceLapA(self, chosen):
+        self.refAFile = chosen
+        self.lRefA.setText("Violet lap: " + chosen[chosen.rfind("/")+1:])
+        if self.refAFile == self.refBFile:
+            self.aLaps = self.bLaps
+        else:
+            self.aLaps = loadLaps(self.refAFile)
+        self.idxRefA.clear()
+        for l in self.aLaps:
+            l.updateTime()
+            self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
     def chooseReferenceLapB(self):
         chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps)")
         if chosen[0] == "":
             print("None")
         else:
-            self.refBFile = chosen[0]
-            self.lRefB.setText("Blue lap: " + chosen[0][chosen[0].rfind("/")+1:])
-            if self.refAFile == self.refBFile:
-                self.bLaps = self.aLaps
-            else:
-                self.bLaps = loadLaps(self.refBFile)
-            self.idxRefB.clear()
-            for l in self.bLaps:
-                l.updateTime()
-                self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
+            self.loadReferenceLapB(chosen[0])
+
+    def loadReferenceLapB(self, chosen):
+        self.refBFile = chosen
+        self.lRefB.setText("Blue lap: " + chosen[chosen.rfind("/")+1:])
+        if self.refAFile == self.refBFile:
+            self.bLaps = self.aLaps
+        else:
+            self.bLaps = loadLaps(self.refBFile)
+        self.idxRefB.clear()
+        for l in self.bLaps:
+            l.updateTime()
+            self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
 
 class MainWindow(QMainWindow):
@@ -95,6 +101,10 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.stackWidget)
 
+    def presetLapFiles(self, lfa, lfb):
+        self.startWidget.loadReferenceLapA(lfa)
+        self.startWidget.loadReferenceLapB(lfb)
+
     def compare(self):
         lap1 = self.startWidget.aLaps[self.startWidget.idxRefA.currentIndex()]
         lap2 = self.startWidget.bLaps[self.startWidget.idxRefB.currentIndex()]
@@ -107,6 +117,12 @@ class MainWindow(QMainWindow):
             self.stackWidget.setCurrentIndex(0)
         else:
             self.masterWidget.delegateKeyPressEvent(e)
+
+    def keyReleaseEvent(self, e):
+        if e.key() == Qt.Key.Key_Escape.value:
+            pass
+        else:
+            self.masterWidget.delegateKeyReleaseEvent(e)
 
 
 
@@ -132,11 +148,7 @@ if __name__ == '__main__':
     window = MainWindow()
 
     if len(sys.argv) >= 3:
-        lap1 = loadLap(sys.argv[1])
-        lap2 = loadLap(sys.argv[2])
-
-        window.masterWidget.setLaps(lap1, lap2)
-        window.setCentralWidget(window.masterWidget)
+        window.presetLapFiles(sys.argv[1], sys.argv[2])
     
     window.show()
 

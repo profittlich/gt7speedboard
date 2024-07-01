@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
         self.fuelBar = FuelGauge()
 
         if self.circuitExperience:
-            self.mapView = MapView()
+            self.mapViewCE = MapView()
         else:
             self.laps = QLabel("? LAPS LEFT")
             self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -595,7 +595,7 @@ class MainWindow(QMainWindow):
         fuelLayout.addWidget(self.fuel, 0, 0, 1, 2)
         fuelLayout.addWidget(self.fuelBar, 0, 2, 1, 1)
         if self.circuitExperience:
-            fuelLayout.addWidget(self.mapView, 1, 0, 1, 3)
+            fuelLayout.addWidget(self.mapViewCE, 1, 0, 1, 3)
         else:
             fuelLayout.addWidget(self.laps, 1, 0, 1, 3)
 
@@ -980,6 +980,11 @@ class MainWindow(QMainWindow):
         print("initRun", self.sessionStats)
         self.sessionStats.append (Run(len(self.previousLaps)))
 
+        # Re-detect track
+        self.trackDetector.reset()
+        self.trackPreviouslyIdentified = ""
+
+
     def markBigCountdownField(self):
         itBest = self.bigCountdownBrakepoint == 1
         itRefA = self.bigCountdownBrakepoint == 2
@@ -1014,7 +1019,7 @@ class MainWindow(QMainWindow):
         self.brakeOffset = 0
         self.headerSpeed.setText("SPEED")
 
-        self.oldLapTime = datetime.datetime.now()
+        self.debugOldLapTime = datetime.datetime.now()
         print("INIT RACE")
         self.newMessage = None
         self.lastLap = -1
@@ -1038,7 +1043,6 @@ class MainWindow(QMainWindow):
 
         self.closestILast = 0
         self.closestIBest = 0
-        #self.oldIBest = 0
         self.closestIMedian = 0
         self.closestIRefA = 0
         self.closestIRefB = 0
@@ -1151,13 +1155,13 @@ class MainWindow(QMainWindow):
                 return max(i-startI,0)
         return None
 
-    def getLapLength(self, lap):
-        totalDist = 0
-        for i in range(1, len(lap)):
-            totalDist += self.distance(lap[i-1], lap[i])
-        return totalDist
+    #def getLapLength(self, lap):
+        #totalDist = 0
+        #for i in range(1, len(lap)):
+            #totalDist += self.distance(lap[i-1], lap[i])
+        #return totalDist
 
-    def purgeBadLaps(self):
+    def purgeBadLapsCE(self):
         print("PURGE laps")
         longestLength = 0
         longestLap = None
@@ -1188,7 +1192,7 @@ class MainWindow(QMainWindow):
                     temp.append(l)
             self.previousLaps = temp
 
-    def cleanUpLap(self, lap):
+    def cleanUpLapCE(self, lap):
         print("Input:", len(lap.points))
         if len(lap.points) == 0:
             print("Lap is empty")
@@ -1632,7 +1636,7 @@ class MainWindow(QMainWindow):
         self.updateOneSpeedEntry(best, curPoint)
         self.updateOneSpeedEntry(median, curPoint)
 
-    def updateMap(self, curPoint):
+    def updateMapCE(self, curPoint):
         if self.circuitExperience and not self.previousPoint is None:
             color = self.mapCurrentColor
             if len(self.previousLaps) > 0:
@@ -1641,8 +1645,8 @@ class MainWindow(QMainWindow):
                     color = self.mapStandingColor
                 else:
                     color = self.speedDiffQColor(speedDiff)
-            self.mapView.setPoints(self.previousPoint, curPoint, color)
-            self.mapView.update()
+            self.mapViewCE.setPoints(self.previousPoint, curPoint, color)
+            self.mapViewCE.update()
 
 
         if curPoint.throttle == 0 and curPoint.brake == 0:
@@ -1674,29 +1678,35 @@ class MainWindow(QMainWindow):
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
-        if (self.keepLaps and self.lastLap != curPoint.current_lap) or self.lastLap < curPoint.current_lap or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout)): # TODO Null error in circuit experience mode when doing laps: AttributeError: 'NoneType' object has no attribute 'position_x'
+
+        if (
+            (self.keepLaps and self.lastLap != curPoint.current_lap)
+            or self.lastLap < curPoint.current_lap
+            or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout))
+           ): # TODO Null error in circuit experience mode when doing laps: AttributeError: 'NoneType' object has no attribute 'position_x'
+
+            # Clean up circuit experience laps
             if self.circuitExperience:
-                cleanLap = self.cleanUpLap(self.curLap)
-                self.mapView.endLap(cleanLap.points)
-                self.mapView.update()
+                cleanLap = self.cleanUpLapCE(self.curLap)
+                self.mapViewCE.endLap(cleanLap.points)
+                self.mapViewCE.update()
             else:
                 cleanLap = self.curLap
             lapLen = cleanLap.length()
             
+            # Handle short and "real" laps differently
             if lapLen < 10: # TODO const
                 print("LAP CHANGE short")
                 if curPoint.fuel_capacity > 0: # TODO how are e-vehicles handled in telemetry
                     self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
             else:
-                newLapTime = datetime.datetime.now()
-                print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), newLapTime - self.oldLapTime)
-                self.oldLapTime = newLapTime
+                debugNewLapTime = datetime.datetime.now()
+                print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
+                self.debugOldLapTime = debugNewLapTime
                 if curPoint.current_lap == 1:
                     self.initRun()
 
-            self.trackDetector.reset()
-            self.trackPreviouslyIdentified = ""
-
+            # Update live stats
             liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
             liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
             liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
@@ -1709,8 +1719,9 @@ class MainWindow(QMainWindow):
             self.updateLiveStats(liveStats)
 
 
-            if  not (self.lastLap == -1 and curPoint.current_fuel < 99):
+            if not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
+                    # Determine lap time
                     if self.circuitExperience:
                         lastLapTime = 1000 * (len(cleanLap.points)/self.psFPS + 1/(2*self.psFPS))
                     else:
@@ -1719,16 +1730,20 @@ class MainWindow(QMainWindow):
                     showBestLapMessage = True
 
                     print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
+                    # Process a completed valid lap (circuit experience laps are always valid)
                     if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
                         if len(self.previousLaps) > 0:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint))
+
+                        # Debug message
                         it = indexToTime(len(cleanLap.points))
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
 
+                        # Check if the full screen color flashing should be for the best lap from now on
                         if self.switchToBestLap:
                             print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
                             if self.bigCountdownBrakepoint == 2 and not self.refLaps[0] is None and self.refLaps[0].time > curPoint.last_lap:
@@ -1750,6 +1765,7 @@ class MainWindow(QMainWindow):
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
 
+                        # Update session stats
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
                                 self.initRun()
@@ -1764,20 +1780,26 @@ class MainWindow(QMainWindow):
                                 print("Median:", msToTime(i.medianLap()[0]))
 
                         self.updateRunStats()
-                    else:
+                    else: # Incomplete laps are sometimes useful, but can't be used for everything
                         print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
                         if len(self.previousLaps) > 0:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint))
+
                     print("Laps:", len(self.previousLaps))
+
+                    # Clean up circuit experience laps
                     if self.circuitExperience:
-                        self.purgeBadLaps()
-                    print("Laps after purge:", len(self.previousLaps))
+                        self.purgeBadLapsCE()
+                        print("Laps after purge:", len(self.previousLaps))
                 
+                    # Reset comparison lap information
                     newBestLap = self.findBestLap()
-                    if self.bestLap != newBestLap and showBestLapMessage and self.previousLaps[newBestLap].valid:
-                        self.showUiMsg("BEST LAP", 2)
+                    ## Show best lap message
+                    if showBestLapMessage and self.bestLap != newBestLap and self.previousLaps[newBestLap].valid:
+                        self.showUiMsg("BEST LAP", 1)
+                    ## Reset brake point offsets for new best lap
                     if self.bestLap != newBestLap:
                         self.brakeOffset = 0
                         self.headerSpeed.setText("SPEED")
@@ -1800,6 +1822,7 @@ class MainWindow(QMainWindow):
                     print("Ignore pre-lap")
                     self.curLap = Lap()
 
+                # Update live stats
                 liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
                 liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
                 liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
@@ -1811,6 +1834,7 @@ class MainWindow(QMainWindow):
                 liveStats += "</font>"
                 self.updateLiveStats(liveStats)
 
+                # Update fuel usage and outlook
                 if self.lastFuel != -1:
                     fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
                     if fuelDiff > 0:
@@ -1835,11 +1859,13 @@ class MainWindow(QMainWindow):
             self.initRun()
 
     def updateDisplay(self):
+        # Grab all new telemetry packages
         while not self.queue.empty():
             self.debugCount += 1
             d = self.queue.get()
             newPoint = Point(d[0], d[1])
 
+            # Check for dropped packages
             if not self.previousPoint is None:
                 diff = newPoint.package_id - self.previousPackageId
             else:
@@ -1860,16 +1886,20 @@ class MainWindow(QMainWindow):
 
             pointsToHandle.append(newPoint)
 
+            # Handle telemetry
             for curPoint in pointsToHandle:
+                # Update local messages
                 if self.messagesEnabled and not self.newMessage is None:
                     self.messages.append([self.curLap.points[-min(int(self.psFPS*self.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
                     self.newMessage = None
 
+                # Only handle packages when driving
                 if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
                     continue
 
                 #print(curPoint.position_x, curPoint.position_z)
 
+                # Detect new session
                 if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
                     self.initRace()
                     continue
@@ -1882,10 +1912,11 @@ class MainWindow(QMainWindow):
                 self.handleLapChanges(curPoint)
                 self.updateFuelAndWarnings(curPoint)
                 self.updateSpeed(curPoint)
-                self.updateMap(curPoint)
+                self.updateMapCE(curPoint)
                 self.updateLaps(curPoint)
                 self.handleTrackDetect(curPoint)
 
+                # Update live stats
                 if not self.newRunDescription is None and len(self.sessionStats) > 0:
                     self.sessionStats[-1].description = self.newRunDescription
                     self.newRunDescription = None

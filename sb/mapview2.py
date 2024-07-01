@@ -27,9 +27,12 @@ class MapView2(QWidget):
         self.showGroups = {}
         self.dragging = False
         self.temporaryMarkers = []
-        self.manualSplitPoints = []
         self.fileA = ""
         self.fileB = ""
+        self.shiftPressed = False
+
+        self.brakeSegments = []
+        self.setMouseTracking(True)
 
     def setLaps(self, a, lap1, b, lap2):
         self.fileA = a
@@ -298,6 +301,9 @@ class MapView2(QWidget):
         #self.layers[self.lap2Markers].append(CircleMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.l2ColorBright, 2))
         self.layers[self.lap2Markers].append(LeftLineMarker("finish", self.lap2.points[-1].position_x, self.lap2.points[-1].position_z, self.lap2.points[-2].position_x, self.lap2.points[-2].position_z, 0x00ffffff, 2))
 
+        currentlyBraking = False
+        self.brakeSegments = []
+
         l1Alt = False
         l2Alt = False
         # handle all data points in the laps
@@ -432,6 +438,12 @@ class MapView2(QWidget):
                 prevDelta = i1-i2
                 self.layers[self.textLayer].append(Text("brake", self.lap1.points[-1].position_x, self.lap1.points[-1].position_z, "(" + cSignPre + indexToTime(abs(change)) + ")", 10, 80, 0x00ffffff, 2))
 
+            nowBraking = p1.brake > 50 or p2.brake > 50
+            if nowBraking != currentlyBraking:
+                print("Brake change", nowBraking, "at", i1, i2)
+                currentlyBraking = nowBraking
+                if currentlyBraking:
+                    self.brakeSegments.append((i1, i2))
 
             # Mark throttle points
             if not prevStep and i1 % 60 == 0 or abs(p1.throttle-p1next.throttle) > 0.9:
@@ -733,8 +745,6 @@ class MapView2(QWidget):
             mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%, brake " + str(int(lp2.brake)) + "%, lap " + str(lp2.current_lap) + " (" + str(lp2.position_x) + " / " + str(lp2.position_y) + " / " + str(lp2.position_z) +  ")", 20, 0, self.l2Color, 2)
             self.layers[self.lap2Markers].append(mk1)
             self.layers[self.lap2Markers].append(mk2)
-            self.temporaryMarkers.append(mk1)
-            self.temporaryMarkers.append(mk2)
 
             lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
@@ -743,14 +753,33 @@ class MapView2(QWidget):
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
             self.layers[self.lap1Markers].append(mk5)
-            self.temporaryMarkers.append(mk3)
-            self.temporaryMarkers.append(mk4)
-            self.temporaryMarkers.append(mk5)
 
-            self.manualSplitPoints.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2)))
+            self.temporaryMarkers.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2), mk1, mk2, mk3, mk4, mk5))
 
             self.update()
             
+    def optimizeLap(self):
+        for s in self.brakeSegments:
+            lp2 = self.lap2.points[s[1]]
+            ip2 = s[1]
+            mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
+            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%, brake " + str(int(lp2.brake)) + "%, lap " + str(lp2.current_lap) + " (" + str(lp2.position_x) + " / " + str(lp2.position_y) + " / " + str(lp2.position_z) +  ")", 20, 0, self.l2Color, 2)
+            self.layers[self.lap2Markers].append(mk1)
+            self.layers[self.lap2Markers].append(mk2)
+
+            lp1 = self.lap1.points[s[0]]
+            ip1 = s[0]
+            mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
+            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
+            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 30, self.l1Color, 2)
+            self.layers[self.lap1Markers].append(mk3)
+            self.layers[self.lap1Markers].append(mk4)
+            self.layers[self.lap1Markers].append(mk5)
+
+            self.temporaryMarkers.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2), mk1, mk2, mk3, mk4, mk5))
+
+        self.update()
+
 
     def mouseReleaseEvent(self, e):
         if e.button () == Qt.MouseButton.LeftButton:
@@ -768,6 +797,26 @@ class MapView2(QWidget):
             self.dragY = mz
             self.offsetX += wx - wxp
             self.offsetZ += wz - wzp
+            self.update()
+        elif self.shiftPressed:
+            print("move with SHIFT")
+            mx = e.position().x()
+            mz = e.position().y()
+            wx = (mx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
+            wz = (mz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
+            closestMarker = None
+            closestDistance = 100000000.0
+            for m in self.temporaryMarkers:
+                curDist = math.sqrt((m[2].x1-wx)**2 + (m[2].z1-wz)**2)
+                if curDist < closestDistance:
+                    closestMarker = m
+                    closestDistance = curDist
+                m[2].color = 0x00ffffff
+                m[4].color = 0x00ffffff
+            if not closestMarker is None:
+                print("mark marker")
+                closestMarker[2].color = 0x00ffff00
+                closestMarker[4].color = 0x00ffff00
             self.update()
 
     def resizeEvent(self, e):
@@ -801,14 +850,14 @@ class MapView2(QWidget):
         fromPts = (0, 0)
         optLap = Lap()
 
-        if len(self.manualSplitPoints) > 0:
-            flip = self.manualSplitPoints[0][0] > self.manualSplitPoints[0][1]
+        if len(self.temporaryMarkers) > 0:
+            flip = self.temporaryMarkers[0][0] > self.temporaryMarkers[0][1]
             if flip:
                 optLap.preceeding = self.lap2.preceeding
             else:
                 optLap.preceeding = self.lap1.preceeding
 
-        for p in self.manualSplitPoints:
+        for p in self.temporaryMarkers:
             flip = (p[0]-fromPts[0]) > (p[1]-fromPts[1])
             if flip:
                 optLap.points += self.lap2.points[fromPts[1]:p[1]]
@@ -843,8 +892,20 @@ class MapView2(QWidget):
                 optLap.following.recreatePackage()
                 f.write(optLap.following.raw)
             
+    def delegateKeyReleaseEvent(self, e):
+        if e.key() == Qt.Key.Key_Shift.value:
+            print("SHIFT released")
+            self.shiftPressed = False
+            for m in self.temporaryMarkers:
+                m[2].color = 0x00ffffff
+                m[4].color = 0x00ffffff
+            self.update()
+
     def delegateKeyPressEvent(self, e):
-        if e.key() == Qt.Key.Key_Right.value:
+        if e.key() == Qt.Key.Key_Shift.value:
+            print("SHIFT pressed")
+            self.shiftPressed = True
+        elif e.key() == Qt.Key.Key_Right.value:
             self.moveRight()
         elif e.key() == Qt.Key.Key_Left.value:
             self.moveLeft()
@@ -892,14 +953,23 @@ class MapView2(QWidget):
             self.update()
         elif e.key() == Qt.Key.Key_W.value:
             self.writeFlippingLaps()
+        elif e.key() == Qt.Key.Key_O.value:
+            for m in self.temporaryMarkers:
+                for i in range(2,7):
+                    for ly in self.layers:
+                        if m[i] in ly:
+                            ly.remove (m[i])
+            self.temporaryMarkers = []
+            self.optimizeLap()
+            self.update()
 
         elif e.key() == Qt.Key.Key_C.value:
             for m in self.temporaryMarkers:
-                for ly in self.layers:
-                    if m in ly:
-                        ly.remove (m)
+                for i in range(2,7):
+                    for ly in self.layers:
+                        if m[i] in ly:
+                            ly.remove (m[i])
             self.temporaryMarkers = []
-            self.manualSplitPoints = []
             self.update()
 
         elif e.key() == Qt.Key.Key_1.value:
