@@ -1047,6 +1047,7 @@ class MainWindow(QMainWindow):
         self.closestIRefA = 0
         self.closestIRefB = 0
         self.closestIRefC = 0
+        self.lapProgress = 0
 
         pal = self.pedalLast.palette()
         self.pedalLast.setText("")
@@ -1337,51 +1338,21 @@ class MainWindow(QMainWindow):
         elif curPoint.total_laps > 0:
             lapValue = curPoint.total_laps - curPoint.current_lap + 1
             if self.lapDecimals:
-                if self.closestIRefA > 0:
-                    lapValue -= self.closestIRefA / len(self.refLaps[0].points)
-                elif self.closestIRefB > 0:
-                    lapValue -= self.closestIRefB / len(self.refLaps[1].points)
-                elif self.closestIRefC > 0:
-                    lapValue -= self.closestIRefC / len(self.refLaps[2].points)
-                elif self.closestIBest > 0:
-                    lapValue -= (
-                        self.closestILast / len(self.previousLaps[-1].points) +
-                        self.closestIBest / len(self.previousLaps[self.bestLap].points) +
-                        self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                lapValue -= self.lapProgress
                 lapValue = round(lapValue, 2)
             self.header.setText(str(lapValue) + " LAPS LEFT" + lapSuffix)
         else:
             lapValue = curPoint.current_lap
             if self.lapDecimals:
-                if self.closestIRefA > 0:
-                    lapValue += self.closestIRefA / len(self.refLaps[0].points)
-                elif self.closestIRefB > 0:
-                    lapValue += self.closestIRefB / len(self.refLaps[1].points)
-                elif self.closestIRefC > 0:
-                    lapValue += self.closestIRefC / len(self.refLaps[2].points)
-                elif self.closestIBest > 0:
-                    lapValue += (
-                        self.closestILast / len(self.previousLaps[-1].points) +
-                        self.closestIBest / len(self.previousLaps[self.bestLap].points) +
-                        self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                lapValue += self.lapProgress
                 lapValue = round(lapValue, 2)
             self.header.setText("LAP " + str(lapValue) + lapSuffix)
 
     def updateFuelAndWarnings(self, curPoint):
-        if self.refueled > 0:
+        if (curPoint.current_fuel / curPoint.fuel_capacity) < 1:
             lapValue = self.refueled
             if self.lapDecimals:
-                if self.closestIRefA > 0:
-                    lapValue += self.closestIRefA / len(self.refLaps[0].points)
-                elif self.closestIRefB > 0:
-                    lapValue += self.closestIRefB / len(self.refLaps[1].points)
-                elif self.closestIRefC > 0:
-                    lapValue += self.closestIRefC / len(self.refLaps[2].points)
-                elif self.closestIBest > 0:
-                    lapValue += (
-                        self.closestILast / len(self.previousLaps[-1].points) +
-                        self.closestIBest / len(self.previousLaps[self.bestLap].points) +
-                        self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                lapValue += self.lapProgress
                 lapValue = round(lapValue, 2)
             refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
         else:
@@ -1432,10 +1403,7 @@ class MainWindow(QMainWindow):
 
                 lapValue = 1
                 if self.lapDecimals and self.closestILast > 0:
-                    lapValue -= (
-                            self.closestILast / len(self.previousLaps[-1].points) +
-                            self.closestIBest / len(self.previousLaps[self.bestLap].points) +
-                            self.closestIMedian / len(self.previousLaps[self.medianLap].points)) / 3
+                    lapValue -= self.lapProgress
                 
                 if self.lapDecimals and round(lapsFuel, 2) < 1 and lapsFuel < lapValue:
                     pal = self.laps.palette()
@@ -1605,24 +1573,11 @@ class MainWindow(QMainWindow):
         refC.timeDiffWidget = self.timeDiffRefC
         refC.id = 4
              
-        refA.closestPoint, refA.closestIndex, refA.closestOffsetPoint = self.findClosestPoint (self.refLaps[0].points, curPoint, refA.closestIndex)
-        self.closestIRefA = refA.closestIndex 
-        refB.closestPoint, refB.closestIndex, refB.closestOffsetPoint = self.findClosestPoint (self.refLaps[1].points, curPoint, refB.closestIndex)
-        self.closestIRefB = refB.closestIndex 
-        refC.closestPoint, refC.closestIndex, refC.closestOffsetPoint = self.findClosestPoint (self.refLaps[2].points, curPoint, refC.closestIndex)
-        self.closestIRefC = refC.closestIndex 
-        
         refA.nextBrake = self.findNextBrake(self.refLaps[0].points, refA.closestIndex)
         refB.nextBrake = self.findNextBrake(self.refLaps[1].points, refB.closestIndex)
         refC.nextBrake = self.findNextBrake(self.refLaps[2].points, refC.closestIndex)
 
         if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
-            last.closestPoint, last.closestIndex, last.closestOffsetPoint = self.findClosestPoint (self.previousLaps[-1].points, curPoint, last.closestIndex)
-            self.closestILast = last.closestIndex 
-            best.closestPoint, best.closestIndex, best.closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, best.closestIndex)
-            self.closestIBest = best.closestIndex 
-            median.closestPoint, median.closestIndex, median.closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, median.closestIndex)
-            self.closestIMedian = median.closestIndex 
             best.nextBrake = self.findNextBrake(self.previousLaps[self.bestLap].points, best.closestIndex)
 
         pal = self.palette()
@@ -1674,6 +1629,47 @@ class MainWindow(QMainWindow):
                 self.updateLiveStats(liveStats)
                 self.trackPreviouslyIdentified = self.trackDetector.getTrack()
 
+    def determineLapProgress(self, curPoint):
+        closestPoint, self.closestIRefA, closestOffsetPoint = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
+        closestPoint, self.closestIRefB, closestOffsetPoint = self.findClosestPoint (self.refLaps[1].points, curPoint, self.closestIRefB)
+        closestPoint, self.closestIRefC, closestOffsetPoint = self.findClosestPoint (self.refLaps[2].points, curPoint, self.closestIRefC)
+        
+        if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
+            closestPoint, self.closestILast, closestOffsetPoint = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
+            closestPoint, self.closestIBest, closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
+            closestPoint, self.closestIMedian, closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
+
+        lpBest = -1
+        lpA = -1
+        lpB = -1
+        lpC = -1
+        tp = -1
+
+        if self.closestIRefA > 0:
+            lpA = self.closestIRefA / len(self.refLaps[0].points)
+        if self.closestIRefB > 0:
+            lpB = self.closestIRefB / len(self.refLaps[1].points)
+        if self.closestIRefC > 0:
+            lpC = self.closestIRefC / len(self.refLaps[2].points)
+
+        if self.closestIBest > 0:
+            lpBest = self.closestIBest / len(self.previousLaps[self.bestLap].points)
+
+        if self.trackDetector.trackIdentified():
+            tp = self.trackDetector.determineTrackProgress(curPoint)
+            if self.lapProgress > 0.9 and tp < 0.1:
+                tp = 1.0
+
+        if lpBest != -1:
+            self.lapProgress = lpBest
+        elif lpA != -1:
+            self.lapProgress = lpA
+        elif lpB != -1:
+            self.lapProgress = lpB
+        elif lpC != -1:
+            self.lapProgress = lpC
+        elif tp != -1:
+            self.lapProgress = tp
 
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
@@ -1748,19 +1744,19 @@ class MainWindow(QMainWindow):
                             print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
                             if self.bigCountdownBrakepoint == 2 and not self.refLaps[0] is None and self.refLaps[0].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
-                                self.showUiMsg("BEAT REFERENCE LAP", 2)
+                                self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
                             elif self.bigCountdownBrakepoint == 3 and not self.refLaps[1] is None and self.refLaps[1].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
-                                self.showUiMsg("BEAT REFERENCE LAP", 2)
+                                self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
                             elif self.bigCountdownBrakepoint == 4 and not self.refLaps[2] is None and self.refLaps[2].time > curPoint.last_lap:
                                 print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
-                                self.showUiMsg("BEAT REFERENCE LAP", 2)
+                                self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
@@ -1814,6 +1810,7 @@ class MainWindow(QMainWindow):
                     self.closestIRefA = 0
                     self.closestIRefB = 0
                     self.closestIRefC = 0
+                    self.lapProgress = 0
 
                     print("\nBest lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
                     print("Median lap:", self.medianLap, msToTime(self.previousLaps[self.medianLap].time))
@@ -1897,15 +1894,12 @@ class MainWindow(QMainWindow):
                 if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
                     continue
 
-                #print(curPoint.position_x, curPoint.position_z)
-
                 # Detect new session
                 if not self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
                     self.initRace()
                     continue
-                #elif self.keepLaps and curPoint.current_lap <= 0 and not self.circuitExperience:
-                    #self.initRun()
 
+                self.determineLapProgress(curPoint)
                 if reverseEngineeringMode:
                     self.updateReverseEngineering(curPoint)
                 self.updateTyreTemps(curPoint)
@@ -1916,7 +1910,7 @@ class MainWindow(QMainWindow):
                 self.updateLaps(curPoint)
                 self.handleTrackDetect(curPoint)
 
-                # Update live stats
+                # Update live stats description
                 if not self.newRunDescription is None and len(self.sessionStats) > 0:
                     self.sessionStats[-1].description = self.newRunDescription
                     self.newRunDescription = None

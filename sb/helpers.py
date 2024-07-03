@@ -49,11 +49,8 @@ class Lap:
     def updateTime(self):
         if self.following is None:
             self.time = len(self.points) * 1/59.94
-            print("Estimate time", len(self.points), self.time)
         else:
             self.time = self.following.last_lap
-            print("Use following time", self.time)
-        print(msToTime(self.time))
 
     def findClosestPointNoLimit(self, p):
         shortestDistance = 100000000
@@ -77,39 +74,34 @@ class Lap:
 def loadLap(fn):
     lap = Lap()
     if len(fn)>0:
-        print(fn)
+        print("Load lap", fn)
         with open(fn, "rb") as f:
             allData = f.read()
             curIndex = 0
-            print(len(allData)/296, "frames")
             while curIndex < len(allData):
                 data = allData[curIndex:curIndex + 296]
                 curIndex += 296
                 ddata = salsa20_dec(data)
                 curPoint = Point(ddata, data)
                 if len(lap.points) == 1 and curPoint.current_lap != lap.points[0].current_lap:
-                    print("Found preceeding point")
                     lap.preceeding = lap.points[0]
                     lap.points = []
                 lap.points.append(curPoint)
             if len(lap.points) > 1 and lap.points[-1].current_lap != lap.points[-2].current_lap:
-                print("Found following point")
                 lap.following = lap.points[-1]
                 lap.points.pop(-1)
             
-    print(len(lap.points))
     lap.updateTime()
     return lap
 
 def loadLaps(fn):
     result = []
     if len(fn)>0:
-        print(fn)
+        print("Load laps:", fn)
         with open(fn, "rb") as f:
             allData = f.read()
             curIndex = 0
             curLap = -10
-            print(len(allData)/296, "frames")
             while curIndex < len(allData):
                 data = allData[curIndex:curIndex + 296]
                 curIndex += 296
@@ -121,7 +113,6 @@ def loadLaps(fn):
                 result[-1].points.append(curPoint)
     for i in range(1, len(result)):
         if result[i].points[0].current_lap == result[i-1].points[-1].current_lap+1:
-            print("Found preceeding/following points")
             result[i].preceeding = result[i-1].points[-1]
             result[i-1].following = result[i].points[0]
         

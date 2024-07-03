@@ -111,6 +111,10 @@ class TrackDetector:
     def addPoint(self, p):
         self.curLap.points.append(p)
 
+    def determineTrackProgress(self, p): # TODO: Lap change error
+        lp, pi, d = self.tracks[0].lap.findClosestPointNoLimit(p)
+        return (lp.package_id - self.tracks[0].lap.points[0].package_id) / (self.tracks[0].lap.points[-1].package_id - self.tracks[0].lap.points[0].package_id)
+
     def detect(self): # TODO use threading or are reference tracks small enough?
         for t in self.tracks:
             # TODO detect finish line position
