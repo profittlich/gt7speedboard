@@ -132,7 +132,6 @@ class MainWindow(QMainWindow):
         self.showOptimalLap = False # TODO implement
 
         self.keepLaps = False
-        self.saveRuns = False
 
         self.newMessage = None
         self.messages = []
@@ -721,6 +720,8 @@ class MainWindow(QMainWindow):
         self.masterWidget = QStackedWidget()
         self.dashWidget = QWidget()
         self.masterWidget.addWidget(self.dashWidget)
+
+        self.uiMsgPageScroller = QScrollArea()
         self.uiMsg = QLabel("Welcome to GT7 Speedboard")
         self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.uiMsg.setAutoFillBackground(True)
@@ -728,6 +729,11 @@ class MainWindow(QMainWindow):
         font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.uiMsg.setFont(font)
+
+        self.uiMsgPageScroller.setWidget(self.uiMsg)
+        self.uiMsgPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.uiMsgPageScroller.setWidgetResizable(True)
 
         self.statsPageScroller = QScrollArea()
         self.statsPage = QLabel(self.sessionName + "\nSession stats not available, yet")
@@ -749,7 +755,7 @@ class MainWindow(QMainWindow):
         self.liveStats = ""
         self.runStats = ""
 
-        self.masterWidget.addWidget(self.uiMsg)
+        self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsPageScroller)
 
         if reverseEngineeringMode:
@@ -804,7 +810,6 @@ class MainWindow(QMainWindow):
         ip = self.startWindow.ip.text()
 
         self.keepLaps = self.startWindow.keepLaps.isChecked()
-        self.saveRuns = self.startWindow.saveRuns.isChecked()
 
         self.lapDecimals = self.startWindow.lapDecimals.isChecked()
         self.showOptimalLap = self.startWindow.cbOptimal.isChecked()
@@ -870,7 +875,6 @@ class MainWindow(QMainWindow):
         settings.setValue("ip", ip)
         
         settings.setValue("keepLaps", self.keepLaps)
-        settings.setValue("saveRuns", self.saveRuns)
 
         settings.setValue("fontScale", self.fontScale)
         settings.setValue("lapDecimals", self.lapDecimals)
@@ -1047,6 +1051,18 @@ class MainWindow(QMainWindow):
         self.closestIRefA = 0
         self.closestIRefB = 0
         self.closestIRefC = 0
+        self.closestPointLast = None
+        self.closestPointBest = None
+        self.closestPointMedian = None
+        self.closestPointRefA = None
+        self.closestPointRefB = None
+        self.closestPointRefC = None
+        self.closestOffsetPointLast = None
+        self.closestOffsetPointBest = None
+        self.closestOffsetPointMedian = None
+        self.closestOffsetPointRefA = None
+        self.closestOffsetPointRefB = None
+        self.closestOffsetPointRefC = None
         self.lapProgress = 0
 
         pal = self.pedalLast.palette()
@@ -1087,6 +1103,8 @@ class MainWindow(QMainWindow):
         print("Clear sessions")
         self.sessionStats = []
         self.sessionStart = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        self.initRun()
 
     def tyreTempQColor(self, temp):
         col = QColor()
@@ -1246,7 +1264,7 @@ class MainWindow(QMainWindow):
         self.statsPage.setText(statTxt)
 
 
-    def updateRunStats(self):
+    def updateRunStats(self, saveRuns = False):
         carStatTxt = '<br><font size="3">RUNS:</font><br>'
         carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h);Description\n"
         sessionI = 1
@@ -1259,7 +1277,7 @@ class MainWindow(QMainWindow):
             carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font><br><font size="1">' + i.description + "</font>"
             carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + ";" + str(i.topSpeed) + ";" + i.description + "\n"
             sessionI += 1
-        if self.saveRuns:
+        if saveRuns:
             prefix = self.storageLocation + "/"
             if len(self.sessionName) > 0:
                 prefix += self.sessionName + " - "
@@ -1527,6 +1545,8 @@ class MainWindow(QMainWindow):
 
         best = SpeedData()
         best.closestIndex = self.closestIBest
+        best.closestPoint = self.closestPointBest
+        best.closestOffsetPoint = self.closestOffsetPointBest
         best.speedWidget = self.speedBest
         best.pedalWidget = self.pedalBest
         best.lineWidget = self.lineBest
@@ -1535,6 +1555,8 @@ class MainWindow(QMainWindow):
              
         median = SpeedData()
         median.closestIndex = self.closestIMedian
+        median.closestPoint = self.closestPointMedian
+        median.closestOffsetPoint = self.closestOffsetPointMedian
         median.speedWidget = self.speedMedian
         median.pedalWidget = self.pedalMedian
         median.lineWidget = self.lineMedian
@@ -1543,22 +1565,28 @@ class MainWindow(QMainWindow):
              
         last = SpeedData()
         last.closestIndex = self.closestILast
+        last.closestPoint = self.closestPointLast
+        last.closestOffsetPoint = self.closestOffsetPointLast
         last.speedWidget = self.speedLast
         last.pedalWidget = self.pedalLast
         last.lineWidget = self.lineLast
         last.timeDiffWidget = self.timeDiffLast
         last.id = 102
-             
+
         refA = SpeedData()
         refA.closestIndex = self.closestIRefA
+        refA.closestPoint = self.closestPointRefA
+        refA.closestOffsetPoint = self.closestOffsetPointRefA
         refA.speedWidget = self.speedRefA
         refA.pedalWidget = self.pedalRefA
         refA.lineWidget = self.lineRefA
         refA.timeDiffWidget = self.timeDiffRefA
         refA.id = 2
-             
+
         refB = SpeedData()
         refB.closestIndex = self.closestIRefB
+        refB.closestPoint = self.closestPointRefB
+        refB.closestOffsetPoint = self.closestOffsetPointRefB
         refB.speedWidget = self.speedRefB
         refB.pedalWidget = self.pedalRefB
         refB.lineWidget = self.lineRefB
@@ -1567,6 +1595,8 @@ class MainWindow(QMainWindow):
              
         refC = SpeedData()
         refC.closestIndex = self.closestIRefC
+        refC.closestPoint = self.closestPointRefC
+        refC.closestOffsetPoint = self.closestOffsetPointRefC
         refC.speedWidget = self.speedRefC
         refC.pedalWidget = self.pedalRefC
         refC.lineWidget = self.lineRefC
@@ -1615,6 +1645,8 @@ class MainWindow(QMainWindow):
             self.trackDetector.detect()
 
             if self.trackPreviouslyIdentified != self.trackDetector.getTrack():
+                if self.trackDetector.trackIdentified():
+                    self.showUiMsg("Welcome to<br>" + self.trackDetector.getTrack(), 1)
                 print("Track:", self.trackDetector.getTrack())
                 liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
                 liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
@@ -1630,14 +1662,16 @@ class MainWindow(QMainWindow):
                 self.trackPreviouslyIdentified = self.trackDetector.getTrack()
 
     def determineLapProgress(self, curPoint):
-        closestPoint, self.closestIRefA, closestOffsetPoint = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
-        closestPoint, self.closestIRefB, closestOffsetPoint = self.findClosestPoint (self.refLaps[1].points, curPoint, self.closestIRefB)
-        closestPoint, self.closestIRefC, closestOffsetPoint = self.findClosestPoint (self.refLaps[2].points, curPoint, self.closestIRefC)
-        
+        self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
+        self.closestPointRefB, self.closestIRefB, self.closestOffsetPointRefB = self.findClosestPoint (self.refLaps[1].points, curPoint, self.closestIRefB)
+        self.closestPointRefC, self.closestIRefC, self.closestOffsetPointRefC = self.findClosestPoint (self.refLaps[2].points, curPoint, self.closestIRefC)
+       
+        if len(self.previousLaps) > 0:
+            self.closestPointLast, self.closestILast, self.closestOffsetPointLast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
+
         if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
-            closestPoint, self.closestILast, closestOffsetPoint = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
-            closestPoint, self.closestIBest, closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
-            closestPoint, self.closestIMedian, closestOffsetPoint = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
+            self.closestPointBest, self.closestIBest, self.closestOffsetPointBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
+            self.closestPointMedian, self.closestIMedian, self.closestOffsetPointMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
 
         lpBest = -1
         lpA = -1
@@ -1671,6 +1705,7 @@ class MainWindow(QMainWindow):
         elif tp != -1:
             self.lapProgress = tp
 
+
     def handleLapChanges(self, curPoint):
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
@@ -1700,6 +1735,7 @@ class MainWindow(QMainWindow):
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
                 self.debugOldLapTime = debugNewLapTime
                 if curPoint.current_lap == 1:
+                    print("lap is 1 -> init")
                     self.initRun()
 
             # Update live stats
@@ -1764,6 +1800,7 @@ class MainWindow(QMainWindow):
                         # Update session stats
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
+                                print("no stats --> init")
                                 self.initRun()
                             self.sessionStats[-1].carId = curPoint.car_id
                             self.sessionStats[-1].addLapTime(lastLapTime, self.lastLap)
@@ -1810,6 +1847,18 @@ class MainWindow(QMainWindow):
                     self.closestIRefA = 0
                     self.closestIRefB = 0
                     self.closestIRefC = 0
+                    self.closestPointLast = None
+                    self.closestPointBest = None
+                    self.closestPointMedian = None
+                    self.closestPointRefA = None
+                    self.closestPointRefB = None
+                    self.closestPointRefC = None
+                    self.closestOffsetPointLast = None
+                    self.closestOffsetPointBest = None
+                    self.closestOffsetPointMedian = None
+                    self.closestOffsetPointRefA = None
+                    self.closestOffsetPointRefB = None
+                    self.closestOffsetPointRefC = None
                     self.lapProgress = 0
 
                     print("\nBest lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
@@ -1874,6 +1923,8 @@ class MainWindow(QMainWindow):
 
             if diff > 10:
                 print("Too many frame drops! Data will be corrupted.")
+                self.trackDetector.reset()
+                self.trackPreviouslyIdentified = ""
             elif diff > 1:
                 print("Frame drops propagated:", diff-1)
                 for i in range(diff-1):
@@ -2017,6 +2068,9 @@ class MainWindow(QMainWindow):
                     self.returnToDash()
                 else:
                     self.masterWidget.setCurrentIndex(2)
+            elif e.key() == Qt.Key.Key_T.value:
+                self.updateRunStats(saveRuns=True)
+                self.showUiMsg("Run table saved.", 2)
             elif e.key() == Qt.Key.Key_Question:
                 self.showUiMsg (shortcutText, 0, leftAlign=True, waitForKey=True)
             #elif e.key() == Qt.Key.Key_T.value:

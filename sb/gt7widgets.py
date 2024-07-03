@@ -14,9 +14,10 @@ shortcutText = "ESC \t return to configuration\n" \
              + "W \t save warning markers\n" \
              + "D \t Set a description for the current run\n" \
              + "S \t Show runs and statistics\n"  \
+             + "T \t Save CSV table of runs\n"  \
              + "UP \t Show brake point notifications a bit later\n"  \
              + "DOWN \t Show brake point notifications a bit earlier\n"  \
-             + "0 \t Reset brake point notification timing\n"  \
+             + "0 (zero)\t Reset brake point notification timing\n"  \
              + "R \t start/stop raw recording (not recommended)\n"
 
 class StartWindow(QWidget):
@@ -57,9 +58,6 @@ class StartWindow(QWidget):
 
         self.keepLaps = QCheckBox("Keep laps through setup changes and sessions (experimental)")
         gnLayout.addWidget(self.keepLaps)
-
-        self.saveRuns = QCheckBox("Save runs to CSV file (experimental)")
-        gnLayout.addWidget(self.saveRuns)
 
         # VIEW
         vwGroup = QGroupBox("View")
@@ -232,7 +230,6 @@ class StartWindow(QWidget):
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
 
         self.keepLaps.setChecked(settings.value("keepLaps") in [ True, "true"])
-        self.saveRuns.setChecked(settings.value("saveRuns") in [ True, "true"])
 
         self.ip.setText(settings.value("ip", ""))
         self.storageLocation = settings.value("storageLocation", "")
@@ -631,6 +628,7 @@ class TimeDeviation(QWidget):
     def __init__(self):
         super().__init__()
         self.maxDiff = 1.0 * 59.94
+        self.additionalDiffFactor = 4
         self.difference = 0
         self.redGradient = QLinearGradient (0, 10,0,120);
         self.redGradient.setColorAt(0.0, QColor("#222"))
@@ -657,16 +655,19 @@ class TimeDeviation(QWidget):
         font.setBold(True)
         self.setFont(font)
         clippedDifference = min(self.maxDiff, max(-self.maxDiff, self.difference))
+        lineLen = self.width()
         if self.difference > 0:
             self.redGradient.setStart(0, self.height()/2)
             self.redGradient.setFinalStop(0, self.height()/2 + clippedDifference/self.maxDiff * self.height() / 2)
             qp.fillRect(0, int(self.height()/2), int(self.width()), int(clippedDifference/self.maxDiff * self.height() / 2), self.redGradient)
-            qp.drawLine(0, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2), int(self.width()), int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2))
+            lineLen = max(0, min(lineLen, lineLen * (1-(self.difference - self.maxDiff) / (self.additionalDiffFactor * self.maxDiff))))
         else:
             self.greenGradient.setStart(0, self.height()/2)
             self.greenGradient.setFinalStop(0, self.height()/2 + clippedDifference/self.maxDiff * self.height() / 2)
             qp.fillRect(0, int(self.height()/2), int(self.width()), int(clippedDifference/self.maxDiff * self.height() / 2), self.greenGradient)
-            qp.drawLine(0, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2), int(self.width()), int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2))
+            lineLen = max(0, min(lineLen, lineLen * (1-(-self.difference - self.maxDiff) / (self.additionalDiffFactor * self.maxDiff))))
+        lineLen = int(lineLen)
+        qp.drawLine(0, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2), lineLen, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2))
         qp.drawLine(0, int(self.height()/2), int (self.width()), int(self.height()/2))
         qp.end()
 

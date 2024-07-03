@@ -61,6 +61,7 @@ class TrackDetector:
         if not True in hits:
             return False
         rhits = list(reversed(hits))
+        #for h in rhits[rhits.index(True):len(hits)-1-hits.index(True)]:
         for h in rhits[rhits.index(True):]:
             if not h:
                 gapCountdown -= 1
@@ -103,8 +104,8 @@ class TrackDetector:
             return False
         elif len(self.tracks) == 1 and len(self.curLap.points) > 100:
             return True
-        elif len(self.curLap.points) > 100 and self.checkPrefix():
-            return True
+        #elif len(self.curLap.points) > 100 and self.checkPrefix():
+            #return True
         else:
             return False
 
@@ -129,6 +130,7 @@ class TrackDetector:
                     print("Remaining track:", self.tracks[0].name, "after", len(self.curLap.points))
             elif self.hasGaps(t.hits):
                 print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", len(self.curLap.points))
+                print(t.hits, t.hits.index(True))
                 self.tracks.remove(t)
                 print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
@@ -144,6 +146,8 @@ class TrackDetector:
                     t.reverseCount += 1
                     t.hits[pi] = True
                 t.curPos = pi
+        if len(self.tracks) == 0:
+            self.reset()
 
     def detector (self):
         p = self.loadedLap.points[0]
