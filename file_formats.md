@@ -18,7 +18,7 @@ Like .gt7lap files, but containing multiple laps. There are no duplicate package
 
 ### .gt7track files
 
-Like .gt7lap files, but with fewer packages. Only packages that are significant to the shape of the racing line or track are stored. Two consecutive packages do not necessarily have consecutive package_ids (are rarely will). However, two consecutive packages are never further than 25m apart.
+Like .gt7lap files, but with fewer packages. Only packages that are significant to the shape of the racing line or track are stored. Two consecutive packages do not necessarily have consecutive package_ids (are rarely will). However, two consecutive packages are never further than 50m apart.
 
 ## Configuration
 
