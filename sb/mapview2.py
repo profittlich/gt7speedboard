@@ -39,6 +39,9 @@ class MapView2(QWidget):
         self.fileB = b
         self.lap1 = lap1
         self.lap2 = lap2
+        self.zoom = 1/1.1
+        self.offsetX = 0
+        self.offsetZ = 0
         self.findExtents()
         self.makeGraphic()
         self.makeLapInfo()
