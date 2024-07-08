@@ -22,6 +22,7 @@ exe = EXE(
     a.datas,
     [],
     name='SpeedBoard for GT7',
+    icon='doc/104. steer wheel.png',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
