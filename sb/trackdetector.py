@@ -57,8 +57,8 @@ class TrackDetector:
     def loadTarget (self, fni):
         self.loadedLap = loadLap(fni)
 
-    def hasGaps(self, t): # TODO handle reverse tracks
-        hits = t.hits #[2:-2]
+    def hasGaps(self, t):
+        hits = t.hits #[2:-2] # TODO: pit positions at finish line can cause trouble
         gapCountdown = self.maxGapLength
         if not True in hits:
             return False

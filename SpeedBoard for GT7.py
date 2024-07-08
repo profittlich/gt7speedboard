@@ -9,6 +9,9 @@ import math
 import queue
 import datetime
 import time
+from pathlib import Path
+import platform
+
 from cProfile import Profile
 from pstats import SortKey, Stats
 
@@ -106,7 +109,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("GT7 SpeedBoard (BETA2)")
+        self.setWindowTitle("GT7 SpeedBoard (BETA3)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -1017,7 +1020,11 @@ class MainWindow(QMainWindow):
 
     def initRace(self):
         self.trackDetector = TrackDetector()
-        self.trackDetector.loadRefsFromDirectory("./tracks") # TODO correct relative path for packaged versions
+        testPath = Path("./tracks")
+        if testPath.is_dir():
+            self.trackDetector.loadRefsFromDirectory("./tracks")
+        elif platform.system() == "Darwin":
+            self.trackDetector.loadRefsFromDirectory(sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/tracks")
         self.trackPreviouslyIdentified = ""
 
         self.brakeOffset = 0
