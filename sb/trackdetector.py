@@ -10,6 +10,7 @@ class TrackInfo:
         self.lap = None
         self.name = None
         self.hits = []
+        self.firstHit = None
         self.curPos = 0
         self.forwardCount = 0
         self.reverseCount = 0
@@ -19,7 +20,7 @@ class TrackDetector:
         self.curLap = Lap()
         self.loadedTracks = []
         self.tracks = []
-        self.eliminateDistance = 30
+        self.eliminateDistance = 50
         self.validAngle = 15
         self.maxGapLength = 10
         self.lastTrack =  "Multiple track candidates"
@@ -56,12 +57,17 @@ class TrackDetector:
     def loadTarget (self, fni):
         self.loadedLap = loadLap(fni)
 
-    def hasGaps(self, hits):
+    def hasGaps(self, t): # TODO handle reverse tracks
+        hits = t.hits #[2:-2]
         gapCountdown = self.maxGapLength
         if not True in hits:
             return False
-        rhits = list(reversed(hits))
-        #for h in rhits[rhits.index(True):len(hits)-1-hits.index(True)]:
+        if t.firstHit is None:
+            rhits = hits
+        else:
+            rhits = hits[t.firstHit:]
+        if t.forwardCount > t.reverseCount:
+            rhits = list(reversed(rhits))
         for h in rhits[rhits.index(True):]:
             if not h:
                 gapCountdown -= 1
@@ -89,6 +95,8 @@ class TrackDetector:
             return self.lastTrack
         elif len(self.tracks) == 1:
             self.lastTrack = self.tracks[0].name
+            if self.tracks[0].reverseCount > self.tracks[0].forwardCount:
+                self.lastTrack += " - reversed"
             return self.lastTrack
         elif self.checkPrefix():
             self.lastTrack = self.tracks[0].name[:self.tracks[0].name.index(" - ")]
@@ -114,24 +122,32 @@ class TrackDetector:
 
     def determineTrackProgress(self, p): # TODO: Lap change error
         lp, pi, d = self.tracks[0].lap.findClosestPointNoLimit(p)
-        return (lp.package_id - self.tracks[0].lap.points[0].package_id) / (self.tracks[0].lap.points[-1].package_id - self.tracks[0].lap.points[0].package_id)
+        prog = (lp.package_id - self.tracks[0].lap.points[0].package_id) / (self.tracks[0].lap.points[-1].package_id - self.tracks[0].lap.points[0].package_id)
+        if self.tracks[0].forwardCount > self.tracks[0].reverseCount:
+            return prog
+        else:
+            return 1-prog
+        
 
     def detect(self): # TODO use threading or are reference tracks small enough?
+        hasEliminated = False
         for t in self.tracks:
             # TODO detect finish line position
             lp, pi, d = t.lap.findClosestPointNoLimit(self.curLap.points[-1])
             if d > self.eliminateDistance:
                 print("Eliminate", t.name, pi, d, lp.current_lap, "after", len(self.curLap.points))
                 self.tracks.remove(t)
+                hasEliminated = True
                 print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
                 if len(self.tracks) == 1:
                     print("Remaining track:", self.tracks[0].name, "after", len(self.curLap.points))
-            elif self.hasGaps(t.hits):
-                print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", len(self.curLap.points))
+            elif self.hasGaps(t):
+                print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", len(self.curLap.points), "first", t.firstHit)
                 print(t.hits, t.hits.index(True))
                 self.tracks.remove(t)
+                hasEliminated = True
                 print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
@@ -141,11 +157,24 @@ class TrackDetector:
                 a = self.curLap.angle(lp, self.curLap.points[-1])
                 if a < (3.14159 * self.validAngle / 180):
                     t.forwardCount += 1
+                    if t.firstHit is None:
+                        print(t.name, "First hit:", pi)
+                        t.firstHit = pi
+                    elif t.hits[t.firstHit-1]:
+                        t.firstHit = 0
                     t.hits[pi] = True
                 elif a > (3.14159 * (180 - self.validAngle) / 180):
                     t.reverseCount += 1
+                    if t.firstHit is None:
+                        print(t.name, "First hit:", pi)
+                        t.firstHit = pi
+                    elif t.hits[t.firstHit-1]:
+                        t.firstHit = 0
                     t.hits[pi] = True
                 t.curPos = pi
+        if hasEliminated:
+            for t in self.tracks:
+                print(t.name, round(100 * t.hits.count(True) / len(t.hits)), "%", t.firstHit)
         if len(self.tracks) == 0:
             self.reset()
 

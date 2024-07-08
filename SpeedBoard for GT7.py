@@ -985,8 +985,8 @@ class MainWindow(QMainWindow):
         self.sessionStats.append (Run(len(self.previousLaps)))
 
         # Re-detect track
-        self.trackDetector.reset()
-        self.trackPreviouslyIdentified = ""
+        #self.trackDetector.reset()
+        #self.trackPreviouslyIdentified = ""
 
 
     def markBigCountdownField(self):
@@ -1030,7 +1030,7 @@ class MainWindow(QMainWindow):
         self.lastFuel = -1
         self.lastFuelUsage = []
         self.fuelFactor = 0
-        self.refueled = 0
+        self.refueled = -1
 
         self.bigCountdownBrakepoint = self.initialBigCountdownBrakepoint
         self.markBigCountdownField()
@@ -1372,7 +1372,7 @@ class MainWindow(QMainWindow):
             if self.lapDecimals:
                 lapValue += self.lapProgress
                 lapValue = round(lapValue, 2)
-            refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
+            refuelLaps = "<br>" + str (max(0,lapValue)) + " SINCE REFUEL"
         else:
             refuelLaps = ""
 
@@ -1640,7 +1640,9 @@ class MainWindow(QMainWindow):
             self.noThrottleCount=0
 
     def handleTrackDetect(self, curPoint):
-        if not self.trackDetector.trackIdentified() and not len(self.trackDetector.tracks) == 0:
+        if len(self.trackDetector.tracks) == 0:
+            trackDetector.reset()
+        if True: #not self.trackDetector.trackIdentified() and not len(self.trackDetector.tracks) == 0:
             self.trackDetector.addPoint(curPoint)
             self.trackDetector.detect()
 
