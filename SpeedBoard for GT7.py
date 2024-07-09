@@ -1037,7 +1037,7 @@ class MainWindow(QMainWindow):
         self.lastFuel = -1
         self.lastFuelUsage = []
         self.fuelFactor = 0
-        self.refueled = -1
+        self.refueled = 0
 
         self.bigCountdownBrakepoint = self.initialBigCountdownBrakepoint
         self.markBigCountdownField()
@@ -1374,25 +1374,32 @@ class MainWindow(QMainWindow):
             self.header.setText("LAP " + str(lapValue) + lapSuffix)
 
     def updateFuelAndWarnings(self, curPoint):
-        if (curPoint.current_fuel / curPoint.fuel_capacity) < 1:
+        fuel_capacity = curPoint.fuel_capacity
+        postfix = "%"
+        if fuel_capacity == 0: # EV
+            fuel_capacity = 100
+            postfix = " kWh"
+
+        if not self.previousPoint is None and curPoint.current_fuel > self.previousPoint.current_fuel:
+            print("Refueled!")
+            self.refueled = 0
+
+        if (curPoint.current_fuel / fuel_capacity) < 1:
             lapValue = self.refueled
             if self.lapDecimals:
                 lapValue += self.lapProgress
                 lapValue = round(lapValue, 2)
-            refuelLaps = "<br>" + str (max(0,lapValue)) + " SINCE REFUEL"
+            refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
         else:
             refuelLaps = ""
 
         if self.fuelFactor != 0:
-            fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + "% PER LAP<br>" + str(round(1 / self.fuelFactor,1)) + " FULL RANGE"
+            fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + postfix + " PER LAP<br>" + str(round(1 / self.fuelFactor,1)) + " FULL RANGE"
         else:
             fuelLapPercent = ""
 
         self.fuel.setTextFormat(Qt.TextFormat.RichText)
-        if curPoint.fuel_capacity > 0:
-            self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / curPoint.fuel_capacity)) + "%</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
-        else:
-            self.fuel.setText("<font size=6>unknown</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>") # TODO handle EVs correctly
+        self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / fuel_capacity)) + postfix + "</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
         if not self.previousPoint is None:
             fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
             fuelConsumption *= self.psFPS * 60 * 60 # l per hour
@@ -1423,7 +1430,7 @@ class MainWindow(QMainWindow):
 
         if not self.circuitExperience and not messageShown:
             if self.fuelFactor > 0:
-                lapsFuel = curPoint.current_fuel / curPoint.fuel_capacity / self.fuelFactor
+                lapsFuel = curPoint.current_fuel / fuel_capacity / self.fuelFactor
                 self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>")
 
                 lapValue = 1
@@ -1454,7 +1461,7 @@ class MainWindow(QMainWindow):
                     pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
                     pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
                     self.laps.setPalette(pal)
-            elif curPoint.current_fuel == curPoint.fuel_capacity:
+            elif curPoint.current_fuel == fuel_capacity:
                 self.laps.setText("<font size=1>FOREVER</font>")
                 pal = self.laps.palette()
                 pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
@@ -1489,7 +1496,7 @@ class MainWindow(QMainWindow):
                     refLap.pedalWidget.setText("GAS")
                     pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#f2f"))
                     if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
-                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#424"))
+                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#626"))
 
             if self.brakepoints:
                 if refLap.closestOffsetPoint.brake > 0:
@@ -1649,26 +1656,25 @@ class MainWindow(QMainWindow):
     def handleTrackDetect(self, curPoint):
         if len(self.trackDetector.tracks) == 0:
             trackDetector.reset()
-        if True: #not self.trackDetector.trackIdentified() and not len(self.trackDetector.tracks) == 0:
-            self.trackDetector.addPoint(curPoint)
-            self.trackDetector.detect()
 
-            if self.trackPreviouslyIdentified != self.trackDetector.getTrack():
-                if self.trackDetector.trackIdentified():
-                    self.showUiMsg("Welcome to<br>" + self.trackDetector.getTrack(), 1)
-                print("Track:", self.trackDetector.getTrack())
-                liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
-                liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
-                liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
-                liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
-                if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-                    liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
-                if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
-                    liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
-                liveStats += "</font>"
+        self.trackDetector.addPoint(curPoint)
 
-                self.updateLiveStats(liveStats)
-                self.trackPreviouslyIdentified = self.trackDetector.getTrack()
+        if self.trackPreviouslyIdentified != self.trackDetector.getTrack():
+            if self.trackDetector.trackIdentified():
+                self.showUiMsg("Welcome to<br>" + self.trackDetector.getTrack(), 1)
+            print("Track:", self.trackDetector.getTrack())
+            liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+            liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
+            liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
+            liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
+            if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
+                liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
+            if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
+                liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
+            liveStats += "</font>"
+
+            self.updateLiveStats(liveStats)
+            self.trackPreviouslyIdentified = self.trackDetector.getTrack()
 
     def determineLapProgress(self, curPoint):
         self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
@@ -1716,6 +1722,12 @@ class MainWindow(QMainWindow):
 
 
     def handleLapChanges(self, curPoint):
+        fuel_capacity = curPoint.fuel_capacity
+        isEV = False
+        if fuel_capacity == 0: # EV
+            fuel_capacity = 76 # Find correct capacity for EVs (e.g. 76 for Taycan)
+            isEV = True
+
         if self.circuitExperience and self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
             print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
 
@@ -1737,8 +1749,6 @@ class MainWindow(QMainWindow):
             # Handle short and "real" laps differently
             if lapLen < 10: # TODO const
                 print("LAP CHANGE short")
-                if curPoint.fuel_capacity > 0: # TODO how are e-vehicles handled in telemetry
-                    self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
             else:
                 debugNewLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
@@ -1873,8 +1883,26 @@ class MainWindow(QMainWindow):
                     print("\nBest lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
                     print("Median lap:", self.medianLap, msToTime(self.previousLaps[self.medianLap].time))
                     print("Last lap:", len(self.previousLaps)-1, msToTime (self.previousLaps[-1].time))
+
+                    # Update fuel usage and outlook
+                    if True or self.lastFuel != -1:
+                        fuelDiff = self.lastFuel - curPoint.current_fuel/fuel_capacity
+                        if fuelDiff > 0:
+                            print("Append fuel", fuelDiff)
+                            self.lastFuelUsage.append(fuelDiff)
+                        if len(self.lastFuelUsage) > self.fuelStatisticsLaps:
+                            self.lastFuelUsage = self.lastFuelUsage[1:]
+                    self.refueled += 1
+                    self.lastFuel = curPoint.current_fuel/fuel_capacity
+    
+                    if len(self.lastFuelUsage) > 0:
+                        self.fuelFactor = self.lastFuelUsage[0]
+                        for i in range(1, len(self.lastFuelUsage)):
+                            self.fuelFactor = (1-self.fuelLastLapFactor) * self.fuelFactor + self.fuelLastLapFactor * self.lastFuelUsage[i]
+
                 else:
                     print("Ignore pre-lap")
+                    self.lastFuel = 1
                     self.curLap = Lap()
 
                 # Update live stats
@@ -1889,24 +1917,9 @@ class MainWindow(QMainWindow):
                 liveStats += "</font>"
                 self.updateLiveStats(liveStats)
 
-                # Update fuel usage and outlook
-                if self.lastFuel != -1:
-                    fuelDiff = self.lastFuel - curPoint.current_fuel/curPoint.fuel_capacity
-                    if fuelDiff > 0:
-                        self.lastFuelUsage.append(fuelDiff)
-                        self.refueled += 1
-                    elif fuelDiff < 0:
-                        self.refueled = 0
-                    if len(self.lastFuelUsage) > self.fuelStatisticsLaps:
-                        self.lastFuelUsage = self.lastFuelUsage[1:]
-                self.lastFuel = curPoint.current_fuel/curPoint.fuel_capacity
-
-                if len(self.lastFuelUsage) > 0:
-                    self.fuelFactor = self.lastFuelUsage[0]
-                    for i in range(1, len(self.lastFuelUsage)):
-                        self.fuelFactor = (1-self.fuelLastLapFactor) * self.fuelFactor + self.fuelLastLapFactor * self.lastFuelUsage[i]
 
             self.lastLap = curPoint.current_lap
+            print("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
         elif not self.keepLaps and (self.lastLap > curPoint.current_lap or curPoint.current_lap == 0) and not self.circuitExperience:
             self.initRace()
         elif self.keepLaps and (self.lastLap > curPoint.current_lap) and not self.circuitExperience:

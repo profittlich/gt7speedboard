@@ -146,7 +146,7 @@ class StartWindow(QWidget):
 
         self.brakepoints = QCheckBox("Show brake points")
         self.throttlepoints = QCheckBox("Show throttle points")
-        self.countdownBrakepoint = QCheckBox("Count down to best brake points")
+        self.countdownBrakepoint = QCheckBox("Count down to brake points")
         self.bigCountdownBrakepoint = QLabel("Whole screen brake/throttle point colors for:")
         self.bigCountdownTarget = QComboBox()
         self.bigCountdownTarget.addItem("Nothing")

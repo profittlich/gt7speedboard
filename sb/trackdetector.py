@@ -20,7 +20,7 @@ class TrackDetector:
         self.curLap = Lap()
         self.loadedTracks = []
         self.tracks = []
-        self.eliminateDistance = 50
+        self.eliminateDistance = 60
         self.validAngle = 15
         self.maxGapLength = 10
         self.lastTrack =  "Multiple track candidates"
@@ -49,7 +49,6 @@ class TrackDetector:
             curTrack.lap = loadLap(drctry + "/" + fn)
             curTrack.hits = [ False ] * len(curTrack.lap.points)
             curTrack.name = fn.replace(".gt7track", "")
-            #curTrack.name = curTrack.name[curTrack.name.rfind("/")+1:]
             self.loadedTracks.append(curTrack)
         self.tracks = copy.deepcopy(self.loadedTracks)
             
@@ -58,7 +57,7 @@ class TrackDetector:
         self.loadedLap = loadLap(fni)
 
     def hasGaps(self, t):
-        hits = t.hits #[2:-2] # TODO: pit positions at finish line can cause trouble
+        hits = t.hits
         gapCountdown = self.maxGapLength
         if not True in hits:
             return False
@@ -68,7 +67,7 @@ class TrackDetector:
             rhits = hits[t.firstHit:]
         if t.forwardCount > t.reverseCount:
             rhits = list(reversed(rhits))
-        for h in rhits[rhits.index(True):]:
+        for h in rhits[rhits.index(True):-1]:
             if not h:
                 gapCountdown -= 1
             else:
@@ -112,13 +111,13 @@ class TrackDetector:
             return False
         elif len(self.tracks) == 1 and len(self.curLap.points) > 100:
             return True
-        #elif len(self.curLap.points) > 100 and self.checkPrefix():
-            #return True
         else:
             return False
 
     def addPoint(self, p):
-        self.curLap.points.append(p)
+        if p.car_speed > 0.0:
+            self.curLap.points.append(p)
+            self.detect()
 
     def determineTrackProgress(self, p): # TODO: Lap change error
         lp, pi, d = self.tracks[0].lap.findClosestPointNoLimit(p)
