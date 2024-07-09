@@ -109,7 +109,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("GT7 SpeedBoard (BETA3)")
+        self.setWindowTitle("SpeedBoard for GT7 (BETA3)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -725,7 +725,7 @@ class MainWindow(QMainWindow):
         self.masterWidget.addWidget(self.dashWidget)
 
         self.uiMsgPageScroller = QScrollArea()
-        self.uiMsg = QLabel("Welcome to GT7 Speedboard")
+        self.uiMsg = QLabel("Welcome to Speedboard for GT7")
         self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.uiMsg.setAutoFillBackground(True)
         font = self.uiMsg.font()
