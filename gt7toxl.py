@@ -83,6 +83,7 @@ def convertGT7toXL (fni, fno):
                 "angular_velocity_z", 
                 "is_paused", 
                 "in_race", 
+                "Unknowns..."
                 ]
     ws.append(header)
     if not lap.preceeding is None:
@@ -163,6 +164,8 @@ def convertGT7toXL (fni, fno):
                     p.is_paused, 
                     p.in_race, 
                     ]
+        for u in p.unknown:
+           row.append(u)
         ws.append(row)
         i+=1
 
