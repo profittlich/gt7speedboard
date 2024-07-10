@@ -732,6 +732,9 @@ class MainWindow(QMainWindow):
         font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
         self.uiMsg.setFont(font)
+        pal = self.uiMsg.palette()
+        pal.setColor(self.uiMsg.foregroundRole(), self.foregroundColor)
+        self.uiMsg.setPalette(pal)
 
         self.uiMsgPageScroller.setWidget(self.uiMsg)
         self.uiMsgPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -755,6 +758,9 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         self.statsPage.setFont(font)
         self.statsPage.setTextFormat(Qt.TextFormat.RichText)
+        pal = self.statsPage.palette()
+        pal.setColor(self.statsPage.foregroundRole(), self.foregroundColor)
+        self.statsPage.setPalette(pal)
         self.liveStats = ""
         self.runStats = ""
 

@@ -831,13 +831,11 @@ class MapView2(QWidget):
     def wheelEvent(self, e):
         dx = e.position().x()
         dz = e.position().y()
-        print(dx, dz)
         wx = (dx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
         wz = (dz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
         rx = wx - self.midX + self.offsetX
         rz = wz - self.midZ + self.offsetZ
         d = e.pixelDelta().y()
-        print(d, e.pixelDelta().y())
         if d > 0:
             for i in range(d):
                 self.zoomIn(1.01)

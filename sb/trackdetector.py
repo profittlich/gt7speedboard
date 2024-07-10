@@ -20,7 +20,7 @@ class TrackDetector:
         self.curLap = Lap()
         self.loadedTracks = []
         self.tracks = []
-        self.eliminateDistance = 60
+        self.eliminateDistance = 30
         self.validAngle = 15
         self.maxGapLength = 10
         self.lastTrack =  "Multiple track candidates"
@@ -65,8 +65,7 @@ class TrackDetector:
             rhits = hits
         else:
             rhits = hits[t.firstHit:]
-        if t.forwardCount > t.reverseCount:
-            rhits = list(reversed(rhits))
+        rhits = list(reversed(rhits))
         for h in rhits[rhits.index(True):-1]:
             if not h:
                 gapCountdown -= 1
@@ -133,7 +132,10 @@ class TrackDetector:
         for t in self.tracks:
             # TODO detect finish line position
             lp, pi, d = t.lap.findClosestPointNoLimit(self.curLap.points[-1])
-            if d > self.eliminateDistance:
+            eliminateDistance = self.eliminateDistance
+            if "Daytona" in t.name:
+                eliminateDistance = 60 # TODO: Daytona has a distant pit lane, find better solution than a special case
+            if d > eliminateDistance:
                 print("Eliminate", t.name, pi, d, lp.current_lap, "after", len(self.curLap.points))
                 self.tracks.remove(t)
                 hasEliminated = True
@@ -172,9 +174,11 @@ class TrackDetector:
                     t.hits[pi] = True
                 t.curPos = pi
         if hasEliminated:
-            for t in self.tracks:
-                print(t.name, round(100 * t.hits.count(True) / len(t.hits)), "%", t.firstHit)
+            print("Tracks were eliminated")
+            #for t in self.tracks:
+                #print(t.name, round(100 * t.hits.count(True) / len(t.hits)), "%", t.firstHit)
         if len(self.tracks) == 0:
+            print("Found no track, try again")
             self.reset()
 
     def detector (self):
