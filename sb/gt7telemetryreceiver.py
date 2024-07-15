@@ -52,7 +52,14 @@ class GT7TelemetryReceiver:
     def runTelemetryReceiver(self):
         # Create a UDP socket and bind it
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.s.bind(("0.0.0.0", self.ReceivePort))
+        bindTries=10
+        while bindTries > 0:
+            try:
+                self.s.bind(("0.0.0.0", self.ReceivePort))
+                bindTries = 0
+            except:
+                self.ReceivePort += 1
+                bindTries -= 1
         self.s.settimeout(2)
 
         # start by sending heartbeat

@@ -1,4 +1,6 @@
 from salsa20 import Salsa20_xor
+import traceback
+import datetime
 import threading
 import time
 import socket
@@ -9,19 +11,26 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog
 from sb.crypt import salsa20_dec, salsa20_enc
 
+class GT7Client:
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self.heartbeat = datetime.datetime.now()
+
+
 class GT7PlaybackServer:
 
     def __init__(self, ip, stopCallback=None):
         # ports for send and receive data
         self.s = None
         self.InPort = 33739
-        self.OutPort = 33740
         self.ip = ip
         self.running = False
         self.fps = 59.94
         self.filename = None
         self.simulateFrameDrops = False
         self.stopCallback = stopCallback
+        self.clients = {}
 
     def setFPS(self, b):
         self.oldPc = time.perf_counter()
@@ -43,22 +52,38 @@ class GT7PlaybackServer:
         self.simulateFrameDrops = on
 
     def checkHeartBeat(self):
+      try:
         print("Heartbeat watchdog started")
         noHeartBeat = 0
+        self.clients = {}
         while self.running:
             try:
                 data, address = self.s.recvfrom(4096)
-                print("Received heartbeat from " + address[0])
+                print("Received heartbeat from " + address[0] + " [" + str(address[1]) + "]")
+                self.clients[address[0] + "--" + str(address[1])] = GT7Client(address[0], address[1])
                 noHeartBeat = 0
                 connected = True
+                now = datetime.datetime.now()
+                toBeDeleted = []
+                for c in self.clients:
+                    if (now - self.clients[c].heartbeat) > datetime.timedelta(seconds=12):
+                        toBeDeleted.append(c)
+                for c in toBeDeleted:
+                    del self.clients[c]
+                    print("Remove client", c, len(self.clients), "left")
             except TimeoutError as e:
                 noHeartBeat += 1
             except Exception as e:
                 self.internalStop()
                 print('HB Exception: {}'.format(e))
+                print(traceback.format_exception(e))
             if noHeartBeat >= 12:
                 print("No heartbeat received.")
                 self.internalStop()
+                self.clients = {}
+      except Exception as e:
+          self.internalStop()
+          print('Outer Exception: {}'.format(e))
 
 
     def runPlaybackServer(self):
@@ -114,7 +139,9 @@ class GT7PlaybackServer:
                 encr = salsa20_enc(decr, 296)
 
                 if not self.simulateFrameDrops or pktIdCounter % 8 == 0:
-                    self.s.sendto(encr, (self.ip, self.OutPort))
+                    for c in self.clients:
+                        self.s.sendto(encr, (self.clients[c].ip, self.clients[c].port))
+
 
                 curIndex += 296
                 if curIndex >= len(self.allData):
