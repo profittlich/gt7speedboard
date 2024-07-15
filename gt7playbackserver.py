@@ -6,6 +6,7 @@ import time
 import socket
 import sys
 import struct
+import os
 from PyQt6.QtCore import Qt 
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog
@@ -269,7 +270,6 @@ if __name__ == '__main__':
 
     window = MainWindow()
 
-    ready = False
     i = 1
     while i < len(sys.argv):
         if sys.argv[i] == "--fps":
@@ -279,13 +279,13 @@ if __name__ == '__main__':
         if sys.argv[i] == "--simulate-frame-drops":
             window.server.setSimulateFrameDrops(True)
         else:
-            ready = True
-            window.server.setFilename(sys.argv[i])
+            if os.path.isfile(sys.argv[i]):
+                window.startWidget.recFile = sys.argv[i]
+                window.startWidget.lRec.setText("File: " + sys.argv[i][sys.argv[i].rfind("/")+1:])
+            else:
+                print(sys.argv[i], "is not a file")
         i+=1
-    if ready:
-        window.server.runPlaybackServer()
-    else:
-        window.show()
+    window.show()
 
-        sys.excepthook = excepthook
-        app.exec()
+    sys.excepthook = excepthook
+    app.exec()
