@@ -943,6 +943,9 @@ class MainWindow(QMainWindow):
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
 
+        self.showFullScreen()
+        self.showUiMsg("Press ESC to return to the settings", 3)
+
         # Timer
         self.timer = QTimer()
         self.timer.setInterval(self.pollInterval)
@@ -2032,6 +2035,7 @@ class MainWindow(QMainWindow):
                     self.isRecording = False
                     self.receiver.stopRecording()
                 self.stopDash()
+                self.showNormal()
                 self.startWindow = StartWindow()
                 self.startWindow.starter.clicked.connect(self.startDash)
                 self.startWindow.ip.returnPressed.connect(self.startDash)
