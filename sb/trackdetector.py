@@ -5,6 +5,7 @@ from sb.helpers import Lap
 import copy
 import glob
 import threading
+import time
 from pathlib import Path
 
 class TrackInfo:
@@ -148,6 +149,8 @@ class TrackDetector:
                 self.curLap.points.append(self.curLapQueue.points.pop(0))
                 if len(self.curLap.points) > 100:
                     self.detect()
+            else:
+                time.sleep(0.005)
 
     def detect(self): # TODO use threading or are reference tracks small enough?
         hasEliminated = False
