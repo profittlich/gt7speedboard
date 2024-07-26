@@ -4,6 +4,8 @@ from sb.helpers import loadLap
 from sb.helpers import Lap
 import copy
 import glob
+import threading
+from pathlib import Path
 
 class TrackInfo:
     def __init__(self):
@@ -18,15 +20,21 @@ class TrackInfo:
 class TrackDetector:
     def __init__(self):
         self.curLap = Lap()
+        self.curLapQueue = Lap()
         self.loadedTracks = []
         self.tracks = []
         self.eliminateDistance = 30
         self.validAngle = 15
         self.maxGapLength = 10
         self.lastTrack =  "Multiple track candidates"
+        self.thread = threading.Thread(target=self.detectionLoop, args=())
+        self.running = True
+        self.thread.start()
+
 
     def reset(self):
         self.curLap = Lap()
+        self.curLapQueue = Lap()
         self.tracks = copy.deepcopy(self.loadedTracks)
 
 
@@ -102,6 +110,9 @@ class TrackDetector:
         else:
             return "Multiple track candidates"
 
+    def stopDetection(self):
+        self.running = False
+
     def getLastTrack(self):
         return self.lastTrack
 
@@ -115,8 +126,8 @@ class TrackDetector:
 
     def addPoint(self, p):
         if p.car_speed > 0.0:
-            self.curLap.points.append(p)
-            self.detect()
+            self.curLapQueue.points.append(p)
+            #self.detect()
 
     def determineTrackProgress(self, p): # TODO: Lap change error
         lp, pi, d = self.tracks[0].lap.findClosestPointNoLimit(p)
@@ -125,7 +136,18 @@ class TrackDetector:
             return prog
         else:
             return 1-prog
-        
+
+    def detectionLoop(self):
+        testPath = Path("./tracks")
+        if testPath.is_dir():
+            self.loadRefsFromDirectory("./tracks")
+        elif platform.system() == "Darwin":
+            self.loadRefsFromDirectory(sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/tracks")
+        while self.running:
+            if len(self.curLapQueue.points) > 0:
+                self.curLap.points.append(self.curLapQueue.points.pop(0))
+                if len(self.curLap.points) > 100:
+                    self.detect()
 
     def detect(self): # TODO use threading or are reference tracks small enough?
         hasEliminated = False
@@ -136,10 +158,10 @@ class TrackDetector:
             if "Daytona" in t.name:
                 eliminateDistance = 60 # TODO: Daytona has a distant pit lane, find better solution than a special case
             if d > eliminateDistance:
-                print("Eliminate", t.name, pi, d, lp.current_lap, "after", len(self.curLap.points))
+                #print("Eliminate", t.name, pi, d, lp.current_lap, "after", len(self.curLap.points))
                 self.tracks.remove(t)
                 hasEliminated = True
-                print("Track candidates left:", len(self.tracks))
+                #print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
                 if len(self.tracks) == 1:
@@ -149,7 +171,7 @@ class TrackDetector:
                 print(t.hits, t.hits.index(True))
                 self.tracks.remove(t)
                 hasEliminated = True
-                print("Track candidates left:", len(self.tracks))
+                #print("Track candidates left:", len(self.tracks))
                 if self.checkPrefix():
                     print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
                 if len(self.tracks) == 1:
@@ -159,7 +181,7 @@ class TrackDetector:
                 if a < (3.14159 * self.validAngle / 180):
                     t.forwardCount += 1
                     if t.firstHit is None:
-                        print(t.name, "First hit:", pi)
+                        #print(t.name, "First hit:", pi)
                         t.firstHit = pi
                     elif t.hits[t.firstHit-1]:
                         t.firstHit = 0
@@ -167,14 +189,14 @@ class TrackDetector:
                 elif a > (3.14159 * (180 - self.validAngle) / 180):
                     t.reverseCount += 1
                     if t.firstHit is None:
-                        print(t.name, "First hit:", pi)
+                        #print(t.name, "First hit:", pi)
                         t.firstHit = pi
                     elif t.hits[t.firstHit-1]:
                         t.firstHit = 0
                     t.hits[pi] = True
                 t.curPos = pi
-        if hasEliminated:
-            print("Tracks were eliminated")
+        #if hasEliminated:
+            #print("Tracks were eliminated")
             #for t in self.tracks:
                 #print(t.name, round(100 * t.hits.count(True) / len(t.hits)), "%", t.firstHit)
         if len(self.tracks) == 0:

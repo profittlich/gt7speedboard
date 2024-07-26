@@ -56,9 +56,6 @@ class StartWindow(QWidget):
         gnLayout = QVBoxLayout()
         gnGroup.setLayout(gnLayout)
 
-        self.keepLaps = QCheckBox("Keep laps through setup changes and sessions (experimental)")
-        gnLayout.addWidget(self.keepLaps)
-
         # VIEW
         vwGroup = QGroupBox("View")
         mainLayoutL.addWidget(vwGroup)
@@ -228,8 +225,6 @@ class StartWindow(QWidget):
         print("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
-
-        self.keepLaps.setChecked(settings.value("keepLaps") in [ True, "true"])
 
         self.ip.setText(settings.value("ip", ""))
         self.storageLocation = settings.value("storageLocation", "")

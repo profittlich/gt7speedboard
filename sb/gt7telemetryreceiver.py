@@ -77,14 +77,20 @@ class GT7TelemetryReceiver:
                     self.stopRec = False
                     self.record.close()
                     self.record = None
+
                 data, address = self.s.recvfrom(4096)
                 if not address[0] == self.ip:
                     continue
+
                 if not self.record is None:
                     self.record.write(data)
                 
                 ddata = salsa20_dec(data)
                 newPktId = struct.unpack('i', ddata[0x70:0x70+4])[0]
+                if len(ddata) > 0 and newPktId < self.pktid:
+                    print("Time travel or new recording")
+                    self.pktid = newPktId-1
+                    
                 if len(ddata) > 0 and (self.ignorePktId or newPktId > self.pktid):
                     if self.pktid != newPktId-1:
                         print("Packet loss:", newPktId-self.pktid-1)
@@ -98,7 +104,7 @@ class GT7TelemetryReceiver:
                     self.send_hb()
                     self.pknt = time.perf_counter()
             except Exception as e:
-                print('Exception: {}'.format(e))
+                print('Exception in telemetry receiver: {}'.format(e))
                 self.send_hb()
                 self.pknt = time.perf_counter()
 

@@ -4,7 +4,7 @@ from sb.helpers import loadLap
 from sb.helpers import Lap
 import copy
 
-def thinOut (fni, fno):
+def thinOut (fni, fno, step=50):
     sep = ";"
     lap = loadLap(fni)
     lap2 = Lap()
@@ -13,7 +13,7 @@ def thinOut (fni, fno):
     for p in range(1, len(lap.points)):
         pNew = lap.points[p]
 
-        if lap.distance(pOld, pNew) > 50 or lap.angle(pOld, pNew) > 3.14159 * 10 / 180:
+        if lap.distance(pOld, pNew) > step or lap.angle(pOld, pNew) > 3.14159 * 10 / 180:
             lap2.points.append(pNew)
             print("Angle:", 180 * lap2.angle(pOld, pNew)/ 3.14159)
             pOld = pNew
@@ -24,7 +24,10 @@ def thinOut (fni, fno):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("usage: laptotrack <lapfile> <trackfile>")
+        print("usage: laptotrack <lapfile> <trackfile> [<stepsize>]")
     else:
-        thinOut(sys.argv[1], sys.argv[2])
+        step = 50
+        if len(sys.argv) > 3:
+            step = int(sys.argv[3])
+        thinOut(sys.argv[1], sys.argv[2], step)
 
