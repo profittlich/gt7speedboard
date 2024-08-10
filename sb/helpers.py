@@ -87,6 +87,8 @@ def loadLap(fn):
                     lap.preceeding = lap.points[0]
                     lap.points = []
                 lap.points.append(curPoint)
+                if len(lap.points) > 1 and curPoint.current_lap != lap.points[0].current_lap:
+                    break
             if len(lap.points) > 1 and lap.points[-1].current_lap != lap.points[-2].current_lap:
                 lap.following = lap.points[-1]
                 lap.points.pop(-1)

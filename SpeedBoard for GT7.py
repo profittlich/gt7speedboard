@@ -941,7 +941,7 @@ class MainWindow(QMainWindow):
         self.thread.start()
 
         self.showFullScreen()
-        self.showUiMsg("Press ESC to return to the settings", 3)
+        self.showUiMsg("Press ESC to return to the settings", 2)
 
         # Timer
         self.timer = QTimer()
@@ -1659,7 +1659,7 @@ class MainWindow(QMainWindow):
 
         if self.trackPreviouslyIdentified != self.trackDetector.getTrack():
             if self.trackDetector.trackIdentified():
-                print("Welcome to " + self.trackDetector.getTrack())
+                print("=== Welcome to " + self.trackDetector.getTrack())
                 self.showUiMsg("Welcome to<br>" + self.trackDetector.getTrack(), 1)
                 # TODO init run?
             print("Track:", self.trackDetector.getTrack())

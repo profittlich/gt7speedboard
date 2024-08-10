@@ -17,16 +17,20 @@ class TrackInfo:
         self.curPos = 0
         self.forwardCount = 0
         self.reverseCount = 0
+        self.identifiedAt = 2**31
 
 class TrackDetector:
     def __init__(self):
         self.curLap = Lap()
+        self.curTestPoint = 0
         self.curLapQueue = Lap()
         self.loadedTracks = []
         self.tracks = []
         self.eliminateDistance = 30
+        self.minHitsForTrack = 5
         self.validAngle = 15
         self.maxGapLength = 10
+        self.minPointsForDetection = 300
         self.lastTrack =  "Multiple track candidates"
         self.thread = threading.Thread(target=self.detectionLoop, args=())
         self.running = True
@@ -35,6 +39,7 @@ class TrackDetector:
 
     def reset(self):
         self.curLap = Lap()
+        self.curTestPoint = 0
         self.curLapQueue = Lap()
         self.tracks = copy.deepcopy(self.loadedTracks)
 
@@ -90,17 +95,20 @@ class TrackDetector:
             return False
         curPrefix = self.tracks[0].name[:self.tracks[0].name.index(" - ")]
         match = True
+        enoughHits = False
         for t in self.tracks:
             if t.name[:len(curPrefix)] != curPrefix:
                 match = False
+            if t.hits.count(True) >= self.minHitsForTrack:
+                enoughHits = True
 
-        return match
+        return match and enoughHits
 
     def getTrack(self):
         if len(self.tracks) == 0:
             self.lastTrack = "Unknown track"
             return self.lastTrack
-        elif len(self.tracks) == 1:
+        elif len(self.tracks) == 1 and self.tracks[0].hits.count(True) >= self.minHitsForTrack and self.tracks[0].identifiedAt < len(self.curLap.points) - 60:
             self.lastTrack = self.tracks[0].name
             if self.tracks[0].reverseCount > self.tracks[0].forwardCount:
                 self.lastTrack += " - reversed"
@@ -120,7 +128,7 @@ class TrackDetector:
     def trackIdentified(self):    
         if len(self.tracks) == 0:
             return False
-        elif len(self.tracks) == 1 and len(self.curLap.points) > 100:
+        elif len(self.tracks) == 1 and self.tracks[0].hits.count(True) >= self.minHitsForTrack and self.tracks[0].identifiedAt < len(self.curLap.points) - 60:
             return True
         else:
             return False
@@ -128,15 +136,19 @@ class TrackDetector:
     def addPoint(self, p):
         if p.car_speed > 0.0:
             self.curLapQueue.points.append(p)
-            #self.detect()
 
     def determineTrackProgress(self, p): # TODO: Lap change error
-        lp, pi, d = self.tracks[0].lap.findClosestPointNoLimit(p)
-        prog = (lp.package_id - self.tracks[0].lap.points[0].package_id) / (self.tracks[0].lap.points[-1].package_id - self.tracks[0].lap.points[0].package_id)
-        if self.tracks[0].forwardCount > self.tracks[0].reverseCount:
-            return prog
-        else:
-            return 1-prog
+        try:
+            lp, pi, d = self.tracks[0].lap.findClosestPointNoLimit(p)
+            prog = (lp.package_id - self.tracks[0].lap.points[0].package_id) / (self.tracks[0].lap.points[-1].package_id - self.tracks[0].lap.points[0].package_id)
+            if self.tracks[0].forwardCount > self.tracks[0].reverseCount:
+                return prog
+            else:
+                return 1-prog
+        except Exception as e:
+            print("EXCEPTION")
+            print(str(e))
+            return 0
 
     def detectionLoop(self):
         testPath = Path("./tracks")
@@ -147,104 +159,111 @@ class TrackDetector:
         while self.running:
             if len(self.curLapQueue.points) > 0:
                 self.curLap.points.append(self.curLapQueue.points.pop(0))
-                if len(self.curLap.points) > 100:
+                if len(self.curLap.points) > self.minPointsForDetection:
                     self.detect()
             else:
                 time.sleep(0.005)
 
-    def detect(self): # TODO use threading or are reference tracks small enough?
+    def detect(self):
         hasEliminated = False
-        for t in self.tracks:
-            # TODO detect finish line position
-            lp, pi, d = t.lap.findClosestPointNoLimit(self.curLap.points[-1])
-            eliminateDistance = self.eliminateDistance
-            if "Daytona" in t.name:
-                eliminateDistance = 60 # TODO: Daytona has a distant pit lane, find better solution than a special case
-            if d > eliminateDistance:
-                #print("Eliminate", t.name, pi, d, lp.current_lap, "after", len(self.curLap.points))
-                self.tracks.remove(t)
-                hasEliminated = True
-                #print("Track candidates left:", len(self.tracks))
-                if self.checkPrefix():
-                    print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
-                if len(self.tracks) == 1:
-                    print("Remaining track:", self.tracks[0].name, "after", len(self.curLap.points))
-            elif self.hasGaps(t):
-                print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", len(self.curLap.points), "first", t.firstHit)
-                print(t.hits, t.hits.index(True))
-                self.tracks.remove(t)
-                hasEliminated = True
-                #print("Track candidates left:", len(self.tracks))
-                if self.checkPrefix():
-                    print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")])
-                if len(self.tracks) == 1:
-                    print("Remaining track:", self.tracks[0].name, "after", len(self.curLap.points))
-            else:
-                a = self.curLap.angle(lp, self.curLap.points[-1])
-                if a < (3.14159 * self.validAngle / 180):
-                    t.forwardCount += 1
-                    if t.firstHit is None:
-                        #print(t.name, "First hit:", pi)
-                        t.firstHit = pi
-                    elif t.hits[t.firstHit-1]:
-                        t.firstHit = 0
-                    t.hits[pi] = True
-                elif a > (3.14159 * (180 - self.validAngle) / 180):
-                    t.reverseCount += 1
-                    if t.firstHit is None:
-                        #print(t.name, "First hit:", pi)
-                        t.firstHit = pi
-                    elif t.hits[t.firstHit-1]:
-                        t.firstHit = 0
-                    t.hits[pi] = True
-                t.curPos = pi
+        while self.curTestPoint < len(self.curLap.points):
+            for t in self.tracks:
+                # TODO detect finish line position
+                lp, pi, d = t.lap.findClosestPointNoLimit(self.curLap.points[self.curTestPoint])
+    
+                eliminateDistance = self.eliminateDistance
+                if "Daytona" in t.name:
+                    eliminateDistance = 60 # TODO: Daytona has a distant pit lane, find better solution than a special case
+    
+                if d > eliminateDistance:
+                    if "Fuji" in t.name:
+                        print("Eliminate", t.name, pi, d, lp.current_lap, "after", self.curTestPoint)
+                    self.tracks.remove(t)
+                    hasEliminated = True
+                    #print("Track candidates left:", len(self.tracks))
+                    if self.checkPrefix():
+                        print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")], "after", self.curTestPoint)
+                    if len(self.tracks) == 1:
+                        print("Remaining track:", self.tracks[0].name, "after", self.curTestPoint, ", hits:", t.hits.count(True))
+                        self.tracks[0].identifiedAt = self.curTestPoint
+                elif self.hasGaps(t):
+                    print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", self.curTestPoint, "first", t.firstHit)
+                    print(t.hits, t.hits.index(True))
+                    self.tracks.remove(t)
+                    hasEliminated = True
+                    #print("Track candidates left:", len(self.tracks))
+                    if self.checkPrefix():
+                        print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")], "after", self.curTestPoint)
+                    if len(self.tracks) == 1:
+                        print("Remaining track:", self.tracks[0].name, "after", self.curTestPoint, ", hits:", t.hits.count(True))
+                        self.tracks[0].identifiedAt = self.curTestPoint
+                else:
+                    a = self.curLap.angle(lp, self.curLap.points[self.curTestPoint])
+                    if a < (3.14159 * self.validAngle / 180):
+                        t.forwardCount += 1
+                        if t.firstHit is None:
+                            #print(t.name, "First hit:", pi)
+                            t.firstHit = pi
+                        elif t.hits[t.firstHit-1]:
+                            t.firstHit = 0
+                        t.hits[pi] = True
+                    elif a > (3.14159 * (180 - self.validAngle) / 180):
+                        t.reverseCount += 1
+                        if t.firstHit is None:
+                            #print(t.name, "First hit:", pi)
+                            t.firstHit = pi
+                        elif t.hits[t.firstHit-1]:
+                            t.firstHit = 0
+                        t.hits[pi] = True
+                    t.curPos = pi
+            self.curTestPoint += 1
         #if hasEliminated:
             #print("Tracks were eliminated")
             #for t in self.tracks:
                 #print(t.name, round(100 * t.hits.count(True) / len(t.hits)), "%", t.firstHit)
         if len(self.tracks) == 0:
-            print("Found no track, try again")
+            print("Found no track, try again", "after", len(self.curLap.points))
             self.reset()
 
-    def detector (self):
-        p = self.loadedLap.points[0]
-        print(self.loadedLap.points[0].current_lap, self.loadedLap.points[-1].current_lap)
-        count = 0
-        for p in self.loadedLap.points:
-            count += 1
-            self.addPoint(p)
-            if len(self.tracks) == 0:
-                print ("")
-                print ("Search failed")
-                print ("")
-            if len(self.tracks) == 1 and count > 10:
-                print ("")
-                if self.tracks[0].forwardCount > self.tracks[0].reverseCount:
-                    print ("Identified: " + self.tracks[0].name)
-                else:
-                    print ("Identified: " + self.tracks[0].name + " - reversed")
-                print ("")
-                break
-
-        print ("")
-        print ("Finished after", count, "points of", len(self.curLap.points))
-        print ("")
-        best = 0
-        count = -1
-        for t in self.tracks:
-            count += 1
-            if t.hits.count(True) / len(t.lap.points) > best:
-                best = t.hits.count(True) / len(t.lap.points)
-                result = count
-            print(t.name + ":", 100 * t.hits.count(True) / len(t.lap.points), "%", "F:", t.forwardCount, "R:", t.reverseCount)
-
-        if count >= 0:
-            print ("")
-            print ("Chosen: " + self.tracks[result].name)
-            print ("")
-
-if __name__ == '__main__':
-    detector = TrackDetector()
-    detector.loadRefs(sys.argv[1:-1])
-    detector.loadTarget(sys.argv[-1])
-    detector.detector()
+#    def detector (self):
+#        p = self.loadedLap.points[0]
+#        print(self.loadedLap.points[0].current_lap, self.loadedLap.points[-1].current_lap)
+#        count = 0
+#        for p in self.loadedLap.points:
+#            count += 1
+#            self.addPoint(p)
+#            if len(self.tracks) == 0:
+#                print ("")
+#                print ("Search failed")
+#                print ("")
+#            if len(self.tracks) == 1 and count > 10:
+#                print ("")
+#                if self.tracks[0].forwardCount > self.tracks[0].reverseCount:
+#                    print ("Identified: " + self.tracks[0].name)
+#                else:
+#                    print ("Identified: " + self.tracks[0].name + " - reversed")
+#                print ("")
+#                break
+#
+#        print ("")
+#        print ("Finished after", count, "points of", len(self.curLap.points))
+#        print ("")
+#        best = 0
+#        count = -1
+#        for t in self.tracks:
+#            count += 1
+#            if t.hits.count(True) / len(t.lap.points) > best:
+#                best = t.hits.count(True) / len(t.lap.points)
+#                result = count
+#            print(t.name + ":", 100 * t.hits.count(True) / len(t.lap.points), "%", "F:", t.forwardCount, "R:", t.reverseCount)
+#
+#        if count >= 0:
+#            print ("")
+#            print ("Chosen: " + self.tracks[result].name)
+#            print ("")
+#
+#if __name__ == '__main__':
+#    detector = TrackDetector()
+#    detector.loadRefs(sys.argv[1:-1])
+#    detector.loadTarget(sys.argv[-1])
+#    detector.detector()
