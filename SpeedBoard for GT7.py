@@ -1294,7 +1294,16 @@ class MainWindow(QMainWindow):
         self.runStats = carStatTxt
         self.updateStats()
 
-    def updateLiveStats(self, liveStats):
+    def updateLiveStats(self, curPoint):
+        liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+        liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
+        liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
+        liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
+        if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
+            liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
+        if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
+            liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
+        liveStats += "</font>"
         self.liveStats = liveStats
         self.updateStats()
 
@@ -1663,17 +1672,7 @@ class MainWindow(QMainWindow):
                 self.showUiMsg("Welcome to<br>" + self.trackDetector.getTrack(), 1)
                 # TODO init run?
             print("Track:", self.trackDetector.getTrack())
-            liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
-            liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
-            liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
-            liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
-            if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-                liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
-            if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
-                liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
-            liveStats += "</font>"
-
-            self.updateLiveStats(liveStats)
+            self.updateLiveStats(curPoint)
             self.trackPreviouslyIdentified = self.trackDetector.getTrack()
 
     def determineLapProgress(self, curPoint):
@@ -1755,17 +1754,7 @@ class MainWindow(QMainWindow):
                     self.initRun()
 
             # Update live stats
-            liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
-            liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
-            liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
-            liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
-            if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-                liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
-            if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
-                liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
-            liveStats += "</font>"
-            self.updateLiveStats(liveStats)
-
+            self.updateLiveStats(curPoint)
 
             if not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
@@ -1882,17 +1871,7 @@ class MainWindow(QMainWindow):
                     self.curLap = Lap()
 
                 # Update live stats
-                liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
-                liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
-                liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
-                liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
-                if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-                    liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
-                if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
-                    liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
-                liveStats += "</font>"
-                self.updateLiveStats(liveStats)
-
+                self.updateLiveStats(curPoint)
 
             self.lastLap = curPoint.current_lap
             print("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
