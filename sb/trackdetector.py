@@ -31,13 +31,13 @@ class TrackDetector:
         self.validAngle = 15
         self.maxGapLength = 10
         self.minPointsForDetection = 300
-        self.lastTrack =  "Multiple track candidates"
         self.thread = threading.Thread(target=self.detectionLoop, args=())
         self.running = True
         self.thread.start()
 
 
     def reset(self):
+        print("Reset track detector")
         self.curLap = Lap()
         self.curTestPoint = 0
         self.curLapQueue = Lap()
@@ -106,24 +106,21 @@ class TrackDetector:
 
     def getTrack(self):
         if len(self.tracks) == 0:
-            self.lastTrack = "Unknown track"
-            return self.lastTrack
+            curTrack = "Unknown track"
+            return curTrack
         elif len(self.tracks) == 1 and self.tracks[0].hits.count(True) >= self.minHitsForTrack and self.tracks[0].identifiedAt < len(self.curLap.points) - 60:
-            self.lastTrack = self.tracks[0].name
+            curTrack = self.tracks[0].name
             if self.tracks[0].reverseCount > self.tracks[0].forwardCount:
-                self.lastTrack += " - reversed"
-            return self.lastTrack
+                curTrack += " - reversed"
+            return curTrack
         elif self.checkPrefix():
-            self.lastTrack = self.tracks[0].name[:self.tracks[0].name.index(" - ")]
-            return self.lastTrack
+            curTrack = self.tracks[0].name[:self.tracks[0].name.index(" - ")]
+            return curTrack
         else:
             return "Multiple track candidates"
 
     def stopDetection(self):
         self.running = False
-
-    def getLastTrack(self):
-        return self.lastTrack
 
     def trackIdentified(self):    
         if len(self.tracks) == 0:
@@ -148,6 +145,7 @@ class TrackDetector:
         except Exception as e:
             print("EXCEPTION")
             print(str(e))
+            print(len(self.tracks))
             return 0
 
     def detectionLoop(self):

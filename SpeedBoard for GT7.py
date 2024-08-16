@@ -99,6 +99,7 @@ class MainWindow(QMainWindow):
         loadCarIds()
 
         self.trackDetector = None
+        self.goFullscreen = True
 
         print("Clear sessions")
         self.sessionStats = []
@@ -940,8 +941,15 @@ class MainWindow(QMainWindow):
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
 
-        self.showFullScreen()
+        if self.goFullscreen:
+            self.showFullScreen()
         self.showUiMsg("Press ESC to return to the settings", 2)
+
+        self.trackDetector = TrackDetector()
+        self.trackPreviouslyIdentified = "Unknown Track"
+        self.trackPreviouslyDescribed = ""
+        self.previousPackageId = 0
+        self.resetCurrentLapData()
 
         # Timer
         self.timer = QTimer()
@@ -1023,8 +1031,6 @@ class MainWindow(QMainWindow):
         self.speedRefC.setFont(font)
 
     def initRace(self):
-        self.trackDetector = TrackDetector()
-        self.trackPreviouslyIdentified = ""
 
         self.brakeOffset = 0
         self.headerSpeed.setText("SPEED")
@@ -1044,13 +1050,10 @@ class MainWindow(QMainWindow):
         self.newRunDescription = None
 
         self.previousPoint = None
-        self.previousPackageId = 0
 
         self.previousLaps = []
         self.bestLap = -1
         self.medianLap = -1
-
-        self.resetCurrentLapData()
 
         pal = self.pedalLast.palette()
         self.pedalLast.setText("")
@@ -1289,7 +1292,7 @@ class MainWindow(QMainWindow):
             prefix = self.storageLocation + "/"
             if len(self.sessionName) > 0:
                 prefix += self.sessionName + " - "
-            with open ( prefix + self.trackDetector.getLastTrack() + " - runs - " + self.sessionStart + ".csv", "w") as f:
+            with open ( prefix + self.trackPreviouslyIdentified + " - runs - " + self.sessionStart + ".csv", "w") as f:
                 f.write(carStatCSV)
         self.runStats = carStatTxt
         self.updateStats()
@@ -1666,14 +1669,16 @@ class MainWindow(QMainWindow):
     def handleTrackDetect(self, curPoint):
         self.trackDetector.addPoint(curPoint)
 
-        if self.trackPreviouslyIdentified != self.trackDetector.getTrack():
-            if self.trackDetector.trackIdentified():
-                print("=== Welcome to " + self.trackDetector.getTrack())
-                self.showUiMsg("Welcome to<br>" + self.trackDetector.getTrack(), 1)
-                # TODO init run?
-            print("Track:", self.trackDetector.getTrack())
+        curTrack = self.trackDetector.getTrack()
+        if self.trackPreviouslyDescribed != curTrack:
+            if self.trackPreviouslyIdentified != curTrack and self.trackDetector.trackIdentified():
+                print("=== Welcome to " + curTrack)
+                self.showUiMsg("Welcome to<br>" + curTrack, 1)
+                self.trackPreviouslyIdentified = curTrack
+                self.initRace()
+            print("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
+            self.trackPreviouslyDescribed = curTrack
             self.updateLiveStats(curPoint)
-            self.trackPreviouslyIdentified = self.trackDetector.getTrack()
 
     def determineLapProgress(self, curPoint):
         self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
@@ -1683,9 +1688,9 @@ class MainWindow(QMainWindow):
         if len(self.previousLaps) > 0:
             self.closestPointLast, self.closestILast, self.closestOffsetPointLast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
 
-        if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
-            self.closestPointBest, self.closestIBest, self.closestOffsetPointBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
-            self.closestPointMedian, self.closestIMedian, self.closestOffsetPointMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
+            if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
+                self.closestPointBest, self.closestIBest, self.closestOffsetPointBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
+                self.closestPointMedian, self.closestIMedian, self.closestOffsetPointMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
 
         lpBest = -1
         lpA = -1
@@ -1700,7 +1705,7 @@ class MainWindow(QMainWindow):
         if self.closestIRefC > 0:
             lpC = self.closestIRefC / len(self.refLaps[2].points)
 
-        if self.closestIBest > 0:
+        if self.bestLap >= 0 and self.closestIBest > 0:
             lpBest = self.closestIBest / len(self.previousLaps[self.bestLap].points)
 
         if self.trackDetector.trackIdentified():
@@ -1894,9 +1899,8 @@ class MainWindow(QMainWindow):
             pointsToHandle = []
 
             if diff > 10:
-                print("Too many frame drops! Data will be corrupted.")
+                print("Too many frame drops (" + str (diff) + ")! Data will be corrupted.")
                 self.trackDetector.reset()
-                self.trackPreviouslyIdentified = ""
             elif diff > 1:
                 print("Frame drops propagated:", diff-1)
                 for i in range(diff-1):
@@ -2058,7 +2062,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + " - "
-        with open ( prefix + self.trackDetector.getLastTrack() + " - laps - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
+        with open ( prefix + self.trackPreviouslyIdentified + " - laps - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
             for index in range(len(self.previousLaps)):
                 if self.previousLaps[index].valid:
                     for p in self.previousLaps[index].points:
@@ -2071,7 +2075,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + " - "
-        with open ( prefix + self.trackDetector.getLastTrack() + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
+        with open ( prefix + self.trackPreviouslyIdentified + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
             if not self.previousLaps[index].preceeding is None:
                 print("Going from", self.previousLaps[index].preceeding.current_lap)
                 f.write(self.previousLaps[index].preceeding.raw)
@@ -2095,7 +2099,7 @@ class MainWindow(QMainWindow):
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + " - "
-        with open ( prefix + self.trackDetector.getLastTrack() + " - messages - " + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
+        with open ( prefix + self.trackPreviouslyIdentified + " - messages - " + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
             f.write(j)
 
     def loadMessages(self, fn):
@@ -2141,6 +2145,8 @@ if __name__ == '__main__':
         if sys.argv[i] == "--ip" and i < len(sys.argv)-1:
             window.startWindow.ip.setText(sys.argv[i+1])
             i+=1
+        elif sys.argv[i] == "--no-fs":
+            window.goFullscreen = False
         elif sys.argv[i] == "--clearsettings":
             settings = QSettings()
             settings.clear()
