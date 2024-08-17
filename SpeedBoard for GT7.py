@@ -1007,6 +1007,9 @@ class MainWindow(QMainWindow):
 
     def initRun(self):
         print("initRun", self.sessionStats)
+        if len(self.sessionStats) > 0 and self.sessionStats[-1].sessionStart == len(self.previousLaps):
+            print("Re-using untouched Run")
+            return
         self.sessionStats.append (Run(len(self.previousLaps)))
 
     def markBigCountdownField(self):
@@ -1291,6 +1294,8 @@ class MainWindow(QMainWindow):
         carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h);Description\n"
         sessionI = 1
         for i in self.sessionStats:
+            if i.carId is None:
+                continue
             bst = i.bestLap()
             mdn = i.medianLap()
             lapsWith = " laps with "
