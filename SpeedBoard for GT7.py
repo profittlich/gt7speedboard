@@ -105,6 +105,7 @@ class MainWindow(QMainWindow):
         self.sessionStats = []
 
         self.masterWidget = None
+        self.masterWidgetIndex = 0
         self.loadConstants()
         self.threadpool = QThreadPool()
 
@@ -969,6 +970,9 @@ class MainWindow(QMainWindow):
         else:
             self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.uiMsg.setMargin(0)
+        self.masterWidgetIndex = self.masterWidget.currentIndex()
+        if self.masterWidgetIndex == 1:
+            self.masterWidgetIndex = 0
         self.masterWidget.setCurrentIndex(1)
         if waitForKey:
             self.messageWaitsForKey = True
@@ -983,7 +987,8 @@ class MainWindow(QMainWindow):
 
     def returnToDash(self):
         if self.centralWidget() == self.masterWidget:
-            self.masterWidget.setCurrentIndex(0) # TODO SOLVED? sometimes, the widget has been deleted: RuntimeError: wrapped C/C++ object of type QStackedWidget has been deleted
+            self.masterWidget.setCurrentIndex(self.masterWidgetIndex)
+            self.masterWidgetIndex = 0
 
     def stopDash(self):
         if not self.trackDetector is None:
@@ -1149,6 +1154,12 @@ class MainWindow(QMainWindow):
         return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
 
     def findClosestPoint(self, lap, p, startIdx):
+        if len(lap) > 100 and self.distance(p, lap[startIdx]) >= self.closestPointCancelSearchDistance:
+            for p2 in range(100, len(lap)-10, 100):
+                if self.distance(p, lap[p2]) < self.closestPointCancelSearchDistance:
+                    startIdx = p2-100
+
+            
         shortestDistance = 100000000
         result = None
         dbgCount = 0

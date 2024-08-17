@@ -51,10 +51,10 @@ class StartWindow(QWidget):
         mainLayoutCols.addWidget(lr)
 
         # GENERAL
-        gnGroup = QGroupBox("General")
-        mainLayoutL.addWidget(gnGroup)
-        gnLayout = QVBoxLayout()
-        gnGroup.setLayout(gnLayout)
+        #gnGroup = QGroupBox("General")
+        #mainLayoutL.addWidget(gnGroup)
+        #gnLayout = QVBoxLayout()
+        #gnGroup.setLayout(gnLayout)
 
         # VIEW
         vwGroup = QGroupBox("View")
