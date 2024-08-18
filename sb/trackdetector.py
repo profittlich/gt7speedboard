@@ -174,8 +174,6 @@ class TrackDetector:
                     eliminateDistance = 60 # TODO: Daytona has a distant pit lane, find better solution than a special case
     
                 if d > eliminateDistance:
-                    if "Fuji" in t.name:
-                        print("Eliminate", t.name, pi, d, lp.current_lap, "after", self.curTestPoint)
                     self.tracks.remove(t)
                     hasEliminated = True
                     #print("Track candidates left:", len(self.tracks))
