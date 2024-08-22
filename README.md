@@ -25,8 +25,9 @@ Features:
 - Save the best, last or all laps to a file
 - The location-based markers
 
-![SpeedBoard](doc/speedboard.png)
-![SpeedBoard configuration](doc/speedboardconfig.png)
+![SpeedBoard](doc/speedboard4.png)
+![SpeedBoard configuration](doc/speedboardconfig4.png)
+![SpeedBoard configuration](doc/trackdetect4.png)
 
 ### gt7playbackserver
 
