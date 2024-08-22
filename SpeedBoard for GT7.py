@@ -1,3 +1,4 @@
+#import cProfile
 import sys
 import copy
 import os
@@ -1157,17 +1158,9 @@ class MainWindow(QMainWindow):
         return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
 
     def findClosestPoint(self, lap, p, startIdx):
-        if len(lap) > 100 and self.distance(p, lap[startIdx]) >= self.closestPointCancelSearchDistance:
-            for p2 in range(100, len(lap)-10, 100):
-                if self.distance(p, lap[p2]) < self.closestPointCancelSearchDistance:
-                    startIdx = p2-100
-
-            
         shortestDistance = 100000000
         result = None
-        dbgCount = 0
         for p2 in range(startIdx, len(lap)-10): #TODO why -10? Confusion at the finish line... Maybe do dynamic length
-            dbgCount+=1
             curDist = self.distance(p, lap[p2])
             if curDist < self.closestPointValidDistance and curDist < shortestDistance:
                 shortestDistance = curDist
@@ -1178,6 +1171,13 @@ class MainWindow(QMainWindow):
                 break
 
         if result is None:
+            for p2 in range(100, len(lap)-10, 100):
+                curDist = self.distance(p, lap[p2])
+                if curDist < self.closestPointValidDistance:
+                    print("Found global position at", p2)
+                    startIdx = p2-100
+                    break
+                
             return None, startIdx, None
         return lap[result], result, lap[min(len(lap)-1, max(0,result+self.brakeOffset))]
 
@@ -2178,5 +2178,6 @@ if __name__ == '__main__':
     sys.excepthook = excepthook
     with keep.presenting():
         app.exec()
+        #cProfile.run("app.exec()")
 
 

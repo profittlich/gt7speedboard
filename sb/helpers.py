@@ -74,7 +74,7 @@ class Lap:
 def loadLap(fn):
     lap = Lap()
     if len(fn)>0:
-        print("Load lap", fn)
+        #print("Load lap", fn)
         with open(fn, "rb") as f:
             allData = f.read()
             curIndex = 0
