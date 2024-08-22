@@ -13,13 +13,15 @@ Features:
 
 - Tyre temperatures
 - Fuel consumption and fuel remaining
-- Speed comparisons to 
+- Speed and time comparisons to 
     - the previous lap
     - the best lap
-    - the meidan lap
+    - the median lap
     - up to three pre-loaded reference laps
-- Brake points (optionaly with countdown)
+- Brake/throttle points (optionaly with countdown)
 - Racing line comparisons
+- Session statistics
+- Track detection
 - Special mode for Circuit Experiences
 - Record data to a file
 - Save the best, last or all laps to a file
