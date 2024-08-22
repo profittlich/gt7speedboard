@@ -29,7 +29,8 @@ Features:
 
 ![SpeedBoard](doc/speedboard4.png)
 ![SpeedBoard configuration](doc/speedboardconfig4.png)
-![SpeedBoard configuration](doc/trackdetect4.png)
+![SpeedBoard statistics](doc/stats.png)
+![SpeedBoard track detection](doc/trackdetect4.png)
 
 ### gt7playbackserver
 
