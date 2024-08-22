@@ -1534,7 +1534,7 @@ class MainWindow(QMainWindow):
                     if self.bigCountdownBrakepoint == refLap.id and self.masterWidget.currentIndex() == 0:
                         bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestOffsetPoint.brake))
 
-                if self.countdownBrakepoint and not refLap.nextBrake is None:
+                elif self.countdownBrakepoint and not refLap.nextBrake is None:
                     refLap.pedalWidget.setText(str(math.ceil (refLap.nextBrake/60)))
                     if refLap.nextBrake >= 120:
                         if refLap.nextBrake%60 >= 30:
@@ -1770,7 +1770,7 @@ class MainWindow(QMainWindow):
                 debugNewLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
                 self.debugOldLapTime = debugNewLapTime
-                if curPoint.current_lap == 1:
+                if curPoint.current_lap == 1 or self.lastLap >= curPoint.current_lap:
                     print("lap is 1 -> init")
                     self.initRun()
 
@@ -1950,7 +1950,7 @@ class MainWindow(QMainWindow):
 
                 # Update live stats description
                 if not self.newRunDescription is None and len(self.sessionStats) > 0:
-                    self.sessionStats[-1].description = self.newRunDescription
+                    self.sessionStats[-1].description = self.newRunDescription + "<br>"
                     self.newRunDescription = None
                     self.updateRunStats()
 
