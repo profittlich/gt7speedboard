@@ -2079,10 +2079,14 @@ class MainWindow(QMainWindow):
         if len(self.sessionName) > 0:
             prefix += self.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - laps - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
+            if not self.previousLaps[0].preceeding is None:
+                f.write(self.previousLaps[0].preceeding.raw)
             for index in range(len(self.previousLaps)):
                 if self.previousLaps[index].valid:
                     for p in self.previousLaps[index].points:
                         f.write(p.raw)
+            if not self.previousLaps[-1].following is None:
+                f.write(self.previousLaps[-1].following.raw)
 
     def saveLap(self, index, name):
         print("store lap:", name)
