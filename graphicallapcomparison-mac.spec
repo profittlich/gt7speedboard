@@ -44,6 +44,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='Graphical lap comparison.app',
-    icon=None,
+    icon='doc/104. steer wheel.png',
     bundle_identifier=None,
 )
