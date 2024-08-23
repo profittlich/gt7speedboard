@@ -835,7 +835,7 @@ class MapView2(QWidget):
         wz = (dz - self.height () / 2) / self.zoom/self.aspectRatio * ((self.maxZ - self.minZ)/self.height()) + self.midZ - self.offsetZ
         rx = wx - self.midX + self.offsetX
         rz = wz - self.midZ + self.offsetZ
-        d = e.pixelDelta().y()
+        d = e.angleDelta().y()//5
         if d > 0:
             for i in range(d):
                 self.zoomIn(1.01)
