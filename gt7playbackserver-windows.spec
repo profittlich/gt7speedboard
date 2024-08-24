@@ -22,7 +22,7 @@ exe = EXE(
     a.datas,
     [],
     name='GT7 telemetry playback server',
-    icon='doc/104. steer wheel.png',
+    icon='doc/104. steer wheel-yellow.png',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -44,6 +44,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='GT7 telemetry playback server.app',
-    icon='doc/104. steer wheel.png',
+    icon='doc/104. steer wheel-yellow.png',
     bundle_identifier=None,
 )
