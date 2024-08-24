@@ -58,7 +58,7 @@ class StartWindow(QWidget):
 
         # VIEW
         vwGroup = QGroupBox("View")
-        mainLayoutL.addWidget(vwGroup)
+        mainLayoutR.addWidget(vwGroup)
         vwLayout = QVBoxLayout()
         vwGroup.setLayout(vwLayout)
 
@@ -69,6 +69,15 @@ class StartWindow(QWidget):
         self.fontScale.setValue(1)
 
         self.lapDecimals = QCheckBox("Show decimals in lap displays")
+
+        vwLayout.addWidget(QLabel("Font scale:"))
+        vwLayout.addWidget(self.fontScale)
+
+        # SPEED ASSISTS
+        saGroup = QGroupBox("Speed assists")
+        mainLayoutL.addWidget(saGroup)
+        saLayout = QVBoxLayout()
+        saGroup.setLayout(saLayout)
         self.cbOptimal = QCheckBox("Optimized lap")
         self.cbOptimal.setEnabled(False)
         self.cbBest = QCheckBox("Best lap")
@@ -84,62 +93,25 @@ class StartWindow(QWidget):
         self.refCFile = ""
         self.cbLast = QCheckBox("Last lap")
         self.timecomp = QCheckBox("Show graphical lap time comparisons")
-        
-        vwLayout.addWidget(QLabel("Font scale:"))
-        vwLayout.addWidget(self.fontScale)
-        vwLayout.addWidget(self.lapDecimals)
-        #vwLayout.addWidget(self.cbOptimal)
-        vwLayout.addWidget(self.cbBest)
-        vwLayout.addWidget(self.cbMedian)
-        vwLayout.addWidget(self.cbRefA)
-        vwLayout.addWidget(self.cbRefB)
-        vwLayout.addWidget(self.cbRefC)
-        vwLayout.addWidget(self.cbLast)
-        vwLayout.addWidget(self.timecomp)
-
-        # RECORDING
-        recGroup = QGroupBox("Recording")
-        mainLayoutL.addWidget(recGroup)
-        recLayout = QVBoxLayout()
-        recGroup.setLayout(recLayout)
-
-        self.recordingEnabled = QCheckBox("Allow recording raw data by pressing [R]")
-        self.sessionName = QLineEdit()
-        self.saveSessionName = QCheckBox("Remember session name")
-        pbChooseStorage = QPushButton("Choose storage location")
-        self.lStorageLocation = QLabel()
-        self.storageLocation = ""
-        self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
-        pbChooseStorage.clicked.connect(self.chooseStorage)
-        
-        recLayout.addWidget(self.recordingEnabled)
-        recLayout.addWidget(QLabel("Session name:"))
-        recLayout.addWidget(self.sessionName)
-        recLayout.addWidget(self.saveSessionName)
-        recLayout.addWidget(self.lStorageLocation)
-        recLayout.addWidget(pbChooseStorage)
-        
-        # RACING LINE
-        rlGroup = QGroupBox("Racing line")
-        mainLayoutL.addWidget(rlGroup)
-        rlLayout = QVBoxLayout()
-        rlGroup.setLayout(rlLayout)
-
         self.linecomp = QCheckBox("Show racing line comparisons")
-        self.messagesEnabled = QCheckBox("Allow adding warning markers by pressing SPACE")
         
-        self.cbCaution = QCheckBox("Use pre-loaded warning markers")
-        self.cautionFile = ""
+        vwLayout.addWidget(self.lapDecimals)
+        #saLayout.addWidget(self.cbOptimal)
+        saLayout.addWidget(self.cbBest)
+        saLayout.addWidget(self.cbMedian)
+        saLayout.addWidget(self.cbRefA)
+        saLayout.addWidget(self.cbRefB)
+        saLayout.addWidget(self.cbRefC)
+        saLayout.addWidget(self.cbLast)
+        saLayout.addWidget(self.timecomp)
+        saLayout.addWidget(self.linecomp)
 
-        rlLayout.addWidget(self.linecomp)
-        rlLayout.addWidget(self.messagesEnabled)
-        rlLayout.addWidget(self.cbCaution)
 
         # BRAKE POINTS
-        bpGroup = QGroupBox("Brake points")
+        bpGroup = QGroupBox("Location assists")
         bpLayout = QVBoxLayout()
         bpGroup.setLayout(bpLayout)
-        mainLayoutR.addWidget(bpGroup)
+        mainLayoutL.addWidget(bpGroup)
 
         self.brakepoints = QCheckBox("Show brake points")
         self.throttlepoints = QCheckBox("Show throttle points")
@@ -154,12 +126,41 @@ class StartWindow(QWidget):
         #self.bigCountdownTarget.addItem("Optimized lap")
         self.switchToBestLap = QCheckBox("Switch to best lap once it's faster")
         
+        self.messagesEnabled = QCheckBox("Allow adding warning markers by pressing SPACE")
+        
+        self.cbCaution = QCheckBox("Use pre-loaded warning markers")
+        self.cautionFile = ""
+
         bpLayout.addWidget(self.brakepoints)
         bpLayout.addWidget(self.throttlepoints)
         bpLayout.addWidget(self.countdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownBrakepoint)
         bpLayout.addWidget(self.bigCountdownTarget)
         bpLayout.addWidget(self.switchToBestLap)
+        bpLayout.addWidget(self.messagesEnabled)
+        bpLayout.addWidget(self.cbCaution)
+        
+        # RECORDING
+        recGroup = QGroupBox("Recording")
+        mainLayoutL.addWidget(recGroup)
+        recLayout = QVBoxLayout()
+        recGroup.setLayout(recLayout)
+
+        self.recordingEnabled = QCheckBox("Allow recording raw data by pressing R (not recommended)")
+        self.sessionName = QLineEdit()
+        self.saveSessionName = QCheckBox("Remember session name")
+        pbChooseStorage = QPushButton("Choose storage location")
+        self.lStorageLocation = QLabel()
+        self.storageLocation = ""
+        self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
+        pbChooseStorage.clicked.connect(self.chooseStorage)
+        
+        recLayout.addWidget(QLabel("Session name:"))
+        recLayout.addWidget(self.sessionName)
+        recLayout.addWidget(self.saveSessionName)
+        recLayout.addWidget(self.lStorageLocation)
+        recLayout.addWidget(pbChooseStorage)
+        recLayout.addWidget(self.recordingEnabled)
         
         # FUEL
         fuGroup = QGroupBox("Fuel")
@@ -231,11 +232,11 @@ class StartWindow(QWidget):
         self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
 
         self.fontScale.setValue(float(settings.value("fontScale",1)))
-        self.lapDecimals.setChecked(settings.value("lapDecimals") in [ True, "true"])
+        self.lapDecimals.setChecked(settings.value("lapDecimals", True) in [ True, "true"])
         self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
-        self.cbBest.setChecked(settings.value("showBestLap") in [ True, "true"])
-        self.cbMedian.setChecked(settings.value("showMedianLap") in [ True, "true"])
-        self.cbLast.setChecked(settings.value("showLastLap") in [ True, "true"])
+        self.cbBest.setChecked(settings.value("showBestLap", True) in [ True, "true"])
+        self.cbMedian.setChecked(settings.value("showMedianLap", True) in [ True, "true"])
+        self.cbLast.setChecked(settings.value("showLastLap", True) in [ True, "true"])
 
         self.cbRefA.blockSignals(True)
         self.cbRefA.setChecked(settings.value("showRefALap") in [ True, "true"])
@@ -262,7 +263,7 @@ class StartWindow(QWidget):
         self.saveSessionName.setChecked(settings.value("saveSessionName") in [ True, "true"])
 
         self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
-        self.timecomp.setChecked(settings.value("timecomp") in [ True, "true"])
+        self.timecomp.setChecked(settings.value("timecomp", True) in [ True, "true"])
         self.cautionFile = settings.value("messageFile")
         self.cbCaution.setChecked(settings.value("loadMessagesFromFile") in [ True, "true"])
         if self.cbCaution.isChecked() and self.cautionFile != "":
@@ -272,8 +273,8 @@ class StartWindow(QWidget):
         
         self.brakepoints.setChecked(settings.value("brakepoints") in [ True, "true"])
         self.throttlepoints.setChecked(settings.value("throttlepoints") in [ True, "true"])
-        self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint") in [True, "true"])
-        self.bigCountdownTarget.setCurrentIndex(int(settings.value("bigCountdownTarget",0)))
+        self.countdownBrakepoint.setChecked(settings.value("countdownBrakepoint", True) in [True, "true"])
+        self.bigCountdownTarget.setCurrentIndex(int(settings.value("bigCountdownTarget",1)))
         self.switchToBestLap.setChecked(settings.value("switchToBestLap") in [ True, "true" ])
 
         self.fuelMultiplier.setValue(int(settings.value("fuelMultiplier", 1)))

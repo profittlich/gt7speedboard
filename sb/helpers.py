@@ -48,7 +48,7 @@ class Lap:
 
     def updateTime(self):
         if self.following is None:
-            self.time = len(self.points) * 1/59.94
+            self.time = len(self.points) * 1000/59.94
         else:
             self.time = self.following.last_lap
 

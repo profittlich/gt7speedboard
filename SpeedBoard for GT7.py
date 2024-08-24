@@ -2036,18 +2036,18 @@ class MainWindow(QMainWindow):
                 self.headerSpeed.setText("SPEED")
                 self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Up.value:
-                self.brakeOffset -= 6
+                self.brakeOffset -= 3
                 print("Brake offset", self.brakeOffset)
                 if self.brakeOffset != 0:
-                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 1)) + "] SPEED")
+                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
                 else:
                     self.headerSpeed.setText("SPEED")
                 self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Down.value:
-                self.brakeOffset += 6
+                self.brakeOffset += 3
                 print("Brake offset", self.brakeOffset)
                 if self.brakeOffset != 0:
-                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 1)) + "] SPEED")
+                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
                 else:
                     self.headerSpeed.setText("SPEED")
                 self.headerSpeed.update()
@@ -2082,9 +2082,8 @@ class MainWindow(QMainWindow):
             if not self.previousLaps[0].preceeding is None:
                 f.write(self.previousLaps[0].preceeding.raw)
             for index in range(len(self.previousLaps)):
-                if self.previousLaps[index].valid:
-                    for p in self.previousLaps[index].points:
-                        f.write(p.raw)
+                for p in self.previousLaps[index].points:
+                    f.write(p.raw)
             if not self.previousLaps[-1].following is None:
                 f.write(self.previousLaps[-1].following.raw)
 

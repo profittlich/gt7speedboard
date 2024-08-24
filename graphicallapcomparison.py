@@ -52,6 +52,8 @@ class StartWindowVLC(QWidget):
             print("None")
         else:
             self.loadReferenceLapA(chosen[0])
+            if self.refBFile == "":
+                self.loadReferenceLapB(chosen[0])
 
     def loadReferenceLapA(self, chosen):
         self.refAFile = chosen
@@ -71,6 +73,8 @@ class StartWindowVLC(QWidget):
             print("None")
         else:
             self.loadReferenceLapB(chosen[0])
+            if self.refAFile == "":
+                self.loadReferenceLapA(chosen[0])
 
     def loadReferenceLapB(self, chosen):
         self.refBFile = chosen
