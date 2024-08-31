@@ -72,6 +72,18 @@ class Lap:
         return topSpeed
 
 def loadLap(fn):
+    laps = loadLaps(fn)
+    for l in laps:
+        if l.valid:
+            return l
+    if len(laps) > 0:
+        return laps[0]
+    else:
+        emptyLap = Lap()
+        emptyLap.updateTime()
+        return emptyLap
+
+    # never reached
     lap = Lap()
     if len(fn)>0:
         #print("Load lap", fn)
@@ -128,6 +140,8 @@ def loadLaps(fn):
 
     for i in range(0, len(result)):
         print("End point distance:", result[i].distance(result[i].points[0], result[i].points[-1]))
+        result[i].updateTime()
+        print("Time:", result[i].time)
         if result[i].distance(result[i].points[0], result[i].points[-1]) > 20: # TODO load from constants
             result[i].valid = False
         
