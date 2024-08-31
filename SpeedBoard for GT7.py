@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         self.circuitExperienceNoThrottleTimeout = 10
         self.circuitExperienceJumpDistance = 10
 
-        self.validLapEndpointDistance = 30
+        self.validLapEndpointDistance = 20
 
         self.fuelStatisticsLaps = 5
         self.fuelLastLapFactor = 0.667
@@ -2082,8 +2082,12 @@ class MainWindow(QMainWindow):
             if not self.previousLaps[0].preceeding is None:
                 f.write(self.previousLaps[0].preceeding.raw)
             for index in range(len(self.previousLaps)):
+                if index > 0 and not self.previousLaps[index].preceeding is None and self.previousLaps[index].preceeding != self.previousLaps[index-1].points[-1]:
+                    f.write(self.previousLaps[index].preceeding.raw)
                 for p in self.previousLaps[index].points:
                     f.write(p.raw)
+                if index < len(self.previousLaps)-1 and not self.previousLaps[index].following is None and self.previousLaps[index].following != self.previousLaps[index+1].points[0]:
+                    f.write(self.previousLaps[index].following.raw)
             if not self.previousLaps[-1].following is None:
                 f.write(self.previousLaps[-1].following.raw)
 

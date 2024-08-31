@@ -118,11 +118,19 @@ def loadLaps(fn):
             result[i].preceeding = result[i-1].points[-1]
             result[i-1].following = result[i].points[0]
         
-    if (len(result[0].points) == 1):
-        result.pop(0)
-    if (len(result[-1].points) == 1):
-        result.pop(-1)
+    kick = []
+    for i in range(0, len(result)):
+        if (len(result[i].points) == 1):
+            kick.append(i)
 
+    for i in reversed(kick):
+        result.pop(i)
+
+    for i in range(0, len(result)):
+        print("End point distance:", result[i].distance(result[i].points[0], result[i].points[-1]))
+        if result[i].distance(result[i].points[0], result[i].points[-1]) > 20: # TODO load from constants
+            result[i].valid = False
+        
     return result
 
 def indexToTime(i):

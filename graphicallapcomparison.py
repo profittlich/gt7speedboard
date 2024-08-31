@@ -65,7 +65,10 @@ class StartWindowVLC(QWidget):
         self.idxRefA.clear()
         for l in self.aLaps:
             l.updateTime()
-            self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
+            if not l.valid:
+                self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)) + " (invalid)")
+            else:
+                self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
     def chooseReferenceLapB(self):
         chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps)")
@@ -86,7 +89,10 @@ class StartWindowVLC(QWidget):
         self.idxRefB.clear()
         for l in self.bLaps:
             l.updateTime()
-            self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
+            if not l.valid:
+                self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)) + " (invalid)")
+            else:
+                self.idxRefB.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
 
 class MainWindow(QMainWindow):
