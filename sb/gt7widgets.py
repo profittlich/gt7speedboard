@@ -9,9 +9,9 @@ shortcutText = "ESC \t return to configuration\n" \
              + "L \t save last lap\n" \
              + "M \t save median lap\n" \
              + "A \t save all laps\n" \
-             + "C \t clear previous lap data\n" \
+             + "C \t clear lap data\n" \
              + "SPACE \t set warning marker to current location\n" \
-             + "W \t save warning markers\n" \
+             + "W \t save warning markers to file\n" \
              + "D \t Set a description for the current run\n" \
              + "S \t Show runs and statistics\n"  \
              + "T \t Save CSV table of runs\n"  \
