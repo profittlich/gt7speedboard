@@ -819,6 +819,18 @@ class MainWindow(QMainWindow):
     def startDash(self):
         self.circuitExperience = self.startWindow.mode.currentIndex() == 1
 
+        if self.circuitExperience:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setText("Are you sure you want to start in Circuit Experience Mode?")
+            msg.setInformativeText("Circuit Experience Mode is experimental and causes unexpected behavior when used in normal races.")
+            msg.setWindowTitle("Circuit Experience")
+            msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            
+            retval = msg.exec()
+            if retval == QMessageBox.StandardButton.No:
+                return
+
         ip = self.startWindow.ip.text()
 
         self.lapDecimals = self.startWindow.lapDecimals.isChecked()
