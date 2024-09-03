@@ -333,7 +333,7 @@ class MapView2(QWidget):
                 ad = mean(diffHistory)
                 
                 if not prevStep:
-                    self.layers[self.lap1BottomMarkers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p1next.position_x, p1next.position_z, self.l2ColorDark))
+                    #self.layers[self.lap1BottomMarkers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p1next.position_x, p1next.position_z, self.l2ColorDark))
                     dpre = ""
                     if int(p2.car_speed - p1.car_speed) > 0:
                         dpre = "+"
@@ -349,7 +349,7 @@ class MapView2(QWidget):
 
                 ad = mean(diffHistory)
                 if not prevStep:
-                    self.layers[self.lap1BottomMarkers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.l1ColorDark))
+                    #self.layers[self.lap1BottomMarkers].append(Triangle("time", p1.position_x, p1.position_z, p2.position_x, p2.position_z, p2next.position_x, p2next.position_z, self.l1ColorDark))
                     dpre = ""
                     if int(p2.car_speed - p1.car_speed) > 0:
                         dpre = "+"
