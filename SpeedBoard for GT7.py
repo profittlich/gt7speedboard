@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v4)")
+        self.setWindowTitle("SpeedBoard for GT7 (v5)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -963,6 +963,7 @@ class MainWindow(QMainWindow):
         self.trackPreviouslyIdentified = "Unknown Track"
         self.trackPreviouslyDescribed = ""
         self.previousPackageId = 0
+        self.curLap = None
         self.resetCurrentLapData()
 
         # Timer
@@ -1114,9 +1115,12 @@ class MainWindow(QMainWindow):
         print("Clear sessions")
         self.sessionStats = []
         self.sessionStart = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.updateRunStats()
 
     def resetCurrentLapData(self):
-        print("Reset cur lap storage")
+        print("Reset cur lap storage") 
+        if not self.curLap is None and len(self.curLap.points) > 1:
+            print(" Old lap:", len(self.curLap.points))#, self.curLap.distance(self.curLap.points[0], self.curLap.points[-1]), "m")
         self.curLap = Lap()
         self.closestILast = 0
         self.closestIBest = 0
@@ -1703,7 +1707,10 @@ class MainWindow(QMainWindow):
                 print("=== Welcome to " + curTrack)
                 self.showUiMsg("Welcome to<br>" + curTrack, 1)
                 self.trackPreviouslyIdentified = curTrack
+                tempLap = self.lastLap
                 self.initRace()
+                self.lastLap = tempLap
+                
             print("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
             self.trackPreviouslyDescribed = curTrack
             self.updateLiveStats(curPoint)
@@ -1777,7 +1784,7 @@ class MainWindow(QMainWindow):
             
             # Handle short and "real" laps differently
             if lapLen < 10: # TODO const
-                print("LAP CHANGE short")
+                print("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
             else:
                 debugNewLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
@@ -1901,7 +1908,7 @@ class MainWindow(QMainWindow):
                 else:
                     print("Ignore pre-lap")
                     self.lastFuel = 1
-                    self.curLap = Lap()
+                    self.resetCurrentLapData()
 
                 # Update live stats
                 self.updateLiveStats(curPoint)

@@ -139,9 +139,9 @@ def loadLaps(fn):
         result.pop(i)
 
     for i in range(0, len(result)):
-        print("End point distance:", result[i].distance(result[i].points[0], result[i].points[-1]))
+        #print("End point distance:", result[i].distance(result[i].points[0], result[i].points[-1]))
         result[i].updateTime()
-        print("Time:", result[i].time)
+        #print("Time:", result[i].time)
         if result[i].distance(result[i].points[0], result[i].points[-1]) > 20: # TODO load from constants
             result[i].valid = False
         
