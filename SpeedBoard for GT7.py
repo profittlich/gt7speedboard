@@ -1786,6 +1786,7 @@ class MainWindow(QMainWindow):
             if lapLen < 10: # TODO const
                 print("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
             else:
+                print("Track Detect Data:", self.trackDetector.totalPoints)
                 debugNewLapTime = datetime.datetime.now()
                 print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
                 self.debugOldLapTime = debugNewLapTime
@@ -1823,21 +1824,24 @@ class MainWindow(QMainWindow):
                         # Check if the full screen color flashing should be for the best lap from now on
                         if self.switchToBestLap:
                             print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
-                            if self.bigCountdownBrakepoint == 2 and not self.refLaps[0] is None and self.refLaps[0].time > curPoint.last_lap:
-                                print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
-                                self.showUiMsg("BEAT REFERENCE LAP", 1)
+                            if self.bigCountdownBrakepoint == 2 and (self.refLaps[0] is None or self.refLaps[0].time > curPoint.last_lap):
+                                if not self.refLaps[0] is None:
+                                    print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
+                                    self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
-                            elif self.bigCountdownBrakepoint == 3 and not self.refLaps[1] is None and self.refLaps[1].time > curPoint.last_lap:
-                                print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
-                                self.showUiMsg("BEAT REFERENCE LAP", 1)
+                            elif self.bigCountdownBrakepoint == 3 and (self.refLaps[1] is None or self.refLaps[1].time > curPoint.last_lap):
+                                if not self.refLaps[1] is None:
+                                    print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
+                                    self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
-                            elif self.bigCountdownBrakepoint == 4 and not self.refLaps[2] is None and self.refLaps[2].time > curPoint.last_lap:
-                                print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
-                                self.showUiMsg("BEAT REFERENCE LAP", 1)
+                            elif self.bigCountdownBrakepoint == 4 and (self.refLaps[2] is None or self.refLaps[2].time > curPoint.last_lap):
+                                if not self.refLaps[2] is None:
+                                    print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
+                                    self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
