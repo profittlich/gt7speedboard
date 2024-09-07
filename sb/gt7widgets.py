@@ -2,6 +2,7 @@ from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
 from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox
 import math
+from sb.helpers import logPrint
 
 shortcutText = "ESC \t return to configuration\n" \
              + "? \t show keyboard shortcuts\n" \
@@ -223,7 +224,7 @@ class StartWindow(QWidget):
         mainLayout.insertStretch(-1)
         mainLayout.addWidget(addr)
 
-        print("Load preferences")
+        logPrint("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
 
@@ -297,17 +298,17 @@ class StartWindow(QWidget):
     def chooseStorage(self):
         chosen = QFileDialog.getExistingDirectory()
         if chosen == "":
-            print("None")
+            logPrint("None")
         else:
             self.storageLocation = chosen
             self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
-            print(chosen)
+            logPrint(chosen)
 
     def chooseReferenceLapA(self, on):
         if on:
             chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
-                print("None")
+                logPrint("None")
                 self.refAFile = ""
                 self.cbRefA.setCheckState(Qt.CheckState.Unchecked)
             else:
@@ -321,7 +322,7 @@ class StartWindow(QWidget):
         if on:
             chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
-                print("None")
+                logPrint("None")
                 self.refBFile = ""
                 self.cbRefB.setCheckState(Qt.CheckState.Unchecked)
             else:
@@ -335,7 +336,7 @@ class StartWindow(QWidget):
         if on:
             chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
-                print("None")
+                logPrint("None")
                 self.refCFile = ""
                 self.cbRefC.setCheckState(Qt.CheckState.Unchecked)
             else:
@@ -349,7 +350,7 @@ class StartWindow(QWidget):
         if on:
             chosen = QFileDialog.getOpenFileName(filter="Location messages (*.sblm)")
             if chosen[0] == "":
-                print("None")
+                logPrint("None")
                 self.cbCaution.setCheckState(Qt.CheckState.Unchecked)
             else:
                 self.cautionFile = chosen[0]
@@ -389,8 +390,8 @@ class FuelGauge(QWidget):
         try:
             qp.drawRect(0,int(self.height()*(self.maxLevel-self.level)/self.maxLevel), int(self.width()), int(self.height()))
         except OverflowError as e:
-            print(e)
-            print(self.maxLevel, self.level)
+            logPrint(e)
+            logPrint(self.maxLevel, self.level)
         qp.end()
 
 
@@ -483,7 +484,7 @@ class MapView(QWidget):
             painter.end()
 
             if px1 < 0 or px2 < 0 or pz1 < 0 or pz2 < 0 or px1 > self.size[0] or px2 > self.size[0] or pz1 > self.size[1] or pz2 > self.size[1] :
-                print("Outside:", px1, pz1, px2, pz2)
+                logPrint("Outside:", px1, pz1, px2, pz2)
                 if max(px1, px2) > self.size[0]:
                     self.size[0] *= 2
                     newLive = QPixmap(self.size[0], self.size[1])
@@ -518,7 +519,7 @@ class MapView(QWidget):
         self.zoom=0.25
         #qp.drawPixmap(self.rect(), self.liveMap.copy(int(self.mapWindow[0] - aspectRatio * 1000*self.zoom), int(self.mapWindow[1]-1000*self.zoom), int(aspectRatio * self.zoom * 2000), int(self.zoom * 2000)).scaled(self.width(), self.height()))
         #qp.drawPixmap(self.rect(), self.liveMap.copy(0, 0, self.size[0], self.size[1]).scaled(self.width(), self.height()))
-        #print(self.size, aspectRatio,self.size[1] - self.size[1]/aspectRatio)
+        #logPrint(self.size, aspectRatio,self.size[1] - self.size[1]/aspectRatio)
         qp.drawPixmap(self.rect(), self.liveMap.copy(0, int((self.size[1] - self.size[1]/aspectRatio)/2), self.size[0], int(self.size[1]/aspectRatio)).scaled(self.width(), self.height()))
         self.zoom = temp
 

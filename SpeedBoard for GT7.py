@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
 from sb.gt7telepoint import Point
+from sb.helpers import logPrint
 from sb.helpers import loadLap
 from sb.helpers import Lap
 from sb.helpers import PositionPoint
@@ -102,7 +103,7 @@ class MainWindow(QMainWindow):
         self.trackDetector = None
         self.goFullscreen = True
 
-        print("Clear sessions")
+        logPrint("Clear sessions")
         self.sessionStats = []
 
         self.masterWidget = None
@@ -949,7 +950,7 @@ class MainWindow(QMainWindow):
 
         self.refLaps = [ loadLap(self.refAFile), loadLap(self.refBFile), loadLap(self.refCFile) ]
 
-        print("Ref A:", msToTime(self.refLaps[0].time))
+        logPrint("Ref A:", msToTime(self.refLaps[0].time))
 
         self.receiver.setQueue(self.queue)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
@@ -976,7 +977,7 @@ class MainWindow(QMainWindow):
         self.noThrottleCount = 0
 
     def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
-        print("showUiMsg")
+        logPrint("showUiMsg")
         self.uiMsg.setText(msg)
         if leftAlign:
             self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -1020,9 +1021,9 @@ class MainWindow(QMainWindow):
 
 
     def initRun(self):
-        print("initRun", self.sessionStats)
+        logPrint("initRun", self.sessionStats)
         if len(self.sessionStats) > 0 and self.sessionStats[-1].sessionStart == len(self.previousLaps):
-            print("Re-using untouched Run")
+            logPrint("Re-using untouched Run")
             return
         self.sessionStats.append (Run(len(self.previousLaps)))
 
@@ -1058,7 +1059,7 @@ class MainWindow(QMainWindow):
         self.headerSpeed.setText("SPEED")
 
         self.debugOldLapTime = datetime.datetime.now()
-        print("INIT RACE")
+        logPrint("INIT RACE")
         self.newMessage = None
         self.lastLap = -1
         self.lastFuel = -1
@@ -1112,15 +1113,15 @@ class MainWindow(QMainWindow):
 
         self.loadMessages(self.messageFile)
 
-        print("Clear sessions")
+        logPrint("Clear sessions")
         self.sessionStats = []
         self.sessionStart = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.updateRunStats()
 
     def resetCurrentLapData(self):
-        print("Reset cur lap storage") 
+        logPrint("Reset cur lap storage") 
         if not self.curLap is None and len(self.curLap.points) > 1:
-            print(" Old lap:", len(self.curLap.points))#, self.curLap.distance(self.curLap.points[0], self.curLap.points[-1]), "m")
+            logPrint(" Old lap:", len(self.curLap.points))#, self.curLap.distance(self.curLap.points[0], self.curLap.points[-1]), "m")
         self.curLap = Lap()
         self.closestILast = 0
         self.closestIBest = 0
@@ -1190,7 +1191,7 @@ class MainWindow(QMainWindow):
             for p2 in range(100, len(lap)-10, 100):
                 curDist = self.distance(p, lap[p2])
                 if curDist < self.closestPointValidDistance:
-                    print("Found global position at", p2)
+                    logPrint("Found global position at", p2)
                     startIdx = p2-100
                     break
                 
@@ -1222,7 +1223,7 @@ class MainWindow(QMainWindow):
         #return totalDist
 
     def purgeBadLapsCE(self):
-        print("PURGE laps")
+        logPrint("PURGE laps")
         longestLength = 0
         longestLap = None
         for l in self.previousLaps:
@@ -1232,10 +1233,10 @@ class MainWindow(QMainWindow):
                 longestLap = l
 
         if not longestLap is None:
-            print("Longest: ", longestLength, longestLap.time)
+            logPrint("Longest: ", longestLength, longestLap.time)
             temp = []
             for l in self.previousLaps:
-                print ("\nCheck lap", l.time)
+                logPrint ("\nCheck lap", l.time)
                 d = self.distance(longestLap.points[-1], l.points[-1])
                 c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
                 d2 = -1
@@ -1245,23 +1246,23 @@ class MainWindow(QMainWindow):
                 c3 = self.findClosestPointNoLimit(longestLap.points, l.points[-1])
                 if not c3 is None:
                     d3 = self.distance(l.points[-1], c3)
-                print("End distance:", d)
+                logPrint("End distance:", d)
                 if d > self.circuitExperienceEndPointPurgeDistance:
-                    print("PURGE lap", indexToTime (len(l.points)), d)
+                    logPrint("PURGE lap", indexToTime (len(l.points)), d)
                 else:
                     temp.append(l)
             self.previousLaps = temp
 
     def cleanUpLapCE(self, lap):
-        print("Input:", len(lap.points))
+        logPrint("Input:", len(lap.points))
         if len(lap.points) == 0:
-            print("Lap is empty")
+            logPrint("Lap is empty")
             return lap
         if len(lap.points) < self.circuitExperienceShortLapSecondsThreshold * self.psFPS:
-            print("\nLap is short")
+            logPrint("\nLap is short")
             return lap
         if (lap.points[-1].throttle > 0):
-            print("Throttle to the end")
+            logPrint("Throttle to the end")
             return lap
         afterLap = 0
         for i in range(1, len(lap.points)):
@@ -1269,12 +1270,12 @@ class MainWindow(QMainWindow):
                 afterLap+=1
             else:
                 break
-        print("Remove", afterLap, "of", len(lap.points))
+        logPrint("Remove", afterLap, "of", len(lap.points))
         if afterLap > 0:
             result = lap.points[:-afterLap]
         else:
             result = lap.points
-        print("Got", len(result))
+        logPrint("Got", len(result))
         return Lap(lap.time, result, lap.valid, preceeding=lap.preceeding)
 
     def findBestLap(self):
@@ -1426,7 +1427,7 @@ class MainWindow(QMainWindow):
             postfix = " kWh"
 
         if not self.previousPoint is None and curPoint.current_fuel > self.previousPoint.current_fuel:
-            print("Refueled!")
+            logPrint("Refueled!")
             self.refueled = 0
 
         if (curPoint.current_fuel / fuel_capacity) < 1:
@@ -1704,14 +1705,14 @@ class MainWindow(QMainWindow):
         curTrack = self.trackDetector.getTrack()
         if self.trackPreviouslyDescribed != curTrack:
             if self.trackPreviouslyIdentified != curTrack and self.trackDetector.trackIdentified():
-                print("=== Welcome to " + curTrack)
+                logPrint("=== Welcome to " + curTrack)
                 self.showUiMsg("Welcome to<br>" + curTrack, 1)
                 self.trackPreviouslyIdentified = curTrack
                 tempLap = self.lastLap
                 self.initRace()
                 self.lastLap = tempLap
                 
-            print("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
+            logPrint("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
             self.trackPreviouslyDescribed = curTrack
             self.updateLiveStats(curPoint)
 
@@ -1773,7 +1774,7 @@ class MainWindow(QMainWindow):
             # Clean up circuit experience laps
             if self.circuitExperience:
                 if self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
-                    print("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
+                    logPrint("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
 
                 cleanLap = self.cleanUpLapCE(self.curLap)
                 self.mapViewCE.endLap(cleanLap.points)
@@ -1784,14 +1785,14 @@ class MainWindow(QMainWindow):
             
             # Handle short and "real" laps differently
             if lapLen < 10: # TODO const
-                print("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
+                logPrint("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
             else:
-                print("Track Detect Data:", self.trackDetector.totalPoints)
+                logPrint("Track Detect Data:", self.trackDetector.totalPoints)
                 debugNewLapTime = datetime.datetime.now()
-                print("\nLAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
+                logPrint("LAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
                 self.debugOldLapTime = debugNewLapTime
                 if curPoint.current_lap == 1 or self.lastLap >= curPoint.current_lap:
-                    print("lap is 1 -> init")
+                    logPrint("lap is 1 -> init")
                     self.initRun()
 
             # Update live stats
@@ -1807,7 +1808,7 @@ class MainWindow(QMainWindow):
 
                     showBestLapMessage = True
 
-                    print("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
+                    logPrint("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
                     # Process a completed valid lap (circuit experience laps are always valid)
                     if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
                         if len(self.previousLaps) > 0:
@@ -1819,28 +1820,28 @@ class MainWindow(QMainWindow):
                         it = indexToTime(len(cleanLap.points))
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
-                        print("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
+                        logPrint("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
 
                         # Check if the full screen color flashing should be for the best lap from now on
                         if self.switchToBestLap:
-                            print("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
+                            logPrint("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
                             if self.bigCountdownBrakepoint == 2 and (self.refLaps[0] is None or self.refLaps[0].time > curPoint.last_lap):
                                 if not self.refLaps[0] is None:
-                                    print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
+                                    logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[0].time))
                                     self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
                             elif self.bigCountdownBrakepoint == 3 and (self.refLaps[1] is None or self.refLaps[1].time > curPoint.last_lap):
                                 if not self.refLaps[1] is None:
-                                    print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
+                                    logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[1].time))
                                     self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
                                 self.markBigCountdownField()
                             elif self.bigCountdownBrakepoint == 4 and (self.refLaps[2] is None or self.refLaps[2].time > curPoint.last_lap):
                                 if not self.refLaps[2] is None:
-                                    print("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
+                                    logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.refLaps[2].time))
                                     self.showUiMsg("BEAT REFERENCE LAP", 1)
                                 showBestLapMessage = False
                                 self.bigCountdownBrakepoint = 1
@@ -1849,32 +1850,32 @@ class MainWindow(QMainWindow):
                         # Update session stats
                         if lastLapTime > 0:
                             if len(self.sessionStats) == 0: # Started app during lap
-                                print("no stats --> init")
+                                logPrint("no stats --> init")
                                 self.initRun()
                             self.sessionStats[-1].carId = curPoint.car_id
                             self.sessionStats[-1].addLapTime(lastLapTime, self.lastLap)
                             pTop = self.previousLaps[-1].topSpeed()
                             if self.sessionStats[-1].topSpeed < pTop:
                                 self.sessionStats[-1].topSpeed = pTop
-                            print(len(self.sessionStats), "sessions")
+                            logPrint(len(self.sessionStats), "sessions")
                             for i in self.sessionStats:
-                                print("Best:", msToTime(i.bestLap()[0]))
-                                print("Median:", msToTime(i.medianLap()[0]))
+                                logPrint("Best:", msToTime(i.bestLap()[0]))
+                                logPrint("Median:", msToTime(i.medianLap()[0]))
 
                         self.updateRunStats()
                     else: # Incomplete laps are sometimes useful, but can't be used for everything
-                        print("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
+                        logPrint("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
                         if len(self.previousLaps) > 0:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint))
 
-                    print("Laps:", len(self.previousLaps))
+                    logPrint("Laps:", len(self.previousLaps))
 
                     # Clean up circuit experience laps
                     if self.circuitExperience:
                         self.purgeBadLapsCE()
-                        print("Laps after purge:", len(self.previousLaps))
+                        logPrint("Laps after purge:", len(self.previousLaps))
                 
                     # Reset comparison lap information
                     newBestLap = self.findBestLap()
@@ -1890,14 +1891,14 @@ class MainWindow(QMainWindow):
                     self.medianLap = self.findMedianLap()
                     self.resetCurrentLapData()
 
-                    print("\nBest lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
-                    print("Median lap:", self.medianLap, msToTime(self.previousLaps[self.medianLap].time))
-                    print("Last lap:", len(self.previousLaps)-1, msToTime (self.previousLaps[-1].time))
+                    logPrint("Best lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
+                    logPrint("Median lap:", self.medianLap, msToTime(self.previousLaps[self.medianLap].time))
+                    logPrint("Last lap:", len(self.previousLaps)-1, msToTime (self.previousLaps[-1].time))
 
                     # Update fuel usage and outlook
                     fuelDiff = self.lastFuel - curPoint.current_fuel/fuel_capacity
                     if fuelDiff > 0:
-                        print("Append fuel", fuelDiff)
+                        logPrint("Append fuel", fuelDiff)
                         self.lastFuelUsage.append(fuelDiff)
                     if len(self.lastFuelUsage) > self.fuelStatisticsLaps:
                         self.lastFuelUsage = self.lastFuelUsage[1:]
@@ -1910,7 +1911,7 @@ class MainWindow(QMainWindow):
                             self.fuelFactor = (1-self.fuelLastLapFactor) * self.fuelFactor + self.fuelLastLapFactor * self.lastFuelUsage[i]
 
                 else:
-                    print("Ignore pre-lap")
+                    logPrint("Ignore pre-lap")
                     self.lastFuel = 1
                     self.resetCurrentLapData()
 
@@ -1918,7 +1919,7 @@ class MainWindow(QMainWindow):
                 self.updateLiveStats(curPoint)
 
             self.lastLap = curPoint.current_lap
-            print("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
+            logPrint("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
 
     def updateDisplay(self):
         # Grab all new telemetry packages
@@ -1938,10 +1939,10 @@ class MainWindow(QMainWindow):
             pointsToHandle = []
 
             if diff > 10:
-                print("Too many frame drops (" + str (diff) + ")! Data will be corrupted.")
+                logPrint("Too many frame drops (" + str (diff) + ")! Data will be corrupted.")
                 self.trackDetector.reset()
             elif diff > 1:
-                print("Frame drops propagated:", diff-1)
+                logPrint("Frame drops propagated:", diff-1)
                 for i in range(diff-1):
                     pi = copy.deepcopy(self.previousPoint)
                     pi.interpolate(newPoint, (i+1)/diff)
@@ -2043,7 +2044,7 @@ class MainWindow(QMainWindow):
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_W.value:
-                print("store message positions")
+                logPrint("store message positions")
                 saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
                 saveThread.signals.finished.connect(self.showUiMsg)
                 self.threadpool.start(saveThread)
@@ -2055,12 +2056,12 @@ class MainWindow(QMainWindow):
                 self.initRace()
             elif e.key() == Qt.Key.Key_0.value:
                 self.brakeOffset = 0
-                print("Brake offset", self.brakeOffset)
+                logPrint("Brake offset", self.brakeOffset)
                 self.headerSpeed.setText("SPEED")
                 self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Up.value:
                 self.brakeOffset -= 3
-                print("Brake offset", self.brakeOffset)
+                logPrint("Brake offset", self.brakeOffset)
                 if self.brakeOffset != 0:
                     self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
                 else:
@@ -2068,7 +2069,7 @@ class MainWindow(QMainWindow):
                 self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Down.value:
                 self.brakeOffset += 3
-                print("Brake offset", self.brakeOffset)
+                logPrint("Brake offset", self.brakeOffset)
                 if self.brakeOffset != 0:
                     self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
                 else:
@@ -2095,7 +2096,7 @@ class MainWindow(QMainWindow):
                 self.returnToDash()
 
     def saveAllLaps(self, name):
-        print("store all laps:", name)
+        logPrint("store all laps:", name)
         if not os.path.exists(self.storageLocation):
             return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         prefix = self.storageLocation + "/"
@@ -2115,7 +2116,7 @@ class MainWindow(QMainWindow):
                 f.write(self.previousLaps[-1].following.raw)
 
     def saveLap(self, index, name):
-        print("store lap:", name)
+        logPrint("store lap:", name)
         if not os.path.exists(self.storageLocation):
             return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         prefix = self.storageLocation + "/"
@@ -2123,17 +2124,17 @@ class MainWindow(QMainWindow):
             prefix += self.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
             if not self.previousLaps[index].preceeding is None:
-                print("Going from", self.previousLaps[index].preceeding.current_lap)
+                logPrint("Going from", self.previousLaps[index].preceeding.current_lap)
                 f.write(self.previousLaps[index].preceeding.raw)
-            print("via", self.previousLaps[index].points[0].current_lap)
+            logPrint("via", self.previousLaps[index].points[0].current_lap)
             for p in self.previousLaps[index].points:
                 f.write(p.raw)
             if not self.previousLaps[index].following is None:
-                print("to", self.previousLaps[index].following.current_lap)
+                logPrint("to", self.previousLaps[index].following.current_lap)
                 f.write(self.previousLaps[index].following.raw)
 
     def saveMessages(self):
-        print("Save messages")
+        logPrint("Save messages")
         if not os.path.exists(self.storageLocation):
             return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         d = []
@@ -2141,7 +2142,7 @@ class MainWindow(QMainWindow):
             d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
 
         j = json.dumps(d, indent=4)
-        print(j)
+        logPrint(j)
         prefix = self.storageLocation + "/"
         if len(self.sessionName) > 0:
             prefix += self.sessionName + " - "
@@ -2153,22 +2154,22 @@ class MainWindow(QMainWindow):
         if self.loadMessagesFromFile:
             with open (fn, "r") as f:
                 j = f.read()
-                print(j)
+                logPrint(j)
                 d = json.loads(j)
-                print(d)
+                logPrint(d)
                 for m in d:
                     p = PositionPoint()
                     p.position_x = m['X']
                     p.position_y = m['Y']
                     p.position_z = m['Z']
                     self.messages.append([p, m['message']])
-                    print("Message:", m)
+                    logPrint("Message:", m)
 
 
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    print("=== EXCEPTION ===")
-    print("error message:\n", tb)
+    logPrint("=== EXCEPTION ===")
+    logPrint("error message:\n", tb)
     with open ("gt7speedboard.log", "a") as f:
         f.write("=== EXCEPTION ===\n")
         f.write(str(datetime.datetime.now ()) + "\n\n")
@@ -2197,7 +2198,7 @@ if __name__ == '__main__':
             settings = QSettings()
             settings.clear()
             settings.sync()
-            print("Settings cleared")
+            logPrint("Settings cleared")
             sys.exit(0)
         i+=1
     

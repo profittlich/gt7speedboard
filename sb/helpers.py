@@ -3,6 +3,7 @@ import sys
 import os
 import platform
 import csv
+import inspect
 
 from sb.crypt import salsa20_dec, salsa20_enc
 from sb.gt7telepoint import Point
@@ -111,7 +112,7 @@ def loadLap(fn):
 def loadLaps(fn):
     result = []
     if len(fn)>0:
-        print("Load laps:", fn)
+        logPrint("Load laps:", fn)
         with open(fn, "rb") as f:
             allData = f.read()
             curIndex = 0
@@ -220,3 +221,7 @@ def idToCar(i):
     except:
         return "Unknown car (" + str(i) + ")"
 
+
+def logPrint(*args, **kwargs):
+    lines = inspect.stack()[1]
+    print(lines.filename[lines.filename.rfind('/')+1:] + "::" +  str(lines.lineno) + " [" + lines.function + "()]:", *args, **kwargs)

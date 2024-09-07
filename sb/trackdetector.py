@@ -1,5 +1,6 @@
 import sys
 from sb.gt7telepoint import Point
+from sb.helpers import logPrint
 from sb.helpers import loadLap
 from sb.helpers import Lap
 import platform
@@ -25,6 +26,7 @@ class TrackDetector:
         self.curLap = Lap()
         self.totalPoints = 0
         self.curLapQueue = Lap()
+        self.cooldown = 0
         self.loadedTracks = []
         self.tracks = []
         self.eliminateDistance = 30
@@ -38,11 +40,12 @@ class TrackDetector:
 
 
     def reset(self):
-        print("Reset track detector")
+        logPrint("Reset track detector")
         self.curLap = Lap()
         self.totalPoints = 0
         self.curLapQueue = Lap()
         self.tracks = copy.deepcopy(self.loadedTracks)
+        self.cooldown = 1200
 
 
 
@@ -145,9 +148,9 @@ class TrackDetector:
             else:
                 return 1-prog
         except Exception as e:
-            print("EXCEPTION")
-            print(str(e))
-            print(len(self.tracks))
+            logPrint("EXCEPTION")
+            logPrint(str(e))
+            logPrint(len(self.tracks))
             return 0
 
     def detectionLoop(self):
@@ -158,10 +161,15 @@ class TrackDetector:
             self.loadRefsFromDirectory(sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/tracks")
         while self.running:
             if len(self.curLapQueue.points) > 0:
-                self.curLap.points.append(self.curLapQueue.points.pop(0))
-                if self.totalPoints + len(self.curLap.points) > self.minPointsForDetection:
-                    self.detect()
-                    self.curLap = Lap()
+                if self.cooldown > 0:
+                    logPrint("Cooldown", self.cooldown)
+                    self.cooldown -= 1
+                    self.curLapQueue.points.pop(0)
+                else:
+                    self.curLap.points.append(self.curLapQueue.points.pop(0))
+                    if self.totalPoints + len(self.curLap.points) > self.minPointsForDetection:
+                        self.detect()
+                        self.curLap = Lap()
             else:
                 time.sleep(0.005)
 
@@ -179,26 +187,26 @@ class TrackDetector:
                 if d > eliminateDistance:
                     self.tracks.remove(t)
                     if self.checkPrefix():
-                        print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")], "after", self.totalPoints)
+                        logPrint("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")], "after", self.totalPoints)
                     if len(self.tracks) == 1:
-                        print("Remaining track:", self.tracks[0].name, "after", self.totalPoints, ", hits:", t.hits.count(True))
+                        logPrint("Remaining track:", self.tracks[0].name, "after", self.totalPoints, ", hits:", t.hits.count(True))
                         self.tracks[0].identifiedAt = self.totalPoints
                 elif self.hasGaps(t):
-                    print("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", self.totalPoints, "first", t.firstHit)
-                    print(t.hits, t.hits.index(True))
+                    logPrint("Eliminate", t.name, "due to gaps", pi, t.curPos, d, lp.current_lap, "after", self.totalPoints, "first", t.firstHit)
+                    logPrint(t.hits, t.hits.index(True))
                     self.tracks.remove(t)
-                    #print("Track candidates left:", len(self.tracks))
+                    #logPrint("Track candidates left:", len(self.tracks))
                     if self.checkPrefix():
-                        print("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")], "after", self.totalPoints)
+                        logPrint("Track group:", self.tracks[0].name[:self.tracks[0].name.index(" - ")], "after", self.totalPoints)
                     if len(self.tracks) == 1:
-                        print("Remaining track:", self.tracks[0].name, "after", self.totalPoints, ", hits:", t.hits.count(True))
+                        logPrint("Remaining track:", self.tracks[0].name, "after", self.totalPoints, ", hits:", t.hits.count(True))
                         self.tracks[0].identifiedAt = self.totalPoints
                 else:
                     a = self.curLap.angle(lp, curPoint)
                     if a < (3.14159 * self.validAngle / 180):
                         t.forwardCount += 1
                         if t.firstHit is None:
-                            #print(t.name, "First hit:", pi)
+                            #logPrint(t.name, "First hit:", pi)
                             t.firstHit = pi
                         elif t.hits[t.firstHit-1]:
                             t.firstHit = 0
@@ -206,13 +214,13 @@ class TrackDetector:
                     elif a > (3.14159 * (180 - self.validAngle) / 180):
                         t.reverseCount += 1
                         if t.firstHit is None:
-                            #print(t.name, "First hit:", pi)
+                            #logPrint(t.name, "First hit:", pi)
                             t.firstHit = pi
                         elif t.hits[t.firstHit-1]:
                             t.firstHit = 0
                         t.hits[pi] = True
                     t.curPos = pi
         if len(self.tracks) == 0:
-            print("Found no track, try again", "after", self.totalPoints)
+            logPrint("Found no track, try again", "after", self.totalPoints)
             self.reset()
 

@@ -1,5 +1,6 @@
 from datetime import datetime as dt
 from datetime import timedelta as td
+from sb.helpers import logPrint
 import socket
 import sys
 import struct
@@ -35,17 +36,17 @@ class GT7TelemetryReceiver:
     # send heartbeat
     def send_hb(self):
         send_data = 'A'
-        #print("Send heartbeat to " + self.ip)
+        #logPrint("Send heartbeat to " + self.ip)
         self.s.sendto(send_data.encode('utf-8'), (self.ip, self.SendPort))
-        #print('send heartbeat')
+        #logPrint('send heartbeat')
 
     def startRecording(self, sessionName):
-        print("Start recording")
+        logPrint("Start recording")
         self.startRec = True
         self.sessionName = sessionName
 
     def stopRecording(self):
-        print("Stop recording")
+        logPrint("Stop recording")
         self.startRec = False
         self.stopRec = True
 
@@ -70,7 +71,7 @@ class GT7TelemetryReceiver:
             try:
                 if self.startRec:
                     fn = self.sessionName + "recording-" + dt.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7"
-                    print("record to", fn)
+                    logPrint("record to", fn)
                     self.record = open (fn, "wb")
                     self.startRec = False
                 if self.stopRec:
@@ -88,12 +89,12 @@ class GT7TelemetryReceiver:
                 ddata = salsa20_dec(data)
                 newPktId = struct.unpack('i', ddata[0x70:0x70+4])[0]
                 if len(ddata) > 0 and newPktId < self.pktid:
-                    print("Time travel or new recording")
+                    logPrint("Time travel or new recording")
                     self.pktid = newPktId-1
                     
                 if len(ddata) > 0 and (self.ignorePktId or newPktId > self.pktid):
                     if self.pktid != newPktId-1:
-                        print("Packet loss:", newPktId-self.pktid-1)
+                        logPrint("Packet loss:", newPktId-self.pktid-1)
                     self.pktid = newPktId
 
                     if not self.queue is None:
@@ -104,7 +105,7 @@ class GT7TelemetryReceiver:
                     self.send_hb()
                     self.pknt = time.perf_counter()
             except Exception as e:
-                print('Exception in telemetry receiver: {}'.format(e))
+                logPrint('Exception in telemetry receiver: {}'.format(e))
                 self.send_hb()
                 self.pknt = time.perf_counter()
 

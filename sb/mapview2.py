@@ -10,6 +10,7 @@ from sb.drawelements import *
 from sb.helpers import loadLap, loadLaps, indexToTime, msToTime
 from sb.helpers import Lap, PositionPoint
 from sb.helpers import loadCarIds, idToCar
+from sb.helpers import logPrint
 
 class MapView2(QWidget):
 
@@ -92,7 +93,7 @@ class MapView2(QWidget):
         self.midX = (self.maxX + self.minX)/2
         self.midZ = (self.maxZ + self.minZ)/2
 
-        print ("Extents:", self.minX, self.minZ, self.maxX, self.maxZ, "->", self.midX, self.midZ)
+        logPrint ("Extents:", self.minX, self.minZ, self.maxX, self.maxZ, "->", self.midX, self.midZ)
 
     def speedDiffQColor(self, d):
         col = QColor()
@@ -154,7 +155,7 @@ class MapView2(QWidget):
         return False
 
     def findNextThrottle(self, lap, startI):
-        #print("findNextThrottle", startI)
+        #logPrint("findNextThrottle", startI)
         j = startI
         for j in range(startI, len(lap)):
             if lap[j].throttle <= 90:
@@ -164,9 +165,9 @@ class MapView2(QWidget):
                 future = False #self.recentGearChange(lap, i)
                 #if i > 4 and i < 8200:
                     #if future:
-                        #print("X", i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                        #logPrint("X", i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
                     #else:
-                        #print(i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                        #logPrint(i, "Throttle, ", future, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
                 if not future:
                     return i
                 else:
@@ -174,7 +175,7 @@ class MapView2(QWidget):
         return None
 
     def findNextThrottleOff(self, lap, startI):
-        #print("        ", "findNextThrottleOff", startI)
+        #logPrint("        ", "findNextThrottleOff", startI)
         j = startI
         found = False
         for j in range(startI, len(lap)):
@@ -186,9 +187,9 @@ class MapView2(QWidget):
                 recent = False #self.recentGearChange(lap, i)
                 #if i > 4 and i < 8200:
                     #if recent:
-                        #print("        ", "X", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                        #logPrint("        ", "X", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
                     #else:
-                        #print("        ", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
+                        #logPrint("        ", i, "Throttle off, ", recent, lap[i].position_x, lap[i].position_z, "gear", lap[i-4].current_gear, lap[i-3].current_gear, lap[i-2].current_gear, lap[i-1].current_gear, lap[i].current_gear)
                 if not recent:
                     return i
                 else:
@@ -443,7 +444,7 @@ class MapView2(QWidget):
 
             nowBraking = p1.brake > 50 or p2.brake > 50
             if nowBraking != currentlyBraking:
-                print("Brake change", nowBraking, "at", i1, i2)
+                logPrint("Brake change", nowBraking, "at", i1, i2)
                 currentlyBraking = nowBraking
                 if currentlyBraking:
                     self.brakeSegments.append((i1, i2))
@@ -802,7 +803,7 @@ class MapView2(QWidget):
             self.offsetZ += wz - wzp
             self.update()
         elif self.shiftPressed:
-            print("move with SHIFT")
+            logPrint("move with SHIFT")
             mx = e.position().x()
             mz = e.position().y()
             wx = (mx - self.width () / 2) / self.zoom * ((self.maxX - self.minX)/self.width()) + self.midX - self.offsetX
@@ -817,7 +818,7 @@ class MapView2(QWidget):
                 m[2].color = 0x00ffffff
                 m[4].color = 0x00ffffff
             if not closestMarker is None:
-                print("mark marker")
+                logPrint("mark marker")
                 closestMarker[2].color = 0x00ffff00
                 closestMarker[4].color = 0x00ffff00
             self.update()
@@ -825,8 +826,8 @@ class MapView2(QWidget):
     def resizeEvent(self, e):
         trackAspect = (self.maxZ- self.minZ)/(self.maxX-self.minX)
         self.aspectRatio = trackAspect * e.size().width() / e.size().height()
-        print("Width:", self.width(), "Height:", self.height())
-        print("New aspect ratio:", self.aspectRatio)
+        logPrint("Width:", self.width(), "Height:", self.height())
+        logPrint("New aspect ratio:", self.aspectRatio)
 
     def wheelEvent(self, e):
         dx = e.position().x()
@@ -895,7 +896,7 @@ class MapView2(QWidget):
             
     def delegateKeyReleaseEvent(self, e):
         if e.key() == Qt.Key.Key_Shift.value:
-            print("SHIFT released")
+            logPrint("SHIFT released")
             self.shiftPressed = False
             for m in self.temporaryMarkers:
                 m[2].color = 0x00ffffff
@@ -904,7 +905,7 @@ class MapView2(QWidget):
 
     def delegateKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Shift.value:
-            print("SHIFT pressed")
+            logPrint("SHIFT pressed")
             self.shiftPressed = True
         elif e.key() == Qt.Key.Key_Right.value:
             self.moveRight()
