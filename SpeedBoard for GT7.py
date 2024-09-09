@@ -1883,7 +1883,7 @@ class MainWindow(QMainWindow):
                     if showBestLapMessage and self.bestLap != newBestLap and self.previousLaps[newBestLap].valid:
                         self.showUiMsg("BEST LAP", 1)
                     ## Reset brake point offsets for new best lap
-                    if self.bestLap != newBestLap:
+                    if self.bestLap != newBestLap and self.bigCountdownBrakepoint == 1:
                         self.brakeOffset = 0
                         self.headerSpeed.setText("SPEED")
                         self.headerSpeed.update()
