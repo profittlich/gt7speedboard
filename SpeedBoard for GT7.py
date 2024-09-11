@@ -943,6 +943,8 @@ class MainWindow(QMainWindow):
         self.fuelBar.setMaxLevel(self.fuelMultiplier * self.maxFuelConsumption)
         self.setCentralWidget(self.masterWidget)
 
+        self.brakeOffset = 0
+
         self.initRace()
         self.messageWaitsForKey = False
 
@@ -1055,8 +1057,10 @@ class MainWindow(QMainWindow):
 
     def initRace(self):
 
-        self.brakeOffset = 0
-        self.headerSpeed.setText("SPEED")
+        if self.brakeOffset != 0:
+            self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
+        else:
+            self.headerSpeed.setText("SPEED")
 
         self.debugOldLapTime = datetime.datetime.now()
         logPrint("INIT RACE")
