@@ -17,9 +17,7 @@ class Point:
         unpackFormat = 'ifffffffffffffffIfffffffffffihhiiihhHHhBBBBBBffffffffffffffffffffffffffffffffffffi'
         unpacked = struct.unpack(unpackFormat,ddata)
 
-        self.magic = struct.unpack('i', ddata[0x00:0x00 + 4])[0] # 0x47375330
-        if self.magic != unpacked[0]:
-            logPrint("Mismatch")
+        self.magic = unpacked[0] # 0x47375330
 
         # based on https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
         # additional info from https://github.com/Nenkai/PDTools/blob/8df793cd8ce46dbbcb202fde75f87b3989ca7782/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs
@@ -47,7 +45,7 @@ class Point:
         self.unknown[0x40] = unpacked[16] # Unknown/empty?
 
         self.current_fuel = unpacked[17] # fuel
-        self.fuel_capacity = unpacked[18] #struct.unpack('f', ddata[0x48:0x48 + 4])[0]
+        self.fuel_capacity = unpacked[18]
         self.car_speed = 3.6 * unpacked[19] # m/s to km/h
         self.boost = unpacked[20]  - 1 # boost
         self.oil_pressure = unpacked[21] # oil pressure
@@ -59,13 +57,13 @@ class Point:
         self.tyre_temp_RL = unpacked[26] # tyre temp RL
         self.tyre_temp_RR = unpacked[27] # tyre temp RR
 
-        self.package_id = unpacked[28] #struct.unpack('i', ddata[0x70:0x70 + 4])[0]
-        self.current_lap = unpacked[29] #struct.unpack('h', ddata[0x74:0x74 + 2])[0]
+        self.package_id = unpacked[28]
+        self.current_lap = unpacked[29]
         self.total_laps = unpacked[30] # total laps
-        self.best_lap = unpacked[31] #struct.unpack('i', ddata[0x78:0x78 + 4])[0]
-        self.last_lap = unpacked[32] #struct.unpack('i', ddata[0x7C:0x7C + 4])[0]
+        self.best_lap = unpacked[31]
+        self.last_lap = unpacked[32]
 
-        self.raw_time_on_track = unpacked[33] #struct.unpack('i', ddata[0x80:0x80 + 4])[0]
+        self.raw_time_on_track = unpacked[33]
         self.time_on_track = td(seconds=round(unpacked[33] / 1000))  # time of day on track
 
         self.current_position = unpacked[34] # current position (TODO PreRaceStartPositionOrQualiPos????)
@@ -102,7 +100,7 @@ class Point:
 
         self.brake = unpacked[43] / 2.55  # brake
 
-        self.unknown[0x93] = bin(unpacked[44])[2:]	# 0x93 = ???, always 0?
+        self.unknown[0x93] = unpacked[44]	# 0x93 = ???, always 0?
 
         self.normal_x = unpacked[45] # 0x94 = CAR NORMAL X
         self.normal_y = unpacked[46] # 0x98 = CAR NORMAL Y
@@ -110,15 +108,15 @@ class Point:
 
         self.unknown[0xA0] =  unpacked[48] # 0xA0 = ??? (TODO RoadPlaneDistance???)
 
-        self.tyre_diameter_FL = unpacked[53] #struct.unpack('f', ddata[0xB4:0xB4 + 4])[0]
-        self.tyre_diameter_FR = unpacked[54] #struct.unpack('f', ddata[0xB8:0xB8 + 4])[0]
-        self.tyre_diameter_RL = unpacked[55] #struct.unpack('f', ddata[0xBC:0xBC + 4])[0]
-        self.tyre_diameter_RR = unpacked[56] #struct.unpack('f', ddata[0xC0:0xC0 + 4])[0]
+        self.tyre_diameter_FL = unpacked[53] 
+        self.tyre_diameter_FR = unpacked[54] 
+        self.tyre_diameter_RL = unpacked[55]
+        self.tyre_diameter_RR = unpacked[56]
 
-        self.tyre_speed_FL = abs(3.6 * self.tyre_diameter_FL * unpacked[49]) #struct.unpack('f', ddata[0xA4:0xA4 + 4])[0])
-        self.tyre_speed_FR = abs(3.6 * self.tyre_diameter_FR * unpacked[50]) #struct.unpack('f', ddata[0xA8:0xA8 + 4])[0])
-        self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * unpacked[51]) #struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
-        self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * unpacked[52]) #struct.unpack('f', ddata[0xB0:0xB0 + 4])[0])
+        self.tyre_speed_FL = abs(3.6 * self.tyre_diameter_FL * unpacked[49])
+        self.tyre_speed_FR = abs(3.6 * self.tyre_diameter_FR * unpacked[50])
+        self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * unpacked[51])
+        self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * unpacked[52])
 
         self.suspension_FL = unpacked[57] # suspension FL
         self.suspension_FR = unpacked[58] # suspension FR
@@ -153,10 +151,10 @@ class Point:
         self.car_id = unpacked[81] # car id
 
         if self.car_speed > 0:
-            self.tyre_slip_ratio_FL = '{:6.2f}'.format(self.tyre_speed_FL / self.car_speed)
-            self.tyre_slip_ratio_FR = '{:6.2f}'.format(self.tyre_speed_FR / self.car_speed)
-            self.tyre_slip_ratio_RL = '{:6.2f}'.format(self.tyre_speed_RL / self.car_speed)
-            self.tyre_slip_ratio_RR = '{:6.2f}'.format(self.tyre_speed_RR / self.car_speed)
+            self.tyre_slip_ratio_FL = self.tyre_speed_FL / self.car_speed
+            self.tyre_slip_ratio_FR = self.tyre_speed_FR / self.car_speed
+            self.tyre_slip_ratio_RL = self.tyre_speed_RL / self.car_speed
+            self.tyre_slip_ratio_RR = self.tyre_speed_RR / self.car_speed
         else:
             self.tyre_slip_ratio_FL = 1
             self.tyre_slip_ratio_FR = 1
