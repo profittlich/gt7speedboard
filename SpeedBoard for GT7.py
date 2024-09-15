@@ -585,6 +585,33 @@ class MainWindow(QMainWindow):
         self.lineMedian = LineDeviation()
         self.timeDiffMedian = TimeDeviation()
 
+        self.pedalOptimized = QLabel("")
+        self.pedalOptimized.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pedalOptimized.setAutoFillBackground(True)
+        font = self.pedalOptimized.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setBold(True)
+        self.pedalOptimized.setFont(font)
+        pal = self.pedalOptimized.palette()
+        pal.setColor(self.pedalOptimized.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.pedalOptimized.foregroundRole(), self.foregroundColor)
+        self.pedalOptimized.setPalette(pal)
+
+        self.speedOptimized = QLabel("OPT")
+        self.speedOptimized.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.speedOptimized.setAutoFillBackground(True)
+        font = self.speedOptimized.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setBold(True)
+        self.speedOptimized.setFont(font)
+        pal = self.speedOptimized.palette()
+        pal.setColor(self.speedOptimized.backgroundRole(), self.backgroundColor)
+        pal.setColor(self.speedOptimized.foregroundRole(), self.foregroundColor)
+        self.speedOptimized.setPalette(pal)
+
+        self.lineOptimized = LineDeviation()
+        self.timeDiffOptimized = TimeDeviation()
+
         # Lvl 3
         fuelWidget = QWidget()
         pal = self.fuel.palette()
@@ -628,6 +655,8 @@ class MainWindow(QMainWindow):
             speedLayout.addWidget(self.speedRefC , 2, 4)
         if self.showLastLap:
             speedLayout.addWidget(self.speedLast, 2, 5)
+        if self.showOptimalLap:
+            speedLayout.addWidget(self.speedOptimized, 2, 6)
 
         if self.linecomp:
             if self.showBestLap:
@@ -642,6 +671,8 @@ class MainWindow(QMainWindow):
                 speedLayout.addWidget(self.lineRefC, 1, 4)
             if self.showLastLap:
                 speedLayout.addWidget(self.lineLast, 1, 5)
+            if self.showOptimalLap:
+                speedLayout.addWidget(self.lineOptimized, 1, 6)
             speedLayout.setRowStretch(1, 1)
         if self.timecomp:
             speedLayout.setRowStretch(3, 6)
@@ -657,6 +688,8 @@ class MainWindow(QMainWindow):
                 speedLayout.addWidget(self.timeDiffRefC, 3, 4)
             if self.showLastLap:
                 speedLayout.addWidget(self.timeDiffLast, 3, 5)
+            if self.showOptimalLap:
+                speedLayout.addWidget(self.timeDiffOptimized, 3, 6)
 
         if self.brakepoints or self.throttlepoints:
             if self.showBestLap:
@@ -671,6 +704,8 @@ class MainWindow(QMainWindow):
                 speedLayout.addWidget(self.pedalRefC, 0, 4)
             if self.showLastLap:
                 speedLayout.addWidget(self.pedalLast, 0, 5)
+            if self.showOptimalLap:
+                speedLayout.addWidget(self.pedalOptimized, 0, 6)
             speedLayout.setRowStretch(0, 1)
         speedLayout.setRowStretch(2, 4)
 
@@ -951,6 +986,11 @@ class MainWindow(QMainWindow):
         self.receiver = tele.GT7TelemetryReceiver(ip)
 
         self.refLaps = [ loadLap(self.refAFile), loadLap(self.refBFile), loadLap(self.refCFile) ]
+        self.optimizedLap = Lap()
+        self.curOptimizingLap = Lap()
+        self.curOptimizingIndex = 0
+        self.curOptimizingLiveIndex = 0
+        self.curOptimizingBrake = False
 
         logPrint("Ref A:", msToTime(self.refLaps[0].time))
 
@@ -1034,6 +1074,7 @@ class MainWindow(QMainWindow):
         itRefA = self.bigCountdownBrakepoint == 2
         itRefB = self.bigCountdownBrakepoint == 3
         itRefC = self.bigCountdownBrakepoint == 4
+        itOptimized = self.bigCountdownBrakepoint == 5
 
         font = self.speedBest.font()
         font.setPointSize(self.fontSizeNormal)
@@ -1055,6 +1096,11 @@ class MainWindow(QMainWindow):
         font.setUnderline(itRefC)
         self.speedRefC.setFont(font)
 
+        font = self.speedOptimized.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setUnderline(itOptimized)
+        self.speedOptimized.setFont(font)
+
     def initRace(self):
 
         if self.brakeOffset != 0:
@@ -1070,6 +1116,11 @@ class MainWindow(QMainWindow):
         self.lastFuelUsage = []
         self.fuelFactor = 0
         self.refueled = 0
+        self.optimizedLap = Lap()
+        self.curOptimizingLap = Lap()
+        self.curOptimizingIndex = 0
+        self.curOptimizingLiveIndex = 0
+        self.curOptimizingBrake = False
 
         self.bigCountdownBrakepoint = self.initialBigCountdownBrakepoint
         self.markBigCountdownField()
@@ -1097,6 +1148,26 @@ class MainWindow(QMainWindow):
         pal.setColor(self.pedalMedian.backgroundRole(), self.backgroundColor)
         self.pedalMedian.setPalette(pal)
 
+        pal = self.pedalRefA.palette()
+        self.pedalRefA.setText("")
+        pal.setColor(self.pedalRefA.backgroundRole(), self.backgroundColor)
+        self.pedalRefA.setPalette(pal)
+
+        pal = self.pedalRefB.palette()
+        self.pedalRefB.setText("")
+        pal.setColor(self.pedalRefB.backgroundRole(), self.backgroundColor)
+        self.pedalRefB.setPalette(pal)
+
+        pal = self.pedalRefC.palette()
+        self.pedalRefC.setText("")
+        pal.setColor(self.pedalRefC.backgroundRole(), self.backgroundColor)
+        self.pedalRefC.setPalette(pal)
+
+        pal = self.pedalOptimized.palette()
+        self.pedalOptimized.setText("")
+        pal.setColor(self.pedalOptimized.backgroundRole(), self.backgroundColor)
+        self.pedalOptimized.setPalette(pal)
+
         self.lineBest.setPoints(None,None)
         self.lineBest.update()
 
@@ -1114,6 +1185,30 @@ class MainWindow(QMainWindow):
 
         self.timeDiffMedian.setDiff(0)
         self.timeDiffMedian.update()
+
+        self.lineRefA.setPoints(None,None)
+        self.lineRefA.update()
+
+        self.timeDiffRefA.setDiff(0)
+        self.timeDiffRefA.update()
+
+        self.lineRefB.setPoints(None,None)
+        self.lineRefB.update()
+
+        self.timeDiffRefB.setDiff(0)
+        self.timeDiffRefB.update()
+
+        self.lineRefC.setPoints(None,None)
+        self.lineRefC.update()
+
+        self.timeDiffRefC.setDiff(0)
+        self.timeDiffRefC.update()
+
+        self.lineOptimized.setPoints(None,None)
+        self.lineOptimized.update()
+
+        self.timeDiffOptimized.setDiff(0)
+        self.timeDiffOptimized.update()
 
         self.loadMessages(self.messageFile)
 
@@ -1133,18 +1228,21 @@ class MainWindow(QMainWindow):
         self.closestIRefA = 0
         self.closestIRefB = 0
         self.closestIRefC = 0
+        self.closestIOptimized = 0
         self.closestPointLast = None
         self.closestPointBest = None
         self.closestPointMedian = None
         self.closestPointRefA = None
         self.closestPointRefB = None
         self.closestPointRefC = None
+        self.closestPointOptimized = None
         self.closestOffsetPointLast = None
         self.closestOffsetPointBest = None
         self.closestOffsetPointMedian = None
         self.closestOffsetPointRefA = None
         self.closestOffsetPointRefB = None
         self.closestOffsetPointRefC = None
+        self.closestOffsetPointOptimized = None
         self.lapProgress = 0
 
     def tyreTempQColor(self, temp):
@@ -1340,7 +1438,7 @@ class MainWindow(QMainWindow):
         liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
         liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
         if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-            liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
+            liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + " (est. " + indexToTime (len(self.previousLaps[self.bestLap].points)) + ")<br>"
         if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
             liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
         if not self.refLaps[0] is None and self.refLaps[0].time > 0: 
@@ -1349,6 +1447,9 @@ class MainWindow(QMainWindow):
             liveStats += "Reference lap B: " + msToTime (self.refLaps[1].time) + "<br>"
         if not self.refLaps[2] is None and self.refLaps[2].time > 0: 
             liveStats += "Reference lap C: " + msToTime (self.refLaps[2].time) + "<br>"
+        if len(self.optimizedLap.points) > 0:
+            self.optimizedLap.updateTime()
+            liveStats += "Optimized lap: " + msToTime (self.optimizedLap.time) + "<br>"
         liveStats += "</font>"
         self.liveStats = liveStats
         self.updateStats()
@@ -1673,9 +1774,20 @@ class MainWindow(QMainWindow):
         refC.timeDiffWidget = self.timeDiffRefC
         refC.id = 4
              
+        opti = SpeedData()
+        opti.closestIndex = self.closestIOptimized
+        opti.closestPoint = self.closestPointOptimized
+        opti.closestOffsetPoint = self.closestOffsetPointOptimized
+        opti.speedWidget = self.speedOptimized
+        opti.pedalWidget = self.pedalOptimized
+        opti.lineWidget = self.lineOptimized
+        opti.timeDiffWidget = self.timeDiffOptimized
+        opti.id = 5
+             
         refA.nextBrake = self.findNextBrake(self.refLaps[0].points, refA.closestIndex)
         refB.nextBrake = self.findNextBrake(self.refLaps[1].points, refB.closestIndex)
         refC.nextBrake = self.findNextBrake(self.refLaps[2].points, refC.closestIndex)
+        opti.nextBrake = self.findNextBrake(self.optimizedLap.points, opti.closestIndex)
 
         if len(self.previousLaps) > 0 and self.previousLaps[self.bestLap].valid:
             best.nextBrake = self.findNextBrake(self.previousLaps[self.bestLap].points, best.closestIndex)
@@ -1690,6 +1802,7 @@ class MainWindow(QMainWindow):
         self.updateOneSpeedEntry(refC, curPoint)
         self.updateOneSpeedEntry(best, curPoint)
         self.updateOneSpeedEntry(median, curPoint)
+        self.updateOneSpeedEntry(opti, curPoint)
 
     def updateMapCE(self, curPoint):
         if self.circuitExperience and not self.previousPoint is None:
@@ -1730,6 +1843,7 @@ class MainWindow(QMainWindow):
         self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
         self.closestPointRefB, self.closestIRefB, self.closestOffsetPointRefB = self.findClosestPoint (self.refLaps[1].points, curPoint, self.closestIRefB)
         self.closestPointRefC, self.closestIRefC, self.closestOffsetPointRefC = self.findClosestPoint (self.refLaps[2].points, curPoint, self.closestIRefC)
+        self.closestPointOptimized, self.closestIOptimized, self.closestOffsetPointOptimized = self.findClosestPoint (self.optimizedLap.points, curPoint, self.closestIOptimized)
        
         if len(self.previousLaps) > 0:
             self.closestPointLast, self.closestILast, self.closestOffsetPointLast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
@@ -1770,6 +1884,44 @@ class MainWindow(QMainWindow):
         elif tp != -1:
             self.lapProgress = tp
 
+    def optimizeLap(self, curPoint):
+        if len(self.optimizedLap.points) == 0:
+            self.curOptimizingLap.points.append(curPoint)
+            self.curOptimizingLiveIndex = len(self.curLap.points)
+            self.curOptimizingIndex = self.closestIOptimized
+        else:
+            nowBraking = curPoint.brake > 50 or self.optimizedLap.points[self.closestIOptimized].brake > 50
+            if nowBraking != self.curOptimizingBrake:
+                self.curOptimizingBrake = nowBraking
+                if nowBraking:
+                    logPrint(nowBraking, self.curOptimizingIndex, self.curOptimizingLiveIndex)
+                    lenOpt = self.closestIOptimized - self.curOptimizingIndex
+                    lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
+                    if lenOpt > lenLive:
+                        logPrint("Current segment was faster")
+                        self.curOptimizingLap.points += self.curLap.points[self.curOptimizingLiveIndex:-1]
+                    else:
+                        logPrint("Previous segment was faster")
+                        self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:self.closestIOptimized-1]
+                    self.curOptimizingLiveIndex = len(self.curLap.points)-1
+                    self.curOptimizingIndex = self.closestIOptimized-1
+                    logPrint(len(self.curLap.points), len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex)
+
+    def updateOptimizedLap(self):
+        lenOpt = self.closestIOptimized - self.curOptimizingIndex
+        lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
+        if lenOpt > lenLive:
+            logPrint("Current segment was faster")
+            self.curOptimizingLap.points += self.curLap.points[self.curOptimizingLiveIndex:]
+        else:
+            logPrint("Previous segment was faster")
+            self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:]
+        self.optimizedLap = self.curOptimizingLap
+        logPrint("Optimized lap:", len(self.optimizedLap.points), "points vs.", len(self.curLap.points))
+        self.curOptimizingLap = Lap()
+        self.curOptimizingLiveIndex = 0
+        self.curOptimizingIndex = 0
+        self.curOptimizingBrake = False
 
     def handleLapChanges(self, curPoint):
         fuel_capacity = curPoint.fuel_capacity
@@ -1831,6 +1983,8 @@ class MainWindow(QMainWindow):
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         logPrint("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
+
+                        self.updateOptimizedLap()
 
                         # Check if the full screen color flashing should be for the best lap from now on
                         if self.switchToBestLap:
@@ -1929,6 +2083,10 @@ class MainWindow(QMainWindow):
                 self.updateLiveStats(curPoint)
 
             self.lastLap = curPoint.current_lap
+            self.curOptimizingLap = Lap()
+            self.curOptimizingIndex = 0
+            self.curOptimizingLiveIndex = 0
+            self.curOptimizingBrake = False
             logPrint("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
 
     def updateDisplay(self):
@@ -1975,6 +2133,7 @@ class MainWindow(QMainWindow):
                 if reverseEngineeringMode:
                     self.updateReverseEngineering(curPoint)
                 self.updateTyreTemps(curPoint)
+                self.optimizeLap(curPoint)
                 self.handleLapChanges(curPoint)
                 self.updateFuelAndWarnings(curPoint)
                 self.updateSpeed(curPoint)
@@ -2046,6 +2205,11 @@ class MainWindow(QMainWindow):
             elif e.key() == Qt.Key.Key_M.value:
                 if self.medianLap >= 0:
                     saveThread = Worker(self.saveLap, "Median lap saved.", 1.0, (self.medianLap, "median",))
+                    saveThread.signals.finished.connect(self.showUiMsg)
+                    self.threadpool.start(saveThread)
+            elif e.key() == Qt.Key.Key_O.value:
+                if len(self.optimizedLap.points) > 0:
+                    saveThread = Worker(self.saveOptimizedLap, "Optimized lap saved.", 1.0, (self.optimizedLap, "optimized",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_A.value:
@@ -2125,6 +2289,12 @@ class MainWindow(QMainWindow):
             if not self.previousLaps[-1].following is None:
                 f.write(self.previousLaps[-1].following.raw)
 
+    def saveOptimizedLap(self, index, name):
+        for p in index.points:
+            p.current_lap = 1
+            p.recreatePackage()
+        self.saveLap(index, name)
+
     def saveLap(self, index, name):
         logPrint("store lap:", name)
         if not os.path.exists(self.storageLocation):
@@ -2133,15 +2303,19 @@ class MainWindow(QMainWindow):
         if len(self.sessionName) > 0:
             prefix += self.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
-            if not self.previousLaps[index].preceeding is None:
-                logPrint("Going from", self.previousLaps[index].preceeding.current_lap)
-                f.write(self.previousLaps[index].preceeding.raw)
-            logPrint("via", self.previousLaps[index].points[0].current_lap)
-            for p in self.previousLaps[index].points:
+            if isinstance(index, Lap):
+                lap = index
+            else:
+                lap = self.previousLaps[index]
+            if not lap.preceeding is None:
+                logPrint("Going from", lap.preceeding.current_lap)
+                f.write(lap.preceeding.raw)
+            logPrint("via", lap.points[0].current_lap)
+            for p in lap.points:
                 f.write(p.raw)
-            if not self.previousLaps[index].following is None:
-                logPrint("to", self.previousLaps[index].following.current_lap)
-                f.write(self.previousLaps[index].following.raw)
+            if not lap.following is None:
+                logPrint("to", lap.following.current_lap)
+                f.write(lap.following.raw)
 
     def saveMessages(self):
         logPrint("Save messages")

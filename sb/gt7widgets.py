@@ -9,6 +9,7 @@ shortcutText = "ESC \t return to configuration\n" \
              + "B \t save best lap\n" \
              + "L \t save last lap\n" \
              + "M \t save median lap\n" \
+             + "O \t save optimized lap\n" \
              + "A \t save all laps\n" \
              + "C \t clear lap data\n" \
              + "SPACE \t set warning marker to current location\n" \
@@ -79,8 +80,7 @@ class StartWindow(QWidget):
         mainLayoutL.addWidget(saGroup)
         saLayout = QVBoxLayout()
         saGroup.setLayout(saLayout)
-        self.cbOptimal = QCheckBox("Optimized lap")
-        self.cbOptimal.setEnabled(False)
+        self.cbOptimal = QCheckBox("Optimized lap (experimental)")
         self.cbBest = QCheckBox("Best lap")
         self.cbMedian = QCheckBox("Median lap")
         self.cbRefA = QCheckBox("Reference lap A")
@@ -97,13 +97,13 @@ class StartWindow(QWidget):
         self.linecomp = QCheckBox("Show racing line comparisons")
         
         vwLayout.addWidget(self.lapDecimals)
-        #saLayout.addWidget(self.cbOptimal)
         saLayout.addWidget(self.cbBest)
         saLayout.addWidget(self.cbMedian)
         saLayout.addWidget(self.cbRefA)
         saLayout.addWidget(self.cbRefB)
         saLayout.addWidget(self.cbRefC)
         saLayout.addWidget(self.cbLast)
+        saLayout.addWidget(self.cbOptimal)
         saLayout.addWidget(self.timecomp)
         saLayout.addWidget(self.linecomp)
 
@@ -124,7 +124,7 @@ class StartWindow(QWidget):
         self.bigCountdownTarget.addItem("Reference lap A")
         self.bigCountdownTarget.addItem("Reference lap B")
         self.bigCountdownTarget.addItem("Reference lap C")
-        #self.bigCountdownTarget.addItem("Optimized lap")
+        self.bigCountdownTarget.addItem("Optimized lap")
         self.switchToBestLap = QCheckBox("Switch to best lap once it's faster")
         
         self.messagesEnabled = QCheckBox("Allow adding warning markers by pressing SPACE")
@@ -234,7 +234,7 @@ class StartWindow(QWidget):
 
         self.fontScale.setValue(float(settings.value("fontScale",1)))
         self.lapDecimals.setChecked(settings.value("lapDecimals", True) in [ True, "true"])
-        self.cbOptimal.setChecked(settings.value("showOtimalLap") in [ True, "true"])
+        self.cbOptimal.setChecked(settings.value("showOptimalLap") in [ True, "true"])
         self.cbBest.setChecked(settings.value("showBestLap", True) in [ True, "true"])
         self.cbMedian.setChecked(settings.value("showMedianLap", True) in [ True, "true"])
         self.cbLast.setChecked(settings.value("showLastLap", True) in [ True, "true"])

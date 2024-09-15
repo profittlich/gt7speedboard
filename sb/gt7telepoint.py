@@ -302,7 +302,7 @@ class Point:
 
         struct.pack_into('I', newPkt, 0x40, self.unknown[0x40]) 
 
-        struct.pack_into('B', newPkt, 0x93, int(self.unknown[0x93],2))
+        struct.pack_into('B', newPkt, 0x93, self.unknown[0x93])
 
         struct.pack_into('f', newPkt, 0x94, self.normal_x)
         struct.pack_into('f', newPkt, 0x98, self.normal_y)
