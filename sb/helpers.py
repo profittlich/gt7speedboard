@@ -4,6 +4,7 @@ import os
 import platform
 import csv
 import inspect
+import struct
 
 from sb.crypt import salsa20_dec, salsa20_enc
 from sb.gt7telepoint import Point
@@ -84,31 +85,6 @@ def loadLap(fn):
         emptyLap.updateTime()
         return emptyLap
 
-    # never reached
-    lap = Lap()
-    if len(fn)>0:
-        #print("Load lap", fn)
-        with open(fn, "rb") as f:
-            allData = f.read()
-            curIndex = 0
-            while curIndex < len(allData):
-                data = allData[curIndex:curIndex + 296]
-                curIndex += 296
-                ddata = salsa20_dec(data)
-                curPoint = Point(ddata, data)
-                if len(lap.points) == 1 and curPoint.current_lap != lap.points[0].current_lap:
-                    lap.preceeding = lap.points[0]
-                    lap.points = []
-                lap.points.append(curPoint)
-                if len(lap.points) > 1 and curPoint.current_lap != lap.points[0].current_lap:
-                    break
-            if len(lap.points) > 1 and lap.points[-1].current_lap != lap.points[-2].current_lap:
-                lap.following = lap.points[-1]
-                lap.points.pop(-1)
-            
-    lap.updateTime()
-    return lap
-
 def loadLaps(fn):
     result = []
     if len(fn)>0:
@@ -120,7 +96,11 @@ def loadLaps(fn):
             while curIndex < len(allData):
                 data = allData[curIndex:curIndex + 296]
                 curIndex += 296
-                ddata = salsa20_dec(data)
+                magic = struct.unpack('i', data[0x00:0x00 + 4])[0] # 0x47375330
+                if magic == 0x47375330:
+                    ddata = data
+                else:
+                    ddata = salsa20_dec(data)
                 curPoint = Point(ddata, data)
                 if curPoint.current_lap != curLap:
                     curLap = curPoint.current_lap

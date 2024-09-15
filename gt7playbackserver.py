@@ -131,7 +131,12 @@ class GT7PlaybackServer:
                     time.sleep(1/(100*self.fps))
                     pc = time.perf_counter()
 
-                decr = bytearray(salsa20_dec(self.allData[curIndex:curIndex+296]))
+                magic = struct.unpack('i', self.allData[curIndex + 0x00:curIndex + 0x00 + 4])[0] # 0x47375330
+           
+                if magic == 0x47375330:
+                    decr = bytearray(self.allData[curIndex:curIndex+296])
+                else:
+                    decr = bytearray(salsa20_dec(self.allData[curIndex:curIndex+296]))
                 newPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
                 struct.pack_into('i', decr, 0x70, pktIdCounter)
                 newNewPktId = struct.unpack('i', decr[0x70:0x70+4])[0]

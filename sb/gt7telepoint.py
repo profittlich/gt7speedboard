@@ -2,6 +2,11 @@ import struct
 from datetime import timedelta as td
 from sb.crypt import salsa20_dec, salsa20_enc
 
+import inspect
+def logPrint(*args, **kwargs):
+    lines = inspect.stack()[1]
+    print(lines.filename[lines.filename.rfind('/')+1:] + "::" +  str(lines.lineno) + " [" + lines.function + "()]:", *args, **kwargs)
+
 class Point:
 
     def __init__(self, ddata, encRaw):
@@ -9,138 +14,337 @@ class Point:
 
         self.unknown = {}
 
+        unpackFormat = 'ifffffffffffffffIfffffffffffihhiiihhHHhBBBBBBffffffffffffffffffffffffffffffffffffi'
+        unpacked = struct.unpack(unpackFormat,ddata)
+
         self.magic = struct.unpack('i', ddata[0x00:0x00 + 4])[0] # 0x47375330
+        if self.magic != unpacked[0]:
+            logPrint("Mismatch")
 
         # based on https://github.com/snipem/gt7dashboard/blob/main/gt7dashboard/gt7communication.py
         # additional info from https://github.com/Nenkai/PDTools/blob/8df793cd8ce46dbbcb202fde75f87b3989ca7782/PDTools.SimulatorInterface/SimulatorPacketG7S0.cs
         self.position_x = struct.unpack('f', ddata[0x04:0x04 + 4])[0]  # pos X
+        if self.position_x != unpacked[1]:
+            logPrint("Mismatch")
         self.position_y = struct.unpack('f', ddata[0x08:0x08 + 4])[0]  # pos Y
+        if self.position_y != unpacked[2]:
+            logPrint("Mismatch")
         self.position_z = struct.unpack('f', ddata[0x0C:0x0C + 4])[0]  # pos Z
+        if self.position_z != unpacked[3]:
+            logPrint("Mismatch")
 
         self.velocity_x = struct.unpack('f', ddata[0x10:0x10 + 4])[0]  # velocity X
+        if self.velocity_x != unpacked[4]:
+            logPrint("Mismatch")
         self.velocity_y = struct.unpack('f', ddata[0x14:0x14 + 4])[0]  # velocity Y
+        if self.velocity_y != unpacked[5]:
+            logPrint("Mismatch")
         self.velocity_z = struct.unpack('f', ddata[0x18:0x18 + 4])[0]  # velocity Z
+        if self.velocity_z != unpacked[6]:
+            logPrint("Mismatch")
 
         self.rotation_pitch = struct.unpack('f', ddata[0x1C:0x1C + 4])[0]  # rot Pitch
+        if self.rotation_pitch != unpacked[7]:
+            logPrint("Mismatch")
         self.rotation_yaw = struct.unpack('f', ddata[0x20:0x20 + 4])[0]  # rot Yaw
+        if self.rotation_yaw != unpacked[8]:
+            logPrint("Mismatch")
         self.rotation_roll = struct.unpack('f', ddata[0x24:0x24 + 4])[0]  # rot Roll
+        if self.rotation_roll != unpacked[9]:
+            logPrint("Mismatch")
 
         self.unknown[0x28] = struct.unpack('f', ddata[0x28:0x28+4])[0]					# rot ??? (TODO RelativeOrientationToNorth????)
+        if self.unknown[0x28] != unpacked[10]:
+            logPrint("Mismatch")
 
         self.angular_velocity_x = struct.unpack('f', ddata[0x2C:0x2C + 4])[0]  # angular velocity X
+        if self.angular_velocity_x != unpacked[11]:
+            logPrint("Mismatch")
         self.angular_velocity_y = struct.unpack('f', ddata[0x30:0x30 + 4])[0]  # angular velocity Y
+        if self.angular_velocity_y != unpacked[12]:
+            logPrint("Mismatch")
         self.angular_velocity_z = struct.unpack('f', ddata[0x34:0x34 + 4])[0]  # angular velocity Z
+        if self.angular_velocity_z != unpacked[13]:
+            logPrint("Mismatch")
         
         self.ride_height = 1000 * struct.unpack('f', ddata[0x38:0x38 + 4])[0]  # ride height
+        if self.ride_height != 1000 * unpacked[14]:
+            logPrint("Mismatch")
         self.rpm = struct.unpack('f', ddata[0x3C:0x3C + 4])[0]  # rpm
+        if self.rpm != unpacked[15]:
+            logPrint("Mismatch")
 
         self.unknown[0x40] = struct.unpack('I', ddata[0x40:0x40+4])[0]		# Unknown/empty?
+        if self.unknown[0x40] != unpacked[16]:
+            logPrint("Mismatch")
 
         self.current_fuel = struct.unpack('f', ddata[0x44:0x44 + 4])[0]  # fuel
+        if self.current_fuel != unpacked[17]:
+            logPrint("Mismatch")
         self.fuel_capacity = struct.unpack('f', ddata[0x48:0x48 + 4])[0]
+        if self.fuel_capacity != unpacked[18]:
+            logPrint("Mismatch")
         self.car_speed = 3.6 * struct.unpack('f', ddata[0x4C:0x4C + 4])[0] # m/s to km/h
+        if self.car_speed != 3.6 * unpacked[19]:
+            logPrint("Mismatch")
         self.boost = struct.unpack('f', ddata[0x50:0x50 + 4])[0] - 1  # boost
+        if self.boost != unpacked[20]-1:
+            logPrint("Mismatch")
         self.oil_pressure = struct.unpack('f', ddata[0x54:0x54 + 4])[0]  # oil pressure
+        if self.oil_pressure != unpacked[21]:
+            logPrint("Mismatch")
         self.water_temp = struct.unpack('f', ddata[0x58:0x58 + 4])[0]  # water temp
+        if self.water_temp != unpacked[22]:
+            logPrint("Mismatch")
         self.oil_temp = struct.unpack('f', ddata[0x5C:0x5C + 4])[0]  # oil temp
+        if self.oil_temp != unpacked[23]:
+            logPrint("Mismatch")
 
         self.tyre_temp_FL = struct.unpack('f', ddata[0x60:0x60 + 4])[0]  # tyre temp FL
+        if self.tyre_temp_FL != unpacked[24]:
+            logPrint("Mismatch")
         self.tyre_temp_FR = struct.unpack('f', ddata[0x64:0x64 + 4])[0]  # tyre temp FR
+        if self.tyre_temp_FR != unpacked[25]:
+            logPrint("Mismatch")
         self.tyre_temp_RL = struct.unpack('f', ddata[0x68:0x68 + 4])[0]  # tyre temp RL
+        if self.tyre_temp_RL != unpacked[26]:
+            logPrint("Mismatch")
         self.tyre_temp_RR = struct.unpack('f', ddata[0x6C:0x6C + 4])[0]  # tyre temp RR
+        if self.tyre_temp_RR != unpacked[27]:
+            logPrint("Mismatch")
 
         self.package_id = struct.unpack('i', ddata[0x70:0x70 + 4])[0]
+        if self.package_id != unpacked[28]:
+            logPrint("Mismatch")
         self.current_lap = struct.unpack('h', ddata[0x74:0x74 + 2])[0]
+        if self.current_lap != unpacked[29]:
+            logPrint("Mismatch")
         self.total_laps = struct.unpack('h', ddata[0x76:0x76 + 2])[0]  # total laps
+        if self.total_laps != unpacked[30]:
+            logPrint("Mismatch")
         self.best_lap = struct.unpack('i', ddata[0x78:0x78 + 4])[0]
+        if self.best_lap != unpacked[31]:
+            logPrint("Mismatch")
         self.last_lap = struct.unpack('i', ddata[0x7C:0x7C + 4])[0]
+        if self.last_lap != unpacked[32]:
+            logPrint("Mismatch")
 
         self.raw_time_on_track = struct.unpack('i', ddata[0x80:0x80 + 4])[0]
+        if self.raw_time_on_track != unpacked[33]:
+            logPrint("Mismatch")
         self.time_on_track = td(seconds=round(struct.unpack('i', ddata[0x80:0x80 + 4])[0] / 1000))  # time of day on track
+        if self.time_on_track != td(seconds=round(unpacked[33]/1000)):
+            logPrint("Mismatch")
 
         self.current_position = struct.unpack('h', ddata[0x84:0x84 + 2])[0]  # current position (TODO PreRaceStartPositionOrQualiPos????)
+        if self.current_position != unpacked[34]:
+            logPrint("Mismatch")
         self.total_positions = struct.unpack('h', ddata[0x86:0x86 + 2])[0]  # total positions
+        if self.total_positions != unpacked[35]:
+            logPrint("Mismatch")
 
         self.rpm_rev_warning = struct.unpack('H', ddata[0x88:0x88 + 2])[0]  # rpm rev warning
+        if self.rpm_rev_warning != unpacked[36]:
+            logPrint("Mismatch")
         self.rpm_rev_limiter = struct.unpack('H', ddata[0x8A:0x8A + 2])[0]  # rpm rev limiter
+        if self.rpm_rev_limiter != unpacked[37]:
+            logPrint("Mismatch")
 
         self.estimated_top_speed = struct.unpack('h', ddata[0x8C:0x8C + 2])[0]  # estimated top speed
+        if self.estimated_top_speed != unpacked[38]:
+            logPrint("Mismatch")
 
         self.in_race = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b1 == 0b1 # "car on track"
+        if self.in_race != (unpacked[39] & 0b1 == 0b1):
+            logPrint("Mismatch")
         self.is_paused = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b10 == 0b10
+        if self.is_paused != (unpacked[39] & 0b10 == 0b10):
+            logPrint("Mismatch")
 
         self.loading_or_processing = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b100 == 0b100
+        if self.loading_or_processing != (unpacked[39] & 0b100 == 0b100):
+            logPrint("Mismatch")
 
         self.in_gear = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b1000 == 0b1000
+        if self.in_gear != (unpacked[39] & 0b1000 == 0b1000):
+            logPrint("Mismatch")
         self.has_turbo = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b10000 == 0b10000
+        if self.has_turbo != (unpacked[39] & 0b10000 == 0b10000):
+            logPrint("Mismatch")
         self.rev_limiter_blink_alert_active = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b100000 == 0b100000
+        if self.rev_limiter_blink_alert_active != (unpacked[39] & 0b100000 == 0b100000):
+            logPrint("Mismatch")
         self.hand_brake_active = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b1000000 == 0b1000000
+        if self.hand_brake_active != (unpacked[39] & 0b1000000 == 0b1000000):
+            logPrint("Mismatch")
         self.lights_active = struct.unpack('B', ddata[0x8E:0x8E + 1])[0] & 0b10000000 == 0b10000000
+        if self.lights_active != (unpacked[39] & 0b10000000 == 0b10000000):
+            logPrint("Mismatch")
         self.high_beam_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b1 == 0b1
+        if self.high_beam_active != (unpacked[40] & 0b1 == 0b1):
+            logPrint("Mismatch")
         self.low_beam_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b10 == 0b10
+        if self.low_beam_active != (unpacked[40] & 0b10 == 0b10):
+            logPrint("Mismatch")
         self.asm_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b100 == 0b100
+        if self.asm_active != (unpacked[40] & 0b100 == 0b100):
+            logPrint("Mismatch")
         self.tcs_active = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b1000 == 0b1000
+        if self.tcs_active != (unpacked[40] & 0b1000 == 0b1000):
+            logPrint("Mismatch")
         self.reserved_flag_13 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b10000 == 0b10000
+        if self.reserved_flag_13 != (unpacked[40] & 0b10000 == 0b10000):
+            logPrint("Mismatch")
         self.reserved_flag_14 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b100000 == 0b100000
+        if self.reserved_flag_14 != (unpacked[40] & 0b100000 == 0b100000):
+            logPrint("Mismatch")
         self.reserved_flag_15 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b1000000 == 0b1000000
+        if self.reserved_flag_15 != (unpacked[40] & 0b1000000 == 0b1000000):
+            logPrint("Mismatch")
         self.reserved_flag_16 = struct.unpack('B', ddata[0x8F:0x8F + 1])[0] & 0b10000000 == 0b10000000
+        if self.reserved_flag_16 != (unpacked[40] & 0b10000000 == 0b10000000):
+            logPrint("Mismatch")
 
         self.current_gear = struct.unpack('B', ddata[0x90:0x90 + 1])[0] & 0b00001111
+        if self.current_gear != unpacked[41] & 0b00001111:
+            logPrint("Mismatch")
         self.suggested_gear = struct.unpack('B', ddata[0x90:0x90 + 1])[0] >> 4
+        if self.suggested_gear != unpacked[41] >> 4:
+            logPrint("Mismatch")
 
         self.throttle = struct.unpack('B', ddata[0x91:0x91 + 1])[0] / 2.55  # throttle
+        if self.throttle != unpacked[42] / 2.55:
+            logPrint("Mismatch")
 
         self.brake = struct.unpack('B', ddata[0x92:0x92 + 1])[0] / 2.55  # brake
+        if self.brake != unpacked[43] / 2.55:
+            logPrint("Mismatch")
 
         self.unknown[0x93] = bin(struct.unpack('B', ddata[0x93:0x93+1])[0])[2:]	# 0x93 = ???, always 0?
+        if self.unknown[0x93] != bin(unpacked[44])[2:]:
+            logPrint("Mismatch")
 
         self.normal_x = struct.unpack('f', ddata[0x94:0x94+4])[0]			# 0x94 = CAR NORMAL X
+        if self.normal_x != unpacked[45]:
+            logPrint("Mismatch")
         self.normal_y = struct.unpack('f', ddata[0x98:0x98+4])[0]			# 0x98 = CAR NORMAL Y
+        if self.normal_y != unpacked[46]:
+            logPrint("Mismatch")
         self.normal_z = struct.unpack('f', ddata[0x9C:0x9C+4])[0]			# 0x9C = CAR NORMAL Z
+        if self.normal_z != unpacked[47]:
+            logPrint("Mismatch")
 
         self.unknown[0xA0] =  struct.unpack('f', ddata[0xA0:0xA0+4])[0]			# 0xA0 = ??? (TODO RoadPlaneDistance???)
+        if self.unknown[0xA0] != unpacked[48]:
+            logPrint("Mismatch")
 
         self.tyre_diameter_FL = struct.unpack('f', ddata[0xB4:0xB4 + 4])[0]
+        if self.tyre_diameter_FL != unpacked[53]:
+            logPrint("Mismatch")
         self.tyre_diameter_FR = struct.unpack('f', ddata[0xB8:0xB8 + 4])[0]
+        if self.tyre_diameter_FR != unpacked[54]:
+            logPrint("Mismatch")
         self.tyre_diameter_RL = struct.unpack('f', ddata[0xBC:0xBC + 4])[0]
+        if self.tyre_diameter_RL != unpacked[55]:
+            logPrint("Mismatch")
         self.tyre_diameter_RR = struct.unpack('f', ddata[0xC0:0xC0 + 4])[0]
+        if self.tyre_diameter_RR != unpacked[56]:
+            logPrint("Mismatch")
 
         self.tyre_speed_FL = abs(3.6 * self.tyre_diameter_FL * struct.unpack('f', ddata[0xA4:0xA4 + 4])[0])
+        if self.tyre_speed_FL != abs(3.6 * self.tyre_diameter_FL * unpacked[49]):
+            logPrint("Mismatch")
         self.tyre_speed_FR = abs(3.6 * self.tyre_diameter_FR * struct.unpack('f', ddata[0xA8:0xA8 + 4])[0])
+        if self.tyre_speed_FR != abs(3.6 * self.tyre_diameter_FL * unpacked[50]):
+            logPrint("Mismatch")
         self.tyre_speed_RL = abs(3.6 * self.tyre_diameter_RL * struct.unpack('f', ddata[0xAC:0xAC + 4])[0])
+        if self.tyre_speed_RL != abs(3.6 * self.tyre_diameter_FL * unpacked[51]):
+            logPrint("Mismatch")
         self.tyre_speed_RR = abs(3.6 * self.tyre_diameter_RR * struct.unpack('f', ddata[0xB0:0xB0 + 4])[0])
+        if self.tyre_speed_RR != abs(3.6 * self.tyre_diameter_FL * unpacked[52]):
+            logPrint("Mismatch")
 
         self.suspension_FL = struct.unpack('f', ddata[0xC4:0xC4 + 4])[0]  # suspension FL
+        if self.suspension_FL != unpacked[57]:
+            logPrint("Mismatch")
         self.suspension_FR = struct.unpack('f', ddata[0xC8:0xC8 + 4])[0]  # suspension FR
+        if self.suspension_FR != unpacked[58]:
+            logPrint("Mismatch")
         self.suspension_RL = struct.unpack('f', ddata[0xCC:0xCC + 4])[0]  # suspension RL
+        if self.suspension_RL != unpacked[59]:
+            logPrint("Mismatch")
         self.suspension_RR = struct.unpack('f', ddata[0xD0:0xD0 + 4])[0]  # suspension RR
+        if self.suspension_RR != unpacked[60]:
+            logPrint("Mismatch")
 
         self.unknown[0xD4] = struct.unpack('f', ddata[0xD4:0xD4+4])[0]			# 0xD4 = ???, always 0?
+        if self.unknown[0xD4] != unpacked[61]:
+            logPrint("Mismatch")
         self.unknown[0xD8] = struct.unpack('f', ddata[0xD8:0xD8+4])[0]			# 0xD8 = ???, always 0?
+        if self.unknown[0xD8] != unpacked[62]:
+            logPrint("Mismatch")
         self.unknown[0xDC] = struct.unpack('f', ddata[0xDC:0xDC+4])[0]			# 0xDC = ???, always 0?
+        if self.unknown[0xDC] != unpacked[63]:
+            logPrint("Mismatch")
         self.unknown[0xE0] = struct.unpack('f', ddata[0xE0:0xE0+4])[0]			# 0xE0 = ???, always 0?
+        if self.unknown[0xE0] != unpacked[64]:
+            logPrint("Mismatch")
 
         self.unknown[0xE4] = struct.unpack('f', ddata[0xE4:0xE4+4])[0]			# 0xE4 = ???, always 0?
+        if self.unknown[0xE4] != unpacked[65]:
+            logPrint("Mismatch")
         self.unknown[0xE8] = struct.unpack('f', ddata[0xE8:0xE8+4])[0]			# 0xE8 = ???, always 0?
+        if self.unknown[0xE8] != unpacked[66]:
+            logPrint("Mismatch")
         self.unknown[0xEC] = struct.unpack('f', ddata[0xEC:0xEC+4])[0]			# 0xEC = ???, always 0?
+        if self.unknown[0xEC] != unpacked[67]:
+            logPrint("Mismatch")
         self.unknown[0xF0] = struct.unpack('f', ddata[0xF0:0xF0+4])[0]			# 0xF0 = ???, always 0?
+        if self.unknown[0xF0] != unpacked[68]:
+            logPrint("Mismatch")
 
         self.clutch = struct.unpack('f', ddata[0xF4:0xF4 + 4])[0]  # clutch
+        if self.clutch != unpacked[69]:
+            logPrint("Mismatch")
         self.clutch_engaged = struct.unpack('f', ddata[0xF8:0xF8 + 4])[0]  # clutch engaged
+        if self.clutch_engaged != unpacked[70]:
+            logPrint("Mismatch")
         self.rpm_after_clutch = struct.unpack('f', ddata[0xFC:0xFC + 4])[0]  # rpm after clutch
+        if self.rpm_after_clutch != unpacked[71]:
+            logPrint("Mismatch")
 
         self.unknown[0x100] = struct.unpack('f', ddata[0x100:0x100+4])[0]		# 0x100 = ??? (TODO TransmissionTopSpeed???)
+        if self.unknown[0x100] != unpacked[72]:
+            logPrint("Mismatch")
 
         self.gear_1 = struct.unpack('f', ddata[0x104:0x104 + 4])[0]  # 1st gear
+        if self.gear_1 != unpacked[73]:
+            logPrint("Mismatch")
         self.gear_2 = struct.unpack('f', ddata[0x108:0x108 + 4])[0]  # 2nd gear
+        if self.gear_2 != unpacked[74]:
+            logPrint("Mismatch")
         self.gear_3 = struct.unpack('f', ddata[0x10C:0x10C + 4])[0]  # 3rd gear
+        if self.gear_3 != unpacked[75]:
+            logPrint("Mismatch")
         self.gear_4 = struct.unpack('f', ddata[0x110:0x110 + 4])[0]  # 4th gear
+        if self.gear_4 != unpacked[76]:
+            logPrint("Mismatch")
         self.gear_5 = struct.unpack('f', ddata[0x114:0x114 + 4])[0]  # 5th gear
+        if self.gear_5 != unpacked[77]:
+            logPrint("Mismatch")
         self.gear_6 = struct.unpack('f', ddata[0x118:0x118 + 4])[0]  # 6th gear
+        if self.gear_6 != unpacked[78]:
+            logPrint("Mismatch")
         self.gear_7 = struct.unpack('f', ddata[0x11C:0x11C + 4])[0]  # 7th gear
+        if self.gear_7 != unpacked[79]:
+            logPrint("Mismatch")
         self.gear_8 = struct.unpack('f', ddata[0x120:0x120 + 4])[0]  # 8th gear
+        if self.gear_8 != unpacked[80]:
+            logPrint("Mismatch")
 
         self.car_id = struct.unpack('i', ddata[0x124:0x124 + 4])[0]  # car id
+        if self.car_id != unpacked[81]:#len(unpackFormat)-1]:
+            logPrint("Mismatch")
 
         if self.car_speed > 0:
             self.tyre_slip_ratio_FL = '{:6.2f}'.format(self.tyre_speed_FL / self.car_speed)

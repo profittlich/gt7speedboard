@@ -1343,6 +1343,12 @@ class MainWindow(QMainWindow):
             liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + "<br>"
         if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
             liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
+        if not self.refLaps[0] is None and self.refLaps[0].time > 0: 
+            liveStats += "Reference lap A: " + msToTime (self.refLaps[0].time) + "<br>"
+        if not self.refLaps[1] is None and self.refLaps[1].time > 0: 
+            liveStats += "Reference lap B: " + msToTime (self.refLaps[1].time) + "<br>"
+        if not self.refLaps[2] is None and self.refLaps[2].time > 0: 
+            liveStats += "Reference lap C: " + msToTime (self.refLaps[2].time) + "<br>"
         liveStats += "</font>"
         self.liveStats = liveStats
         self.updateStats()
