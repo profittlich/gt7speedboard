@@ -20,6 +20,8 @@ shortcutText = "ESC \t return to configuration\n" \
              + "UP \t Show brake point notifications a bit later\n"  \
              + "DOWN \t Show brake point notifications a bit earlier\n"  \
              + "0 (zero)\t Reset brake point notification timing\n"  \
+             + "- \t Reduce number of laps by 1 (e.g. when being lapped)\n"  \
+             + "+ \t Increase number of laps by 1\n"  \
              + "R \t start/stop raw recording (not recommended)\n"
 
 class StartWindow(QWidget):

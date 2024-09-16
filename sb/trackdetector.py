@@ -162,7 +162,8 @@ class TrackDetector:
         while self.running:
             if len(self.curLapQueue.points) > 0:
                 if self.cooldown > 0:
-                    logPrint("Cooldown", self.cooldown)
+                    if self.cooldown % 60 == 0:
+                        logPrint("Cooldown", self.cooldown)
                     self.cooldown -= 1
                     self.curLapQueue.points.pop(0)
                 else:

@@ -979,6 +979,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.masterWidget)
 
         self.brakeOffset = 0
+        self.lapOffset = 0
 
         self.initRace()
         self.messageWaitsForKey = False
@@ -1513,12 +1514,16 @@ class MainWindow(QMainWindow):
 
     def updateLaps(self, curPoint):
         lapSuffix = ""
+        if self.lapOffset > 0:
+            lapSuffix += " [+" + str(self.lapOffset) + "]"
+        elif self.lapOffset < 0:
+            lapSuffix += " [" + str(self.lapOffset) + "]"
         if self.isRecording:
-            lapSuffix = " [RECORDING]"
+            lapSuffix += " [RECORDING]"
         if self.circuitExperience:
             self.header.setText("CIRCUIT EXPERIENCE" + lapSuffix)
         elif curPoint.total_laps > 0:
-            lapValue = curPoint.total_laps - curPoint.current_lap + 1
+            lapValue = curPoint.total_laps + self.lapOffset - curPoint.current_lap + 1
             if self.lapDecimals:
                 lapValue -= self.lapProgress
                 lapValue = round(lapValue, 2)
@@ -1588,7 +1593,11 @@ class MainWindow(QMainWindow):
         if not self.circuitExperience and not messageShown:
             if self.fuelFactor > 0:
                 lapsFuel = curPoint.current_fuel / fuel_capacity / self.fuelFactor
-                self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>")
+                remainingRefuels = ""
+                if curPoint.total_laps > 0:
+                    fuelStints = (curPoint.total_laps + self.lapOffset - curPoint.current_lap + 1 - self.lapProgress - lapsFuel) * self.fuelFactor
+                    remainingRefuels = '<br><font size="1">' + str(int(math.ceil(fuelStints))) + " REFUELS NEEDED (" + str(round(100 * (fuelStints - math.floor(fuelStints)))) + "%)</font>"
+                self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>" + remainingRefuels)
 
                 lapValue = 1
                 if self.lapDecimals and self.closestILast > 0:
@@ -2233,6 +2242,10 @@ class MainWindow(QMainWindow):
                 logPrint("Brake offset", self.brakeOffset)
                 self.headerSpeed.setText("SPEED")
                 self.headerSpeed.update()
+            elif e.key() == Qt.Key.Key_Plus.value:
+                self.lapOffset += 1
+            elif e.key() == Qt.Key.Key_Minus.value:
+                self.lapOffset -= 1
             elif e.key() == Qt.Key.Key_Up.value:
                 self.brakeOffset -= 3
                 logPrint("Brake offset", self.brakeOffset)
