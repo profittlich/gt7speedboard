@@ -1596,7 +1596,10 @@ class MainWindow(QMainWindow):
                 remainingRefuels = ""
                 if curPoint.total_laps > 0:
                     fuelStints = (curPoint.total_laps + self.lapOffset - curPoint.current_lap + 1 - self.lapProgress - lapsFuel) * self.fuelFactor
-                    remainingRefuels = '<br><font size="1">' + str(int(math.ceil(fuelStints))) + " REFUELS NEEDED (" + str(round(100 * (fuelStints - math.floor(fuelStints)))) + "%)</font>"
+                    plural = ""
+                    if fuelStints > 1:
+                        plural = "S"
+                    remainingRefuels = '<br><font size="1">' + str(int(math.ceil(fuelStints))) + " REFUEL" + plural + " NEEDED (" + str(round(100 * (fuelStints - math.floor(fuelStints)))) + "%)</font>"
                 self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>" + remainingRefuels)
 
                 lapValue = 1
