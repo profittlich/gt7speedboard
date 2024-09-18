@@ -12,7 +12,6 @@ class PositionPoint:
         self.position_y = 0
         self.position_z = 0
 
-# TODO own file
 class Lap:
     def __init__(self, time = None, pts = None, valid=True, following=None, preceeding=None):
         self.time = time

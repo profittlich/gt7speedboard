@@ -32,6 +32,8 @@ from sb.trackdetector import TrackDetector
 import sb.gt7telemetryreceiver as tele
 from sb.gt7widgets import *
 
+import sb.tyretemps
+
 reverseEngineeringMode = False
 
 class WorkerSignals(QObject):
@@ -349,6 +351,8 @@ class MainWindow(QMainWindow):
 
 
     def makeDashWidget(self):
+        self.components = []
+
         # Lvl 4
         self.fuel = QLabel("?%")
         self.fuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -374,54 +378,6 @@ class MainWindow(QMainWindow):
             pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
             pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
             self.laps.setPalette(pal)
-
-        self.tyreFR = QLabel("?°C")
-        self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.tyreFR.setAutoFillBackground(True)
-        font = self.tyreFR.font()
-        font.setPointSize(self.fontSizeLarge)
-        font.setBold(True)
-        self.tyreFR.setFont(font)
-        pal = self.tyreFR.palette()
-        pal.setColor(self.tyreFR.backgroundRole(), self.backgroundColor)
-        pal.setColor(self.tyreFR.foregroundRole(), self.foregroundColor)
-        self.tyreFR.setPalette(pal)
-
-        self.tyreFL = QLabel("?°C")
-        self.tyreFL.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.tyreFL.setAutoFillBackground(True)
-        font = self.tyreFL.font()
-        font.setPointSize(self.fontSizeLarge)
-        font.setBold(True)
-        self.tyreFL.setFont(font)
-        pal = self.tyreFL.palette()
-        pal.setColor(self.tyreFL.backgroundRole(), self.backgroundColor)
-        pal.setColor(self.tyreFL.foregroundRole(), self.foregroundColor)
-        self.tyreFL.setPalette(pal)
-        
-        self.tyreRR = QLabel("?°C")
-        self.tyreRR.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.tyreRR.setAutoFillBackground(True)
-        font = self.tyreRR.font()
-        font.setPointSize(self.fontSizeLarge)
-        font.setBold(True)
-        self.tyreRR.setFont(font)
-        pal = self.tyreRR.palette()
-        pal.setColor(self.tyreRR.backgroundRole(), self.backgroundColor)
-        pal.setColor(self.tyreRR.foregroundRole(), self.foregroundColor)
-        self.tyreRR.setPalette(pal)
-
-        self.tyreRL = QLabel("?°C")
-        self.tyreRL.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.tyreRL.setAutoFillBackground(True)
-        font = self.tyreRL.font()
-        font.setPointSize(self.fontSizeLarge)
-        font.setBold(True)
-        self.tyreRL.setFont(font)
-        pal = self.tyreRL.palette()
-        pal.setColor(self.tyreRL.backgroundRole(), self.backgroundColor)
-        pal.setColor(self.tyreRL.foregroundRole(), self.foregroundColor)
-        self.tyreRL.setPalette(pal)
 
         self.pedalBest = QLabel("")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -632,13 +588,9 @@ class MainWindow(QMainWindow):
         else:
             fuelLayout.addWidget(self.laps, 1, 0, 1, 3)
 
-        tyreWidget = QWidget()
-        tyreLayout = QGridLayout()
-        tyreWidget.setLayout(tyreLayout)
-        tyreLayout.addWidget(self.tyreFL, 0, 0)
-        tyreLayout.addWidget(self.tyreFR, 0, 1)
-        tyreLayout.addWidget(self.tyreRL, 1, 0)
-        tyreLayout.addWidget(self.tyreRR, 1, 1)
+        tyreComponent = sb.tyretemps.TyreTemps(self)
+        self.components.append(tyreComponent)
+        tyreWidget = tyreComponent.getWidget()
 
         speedWidget = QWidget()
         speedLayout = QGridLayout()
@@ -1247,17 +1199,6 @@ class MainWindow(QMainWindow):
         self.closestOffsetPointOptimized = None
         self.lapProgress = 0
 
-    def tyreTempQColor(self, temp):
-        col = QColor()
-        hue = self.tyreTempCenterHue - (temp - self.tyreTempCenter)/(self.tyreTempSpread/self.tyreTempCenterHue)
-        if hue < self.tyreTempMinHue:
-            hue = self.tyreTempMinHue
-        if hue > self.tyreTempMaxHue:
-            hue = self.tyreTempMaxHue
-        col.setHsvF (hue, self.tyreTempSaturation, self.tyreTempValue)
-
-        return col
-
     def speedDiffQColor(self, d):
         col = QColor()
         hue = self.speedDiffCenterHue - d/(self.speedDiffSpread/self.speedDiffCenterHue) 
@@ -1488,26 +1429,6 @@ class MainWindow(QMainWindow):
         self.reverseEngineering4.setDiff(curPoint.rotation_pitch)
         self.reverseEngineering4.update()
 
-    def updateTyreTemps(self, curPoint):
-        self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
-        pal = self.tyreFL.palette()
-        pal.setColor(self.tyreFL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FL)))
-        self.tyreFL.setPalette(pal)
-
-        self.tyreFR.setText (str(round(curPoint.tyre_temp_FR)) + "°C")
-        pal = self.tyreFR.palette()
-        pal.setColor(self.tyreFR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FR)))
-        self.tyreFR.setPalette(pal)
-
-        self.tyreRR.setText (str(round(curPoint.tyre_temp_RR)) + "°C")
-        pal = self.tyreRR.palette()
-        pal.setColor(self.tyreRR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RR)))
-        self.tyreRR.setPalette(pal)
-
-        self.tyreRL.setText (str(round(curPoint.tyre_temp_RL)) + "°C")
-        pal = self.tyreRL.palette()
-        pal.setColor(self.tyreRL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
-        self.tyreRL.setPalette(pal)
             
 
     def updateLaps(self, curPoint):
@@ -2148,7 +2069,11 @@ class MainWindow(QMainWindow):
                 self.determineLapProgress(curPoint)
                 if reverseEngineeringMode:
                     self.updateReverseEngineering(curPoint)
-                self.updateTyreTemps(curPoint)
+
+                for c in self.components:
+                    c.addPoint(curPoint)
+                
+                #self.updateTyreTemps(curPoint)
                 self.optimizeLap(curPoint)
                 self.handleLapChanges(curPoint)
                 self.updateFuelAndWarnings(curPoint)
