@@ -632,7 +632,10 @@ class MainWindow(QMainWindow):
         self.components.append(headerComponent)
         self.header = headerComponent.getWidget()
 
-        headerFuel = QLabel("FUEL")
+        if not self.circuitExperience:
+            headerFuel = QLabel("FUEL")
+        else:
+            headerFuel = QLabel("MAP")
         font = headerFuel.font()
         font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
@@ -1577,7 +1580,7 @@ class MainWindow(QMainWindow):
             if nowBraking != self.curOptimizingBrake:
                 self.curOptimizingBrake = nowBraking
                 if nowBraking:
-                    logPrint(nowBraking, self.curOptimizingIndex, self.curOptimizingLiveIndex)
+                    #logPrint(nowBraking, len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex)
                     lenOpt = self.closestIOptimized - self.curOptimizingIndex
                     lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
                     if lenOpt > lenLive:
@@ -1588,7 +1591,7 @@ class MainWindow(QMainWindow):
                         self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:self.closestIOptimized-1]
                     self.curOptimizingLiveIndex = len(self.curLap.points)-1
                     self.curOptimizingIndex = self.closestIOptimized-1
-                    logPrint(len(self.curLap.points), len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex)
+                    logPrint("///////",len(self.curLap.points), len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.optimizedLap.points))
 
     def updateOptimizedLap(self):
         lenOpt = self.closestIOptimized - self.curOptimizingIndex
@@ -1644,7 +1647,7 @@ class MainWindow(QMainWindow):
             self.updateLiveStats(curPoint)
 
             if not (self.lastLap == -1 and curPoint.current_fuel < 99):
-                if self.lastLap > 0 and (self.circuitExperience or curPoint.last_lap != -1):
+                if self.lastLap > 0 and ((self.circuitExperience and lapLen > 0) or curPoint.last_lap != -1):
                     # Determine lap time
                     if self.circuitExperience:
                         lastLapTime = 1000 * (len(cleanLap.points)/self.psFPS + 1/(2*self.psFPS))
@@ -1667,7 +1670,8 @@ class MainWindow(QMainWindow):
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         logPrint("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
 
-                        self.updateOptimizedLap()
+                        if not self.circuitExperience:
+                            self.updateOptimizedLap()
 
                         # Check if the full screen color flashing should be for the best lap from now on
                         if self.switchToBestLap:
@@ -1736,6 +1740,7 @@ class MainWindow(QMainWindow):
                         self.headerSpeed.update()
                     self.bestLap = newBestLap
                     self.medianLap = self.findMedianLap()
+
                     self.resetCurrentLapData()
 
                     logPrint("Best lap:", self.bestLap, msToTime (self.previousLaps[self.bestLap].time), "/", indexToTime(len(self.previousLaps[self.bestLap].points)), "of", len(self.previousLaps))
@@ -1815,7 +1820,8 @@ class MainWindow(QMainWindow):
                 self.determineLapProgress(curPoint)
 
                 self.handleLapChanges(curPoint)
-                self.optimizeLap(curPoint)
+                if not self.circuitExperience:
+                    self.optimizeLap(curPoint)
                 self.updateSpeed(curPoint)
                 self.handleTrackDetect(curPoint)
 
