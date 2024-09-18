@@ -949,6 +949,8 @@ class MainWindow(QMainWindow):
             self.timer.stop()
             self.receiver.running = False
             self.thread.join()
+            while not self.queue.empty():
+                self.queue.get_nowait()
             self.receiver = None
 
 
@@ -1610,6 +1612,11 @@ class MainWindow(QMainWindow):
         self.curOptimizingBrake = False
 
     def handleLapChanges(self, curPoint):
+        if self.circuitExperienceShortLapSecondsThreshold and curPoint.current_lap > 1:
+            logPrint("Not in Circuit Experience!")
+            self.exitDash()
+            QMessageBox.critical(self, "Not in Circuit Experience", "Circuit Experience mode is set, but not driven. Unfortunately, this is not supported. Please change to Laps mode or drive a Circuit Experience.")
+            return
         fuel_capacity = curPoint.fuel_capacity
         if fuel_capacity == 0: # EV
             fuel_capacity = 76 # Find correct capacity for EVs (e.g. 76 for Taycan)
@@ -1631,6 +1638,9 @@ class MainWindow(QMainWindow):
                 cleanLap = self.curLap
             lapLen = cleanLap.length()
             
+            if lapLen == 0:
+                logPrint("LAP CHANGE EMPTY")
+                return
             # Handle short and "real" laps differently
             if lapLen < 10: # TODO const
                 logPrint("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
@@ -1858,6 +1868,18 @@ class MainWindow(QMainWindow):
                 self.receiver.startRecording(prefix)
                 self.isRecording = True
 
+    def exitDash(self):
+        if self.isRecording:
+            self.isRecording = False
+            self.receiver.stopRecording()
+        self.stopDash()
+        self.showNormal()
+        self.startWindow = StartWindow()
+        self.startWindow.starter.clicked.connect(self.startDash)
+        self.startWindow.ip.returnPressed.connect(self.startDash)
+        self.setPalette(self.defaultPalette)
+        self.setCentralWidget(self.startWindow)
+
     def keyPressEvent(self, e):
         if self.centralWidget() == self.masterWidget and self.messageWaitsForKey:
             if e.key() != Qt.Key.Key_Shift.value:
@@ -1867,16 +1889,7 @@ class MainWindow(QMainWindow):
             if e.key() == Qt.Key.Key_R.value:
                 self.toggleRecording()
             elif e.key() == Qt.Key.Key_Escape.value:
-                if self.isRecording:
-                    self.isRecording = False
-                    self.receiver.stopRecording()
-                self.stopDash()
-                self.showNormal()
-                self.startWindow = StartWindow()
-                self.startWindow.starter.clicked.connect(self.startDash)
-                self.startWindow.ip.returnPressed.connect(self.startDash)
-                self.setPalette(self.defaultPalette)
-                self.setCentralWidget(self.startWindow)
+                self.exitDash()
             elif e.key() == Qt.Key.Key_Space.value:
                 self.newMessage = "CAUTION"
             elif e.key() == Qt.Key.Key_B.value:
