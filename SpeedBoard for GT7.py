@@ -35,8 +35,6 @@ from sb.gt7widgets import *
 import sb.tyretemps
 import sb.fuelandmessages
 
-reverseEngineeringMode = False
-
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)
 
@@ -648,10 +646,7 @@ class MainWindow(QMainWindow):
         pal.setColor(headerFuel.foregroundRole(), self.foregroundColor)
         headerFuel.setPalette(pal)
 
-        if reverseEngineeringMode:
-            headerTyres = QLabel("MYSTERY")
-        else:
-            headerTyres = QLabel("TYRES")
+        headerTyres = QLabel("TYRES")
         font = headerTyres.font()
         font.setPointSize(self.fontSizeNormal)
         font.setBold(True)
@@ -722,25 +717,6 @@ class MainWindow(QMainWindow):
         self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsPageScroller)
 
-        if reverseEngineeringMode:
-            self.reverseEngineering = QWidget()
-            revELayout = QHBoxLayout()
-            self.reverseEngineering.setLayout(revELayout)
-    
-            self.reverseEngineering1 = TimeDeviation()
-            self.reverseEngineering2 = TimeDeviation()
-            self.reverseEngineering3 = TimeDeviation()
-            self.reverseEngineering4 = TimeDeviation()
-            self.reverseEngineering5 = TimeDeviation()
-            self.reverseEngineering6 = TimeDeviation()
-    
-            revELayout.addWidget(self.reverseEngineering1)
-            revELayout.addWidget(self.reverseEngineering2)
-            revELayout.addWidget(self.reverseEngineering3)
-            revELayout.addWidget(self.reverseEngineering4)
-            revELayout.addWidget(self.reverseEngineering5)
-            revELayout.addWidget(self.reverseEngineering6)
-
         self.dashWidget.setLayout(masterLayout)
 
         masterLayout.setColumnStretch(0, 1)
@@ -759,11 +735,7 @@ class MainWindow(QMainWindow):
         else:
             masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
 
-        if reverseEngineeringMode:
-            self.masterWidget.addWidget(tyreWidget)
-            masterLayout.addWidget(self.reverseEngineering, 4, 0, 1, 1)
-        else:
-            masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
+        masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
 
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
 
@@ -1359,43 +1331,6 @@ class MainWindow(QMainWindow):
         self.liveStats = liveStats
         self.updateStats()
 
-    def updateReverseEngineering(self, curPoint):
-        self.reverseEngineering1.maxDiff = 1.0
-        self.reverseEngineering1.setDiff(curPoint.unknown[0])
-        self.reverseEngineering1.update()
-
-        #self.reverseEngineering2.maxDiff = 0.3
-        #self.reverseEngineering2.setDiff(curPoint.unknown[5])
-        #self.reverseEngineering2.update()
-
-        #self.reverseEngineering3.maxDiff = 0.05
-        #self.reverseEngineering3.setDiff(curPoint.unknown[6]-0.975)
-        #self.reverseEngineering3.update()
-
-        #self.reverseEngineering4.maxDiff = 0.3
-        #self.reverseEngineering4.setDiff(curPoint.unknown[7])
-        #self.reverseEngineering4.update()
-
-        self.reverseEngineering5.maxDiff = 250.0
-        self.reverseEngineering5.setDiff(curPoint.unknown[8])
-        self.reverseEngineering5.update()
-
-        self.reverseEngineering6.maxDiff = 0.15
-
-        self.reverseEngineering2.maxDiff = 1
-        self.reverseEngineering2.setDiff(curPoint.rotation_yaw)
-        self.reverseEngineering2.update()
-
-        self.reverseEngineering3.maxDiff = 1
-        self.reverseEngineering3.setDiff(curPoint.rotation_roll)
-        self.reverseEngineering3.update()
-
-        self.reverseEngineering4.maxDiff = 1
-        self.reverseEngineering4.setDiff(curPoint.rotation_pitch)
-        self.reverseEngineering4.update()
-
-            
-
     def updateLaps(self, curPoint):
         lapSuffix = ""
         if self.lapOffset > 0:
@@ -1921,8 +1856,6 @@ class MainWindow(QMainWindow):
                     continue
 
                 self.determineLapProgress(curPoint)
-                if reverseEngineeringMode:
-                    self.updateReverseEngineering(curPoint)
 
                 self.handleLapChanges(curPoint)
                 self.optimizeLap(curPoint)
