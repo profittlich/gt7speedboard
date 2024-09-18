@@ -1117,6 +1117,7 @@ class MainWindow(QMainWindow):
         self.lastFuelUsage = []
         self.fuelFactor = 0
         self.refueled = 0
+        self.manualPitStop = False
         self.optimizedLap = Lap()
         self.curOptimizingLap = Lap()
         self.curOptimizingIndex = 0
@@ -1545,13 +1546,19 @@ class MainWindow(QMainWindow):
         if not self.previousPoint is None and curPoint.current_fuel > self.previousPoint.current_fuel:
             logPrint("Refueled!")
             self.refueled = 0
+            if self.lapProgress > 0.5:
+                self.refueled -= 1
+            self.manualPitStop = False
 
-        if (curPoint.current_fuel / fuel_capacity) < 1:
+        if (curPoint.current_fuel / fuel_capacity) < 1 or self.manualPitStop:
             lapValue = self.refueled
             if self.lapDecimals:
                 lapValue += self.lapProgress
                 lapValue = round(lapValue, 2)
-            refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
+            if self.manualPitStop:
+                refuelLaps = "<br>" + str (lapValue) + " SINCE PIT STOP"
+            else:
+                refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
         else:
             refuelLaps = ""
 
@@ -2240,6 +2247,11 @@ class MainWindow(QMainWindow):
                     self.newRunDescription = text
             elif e.key() == Qt.Key.Key_C.value:
                 self.initRace()
+            elif e.key() == Qt.Key.Key_P.value:
+                self.manualPitStop = True
+                self.refueled = 0
+                if self.lapProgress > 0.5:
+                    self.refueled -= 1
             elif e.key() == Qt.Key.Key_0.value:
                 self.brakeOffset = 0
                 logPrint("Brake offset", self.brakeOffset)
