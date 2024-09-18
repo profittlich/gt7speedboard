@@ -2,6 +2,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
+import datetime
 import sb.component
 from sb.gt7widgets import *
 from sb.gt7telepoint import Point

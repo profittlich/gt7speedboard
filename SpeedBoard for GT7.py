@@ -1621,8 +1621,10 @@ class MainWindow(QMainWindow):
                 self.showUiMsg("Welcome to<br>" + curTrack, 1)
                 self.trackPreviouslyIdentified = curTrack
                 tempLap = self.lastLap
+                tempMsg = self.messages
                 self.initRace()
                 self.lastLap = tempLap
+                self.messages = tempMsg
                 
             logPrint("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
             self.trackPreviouslyDescribed = curTrack
