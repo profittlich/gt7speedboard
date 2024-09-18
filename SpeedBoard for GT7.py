@@ -35,6 +35,7 @@ from sb.gt7widgets import *
 import sb.components.tyretemps
 import sb.components.fuelandmessages
 import sb.components.lapheader
+import sb.components.mapce
 
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)
@@ -545,7 +546,9 @@ class MainWindow(QMainWindow):
 
         # Lvl 3
         if self.circuitExperience:
-            self.mapViewCE = MapView()
+            mapCEComponent = sb.components.mapce.MapCE(self, self)
+            self.components.append(mapCEComponent)
+            self.mapViewCE = mapCEComponent.getWidget()
         else:
             fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self, self)
             self.components.append(fuelComponent)
@@ -1209,7 +1212,7 @@ class MainWindow(QMainWindow):
             logPrint("Longest: ", longestLength, longestLap.time)
             temp = []
             for l in self.previousLaps:
-                logPrint ("\nCheck lap", l.time)
+                logPrint ("Check lap", l.time)
                 d = longestLap.points[-1].distance(l.points[-1])
                 c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
                 d2 = -1
@@ -1224,6 +1227,7 @@ class MainWindow(QMainWindow):
                     logPrint("PURGE lap", indexToTime (len(l.points)), d)
                 else:
                     temp.append(l)
+            logPrint("OUT")
             self.previousLaps = temp
 
     def cleanUpLapCE(self, lap):
@@ -1498,24 +1502,6 @@ class MainWindow(QMainWindow):
         self.updateOneSpeedEntry(best, curPoint)
         self.updateOneSpeedEntry(median, curPoint)
         self.updateOneSpeedEntry(opti, curPoint)
-
-    def updateMapCE(self, curPoint):
-        if self.circuitExperience and not self.previousPoint is None:
-            color = self.mapCurrentColor
-            if len(self.previousLaps) > 0:
-                speedDiff = self.previousLaps[self.bestLap].points[self.closestIBest].car_speed - curPoint.car_speed
-                if speedDiff == 0:
-                    color = self.mapStandingColor
-                else:
-                    color = self.speedDiffQColor(speedDiff)
-            self.mapViewCE.setPoints(self.previousPoint, curPoint, color)
-            self.mapViewCE.update()
-
-
-        if curPoint.throttle == 0 and curPoint.brake == 0:
-            self.noThrottleCount+=1
-        elif self.noThrottleCount > 0:
-            self.noThrottleCount=0
 
     def handleTrackDetect(self, curPoint):
         self.trackDetector.addPoint(curPoint)
@@ -1831,8 +1817,6 @@ class MainWindow(QMainWindow):
                 self.handleLapChanges(curPoint)
                 self.optimizeLap(curPoint)
                 self.updateSpeed(curPoint)
-                self.updateMapCE(curPoint)
-                #self.updateLaps(curPoint)
                 self.handleTrackDetect(curPoint)
 
                 for c in self.components:
