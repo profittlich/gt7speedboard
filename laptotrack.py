@@ -13,9 +13,9 @@ def thinOut (fni, fno, step=50):
     for p in range(1, len(lap.points)):
         pNew = lap.points[p]
 
-        if lap.distance(pOld, pNew) > step or lap.angle(pOld, pNew) > 3.14159 * 10 / 180:
+        if pOld.distance(pNew) > step or pOld.angle(pNew) > 3.14159 * 10 / 180:
             lap2.points.append(pNew)
-            print("Angle:", 180 * lap2.angle(pOld, pNew)/ 3.14159)
+            print("Angle:", 180 * pOld.angle(pNew)/ 3.14159)
             pOld = pNew
     
     with open ( fno, "wb") as f:

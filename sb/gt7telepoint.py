@@ -1,4 +1,5 @@
 import struct
+import math
 from datetime import timedelta as td
 from sb.crypt import salsa20_dec, salsa20_enc
 from sb.helpers import logPrint
@@ -464,6 +465,20 @@ class Point:
 
     def str(self):
         return str(self.position_x) + " " + str(self.position_y) + " " + str (self.position_z) + " " + str(self.current_lap)
+
+    def flatDistance(self, p2):
+        return math.sqrt( (self.position_x-p2.position_x)**2 + (self.position_z-p2.position_z)**2)
+
+    def distance(self, p2):
+        return math.sqrt( (self.position_x-p2.position_x)**2 + (self.position_y-p2.position_y)**2 + (self.position_z-p2.position_z)**2)
+
+    def angle(self, p2):
+        s = (math.sqrt(self.velocity_x**2 + self.velocity_y**2 + self.velocity_z**2) * math.sqrt(p2.velocity_x**2 + p2.velocity_y**2 + p2.velocity_z**2))
+        if s == 0:
+            return 0
+        a = min(1,(self.velocity_x * p2.velocity_x + self.velocity_y * p2.velocity_y + self.velocity_z * p2.velocity_z) / s)
+        r = math.acos(a)
+        return r
 
 
 

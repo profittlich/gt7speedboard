@@ -111,7 +111,7 @@ class MapView2(QWidget):
         shortestDistance = 100000000
         result = None
         for p2 in range(len(lap)):
-            curDist = self.lap1.flatDistance(p, lap[p2])
+            curDist = p.flatDistance(lap[p2])
             if curDist < shortestDistance:
                 shortestDistance = curDist
                 result = (lap[p2], p2)
@@ -318,10 +318,10 @@ class MapView2(QWidget):
             if i2 < len(self.lap2.points)-1:
                 p2next = self.lap2.points[i2+1]
 
-            d1 = self.lap1.distance(p1next, p2)
-            d2 = self.lap1.distance(p2next, p1)
-            db = self.lap1.distance(p1next, p2next)
-            dn = self.lap1.distance(p1, p2)
+            d1 = p1next.distance(p2)
+            d2 = p2next.distance(p1)
+            db = p1next.distance(p2next)
+            dn = p1.distance(p2)
             i1Incremented = False
             i2Incremented = False
             if d1 < d2 and d1 < db and i1 < len(self.lap1.points)-1: # Lap 2 is faster here
@@ -753,7 +753,7 @@ class MapView2(QWidget):
             lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
             mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
-            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 30, self.l1Color, 2)
+            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(lp1.distance(lp2)) ,20, 30, self.l1Color, 2)
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
             self.layers[self.lap1Markers].append(mk5)
@@ -775,7 +775,7 @@ class MapView2(QWidget):
             ip1 = s[0]
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
             mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
-            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(self.lap2.distance(lp1, lp2)) ,20, 30, self.l1Color, 2)
+            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(lp1.distance(lp2)) ,20, 30, self.l1Color, 2)
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
             self.layers[self.lap1Markers].append(mk5)

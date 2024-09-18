@@ -203,7 +203,7 @@ class TrackDetector:
                         logPrint("Remaining track:", self.tracks[0].name, "after", self.totalPoints, ", hits:", t.hits.count(True))
                         self.tracks[0].identifiedAt = self.totalPoints
                 else:
-                    a = self.curLap.angle(lp, curPoint)
+                    a = lp.angle(curPoint)
                     if a < (3.14159 * self.validAngle / 180):
                         t.forwardCount += 1
                         if t.firstHit is None:

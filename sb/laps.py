@@ -24,24 +24,10 @@ class Lap:
         self.following = following
         self.preceeding = preceeding
 
-    def flatDistance(self, p1, p2):
-        return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_z-p2.position_z)**2)
-
-    def distance(self, p1, p2):
-        return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
-
-    def angle(self, p1, p2):
-        s = (math.sqrt(p1.velocity_x**2 + p1.velocity_y**2 + p1.velocity_z**2) * math.sqrt(p2.velocity_x**2 + p2.velocity_y**2 + p2.velocity_z**2))
-        if s == 0:
-            return 0
-        a = min(1,(p1.velocity_x * p2.velocity_x + p1.velocity_y * p2.velocity_y + p1.velocity_z * p2.velocity_z) / s)
-        r = math.acos(a)
-        return r
-
     def length(self):
         totalDist = 0
         for i in range(1, len(self.points)):
-            totalDist += self.distance(self.points[i-1], self.points[i])
+            totalDist += self.points[i-1].distance (self.points[i])
         return totalDist
 
     def updateTime(self):
@@ -54,7 +40,7 @@ class Lap:
         shortestDistance = 100000000
         result = None
         for p2 in range(len(self.points)):
-            curDist = self.distance(p, self.points[p2])
+            curDist = p.distance(self.points[p2])
             if curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
@@ -119,7 +105,7 @@ def loadLaps(fn):
         #print("End point distance:", result[i].distance(result[i].points[0], result[i].points[-1]))
         result[i].updateTime()
         #print("Time:", result[i].time)
-        if result[i].distance(result[i].points[0], result[i].points[-1]) > 20: # TODO load from constants
+        if result[i].points[0].distance(result[i].points[-1]) > 20: # TODO load from constants
             result[i].valid = False
         
     return result

@@ -1275,14 +1275,11 @@ class MainWindow(QMainWindow):
 
         return col
 
-    def distance(self, p1, p2):
-        return math.sqrt( (p1.position_x-p2.position_x)**2 + (p1.position_y-p2.position_y)**2 + (p1.position_z-p2.position_z)**2)
-
     def findClosestPoint(self, lap, p, startIdx):
         shortestDistance = 100000000
         result = None
         for p2 in range(startIdx, len(lap)-10): #TODO why -10? Confusion at the finish line... Maybe do dynamic length
-            curDist = self.distance(p, lap[p2])
+            curDist = p.distance(lap[p2])
             if curDist < self.closestPointValidDistance and curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
@@ -1293,7 +1290,7 @@ class MainWindow(QMainWindow):
 
         if result is None:
             for p2 in range(100, len(lap)-10, 100):
-                curDist = self.distance(p, lap[p2])
+                curDist = p.distance(lap[p2])
                 if curDist < self.closestPointValidDistance:
                     logPrint("Found global position at", p2)
                     startIdx = p2-100
@@ -1306,7 +1303,7 @@ class MainWindow(QMainWindow):
         shortestDistance = 100000000
         result = None
         for p2 in lap:
-            curDist = self.distance(p, p2)
+            curDist = p.distance(p2)
             if curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
@@ -1341,15 +1338,15 @@ class MainWindow(QMainWindow):
             temp = []
             for l in self.previousLaps:
                 logPrint ("\nCheck lap", l.time)
-                d = self.distance(longestLap.points[-1], l.points[-1])
+                d = longestLap.points[-1].distance(l.points[-1])
                 c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
                 d2 = -1
                 d3 = -1
                 if not c is None:
-                    d2 = self.distance(longestLap.points[-1], c)
+                    d2 = c.distance(longestLap.points[-1])
                 c3 = self.findClosestPointNoLimit(longestLap.points, l.points[-1])
                 if not c3 is None:
-                    d3 = self.distance(l.points[-1], c3)
+                    d3 = c3.distance(l.points[-1])
                 logPrint("End distance:", d)
                 if d > self.circuitExperienceEndPointPurgeDistance:
                     logPrint("PURGE lap", indexToTime (len(l.points)), d)
@@ -1584,7 +1581,7 @@ class MainWindow(QMainWindow):
         messageShown = False
         if self.messagesEnabled: # TODO: put at end and remove messageShown?
             for m in self.messages:
-                if not self.circuitExperience and self.distance(curPoint, m[0]) < self.messageDisplayDistance:
+                if not self.circuitExperience and curPoint.distance(m[0]) < self.messageDisplayDistance:
                     pal = self.laps.palette()
                     if (datetime.datetime.now().microsecond + self.messageBlinkingPhase) % 500000 < 250000:
                         pal.setColor(self.laps.backgroundRole(), self.warningColor1)
@@ -1949,7 +1946,7 @@ class MainWindow(QMainWindow):
 
         if (
             self.lastLap != curPoint.current_lap
-            or (self.circuitExperience and (self.distance(curPoint, self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout))
+            or (self.circuitExperience and (curPoint.distance(self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout))
            ): # TODO Null error in circuit experience mode when doing laps: AttributeError: 'NoneType' object has no attribute 'position_x'
 
             # Clean up circuit experience laps
@@ -1989,9 +1986,9 @@ class MainWindow(QMainWindow):
 
                     showBestLapMessage = True
 
-                    logPrint("Closed loop distance:", self.distance(cleanLap.points[0], cleanLap.points[-1])) 
+                    logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1])) 
                     # Process a completed valid lap (circuit experience laps are always valid)
-                    if self.circuitExperience or self.distance(cleanLap.points[0], cleanLap.points[-1]) < self.validLapEndpointDistance:
+                    if self.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.validLapEndpointDistance:
                         if len(self.previousLaps) > 0:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
