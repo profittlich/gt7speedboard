@@ -33,6 +33,7 @@ import sb.gt7telemetryreceiver as tele
 from sb.gt7widgets import *
 
 import sb.tyretemps
+import sb.fuelandmessages
 
 reverseEngineeringMode = False
 
@@ -354,31 +355,6 @@ class MainWindow(QMainWindow):
         self.components = []
 
         # Lvl 4
-        self.fuel = QLabel("?%")
-        self.fuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.fuel.setAutoFillBackground(True)
-        font = self.fuel.font()
-        font.setPointSize(self.fontSizeNormal)
-        font.setBold(True)
-        self.fuel.setFont(font)
-
-        self.fuelBar = FuelGauge()
-
-        if self.circuitExperience:
-            self.mapViewCE = MapView()
-        else:
-            self.laps = QLabel("? LAPS LEFT")
-            self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.laps.setAutoFillBackground(True)
-            font = self.laps.font()
-            font.setPointSize(self.fontSizeNormal)
-            font.setBold(True)
-            self.laps.setFont(font)
-            pal = self.laps.palette()
-            pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
-            pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-            self.laps.setPalette(pal)
-
         self.pedalBest = QLabel("")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalBest.setAutoFillBackground(True)
@@ -569,24 +545,12 @@ class MainWindow(QMainWindow):
         self.timeDiffOptimized = TimeDeviation()
 
         # Lvl 3
-        fuelWidget = QWidget()
-        pal = self.fuel.palette()
-        pal.setColor(self.fuel.backgroundRole(), self.backgroundColor)
-        pal.setColor(self.fuel.foregroundRole(), self.foregroundColor)
-        self.fuel.setPalette(pal)
-        fuelLayout = QGridLayout()
-        fuelLayout.setContentsMargins(11,11,11,11)
-        fuelWidget.setLayout(fuelLayout)
-        fuelLayout.setColumnStretch(0, 1)
-        fuelLayout.setColumnStretch(1, 1)
-        fuelLayout.setColumnStretch(2, 1)
-
-        fuelLayout.addWidget(self.fuel, 0, 0, 1, 2)
-        fuelLayout.addWidget(self.fuelBar, 0, 2, 1, 1)
         if self.circuitExperience:
-            fuelLayout.addWidget(self.mapViewCE, 1, 0, 1, 3)
+            self.mapViewCE = MapView()
         else:
-            fuelLayout.addWidget(self.laps, 1, 0, 1, 3)
+            fuelComponent = sb.fuelandmessages.FuelAndMessages(self)
+            self.components.append(fuelComponent)
+            fuelWidget = fuelComponent.getWidget()
 
         tyreComponent = sb.tyretemps.TyreTemps(self)
         self.components.append(tyreComponent)
@@ -790,7 +754,10 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(headerFuel, 1, 1, 1, 1)
         masterLayout.addWidget(headerTyres, 3, 0, 1, 1)
         masterLayout.addWidget(self.headerSpeed, 1, 0, 1, 1)
-        masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
+        if self.circuitExperience:
+            masterLayout.addWidget(self.mapViewCE, 2, 1, 3, 1)
+        else:
+            masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
 
         if reverseEngineeringMode:
             self.masterWidget.addWidget(tyreWidget)
@@ -853,7 +820,7 @@ class MainWindow(QMainWindow):
         
         self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
-        fuelWarning = self.startWindow.fuelWarning.value()
+        self.fuelWarning = self.startWindow.fuelWarning.value()
 
         self.fontScale = self.startWindow.fontScale.value()
 
@@ -926,8 +893,6 @@ class MainWindow(QMainWindow):
         settings.sync()
 
         self.makeDashWidget()
-        self.fuelBar.setThreshold(self.fuelMultiplier * fuelWarning)
-        self.fuelBar.setMaxLevel(self.fuelMultiplier * self.maxFuelConsumption)
         self.setCentralWidget(self.masterWidget)
 
         self.brakeOffset = 0
@@ -1454,119 +1419,6 @@ class MainWindow(QMainWindow):
                 lapValue = round(lapValue, 2)
             self.header.setText("LAP " + str(lapValue) + lapSuffix)
 
-    def updateFuelAndWarnings(self, curPoint):
-        fuel_capacity = curPoint.fuel_capacity
-        postfix = "%"
-        if fuel_capacity == 0: # EV
-            fuel_capacity = 100
-            postfix = " kWh"
-
-        if not self.previousPoint is None and curPoint.current_fuel > self.previousPoint.current_fuel:
-            logPrint("Refueled!")
-            self.refueled = 0
-            if self.lapProgress > 0.5:
-                self.refueled -= 1
-            self.manualPitStop = False
-
-        if (curPoint.current_fuel / fuel_capacity) < 1 or self.manualPitStop:
-            lapValue = self.refueled
-            if self.lapDecimals:
-                lapValue += self.lapProgress
-                lapValue = round(lapValue, 2)
-            if self.manualPitStop:
-                refuelLaps = "<br>" + str (lapValue) + " SINCE PIT STOP"
-            else:
-                refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
-        else:
-            refuelLaps = ""
-
-        if self.fuelFactor != 0:
-            fuelLapPercent = "<br>" + str(round(100 * self.fuelFactor,1)) + postfix + " PER LAP<br>" + str(round(1 / self.fuelFactor,1)) + " FULL RANGE"
-        else:
-            fuelLapPercent = ""
-
-        self.fuel.setTextFormat(Qt.TextFormat.RichText)
-        self.fuel.setText("<font size=6>" + str(round(100 * curPoint.current_fuel / fuel_capacity)) + postfix + "</font><font size=1>" + fuelLapPercent + refuelLaps + "</font>")
-        if not self.previousPoint is None:
-            fuelConsumption = self.previousPoint.current_fuel-curPoint.current_fuel 
-            fuelConsumption *= self.psFPS * 60 * 60 # l per hour
-            if curPoint.car_speed > 0:
-                fuelConsumption /= curPoint.car_speed # l per km
-                fuelConsumption *= 100 # l per 100 km
-
-            self.fuelBar.setLevel(max(0, fuelConsumption))
-            self.fuelBar.update()
-
-        if not self.circuitExperience:
-            self.laps.setTextFormat(Qt.TextFormat.RichText)
-        messageShown = False
-        if self.messagesEnabled: # TODO: put at end and remove messageShown?
-            for m in self.messages:
-                if not self.circuitExperience and curPoint.distance(m[0]) < self.messageDisplayDistance:
-                    pal = self.laps.palette()
-                    if (datetime.datetime.now().microsecond + self.messageBlinkingPhase) % 500000 < 250000:
-                        pal.setColor(self.laps.backgroundRole(), self.warningColor1)
-                        pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-                    else:
-                        pal.setColor(self.laps.backgroundRole(), self.foregroundColor)
-                        pal.setColor(self.laps.foregroundRole(), self.warningColor1)
-                    self.laps.setPalette(pal)
-                    self.laps.setText(m[1])
-                    messageShown = True
-
-
-        if not self.circuitExperience and not messageShown:
-            if self.fuelFactor > 0:
-                lapsFuel = curPoint.current_fuel / fuel_capacity / self.fuelFactor
-                remainingRefuels = ""
-                if curPoint.total_laps > 0:
-                    fuelStints = (curPoint.total_laps + self.lapOffset - curPoint.current_lap + 1 - self.lapProgress - lapsFuel) * self.fuelFactor
-                    plural = ""
-                    if fuelStints > 1:
-                        plural = "S"
-                    remainingRefuels = '<br><font size="1">' + str(int(math.ceil(fuelStints))) + " REFUEL" + plural + " NEEDED (" + str(round(100 * (fuelStints - math.floor(fuelStints)))) + "%)</font>"
-                self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>" + remainingRefuels)
-
-                lapValue = 1
-                if self.lapDecimals and self.closestILast > 0:
-                    lapValue -= self.lapProgress
-                
-                if self.lapDecimals and round(lapsFuel, 2) < 1 and lapsFuel < lapValue:
-                    pal = self.laps.palette()
-                    if datetime.datetime.now().microsecond < 500000:
-                        pal.setColor(self.laps.backgroundRole(), self.warningColor1)
-                        pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-                    else:
-                        pal.setColor(self.laps.backgroundRole(), self.warningColor2)
-                        pal.setColor(self.laps.foregroundRole(), self.backgroundColor)
-                    self.laps.setPalette(pal)
-                elif round(lapsFuel, 2) < 1:
-                    pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), self.warningColor1)
-                    pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-                    self.laps.setPalette(pal)
-                elif round(lapsFuel, 2) < 2:
-                    pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
-                    pal.setColor(self.laps.foregroundRole(), self.advanceWarningColor)
-                    self.laps.setPalette(pal)
-                else:
-                    pal = self.laps.palette()
-                    pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
-                    pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-                    self.laps.setPalette(pal)
-            elif curPoint.current_fuel == fuel_capacity:
-                self.laps.setText("<font size=1>FOREVER</font>")
-                pal = self.laps.palette()
-                pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
-                pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-                self.laps.setPalette(pal)
-            else:
-                self.laps.setText("<font size=1>MEASURING</font>")
-                pal = self.laps.palette()
-                pal.setColor(self.laps.backgroundRole(), self.backgroundColor)
-                pal.setColor(self.laps.foregroundRole(), self.foregroundColor)
-                self.laps.setPalette(pal)
 
     def updateOneSpeedEntry(self, refLap, curPoint):
         bgPal = self.palette()
@@ -2070,7 +1922,6 @@ class MainWindow(QMainWindow):
                 if reverseEngineeringMode:
                     self.updateReverseEngineering(curPoint)
 
-                #self.updateTyreTemps(curPoint)
                 self.handleLapChanges(curPoint)
                 self.optimizeLap(curPoint)
                 self.updateSpeed(curPoint)
@@ -2078,7 +1929,6 @@ class MainWindow(QMainWindow):
                 self.updateLaps(curPoint)
                 self.handleTrackDetect(curPoint)
 
-                self.updateFuelAndWarnings(curPoint)
                 for c in self.components:
                     c.addPoint(curPoint, self.curLap)
                 
