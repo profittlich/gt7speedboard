@@ -1,11 +1,7 @@
 import struct
 from datetime import timedelta as td
 from sb.crypt import salsa20_dec, salsa20_enc
-
-import inspect
-def logPrint(*args, **kwargs):
-    lines = inspect.stack()[1]
-    print(lines.filename[lines.filename.rfind('/')+1:] + "::" +  str(lines.lineno) + " [" + lines.function + "()]:", *args, **kwargs)
+from sb.helpers import logPrint
 
 class Point:
 

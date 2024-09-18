@@ -5,7 +5,6 @@ import csv
 import inspect
 
 from sb.crypt import salsa20_dec, salsa20_enc
-from sb.gt7telepoint import Point
 
 
 def indexToTime(i):
