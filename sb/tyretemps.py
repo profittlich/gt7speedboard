@@ -8,7 +8,7 @@ from sb.helpers import logPrint
 
 class TyreTemps(sb.component.Component):
     def __init__(self, cfg):
-        self.cfg = cfg
+        super().__init__(cfg)
 
         self.tyreFR = QLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -101,5 +101,5 @@ class TyreTemps(sb.component.Component):
         pal.setColor(self.tyreRL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
         self.tyreRL.setPalette(pal)
 
-    def addPoint(self, curPoint):
+    def addPoint(self, curPoint, curLap):
         self.updateTyreTemps(curPoint)

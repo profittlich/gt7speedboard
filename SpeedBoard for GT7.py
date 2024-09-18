@@ -2070,18 +2070,18 @@ class MainWindow(QMainWindow):
                 if reverseEngineeringMode:
                     self.updateReverseEngineering(curPoint)
 
-                for c in self.components:
-                    c.addPoint(curPoint)
-                
                 #self.updateTyreTemps(curPoint)
-                self.optimizeLap(curPoint)
                 self.handleLapChanges(curPoint)
-                self.updateFuelAndWarnings(curPoint)
+                self.optimizeLap(curPoint)
                 self.updateSpeed(curPoint)
                 self.updateMapCE(curPoint)
                 self.updateLaps(curPoint)
                 self.handleTrackDetect(curPoint)
 
+                self.updateFuelAndWarnings(curPoint)
+                for c in self.components:
+                    c.addPoint(curPoint, self.curLap)
+                
                 # Update live stats description
                 if not self.newRunDescription is None and len(self.sessionStats) > 0:
                     self.sessionStats[-1].description = self.newRunDescription + "<br>"
