@@ -1,7 +1,5 @@
 # SpeedBoard for GT7
-A simple dashboard for Gran Turismo 7. Also includes a graphical lap comparison tool and a playback server.
-
-Based on code from https://github.com/Bornhall/gt7telemetry and https://github.com/snipem/gt7dashboard.
+A dashboard for Gran Turismo 7. Also includes a graphical lap comparison tool and a playback server.
 
 ## Apps
 
@@ -75,3 +73,6 @@ Command line tools to export gt7 telemetry data to XLSX or CSV tables.
 ## License
 
 Licensed under the GNU General Public License Version 3 (see LICENSE file).
+
+Based on code from https://github.com/Bornhall/gt7telemetry and https://github.com/snipem/gt7dashboard.
+
