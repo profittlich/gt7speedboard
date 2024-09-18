@@ -9,8 +9,8 @@ from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
 class FuelAndMessages(sb.component.Component):
-    def __init__(self, cfg):
-        super().__init__(cfg)
+    def __init__(self, cfg, data):
+        super().__init__(cfg, data)
 
         self.fuelWidget = QWidget()
 

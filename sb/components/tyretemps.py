@@ -7,8 +7,8 @@ from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
 class TyreTemps(sb.component.Component):
-    def __init__(self, cfg):
-        super().__init__(cfg)
+    def __init__(self, cfg, data):
+        super().__init__(cfg, data)
 
         self.tyreFR = QLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)

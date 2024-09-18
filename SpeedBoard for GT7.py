@@ -32,8 +32,9 @@ from sb.trackdetector import TrackDetector
 import sb.gt7telemetryreceiver as tele
 from sb.gt7widgets import *
 
-import sb.tyretemps
-import sb.fuelandmessages
+import sb.components.tyretemps
+import sb.components.fuelandmessages
+import sb.components.lapheader
 
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)
@@ -546,11 +547,11 @@ class MainWindow(QMainWindow):
         if self.circuitExperience:
             self.mapViewCE = MapView()
         else:
-            fuelComponent = sb.fuelandmessages.FuelAndMessages(self)
+            fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self, self)
             self.components.append(fuelComponent)
             fuelWidget = fuelComponent.getWidget()
 
-        tyreComponent = sb.tyretemps.TyreTemps(self)
+        tyreComponent = sb.components.tyretemps.TyreTemps(self, self)
         self.components.append(tyreComponent)
         tyreWidget = tyreComponent.getWidget()
 
@@ -624,16 +625,9 @@ class MainWindow(QMainWindow):
         speedLayout.setRowStretch(2, 4)
 
         # Lvl 2
-        self.header = QLabel("? LAPS LEFT")
-        font = self.header.font()
-        font.setPointSize(self.fontSizeNormal)
-        font.setBold(True)
-        self.header.setFont(font)
-        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pal = self.header.palette()
-        pal.setColor(self.header.backgroundRole(), self.backgroundColor)
-        pal.setColor(self.header.foregroundRole(), self.foregroundColor)
-        self.header.setPalette(pal)
+        headerComponent = sb.components.lapheader.LapHeader(self, self)
+        self.components.append(headerComponent)
+        self.header = headerComponent.getWidget()
 
         headerFuel = QLabel("FUEL")
         font = headerFuel.font()
@@ -1331,29 +1325,6 @@ class MainWindow(QMainWindow):
         self.liveStats = liveStats
         self.updateStats()
 
-    def updateLaps(self, curPoint):
-        lapSuffix = ""
-        if self.lapOffset > 0:
-            lapSuffix += " [+" + str(self.lapOffset) + "]"
-        elif self.lapOffset < 0:
-            lapSuffix += " [" + str(self.lapOffset) + "]"
-        if self.isRecording:
-            lapSuffix += " [RECORDING]"
-        if self.circuitExperience:
-            self.header.setText("CIRCUIT EXPERIENCE" + lapSuffix)
-        elif curPoint.total_laps > 0:
-            lapValue = curPoint.total_laps + self.lapOffset - curPoint.current_lap + 1
-            if self.lapDecimals:
-                lapValue -= self.lapProgress
-                lapValue = round(lapValue, 2)
-            self.header.setText(str(lapValue) + " LAPS LEFT" + lapSuffix)
-        else:
-            lapValue = curPoint.current_lap
-            if self.lapDecimals:
-                lapValue += self.lapProgress
-                lapValue = round(lapValue, 2)
-            self.header.setText("LAP " + str(lapValue) + lapSuffix)
-
 
     def updateOneSpeedEntry(self, refLap, curPoint):
         bgPal = self.palette()
@@ -1861,7 +1832,7 @@ class MainWindow(QMainWindow):
                 self.optimizeLap(curPoint)
                 self.updateSpeed(curPoint)
                 self.updateMapCE(curPoint)
-                self.updateLaps(curPoint)
+                #self.updateLaps(curPoint)
                 self.handleTrackDetect(curPoint)
 
                 for c in self.components:
