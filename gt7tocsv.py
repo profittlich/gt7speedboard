@@ -1,7 +1,7 @@
 import sys
 from sb.gt7telepoint import Point
-from sb.helpers import loadLap
-from sb.helpers import Lap
+from sb.laps import loadLap
+from sb.laps import Lap
 
 
 def convertGT7toCSV (fni, fno):

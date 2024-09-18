@@ -22,9 +22,9 @@ from PyQt6.QtCore import *
 
 from sb.gt7telepoint import Point
 from sb.helpers import logPrint
-from sb.helpers import loadLap
-from sb.helpers import Lap
-from sb.helpers import PositionPoint
+from sb.laps import loadLap
+from sb.laps import Lap
+from sb.laps import PositionPoint
 from sb.helpers import loadCarIds, idToCar
 from sb.helpers import indexToTime, msToTime
 from sb.trackdetector import TrackDetector

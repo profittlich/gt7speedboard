@@ -9,8 +9,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
 
 from sb.gt7telepoint import Point
-from sb.helpers import loadLaps, indexToTime, msToTime
-from sb.helpers import Lap, PositionPoint
+from sb.helpers import indexToTime, msToTime
+from sb.laps import Lap, PositionPoint, loadLaps
 
 import sb.gt7telemetryreceiver as tele
 from sb.mapview2 import MapView2

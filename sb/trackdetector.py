@@ -1,8 +1,8 @@
 import sys
 from sb.gt7telepoint import Point
 from sb.helpers import logPrint
-from sb.helpers import loadLap
-from sb.helpers import Lap
+from sb.laps import loadLap
+from sb.laps import Lap
 import platform
 import copy
 import glob

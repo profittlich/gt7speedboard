@@ -7,8 +7,8 @@ from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox
 from sb.gt7widgets import *
 from sb.drawelements import *
-from sb.helpers import loadLap, loadLaps, indexToTime, msToTime
-from sb.helpers import Lap, PositionPoint
+from sb.helpers import indexToTime, msToTime
+from sb.laps import Lap, PositionPoint, loadLap, loadLaps
 from sb.helpers import loadCarIds, idToCar
 from sb.helpers import logPrint
 
