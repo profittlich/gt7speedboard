@@ -11,3 +11,9 @@ class Component:
 
     def addPoint(self, curPoint, curLap):
         pass
+
+    def initRace(self):
+        pass
+
+    def newLap(self, curPoint):
+        pass
