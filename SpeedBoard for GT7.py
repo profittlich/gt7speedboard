@@ -1619,7 +1619,7 @@ class MainWindow(QMainWindow):
             return
         fuel_capacity = curPoint.fuel_capacity
         if fuel_capacity == 0: # EV
-            fuel_capacity = 76 # Find correct capacity for EVs (e.g. 76 for Taycan)
+            fuel_capacity = 100
 
         if (
             self.lastLap != curPoint.current_lap
