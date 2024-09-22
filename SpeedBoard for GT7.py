@@ -591,9 +591,6 @@ class MainWindow(QMainWindow):
         else:
             self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.uiMsg.setMargin(0)
-        self.masterWidgetIndex = self.masterWidget.currentIndex()
-        if self.masterWidgetIndex == 1:
-            self.masterWidgetIndex = 0
         self.masterWidget.setCurrentIndex(1)
         if waitForKey:
             self.messageWaitsForKey = True
@@ -608,8 +605,7 @@ class MainWindow(QMainWindow):
 
     def returnToDash(self):
         if self.centralWidget() == self.masterWidget:
-            self.masterWidget.setCurrentIndex(self.masterWidgetIndex)
-            self.masterWidgetIndex = 0
+            self.flipPage(self.masterWidgetIndex)
 
     def stopDash(self):
         if not self.trackDetector is None:
@@ -1233,9 +1229,9 @@ class MainWindow(QMainWindow):
                 self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_S.value:
                 if self.masterWidget.currentIndex() == 2:
-                    self.returnToDash()
+                    self.flipPage(0)
                 else:
-                    self.masterWidget.setCurrentIndex(2)
+                    self.flipPage(2)
             elif e.key() == Qt.Key.Key_T.value:
                 self.statsComponent.updateRunStats(saveRuns=True)
                 self.showUiMsg("Run table saved.", 2)
@@ -1252,6 +1248,7 @@ class MainWindow(QMainWindow):
     def flipPage(self, nr):
         logPrint("Flip to page", nr)
         self.masterWidget.setCurrentIndex(nr)
+        self.masterWidgetIndex = self.masterWidget.currentIndex()
 
     def keyReleaseEvent(self, e):
         if self.centralWidget() == self.masterWidget:
