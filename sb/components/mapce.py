@@ -47,3 +47,6 @@ class MapCE(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         self.updateMapCE(curPoint)
+
+    def title(self):
+        return "Map"

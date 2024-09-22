@@ -103,3 +103,6 @@ class TyreTemps(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         self.updateTyreTemps(curPoint)
+
+    def title(self):
+        return "Tyres"

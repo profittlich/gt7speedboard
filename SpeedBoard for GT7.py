@@ -37,6 +37,7 @@ import sb.components.fuelandmessages
 import sb.components.lapheader
 import sb.components.mapce
 import sb.components.speed
+import sb.components.stats
 
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)
@@ -57,44 +58,6 @@ class Worker(QRunnable, QObject):
             self.signals.finished.emit(self.msg, self.t)
         else:
             self.signals.finished.emit(altMsg, self.t)
-
-class Run:
-    def __init__(self, sessionStart):
-        self.carId = None
-        self.topSpeed = 0
-        self.lapTimes = []
-        self.sessionStart = sessionStart
-        self.description = ""
-    
-    def addLapTime(self, t, l):
-        self.lapTimes.append((t, l))
-
-    def lastLap(self):
-        return self.sessionStart + len(self.lapTimes)
-
-    def startLap(self):
-        return self.sessionStart
-
-    def bestLap(self):
-        fastest = (1000000000000, 0)
-        for t in self.lapTimes:
-            if t[0] < fastest[0]:
-                fastest = t
-
-        return fastest
-
-    def medianLap(self):
-        sorter = []
-        for e in self.lapTimes:
-            sorter.append(e[0])
-
-        if len(sorter) > 0:
-            sorter = sorted(sorter)
-            target = sorter[len(sorter)//2]
-            for e in self.lapTimes:
-                if e[0] == target:
-                    return e
-        return (0,0)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -351,6 +314,18 @@ class MainWindow(QMainWindow):
             with open("gt7speedboardinternals.json", "w") as f:
                 f.write(j)
 
+    def makeHeaderWidget(self, title):
+        headerWidget = QLabel(title.upper())
+        font = headerWidget.font()
+        font.setPointSize(self.fontSizeNormal)
+        font.setBold(True)
+        headerWidget.setFont(font)
+        headerWidget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pal = headerWidget.palette()
+        pal.setColor(headerWidget.backgroundRole(), self.backgroundColor)
+        pal.setColor(headerWidget.foregroundRole(), self.foregroundColor)
+        headerWidget.setPalette(pal)
+        return headerWidget
 
     def makeDashWidget(self):
         self.components = []
@@ -359,58 +334,26 @@ class MainWindow(QMainWindow):
             mapCEComponent = sb.components.mapce.MapCE(self, self)
             self.components.append(mapCEComponent)
             self.mapViewCE = mapCEComponent.getWidget()
+            headerFuel = self.makeHeaderWidget(mapCEComponent.title())
         else:
             fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self, self)
             self.components.append(fuelComponent)
             fuelWidget = fuelComponent.getWidget()
+            headerFuel = self.makeHeaderWidget(fuelComponent.title())
 
         tyreComponent = sb.components.tyretemps.TyreTemps(self, self)
         self.components.append(tyreComponent)
         tyreWidget = tyreComponent.getWidget()
+        headerTyres = self.makeHeaderWidget(tyreComponent.title())
 
         speedComponent = sb.components.speed.Speed(self, self)
         self.components.append(speedComponent)
         speedWidget = speedComponent.getWidget()
+        self.headerSpeed = self.makeHeaderWidget(speedComponent.title())
 
         headerComponent = sb.components.lapheader.LapHeader(self, self)
         self.components.append(headerComponent)
         self.header = headerComponent.getWidget()
-
-        if not self.circuitExperience:
-            headerFuel = QLabel("FUEL")
-        else:
-            headerFuel = QLabel("MAP")
-        font = headerFuel.font()
-        font.setPointSize(self.fontSizeNormal)
-        font.setBold(True)
-        headerFuel.setFont(font)
-        headerFuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pal = headerFuel.palette()
-        pal.setColor(headerFuel.backgroundRole(), self.backgroundColor)
-        pal.setColor(headerFuel.foregroundRole(), self.foregroundColor)
-        headerFuel.setPalette(pal)
-
-        headerTyres = QLabel("TYRES")
-        font = headerTyres.font()
-        font.setPointSize(self.fontSizeNormal)
-        font.setBold(True)
-        headerTyres.setFont(font)
-        headerTyres.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pal = headerTyres.palette()
-        pal.setColor(headerTyres.backgroundRole(), self.backgroundColor)
-        pal.setColor(headerTyres.foregroundRole(), self.foregroundColor)
-        headerTyres.setPalette(pal)
-
-        self.headerSpeed = QLabel("SPEED")
-        font = self.headerSpeed.font()
-        font.setPointSize(self.fontSizeNormal)
-        font.setBold(True)
-        self.headerSpeed.setFont(font)
-        self.headerSpeed.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.headerSpeed.setAutoFillBackground(True)
-        pal = self.headerSpeed.palette()
-        pal.setColor(self.headerSpeed.foregroundRole(), self.foregroundColor)
-        self.headerSpeed.setPalette(pal)
 
         # Lvl 1
         masterLayout = QGridLayout()
@@ -435,28 +378,10 @@ class MainWindow(QMainWindow):
         self.uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.uiMsgPageScroller.setWidgetResizable(True)
 
-        self.statsPageScroller = QScrollArea()
-        self.statsPage = QLabel(self.sessionName + "\nSession stats not available, yet")
+        self.statsComponent = sb.components.stats.Stats(self, self)
+        self.components.append(self.statsComponent)
 
-        self.statsPageScroller.setWidget(self.statsPage)
-        #self.statsPageScroller.setSizeAdjustPolicy(Qt.QAbstractScrollArea.AdjustToContents)
-        self.statsPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.statsPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.statsPageScroller.setWidgetResizable(True)
-
-        self.statsPage.setMargin(15)
-        self.statsPage.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.statsPage.setAutoFillBackground(True)
-        font = self.statsPage.font()
-        font.setPointSize(self.fontSizeSmall)
-        font.setBold(True)
-        self.statsPage.setFont(font)
-        self.statsPage.setTextFormat(Qt.TextFormat.RichText)
-        pal = self.statsPage.palette()
-        pal.setColor(self.statsPage.foregroundRole(), self.foregroundColor)
-        self.statsPage.setPalette(pal)
-        self.liveStats = ""
-        self.runStats = ""
+        self.statsPageScroller = self.statsComponent.getWidget()
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsPageScroller)
@@ -697,15 +622,6 @@ class MainWindow(QMainWindow):
                 self.queue.get_nowait()
             self.receiver = None
 
-
-    def initRun(self):
-        logPrint("initRun", self.sessionStats)
-        if len(self.sessionStats) > 0 and self.sessionStats[-1].sessionStart == len(self.previousLaps):
-            logPrint("Re-using untouched Run")
-            return
-        self.sessionStats.append (Run(len(self.previousLaps)))
-
-
     def initRace(self):
 
         if self.brakeOffset != 0:
@@ -743,10 +659,6 @@ class MainWindow(QMainWindow):
 
         self.loadMessages(self.messageFile)
 
-        logPrint("Clear sessions")
-        self.sessionStats = []
-        self.sessionStart = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.updateRunStats()
 
     def resetCurrentLapData(self):
         logPrint("Reset cur lap storage") 
@@ -904,58 +816,6 @@ class MainWindow(QMainWindow):
                     return e
         return 0
 
-    def updateStats(self):
-        statTxt = '<font size="5">' + self.sessionName + '</font>' + self.liveStats + self.runStats
-        self.statsPage.setText(statTxt)
-
-
-    def updateRunStats(self, saveRuns = False):
-        carStatTxt = '<br><font size="3">RUNS:</font><br>'
-        carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h);Description\n"
-        sessionI = 1
-        for i in self.sessionStats:
-            if i.carId is None:
-                continue
-            bst = i.bestLap()
-            mdn = i.medianLap()
-            lapsWith = " laps with "
-            if len(i.lapTimes) == 1:
-                lapsWith = " lap with "
-            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font><br><font size="1">' + i.description + "</font>"
-            carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + ";" + str(i.topSpeed) + ";" + i.description + "\n"
-            sessionI += 1
-        if saveRuns:
-            prefix = self.storageLocation + "/"
-            if len(self.sessionName) > 0:
-                prefix += self.sessionName + " - "
-            with open ( prefix + self.trackPreviouslyIdentified + " - runs - " + self.sessionStart + ".csv", "w") as f:
-                f.write(carStatCSV)
-        self.runStats = carStatTxt
-        self.updateStats()
-
-    def updateLiveStats(self, curPoint):
-        liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
-        liveStats += "Current track: " + self.trackDetector.getTrack() + "<br>"
-        liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
-        liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
-        if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-            liveStats += "Best lap: " + msToTime (self.previousLaps[self.bestLap].time) + " (est. " + indexToTime (len(self.previousLaps[self.bestLap].points)) + ")<br>"
-        if self.medianLap >= 0 and self.previousLaps[self.medianLap].valid:
-            liveStats += "Median lap: " + msToTime (self.previousLaps[self.medianLap].time) + "<br>"
-        if not self.refLaps[0] is None and self.refLaps[0].time > 0: 
-            liveStats += "Reference lap A: " + msToTime (self.refLaps[0].time) + "<br>"
-        if not self.refLaps[1] is None and self.refLaps[1].time > 0: 
-            liveStats += "Reference lap B: " + msToTime (self.refLaps[1].time) + "<br>"
-        if not self.refLaps[2] is None and self.refLaps[2].time > 0: 
-            liveStats += "Reference lap C: " + msToTime (self.refLaps[2].time) + "<br>"
-        if len(self.optimizedLap.points) > 0:
-            self.optimizedLap.updateTime()
-            liveStats += "Optimized lap: " + msToTime (self.optimizedLap.time) + "<br>"
-        liveStats += "</font>"
-        self.liveStats = liveStats
-        self.updateStats()
-
-
 
     def handleTrackDetect(self, curPoint):
         self.trackDetector.addPoint(curPoint)
@@ -974,7 +834,7 @@ class MainWindow(QMainWindow):
                 
             logPrint("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
             self.trackPreviouslyDescribed = curTrack
-            self.updateLiveStats(curPoint)
+            self.statsComponent.updateLiveStats(curPoint)
 
     def determineLapProgress(self, curPoint):
         self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
@@ -1103,7 +963,7 @@ class MainWindow(QMainWindow):
                     self.initRun()
 
             # Update live stats
-            self.updateLiveStats(curPoint)
+            self.statsComponent.updateLiveStats(curPoint)
 
             if not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and ((self.circuitExperience and lapLen > 0) or curPoint.last_lap != -1):
@@ -1133,24 +993,9 @@ class MainWindow(QMainWindow):
                             self.updateOptimizedLap()
 
                         for c in self.components:
-                            c.newLap(curPoint)
+                            c.newLap(curPoint, cleanLap)
 
-                        # Update session stats
-                        if lastLapTime > 0:
-                            if len(self.sessionStats) == 0: # Started app during lap
-                                logPrint("no stats --> init")
-                                self.initRun()
-                            self.sessionStats[-1].carId = curPoint.car_id
-                            self.sessionStats[-1].addLapTime(lastLapTime, self.lastLap)
-                            pTop = self.previousLaps[-1].topSpeed()
-                            if self.sessionStats[-1].topSpeed < pTop:
-                                self.sessionStats[-1].topSpeed = pTop
-                            logPrint(len(self.sessionStats), "sessions")
-                            for i in self.sessionStats:
-                                logPrint("Best:", msToTime(i.bestLap()[0]))
-                                logPrint("Median:", msToTime(i.medianLap()[0]))
 
-                        self.updateRunStats()
                     else: # Incomplete laps are sometimes useful, but can't be used for everything
                         logPrint("Append invalid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps))
                         if len(self.previousLaps) > 0:
@@ -1205,7 +1050,7 @@ class MainWindow(QMainWindow):
                     self.resetCurrentLapData()
 
                 # Update live stats
-                self.updateLiveStats(curPoint)
+                self.statsComponent.updateLiveStats(curPoint)
 
             self.lastLap = curPoint.current_lap
             self.curOptimizingLap = Lap()
@@ -1255,21 +1100,16 @@ class MainWindow(QMainWindow):
                     continue
 
                 self.determineLapProgress(curPoint)
-
                 self.handleLapChanges(curPoint)
+
                 if not self.circuitExperience:
                     self.optimizeLap(curPoint)
+
                 self.handleTrackDetect(curPoint)
 
                 for c in self.components:
                     c.addPoint(curPoint, self.curLap)
                 
-                # Update live stats description
-                if not self.newRunDescription is None and len(self.sessionStats) > 0:
-                    self.sessionStats[-1].description = self.newRunDescription + "<br>"
-                    self.newRunDescription = None
-                    self.updateRunStats()
-
                 self.previousPoint = curPoint
                 self.curLap.points.append(curPoint)
 
@@ -1390,7 +1230,7 @@ class MainWindow(QMainWindow):
                 else:
                     self.masterWidget.setCurrentIndex(2)
             elif e.key() == Qt.Key.Key_T.value:
-                self.updateRunStats(saveRuns=True)
+                self.statsComponent.updateRunStats(saveRuns=True)
                 self.showUiMsg("Run table saved.", 2)
             elif e.key() == Qt.Key.Key_Question:
                 self.showUiMsg (shortcutText, 0, leftAlign=True, waitForKey=True)

@@ -365,9 +365,9 @@ class Speed(sb.component.Component):
         if len(self.data.previousLaps) > 0 and self.data.previousLaps[self.data.bestLap].valid:
             best.nextBrake = self.data.findNextBrake(self.data.previousLaps[self.data.bestLap].points, best.closestIndex)
 
-        pal = self.speedWidget.palette()
+        pal = self.data.palette()
         pal.setColor(self.pedalBest.backgroundRole(), self.cfg.brightBackgroundColor)
-        self.speedWidget.setPalette(pal)
+        self.data.setPalette(pal)
 
         self.updateOneSpeedEntry(last, curPoint)
         self.updateOneSpeedEntry(refA, curPoint)
@@ -431,7 +431,7 @@ class Speed(sb.component.Component):
             refLap.lineWidget.update()
 
             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                self.setPalette(bgPal)
+                self.data.setPalette(bgPal)
 
             # TIME DIFF
             refLap.timeDiffWidget.setDiff(refLap.closestIndex - len(self.data.curLap.points))
@@ -443,7 +443,7 @@ class Speed(sb.component.Component):
             refLap.pedalWidget.setPalette(pal)
             refLap.pedalWidget.setText("")
             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                self.setPalette(bgPal)
+                self.data.setPalette(bgPal)
             refLap.timeDiffWidget.setDiff(0)
             refLap.timeDiffWidget.update()
 
@@ -581,29 +581,31 @@ class Speed(sb.component.Component):
         font.setUnderline(itOptimized)
         self.speedOptimized.setFont(font)
 
-    def newLap(self, curPoint):
+    def newLap(self, curPoint, lastLap):
         # Check if the full screen color flashing should be for the best lap from now on
         if self.cfg.switchToBestLap:
             logPrint("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[0].time))
             if self.cfg.bigCountdownBrakepoint == 2 and (self.data.refLaps[0] is None or self.data.refLaps[0].time > curPoint.last_lap):
                 if not self.data.refLaps[0] is None:
                     logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[0].time))
-                    self.showUiMsg("BEAT REFERENCE LAP", 1)
+                    self.data.showUiMsg("BEAT REFERENCE LAP", 1)
                 showBestLapMessage = False
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()
             elif self.cfg.bigCountdownBrakepoint == 3 and (self.data.refLaps[1] is None or self.data.refLaps[1].time > curPoint.last_lap):
                 if not self.data.refLaps[1] is None:
                     logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[1].time))
-                    self.showUiMsg("BEAT REFERENCE LAP", 1)
+                    self.data.showUiMsg("BEAT REFERENCE LAP", 1)
                 showBestLapMessage = False
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()
             elif self.cfg.bigCountdownBrakepoint == 4 and (self.data.refLaps[2] is None or self.data.refLaps[2].time > curPoint.last_lap):
                 if not self.data.refLaps[2] is None:
                     logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[2].time))
-                    self.showUiMsg("BEAT REFERENCE LAP", 1)
+                    self.data.showUiMsg("BEAT REFERENCE LAP", 1)
                 showBestLapMessage = False
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()
 
+    def title(self):
+        return "Speed"

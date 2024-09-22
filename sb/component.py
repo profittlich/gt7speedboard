@@ -6,6 +6,9 @@ class Component:
         self.cfg = cfg
         self.data = data
 
+    def title(self):
+        return None
+
     def getWidget(self):
         return None
 
@@ -15,5 +18,5 @@ class Component:
     def initRace(self):
         pass
 
-    def newLap(self, curPoint):
+    def newLap(self, curPoint, lastLap):
         pass

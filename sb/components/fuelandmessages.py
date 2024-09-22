@@ -174,3 +174,6 @@ class FuelAndMessages(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         self.updateFuelAndWarnings(curPoint, curLap)
+
+    def title(self):
+        return "Fuel"
