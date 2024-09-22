@@ -29,7 +29,7 @@ class MapCE(sb.component.Component):
 
 
     def updateMapCE(self, curPoint):
-        if self.cfg.circuitExperience and not self.data.previousPoint is None:
+        if not self.data.previousPoint is None:
             color = self.cfg.mapCurrentColor
             if len(self.data.previousLaps) > 0:
                 speedDiff = self.data.previousLaps[self.data.bestLap].points[self.data.closestIBest].car_speed - curPoint.car_speed

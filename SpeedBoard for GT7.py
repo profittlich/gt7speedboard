@@ -380,11 +380,16 @@ class MainWindow(QMainWindow):
 
         self.statsComponent = sb.components.stats.Stats(self, self)
         self.components.append(self.statsComponent)
-
         self.statsPageScroller = self.statsComponent.getWidget()
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsPageScroller)
+
+        if not self.circuitExperience:
+            mapComponent = sb.components.mapce.MapCE(self, self)
+            self.components.append(mapComponent)
+            self.mapView = mapComponent.getWidget()
+            self.masterWidget.addWidget(self.mapView)
 
         self.dashWidget.setLayout(masterLayout)
 
@@ -945,6 +950,8 @@ class MainWindow(QMainWindow):
                 self.mapViewCE.update()
             else:
                 cleanLap = self.curLap
+                self.mapView.endLap(cleanLap.points) # TODO into component
+                self.mapView.update()
             lapLen = cleanLap.length()
             
             if lapLen == 0:
