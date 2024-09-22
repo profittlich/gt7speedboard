@@ -967,7 +967,7 @@ class MainWindow(QMainWindow):
                 self.debugOldLapTime = debugNewLapTime
                 if curPoint.current_lap == 1 or self.lastLap >= curPoint.current_lap:
                     logPrint("lap is 1 -> init")
-                    self.initRun()
+                    self.statsComponent.initRun()
 
             # Update live stats
             self.statsComponent.updateLiveStats(curPoint)
