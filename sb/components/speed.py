@@ -550,11 +550,11 @@ class Speed(sb.component.Component):
         self.timeDiffOptimized.update()
 
     def markBigCountdownField(self):
-        itBest = self.data.bigCountdownBrakepoint == 1
-        itRefA = self.data.bigCountdownBrakepoint == 2
-        itRefB = self.data.bigCountdownBrakepoint == 3
-        itRefC = self.data.bigCountdownBrakepoint == 4
-        itOptimized = self.data.bigCountdownBrakepoint == 5
+        itBest = self.cfg.bigCountdownBrakepoint == 1
+        itRefA = self.cfg.bigCountdownBrakepoint == 2
+        itRefB = self.cfg.bigCountdownBrakepoint == 3
+        itRefC = self.cfg.bigCountdownBrakepoint == 4
+        itOptimized = self.cfg.bigCountdownBrakepoint == 5
 
         font = self.speedBest.font()
         font.setPointSize(self.cfg.fontSizeNormal)

@@ -59,58 +59,9 @@ class Worker(QRunnable, QObject):
         else:
             self.signals.finished.emit(altMsg, self.t)
 
-class MainWindow(QMainWindow):
+class Configuration:
     def __init__(self):
-        super().__init__()
-
-        self.defaultPalette = self.palette()
-
-        loadCarIds()
-
-        self.trackDetector = None
-        self.goFullscreen = True
-
-        logPrint("Clear sessions")
-        self.sessionStats = []
-
-        self.masterWidget = None
-        self.masterWidgetIndex = 0
-        self.loadConstants()
-        self.threadpool = QThreadPool()
-
-        self.startWindow = StartWindow()
-        self.startWindow.starter.clicked.connect(self.startDash)
-        self.startWindow.ip.returnPressed.connect(self.startDash)
-
-        self.setWindowTitle("SpeedBoard for GT7 (v5)")
-        self.queue = queue.Queue()
-        self.receiver = None
-        self.isRecording = False
-
-        self.circuitExperience = True
-        self.lapDecimals = False
-        self.recordingEnabled = False
-        self.messagesEnabled = False
-        self.linecomp = False
-        self.timecomp = False
-        self.brakepoints = False
-        self.throttlepoints = False
-        self.countdownBrakepoint = False
-        self.bigCountdownBrakepoint = 0
-        self.switchToBestLap = True
-
-        self.showBestLap = True
-        self.showLastLap = True
-        self.showMedianLap = True
-        self.showRefALap = False
-        self.showRefBLap = False
-        self.showRefCLap = False
-        self.showOptimalLap = False # TODO implement
-
-        self.newMessage = None
-        self.messages = []
-
-        self.setCentralWidget(self.startWindow)
+        pass
 
     def loadConstants(self):
         self.foregroundColor = QColor("#FFF")
@@ -314,44 +265,99 @@ class MainWindow(QMainWindow):
             with open("gt7speedboardinternals.json", "w") as f:
                 f.write(j)
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.cfg = Configuration()
+
+        self.defaultPalette = self.palette()
+
+        loadCarIds()
+
+        self.trackDetector = None
+        self.goFullscreen = True
+
+        logPrint("Clear sessions")
+        self.sessionStats = []
+
+        self.masterWidget = None
+        self.masterWidgetIndex = 0
+        self.cfg.loadConstants()
+        self.threadpool = QThreadPool()
+
+        self.startWindow = StartWindow()
+        self.startWindow.starter.clicked.connect(self.startDash)
+        self.startWindow.ip.returnPressed.connect(self.startDash)
+
+        self.setWindowTitle("SpeedBoard for GT7 (v5)")
+        self.queue = queue.Queue()
+        self.receiver = None
+        self.isRecording = False
+
+        self.cfg.circuitExperience = True
+        self.cfg.lapDecimals = False
+        self.cfg.recordingEnabled = False
+        self.cfg.messagesEnabled = False
+        self.cfg.linecomp = False
+        self.cfg.timecomp = False
+        self.cfg.brakepoints = False
+        self.cfg.throttlepoints = False
+        self.cfg.countdownBrakepoint = False
+        self.cfg.bigCountdownBrakepoint = 0 # TODO is this data or cfg?
+        self.cfg.switchToBestLap = True
+
+        self.cfg.showBestLap = True
+        self.cfg.showLastLap = True
+        self.cfg.showMedianLap = True
+        self.cfg.showRefALap = False
+        self.cfg.showRefBLap = False
+        self.cfg.showRefCLap = False
+        self.cfg.showOptimalLap = False # TODO implement
+
+        self.newMessage = None
+        self.messages = []
+
+        self.setCentralWidget(self.startWindow)
+
+
     def makeHeaderWidget(self, title):
         headerWidget = QLabel(title.upper())
         font = headerWidget.font()
-        font.setPointSize(self.fontSizeNormal)
+        font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         headerWidget.setFont(font)
         headerWidget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pal = headerWidget.palette()
-        pal.setColor(headerWidget.backgroundRole(), self.backgroundColor)
-        pal.setColor(headerWidget.foregroundRole(), self.foregroundColor)
+        pal.setColor(headerWidget.backgroundRole(), self.cfg.backgroundColor)
+        pal.setColor(headerWidget.foregroundRole(), self.cfg.foregroundColor)
         headerWidget.setPalette(pal)
         return headerWidget
 
     def makeDashWidget(self):
         self.components = []
 
-        if self.circuitExperience:
-            mapCEComponent = sb.components.mapce.MapCE(self, self)
+        if self.cfg.circuitExperience:
+            mapCEComponent = sb.components.mapce.MapCE(self.cfg, self)
             self.components.append(mapCEComponent)
             self.mapViewCE = mapCEComponent.getWidget()
             headerFuel = self.makeHeaderWidget(mapCEComponent.title())
         else:
-            fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self, self)
+            fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self.cfg, self)
             self.components.append(fuelComponent)
             fuelWidget = fuelComponent.getWidget()
             headerFuel = self.makeHeaderWidget(fuelComponent.title())
 
-        tyreComponent = sb.components.tyretemps.TyreTemps(self, self)
+        tyreComponent = sb.components.tyretemps.TyreTemps(self.cfg, self)
         self.components.append(tyreComponent)
         tyreWidget = tyreComponent.getWidget()
         headerTyres = self.makeHeaderWidget(tyreComponent.title())
 
-        speedComponent = sb.components.speed.Speed(self, self)
+        speedComponent = sb.components.speed.Speed(self.cfg, self)
         self.components.append(speedComponent)
         speedWidget = speedComponent.getWidget()
         self.headerSpeed = self.makeHeaderWidget(speedComponent.title())
 
-        headerComponent = sb.components.lapheader.LapHeader(self, self)
+        headerComponent = sb.components.lapheader.LapHeader(self.cfg, self)
         self.components.append(headerComponent)
         self.header = headerComponent.getWidget()
 
@@ -366,11 +372,11 @@ class MainWindow(QMainWindow):
         self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.uiMsg.setAutoFillBackground(True)
         font = self.uiMsg.font()
-        font.setPointSize(self.fontSizeNormal)
+        font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.uiMsg.setFont(font)
         pal = self.uiMsg.palette()
-        pal.setColor(self.uiMsg.foregroundRole(), self.foregroundColor)
+        pal.setColor(self.uiMsg.foregroundRole(), self.cfg.foregroundColor)
         self.uiMsg.setPalette(pal)
 
         self.uiMsgPageScroller.setWidget(self.uiMsg)
@@ -378,15 +384,15 @@ class MainWindow(QMainWindow):
         self.uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.uiMsgPageScroller.setWidgetResizable(True)
 
-        self.statsComponent = sb.components.stats.Stats(self, self)
+        self.statsComponent = sb.components.stats.Stats(self.cfg, self)
         self.components.append(self.statsComponent)
         self.statsPageScroller = self.statsComponent.getWidget()
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsPageScroller)
 
-        if not self.circuitExperience:
-            mapComponent = sb.components.mapce.MapCE(self, self)
+        if not self.cfg.circuitExperience:
+            mapComponent = sb.components.mapce.MapCE(self.cfg, self)
             self.components.append(mapComponent)
             self.mapView = mapComponent.getWidget()
             self.masterWidget.addWidget(self.mapView)
@@ -404,7 +410,7 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(headerFuel, 1, 1, 1, 1)
         masterLayout.addWidget(headerTyres, 3, 0, 1, 1)
         masterLayout.addWidget(self.headerSpeed, 1, 0, 1, 1)
-        if self.circuitExperience:
+        if self.cfg.circuitExperience:
             masterLayout.addWidget(self.mapViewCE, 2, 1, 3, 1)
         else:
             masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
@@ -414,13 +420,13 @@ class MainWindow(QMainWindow):
         masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
 
         pal = self.palette()
-        pal.setColor(self.backgroundRole(), self.brightBackgroundColor)
+        pal.setColor(self.backgroundRole(), self.cfg.brightBackgroundColor)
         self.setPalette(pal)
 
     def startDash(self):
-        self.circuitExperience = self.startWindow.mode.currentIndex() == 1
+        self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == 1
 
-        if self.circuitExperience:
+        if self.cfg.circuitExperience:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Warning)
             msg.setText("Are you sure you want to start in Circuit Experience Mode?")
@@ -434,60 +440,60 @@ class MainWindow(QMainWindow):
 
         ip = self.startWindow.ip.text()
 
-        self.lapDecimals = self.startWindow.lapDecimals.isChecked()
-        self.showOptimalLap = self.startWindow.cbOptimal.isChecked()
-        self.showBestLap = self.startWindow.cbBest.isChecked()
-        self.showMedianLap = self.startWindow.cbMedian.isChecked()
-        self.showRefALap = self.startWindow.cbRefA.isChecked()
-        self.refAFile = self.startWindow.refAFile
-        self.showRefBLap = self.startWindow.cbRefB.isChecked()
-        self.refBFile = self.startWindow.refBFile
-        self.showRefCLap = self.startWindow.cbRefC.isChecked()
-        self.refCFile = self.startWindow.refCFile
-        self.showLastLap = self.startWindow.cbLast.isChecked()
+        self.cfg.lapDecimals = self.startWindow.lapDecimals.isChecked()
+        self.cfg.showOptimalLap = self.startWindow.cbOptimal.isChecked()
+        self.cfg.showBestLap = self.startWindow.cbBest.isChecked()
+        self.cfg.showMedianLap = self.startWindow.cbMedian.isChecked()
+        self.cfg.showRefALap = self.startWindow.cbRefA.isChecked()
+        self.cfg.refAFile = self.startWindow.refAFile
+        self.cfg.showRefBLap = self.startWindow.cbRefB.isChecked()
+        self.cfg.refBFile = self.startWindow.refBFile
+        self.cfg.showRefCLap = self.startWindow.cbRefC.isChecked()
+        self.cfg.refCFile = self.startWindow.refCFile
+        self.cfg.showLastLap = self.startWindow.cbLast.isChecked()
 
-        self.recordingEnabled = self.startWindow.recordingEnabled.isChecked()
-        self.messagesEnabled = self.startWindow.messagesEnabled.isChecked()
-        self.sessionName = self.startWindow.sessionName.text()
+        self.cfg.recordingEnabled = self.startWindow.recordingEnabled.isChecked()
+        self.cfg.messagesEnabled = self.startWindow.messagesEnabled.isChecked()
+        self.cfg.sessionName = self.startWindow.sessionName.text()
         saveSessionName = self.startWindow.saveSessionName.isChecked()
-        self.storageLocation = self.startWindow.storageLocation
+        self.cfg.storageLocation = self.startWindow.storageLocation
         
-        self.linecomp = self.startWindow.linecomp.isChecked()
-        self.timecomp = self.startWindow.timecomp.isChecked()
-        self.loadMessagesFromFile = self.startWindow.cbCaution.isChecked()
-        self.messageFile = self.startWindow.cautionFile
+        self.cfg.linecomp = self.startWindow.linecomp.isChecked()
+        self.cfg.timecomp = self.startWindow.timecomp.isChecked()
+        self.cfg.loadMessagesFromFile = self.startWindow.cbCaution.isChecked()
+        self.cfg.messageFile = self.startWindow.cautionFile
         
-        self.brakepoints = self.startWindow.brakepoints.isChecked()
-        self.throttlepoints = self.startWindow.throttlepoints.isChecked()
-        self.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
-        self.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
-        self.initialBigCountdownBrakepoint = self.bigCountdownBrakepoint
-        self.switchToBestLap = self.startWindow.switchToBestLap.isChecked()
+        self.cfg.brakepoints = self.startWindow.brakepoints.isChecked()
+        self.cfg.throttlepoints = self.startWindow.throttlepoints.isChecked()
+        self.cfg.countdownBrakepoint = self.startWindow.countdownBrakepoint.isChecked()
+        self.cfg.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
+        self.cfg.initialBigCountdownBrakepoint = self.cfg.bigCountdownBrakepoint
+        self.cfg.switchToBestLap = self.startWindow.switchToBestLap.isChecked()
         
-        self.fuelMultiplier = self.startWindow.fuelMultiplier.value()
-        self.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
-        self.fuelWarning = self.startWindow.fuelWarning.value()
+        self.cfg.fuelMultiplier = self.startWindow.fuelMultiplier.value()
+        self.cfg.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
+        self.cfg.fuelWarning = self.startWindow.fuelWarning.value()
 
-        self.fontScale = self.startWindow.fontScale.value()
+        self.cfg.fontScale = self.startWindow.fontScale.value()
 
-        self.fontSizeSmall = int(round(self.fontSizeSmallPreset * self.fontScale))
-        self.fontSizeNormal = int(round(self.fontSizeNormalPreset * self.fontScale))
-        self.fontSizeLarge = int(round(self.fontSizeLargePreset * self.fontScale))
+        self.cfg.fontSizeSmall = int(round(self.cfg.fontSizeSmallPreset * self.cfg.fontScale))
+        self.cfg.fontSizeNormal = int(round(self.cfg.fontSizeNormalPreset * self.cfg.fontScale))
+        self.cfg.fontSizeLarge = int(round(self.cfg.fontSizeLargePreset * self.cfg.fontScale))
 
         
-        if not os.path.exists(self.storageLocation):
+        if not os.path.exists(self.cfg.storageLocation):
             QMessageBox.critical(self, "Cannot start", "Storage location not found. Please choose a storage location before starting.")
             return
 
-        if self.refAFile != "" and not os.path.exists(self.refAFile):
+        if self.cfg.refAFile != "" and not os.path.exists(self.cfg.refAFile):
             QMessageBox.critical(self, "File not found", "Reference lap A not found. Please choose a file or disable the reference lap A.")
             return
 
-        if self.refBFile != "" and not os.path.exists(self.refBFile):
+        if self.cfg.refBFile != "" and not os.path.exists(self.cfg.refBFile):
             QMessageBox.critical(self, "File not found", "Reference lap B not found. Please choose a file or disable the reference lap B.")
             return
 
-        if self.refCFile != "" and not os.path.exists(self.refCFile):
+        if self.cfg.refCFile != "" and not os.path.exists(self.cfg.refCFile):
             QMessageBox.critical(self, "File not found", "Reference lap C not found. Please choose a file or disable the reference lap C.")
             return
 
@@ -498,39 +504,39 @@ class MainWindow(QMainWindow):
         settings.setValue("ip", ip)
         
 
-        settings.setValue("fontScale", self.fontScale)
-        settings.setValue("lapDecimals", self.lapDecimals)
-        settings.setValue("showOptimalLap", self.showOptimalLap)
-        settings.setValue("showBestLap", self.showBestLap)
-        settings.setValue("showMedianLap", self.showMedianLap)
-        settings.setValue("showLastLap", self.showLastLap)
+        settings.setValue("fontScale", self.cfg.fontScale)
+        settings.setValue("lapDecimals", self.cfg.lapDecimals)
+        settings.setValue("showOptimalLap", self.cfg.showOptimalLap)
+        settings.setValue("showBestLap", self.cfg.showBestLap)
+        settings.setValue("showMedianLap", self.cfg.showMedianLap)
+        settings.setValue("showLastLap", self.cfg.showLastLap)
 
-        settings.setValue("showRefALap", self.showRefALap)
-        settings.setValue("showRefBLap", self.showRefBLap)
-        settings.setValue("showRefCLap", self.showRefCLap)
-        settings.setValue("refAFile", self.refAFile)
-        settings.setValue("refBFile", self.refBFile)
-        settings.setValue("refCFile", self.refCFile)
+        settings.setValue("showRefALap", self.cfg.showRefALap)
+        settings.setValue("showRefBLap", self.cfg.showRefBLap)
+        settings.setValue("showRefCLap", self.cfg.showRefCLap)
+        settings.setValue("refAFile", self.cfg.refAFile)
+        settings.setValue("refBFile", self.cfg.refBFile)
+        settings.setValue("refCFile", self.cfg.refCFile)
         
-        settings.setValue("recordingEnabled", self.recordingEnabled)
-        settings.setValue("messagesEnabled", self.messagesEnabled)
+        settings.setValue("recordingEnabled", self.cfg.recordingEnabled)
+        settings.setValue("messagesEnabled", self.cfg.messagesEnabled)
         settings.setValue("saveSessionName", saveSessionName)
         if saveSessionName:
-            settings.setValue("sessionName", self.sessionName)
+            settings.setValue("sessionName", self.cfg.sessionName)
         else:
             settings.setValue("sessionName", "")
-        settings.setValue("storageLocation", self.storageLocation)
+        settings.setValue("storageLocation", self.cfg.storageLocation)
 
-        settings.setValue("linecomp", self.linecomp)
-        settings.setValue("timecomp", self.timecomp)
-        settings.setValue("loadMessagesFromFile", self.loadMessagesFromFile)
-        settings.setValue("messageFile", self.messageFile)
+        settings.setValue("linecomp", self.cfg.linecomp)
+        settings.setValue("timecomp", self.cfg.timecomp)
+        settings.setValue("loadMessagesFromFile", self.cfg.loadMessagesFromFile)
+        settings.setValue("messageFile", self.cfg.messageFile)
 
-        settings.setValue("brakepoints", self.brakepoints)
-        settings.setValue("throttlepoints", self.throttlepoints)
-        settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
-        settings.setValue("bigCountdownTarget", self.bigCountdownBrakepoint)
-        settings.setValue("switchToBestLap", self.switchToBestLap)
+        settings.setValue("brakepoints", self.cfg.brakepoints)
+        settings.setValue("throttlepoints", self.cfg.throttlepoints)
+        settings.setValue("countdownBrakepoint", self.cfg.countdownBrakepoint)
+        settings.setValue("bigCountdownTarget", self.cfg.bigCountdownBrakepoint)
+        settings.setValue("switchToBestLap", self.cfg.switchToBestLap)
 
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
@@ -549,7 +555,7 @@ class MainWindow(QMainWindow):
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
 
-        self.refLaps = [ loadLap(self.refAFile), loadLap(self.refBFile), loadLap(self.refCFile) ]
+        self.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
         self.optimizedLap = Lap()
         self.curOptimizingLap = Lap()
         self.curOptimizingIndex = 0
@@ -575,7 +581,7 @@ class MainWindow(QMainWindow):
 
         # Timer
         self.timer = QTimer()
-        self.timer.setInterval(self.pollInterval)
+        self.timer.setInterval(self.cfg.pollInterval)
         self.timer.timeout.connect(self.updateDisplay)
         self.timer.start()
 
@@ -613,7 +619,7 @@ class MainWindow(QMainWindow):
 
         if not self.receiver is None:
             pal = self.palette()
-            pal.setColor(self.backgroundRole(), self.brightBackgroundColor)
+            pal.setColor(self.backgroundRole(), self.cfg.brightBackgroundColor)
             self.setPalette(pal)
 
             self.timer.stop()
@@ -645,7 +651,7 @@ class MainWindow(QMainWindow):
         self.curOptimizingLiveIndex = 0
         self.curOptimizingBrake = False
 
-        self.bigCountdownBrakepoint = self.initialBigCountdownBrakepoint
+        self.cfg.bigCountdownBrakepoint = self.cfg.initialBigCountdownBrakepoint
 
         self.newRunDescription = None
 
@@ -658,7 +664,7 @@ class MainWindow(QMainWindow):
         for c in self.components:
             c.initRace()
 
-        self.loadMessages(self.messageFile)
+        self.loadMessages(self.cfg.messageFile)
 
 
     def resetCurrentLapData(self):
@@ -694,18 +700,18 @@ class MainWindow(QMainWindow):
         result = None
         for p2 in range(startIdx, len(lap)-10): #TODO why -10? Confusion at the finish line... Maybe do dynamic length
             curDist = p.distance(lap[p2])
-            if curDist < self.closestPointValidDistance and curDist < shortestDistance:
+            if curDist < self.cfg.closestPointValidDistance and curDist < shortestDistance:
                 shortestDistance = curDist
                 result = p2
-            if not result is None and curDist > self.closestPointGetAwayDistance:
+            if not result is None and curDist > self.cfg.closestPointGetAwayDistance:
                 break
-            if curDist >= self.closestPointCancelSearchDistance:
+            if curDist >= self.cfg.closestPointCancelSearchDistance:
                 break
 
         if result is None:
             for p2 in range(100, len(lap)-10, 100):
                 curDist = p.distance(lap[p2])
-                if curDist < self.closestPointValidDistance:
+                if curDist < self.cfg.closestPointValidDistance:
                     logPrint("Found global position at", p2)
                     startIdx = p2-100
                     break
@@ -726,8 +732,8 @@ class MainWindow(QMainWindow):
 
     def findNextBrake(self, lap, startI):
         startI += self.brakeOffset
-        for i in range(max(startI,0), min(int(math.ceil(startI + self.psFPS * 3)), len(lap))):
-            if lap[i].brake > self.brakeMinimumLevel:
+        for i in range(max(startI,0), min(int(math.ceil(startI + self.cfg.psFPS * 3)), len(lap))):
+            if lap[i].brake > self.cfg.brakeMinimumLevel:
                 return max(i-startI,0)
         return None
 
@@ -762,7 +768,7 @@ class MainWindow(QMainWindow):
                 if not c3 is None:
                     d3 = c3.distance(l.points[-1])
                 logPrint("End distance:", d)
-                if d > self.circuitExperienceEndPointPurgeDistance:
+                if d > self.cfg.circuitExperienceEndPointPurgeDistance:
                     logPrint("PURGE lap", indexToTime (len(l.points)), d)
                 else:
                     temp.append(l)
@@ -774,7 +780,7 @@ class MainWindow(QMainWindow):
         if len(lap.points) == 0:
             logPrint("Lap is empty")
             return lap
-        if len(lap.points) < self.circuitExperienceShortLapSecondsThreshold * self.psFPS:
+        if len(lap.points) < self.cfg.circuitExperienceShortLapSecondsThreshold * self.cfg.psFPS:
             logPrint("\nLap is short")
             return lap
         if (lap.points[-1].throttle > 0):
@@ -922,10 +928,10 @@ class MainWindow(QMainWindow):
         self.curOptimizingBrake = False
 
     def handleLapChanges(self, curPoint):
-        if self.circuitExperience and curPoint.current_lap > 1:
+        if self.cfg.circuitExperience and curPoint.current_lap > 1:
             logPrint("Not in Circuit Experience!")
             self.exitDash()
-            QMessageBox.critical(self, "Not in Circuit Experience", "Circuit Experience mode is set, but not driven. Unfortunately, this is not supported. Please change to Laps mode or drive a Circuit Experience.")
+            QMessageBox.critical(self, "Not in Circuit Experience", "Circuit Experience mode is set, but not driven. Unfortunately, this is not supported. Please switch to Laps mode or drive a Circuit Experience.")
             return
         fuel_capacity = curPoint.fuel_capacity
         if fuel_capacity == 0: # EV
@@ -933,13 +939,13 @@ class MainWindow(QMainWindow):
 
         if (
             self.lastLap != curPoint.current_lap
-            or (self.circuitExperience and (curPoint.distance(self.previousPoint) > self.circuitExperienceJumpDistance or self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout))
+            or (self.cfg.circuitExperience and (curPoint.distance(self.previousPoint) > self.cfg.circuitExperienceJumpDistance or self.noThrottleCount >= self.cfg.psFPS * self.cfg.circuitExperienceNoThrottleTimeout))
            ): # TODO Null error in circuit experience mode when doing laps: AttributeError: 'NoneType' object has no attribute 'position_x'
 
             # Clean up circuit experience laps
-            if self.circuitExperience:
-                if self.noThrottleCount >= self.psFPS * self.circuitExperienceNoThrottleTimeout:
-                    logPrint("Lap ended", self.circuitExperienceNoThrottleTimeout ,"seconds ago")
+            if self.cfg.circuitExperience:
+                if self.noThrottleCount >= self.cfg.psFPS * self.cfg.circuitExperienceNoThrottleTimeout:
+                    logPrint("Lap ended", self.cfg.circuitExperienceNoThrottleTimeout ,"seconds ago")
 
                 cleanLap = self.cleanUpLapCE(self.curLap)
                 self.mapViewCE.endLap(cleanLap.points)
@@ -969,10 +975,10 @@ class MainWindow(QMainWindow):
             self.statsComponent.updateLiveStats(curPoint)
 
             if not (self.lastLap == -1 and curPoint.current_fuel < 99):
-                if self.lastLap > 0 and ((self.circuitExperience and lapLen > 0) or curPoint.last_lap != -1):
+                if self.lastLap > 0 and ((self.cfg.circuitExperience and lapLen > 0) or curPoint.last_lap != -1):
                     # Determine lap time
-                    if self.circuitExperience:
-                        lastLapTime = 1000 * (len(cleanLap.points)/self.psFPS + 1/(2*self.psFPS))
+                    if self.cfg.circuitExperience:
+                        lastLapTime = 1000 * (len(cleanLap.points)/self.cfg.psFPS + 1/(2*self.cfg.psFPS))
                     else:
                         lastLapTime = curPoint.last_lap
 
@@ -980,7 +986,7 @@ class MainWindow(QMainWindow):
 
                     logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1])) 
                     # Process a completed valid lap (circuit experience laps are always valid)
-                    if self.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.validLapEndpointDistance:
+                    if self.cfg.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.cfg.validLapEndpointDistance:
                         if len(self.previousLaps) > 0:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
@@ -992,7 +998,7 @@ class MainWindow(QMainWindow):
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         logPrint("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.previousLaps), tdiff)
 
-                        if not self.circuitExperience:
+                        if not self.cfg.circuitExperience:
                             self.updateOptimizedLap()
 
                         for c in self.components:
@@ -1009,7 +1015,7 @@ class MainWindow(QMainWindow):
                     logPrint("Laps:", len(self.previousLaps))
 
                     # Clean up circuit experience laps
-                    if self.circuitExperience:
+                    if self.cfg.circuitExperience:
                         self.purgeBadLapsCE()
                         logPrint("Laps after purge:", len(self.previousLaps))
                 
@@ -1019,7 +1025,7 @@ class MainWindow(QMainWindow):
                     if showBestLapMessage and self.bestLap != newBestLap and self.previousLaps[newBestLap].valid:
                         self.showUiMsg("BEST LAP", 1)
                     ## Reset brake point offsets for new best lap
-                    if self.bestLap != newBestLap and self.bigCountdownBrakepoint == 1:
+                    if self.bestLap != newBestLap and self.cfg.bigCountdownBrakepoint == 1:
                         self.brakeOffset = 0
                         self.headerSpeed.setText("SPEED")
                         self.headerSpeed.update()
@@ -1037,7 +1043,7 @@ class MainWindow(QMainWindow):
                     if fuelDiff > 0:
                         logPrint("Append fuel", fuelDiff)
                         self.lastFuelUsage.append(fuelDiff)
-                    if len(self.lastFuelUsage) > self.fuelStatisticsLaps:
+                    if len(self.lastFuelUsage) > self.cfg.fuelStatisticsLaps:
                         self.lastFuelUsage = self.lastFuelUsage[1:]
                     self.refueled += 1
                     self.lastFuel = curPoint.current_fuel/fuel_capacity
@@ -1045,7 +1051,7 @@ class MainWindow(QMainWindow):
                     if len(self.lastFuelUsage) > 0:
                         self.fuelFactor = self.lastFuelUsage[0]
                         for i in range(1, len(self.lastFuelUsage)):
-                            self.fuelFactor = (1-self.fuelLastLapFactor) * self.fuelFactor + self.fuelLastLapFactor * self.lastFuelUsage[i]
+                            self.fuelFactor = (1-self.cfg.fuelLastLapFactor) * self.fuelFactor + self.cfg.fuelLastLapFactor * self.lastFuelUsage[i]
 
                 else:
                     logPrint("Ignore pre-lap")
@@ -1094,8 +1100,8 @@ class MainWindow(QMainWindow):
             # Handle telemetry
             for curPoint in pointsToHandle:
                 # Update local messages
-                if self.messagesEnabled and not self.newMessage is None:
-                    self.messages.append([self.curLap.points[-min(int(self.psFPS*self.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
+                if self.cfg.messagesEnabled and not self.newMessage is None:
+                    self.messages.append([self.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
                     self.newMessage = None
 
                 # Only handle packages when driving
@@ -1105,7 +1111,7 @@ class MainWindow(QMainWindow):
                 self.determineLapProgress(curPoint)
                 self.handleLapChanges(curPoint)
 
-                if not self.circuitExperience:
+                if not self.cfg.circuitExperience:
                     self.optimizeLap(curPoint)
 
                 self.handleTrackDetect(curPoint)
@@ -1123,17 +1129,17 @@ class MainWindow(QMainWindow):
 
 
     def toggleRecording(self):
-        if self.recordingEnabled:
+        if self.cfg.recordingEnabled:
             if self.isRecording:
                 self.isRecording = False
                 self.receiver.stopRecording()
             else:
-                if not os.path.exists(self.storageLocation):
-                    self.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
+                if not os.path.exists(self.cfg.storageLocation):
+                    self.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.cfg.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
                     return
-                prefix = self.storageLocation + "/"
-                if len(self.sessionName) > 0:
-                    prefix += self.sessionName + "-"
+                prefix = self.cfg.storageLocation + "/"
+                if len(self.cfg.sessionName) > 0:
+                    prefix += self.cfg.sessionName + "-"
                 self.receiver.startRecording(prefix)
                 self.isRecording = True
 
@@ -1257,11 +1263,11 @@ class MainWindow(QMainWindow):
 
     def saveAllLaps(self, name):
         logPrint("store all laps:", name)
-        if not os.path.exists(self.storageLocation):
-            return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
-        prefix = self.storageLocation + "/"
-        if len(self.sessionName) > 0:
-            prefix += self.sessionName + " - "
+        if not os.path.exists(self.cfg.storageLocation):
+            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
+        prefix = self.cfg.storageLocation + "/"
+        if len(self.cfg.sessionName) > 0:
+            prefix += self.cfg.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - laps - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
             if not self.previousLaps[0].preceeding is None:
                 f.write(self.previousLaps[0].preceeding.raw)
@@ -1283,11 +1289,11 @@ class MainWindow(QMainWindow):
 
     def saveLap(self, index, name):
         logPrint("store lap:", name)
-        if not os.path.exists(self.storageLocation):
-            return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
-        prefix = self.storageLocation + "/"
-        if len(self.sessionName) > 0:
-            prefix += self.sessionName + " - "
+        if not os.path.exists(self.cfg.storageLocation):
+            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
+        prefix = self.cfg.storageLocation + "/"
+        if len(self.cfg.sessionName) > 0:
+            prefix += self.cfg.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
             if isinstance(index, Lap):
                 lap = index
@@ -1305,23 +1311,23 @@ class MainWindow(QMainWindow):
 
     def saveMessages(self):
         logPrint("Save messages")
-        if not os.path.exists(self.storageLocation):
-            return "Error: Storage location\n'" + self.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
+        if not os.path.exists(self.cfg.storageLocation):
+            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
         d = []
         for m in self.messages:
             d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
 
         j = json.dumps(d, indent=4)
         logPrint(j)
-        prefix = self.storageLocation + "/"
-        if len(self.sessionName) > 0:
-            prefix += self.sessionName + " - "
+        prefix = self.cfg.storageLocation + "/"
+        if len(self.cfg.sessionName) > 0:
+            prefix += self.cfg.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - messages - " + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
             f.write(j)
 
     def loadMessages(self, fn):
         self.messages = []
-        if self.loadMessagesFromFile:
+        if self.cfg.loadMessagesFromFile:
             with open (fn, "r") as f:
                 j = f.read()
                 logPrint(j)
