@@ -1151,7 +1151,6 @@ class MainWindow(QMainWindow):
             if e.key() != Qt.Key.Key_Shift.value:
                 self.messageWaitsForKey = False
                 self.returnToDash()
-        elif self.centralWidget() == self.masterWidget:
         elif self.centralWidget() == self.masterWidget and not e.modifiers() & Qt.KeyboardModifier.ControlModifier:
             if e.key() == Qt.Key.Key_R.value:
                 self.toggleRecording()
