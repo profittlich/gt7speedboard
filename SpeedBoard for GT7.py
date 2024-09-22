@@ -1152,6 +1152,7 @@ class MainWindow(QMainWindow):
                 self.messageWaitsForKey = False
                 self.returnToDash()
         elif self.centralWidget() == self.masterWidget:
+        elif self.centralWidget() == self.masterWidget and not e.modifiers() & Qt.KeyboardModifier.ControlModifier:
             if e.key() == Qt.Key.Key_R.value:
                 self.toggleRecording()
             elif e.key() == Qt.Key.Key_Escape.value:
@@ -1238,6 +1239,13 @@ class MainWindow(QMainWindow):
                 #tester = Worker(someDelay, "Complete", 0.2)
                 #tester.signals.finished.connect(self.showUiMsg)
                 #self.threadpool.start(tester)
+        elif self.centralWidget() == self.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
+                self.flipPage(e.key() - Qt.Key.Key_1.value)
+
+    def flipPage(self, nr):
+        logPrint("Flip to page", nr)
+        self.masterWidget.setCurrentIndex(nr)
 
     def keyReleaseEvent(self, e):
         if self.centralWidget() == self.masterWidget:
