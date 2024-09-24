@@ -40,6 +40,7 @@ import sb.components.lapheader
 import sb.components.mapce
 import sb.components.speed
 import sb.components.stats
+import sb.components.help
 
 class WorkerSignals(QObject):
     finished = pyqtSignal(str, float)
@@ -86,30 +87,10 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v5)")
+        self.setWindowTitle("SpeedBoard for GT7 (v5+dev)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
-
-        self.cfg.circuitExperience = True
-        self.cfg.lapDecimals = False
-        self.cfg.recordingEnabled = False
-        self.cfg.messagesEnabled = False
-        self.cfg.linecomp = False
-        self.cfg.timecomp = False
-        self.cfg.brakepoints = False
-        self.cfg.throttlepoints = False
-        self.cfg.countdownBrakepoint = False
-        self.cfg.bigCountdownBrakepoint = 0 # TODO is this data or cfg?
-        self.cfg.switchToBestLap = True
-
-        self.cfg.showBestLap = True
-        self.cfg.showLastLap = True
-        self.cfg.showMedianLap = True
-        self.cfg.showRefALap = False
-        self.cfg.showRefBLap = False
-        self.cfg.showRefCLap = False
-        self.cfg.showOptimalLap = False # TODO implement
 
         self.newMessage = None
         self.messages = []
@@ -158,6 +139,10 @@ class MainWindow(QMainWindow):
         self.components.append(headerComponent)
         self.header = headerComponent.getWidget()
 
+        helpComponent = sb.components.help.Help(self.cfg, self)
+        self.components.append(helpComponent)
+        self.help = helpComponent.getWidget()
+
         # Lvl 1
         masterLayout = QGridLayout()
         self.masterWidget = QStackedWidget()
@@ -187,6 +172,7 @@ class MainWindow(QMainWindow):
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsPageScroller)
+        self.masterWidget.addWidget(self.help)
 
         if not self.cfg.circuitExperience:
             mapComponent = sb.components.mapce.MapCE(self.cfg, self)
@@ -237,6 +223,7 @@ class MainWindow(QMainWindow):
 
         ip = self.startWindow.ip.text()
 
+        # TODO consider moving to Configuration class
         self.cfg.lapDecimals = self.startWindow.lapDecimals.isChecked()
         self.cfg.showOptimalLap = self.startWindow.cbOptimal.isChecked()
         self.cfg.showBestLap = self.startWindow.cbBest.isChecked()
@@ -294,6 +281,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "File not found", "Reference lap C not found. Please choose a file or disable the reference lap C.")
             return
 
+        # TODO move to Configuration
         settings = QSettings()
 
         settings.setValue("mode", self.startWindow.mode.currentIndex())
@@ -492,6 +480,7 @@ class MainWindow(QMainWindow):
         self.closestOffsetPointOptimized = None
         self.lapProgress = 0
 
+    # TODO: consider using versions from Lap class
     def findClosestPoint(self, lap, p, startIdx):
         shortestDistance = 100000000
         result = None
@@ -516,6 +505,7 @@ class MainWindow(QMainWindow):
             return None, startIdx, None
         return lap[result], result, lap[min(len(lap)-1, max(0,result+self.brakeOffset))]
 
+    # TODO: consider using versions from Lap class
     def findClosestPointNoLimit(self, lap, p):
         shortestDistance = 100000000
         result = None
@@ -1039,7 +1029,10 @@ class MainWindow(QMainWindow):
                 self.statsComponent.updateRunStats(saveRuns=True)
                 self.showUiMsg("Run table saved.", 2)
             elif e.key() == Qt.Key.Key_Question:
-                self.showUiMsg (shortcutText, 0, leftAlign=True, waitForKey=True)
+                if self.masterWidget.currentIndex() == 3:
+                    self.flipPage(0)
+                else:
+                    self.flipPage(3)
             #elif e.key() == Qt.Key.Key_T.value:
                 #tester = Worker(someDelay, "Complete", 0.2)
                 #tester.signals.finished.connect(self.showUiMsg)
@@ -1058,6 +1051,7 @@ class MainWindow(QMainWindow):
             if e.key() == Qt.Key.Key_Tab.value:
                 self.returnToDash()
 
+    # TODO consider moving to Lap class
     def saveAllLaps(self, name):
         logPrint("store all laps:", name)
         if not os.path.exists(self.cfg.storageLocation):
@@ -1078,12 +1072,14 @@ class MainWindow(QMainWindow):
             if not self.previousLaps[-1].following is None:
                 f.write(self.previousLaps[-1].following.raw)
 
+    # TODO consider moving to Lap class
     def saveOptimizedLap(self, index, name):
         for p in index.points:
             p.current_lap = 1
             p.recreatePackage()
         self.saveLap(index, name)
 
+    # TODO consider moving to Lap class
     def saveLap(self, index, name):
         logPrint("store lap:", name)
         if not os.path.exists(self.cfg.storageLocation):
