@@ -4,7 +4,28 @@ import platform
 import csv
 import inspect
 
+from PyQt6.QtCore import *
 from sb.crypt import salsa20_dec, salsa20_enc
+
+class WorkerSignals(QObject):
+    finished = pyqtSignal(str, float)
+
+class Worker(QRunnable, QObject):
+    def __init__(self, func, msg, t, args=()):
+        super(Worker, self).__init__()
+        self.func = func
+        self.msg = msg
+        self.t = t
+        self.args = args
+        self.signals = WorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
+        altMsg = self.func(*self.args)
+        if altMsg is None:
+            self.signals.finished.emit(self.msg, self.t)
+        else:
+            self.signals.finished.emit(altMsg, self.t)
 
 
 def indexToTime(i):

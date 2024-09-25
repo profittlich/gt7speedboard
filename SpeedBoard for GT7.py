@@ -27,6 +27,7 @@ from sb.laps import Lap
 from sb.laps import PositionPoint
 from sb.helpers import loadCarIds, idToCar
 from sb.helpers import indexToTime, msToTime
+from sb.helpers import Worker
 from sb.trackdetector import TrackDetector
 
 import sb.gt7telemetryreceiver as tele
@@ -41,26 +42,6 @@ import sb.components.mapce
 import sb.components.speed
 import sb.components.stats
 import sb.components.help
-
-class WorkerSignals(QObject):
-    finished = pyqtSignal(str, float)
-
-class Worker(QRunnable, QObject):
-    def __init__(self, func, msg, t, args=()):
-        super(Worker, self).__init__()
-        self.func = func
-        self.msg = msg
-        self.t = t
-        self.args = args
-        self.signals = WorkerSignals()
-
-    @pyqtSlot()
-    def run(self):
-        altMsg = self.func(*self.args)
-        if altMsg is None:
-            self.signals.finished.emit(self.msg, self.t)
-        else:
-            self.signals.finished.emit(altMsg, self.t)
 
 
 class MainWindow(QMainWindow):
