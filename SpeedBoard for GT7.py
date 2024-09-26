@@ -234,6 +234,7 @@ class MainWindow(QMainWindow):
         self.cfg.bigCountdownBrakepoint = self.startWindow.bigCountdownTarget.currentIndex()
         self.cfg.initialBigCountdownBrakepoint = self.cfg.bigCountdownBrakepoint
         self.cfg.switchToBestLap = self.startWindow.switchToBestLap.isChecked()
+        self.cfg.optimizedSeed = self.startWindow.optimizedSeed.currentIndex()
         
         self.cfg.fuelMultiplier = self.startWindow.fuelMultiplier.value()
         self.cfg.maxFuelConsumption = self.startWindow.maxFuelConsumption.value()
@@ -267,6 +268,7 @@ class MainWindow(QMainWindow):
         settings = QSettings()
 
         settings.setValue("mode", self.startWindow.mode.currentIndex())
+        settings.setValue("optimizedSeed", self.startWindow.optimizedSeed.currentIndex())
         
         settings.setValue("ip", ip)
         
@@ -317,17 +319,12 @@ class MainWindow(QMainWindow):
         self.brakeOffset = 0
         self.lapOffset = 0
 
+        self.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
+
         self.initRace()
         self.messageWaitsForKey = False
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
-
-        self.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
-        self.optimizedLap = Lap()
-        self.curOptimizingLap = Lap()
-        self.curOptimizingIndex = 0
-        self.curOptimizingLiveIndex = 0
-        self.curOptimizingBrake = False
 
         logPrint("Ref A:", msToTime(self.refLaps[0].time))
 
@@ -354,6 +351,20 @@ class MainWindow(QMainWindow):
 
         self.debugCount = 0
         self.noThrottleCount = 0
+
+    def initOptimizedLap(self):
+        if self.cfg.optimizedSeed == 0:
+            self.optimizedLap = Lap()
+        elif self.cfg.optimizedSeed == 1:
+            self.optimizedLap = copy.deepcopy(self.refLaps[0])
+        elif self.cfg.optimizedSeed == 2:
+            self.optimizedLap = copy.deepcopy(self.refLaps[1])
+        elif self.cfg.optimizedSeed == 3:
+            self.optimizedLap = copy.deepcopy(self.refLaps[2])
+        self.curOptimizingLap = Lap()
+        self.curOptimizingIndex = 0
+        self.curOptimizingLiveIndex = 0
+        self.curOptimizingBrake = False
 
     def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
         logPrint("showUiMsg")
@@ -412,11 +423,8 @@ class MainWindow(QMainWindow):
         self.fuelFactor = 0
         self.refueled = 0
         self.manualPitStop = False
-        self.optimizedLap = Lap()
-        self.curOptimizingLap = Lap()
-        self.curOptimizingIndex = 0
-        self.curOptimizingLiveIndex = 0
-        self.curOptimizingBrake = False
+        
+        self.initOptimizedLap()
 
         self.cfg.bigCountdownBrakepoint = self.cfg.initialBigCountdownBrakepoint
 

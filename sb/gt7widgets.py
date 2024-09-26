@@ -84,6 +84,14 @@ class StartWindow(QWidget):
         saLayout = QVBoxLayout()
         saGroup.setLayout(saLayout)
         self.cbOptimal = QCheckBox("Optimized lap (experimental)")
+
+        self.optimizedSeedLabel = QLabel("Initialize optimized lap with:")
+        self.optimizedSeed = QComboBox()
+        self.optimizedSeed.addItem("Nothing")
+        self.optimizedSeed.addItem("Reference lap A")
+        self.optimizedSeed.addItem("Reference lap B")
+        self.optimizedSeed.addItem("Reference lap C")
+
         self.cbBest = QCheckBox("Best lap")
         self.cbMedian = QCheckBox("Median lap")
         self.cbRefA = QCheckBox("Reference lap A")
@@ -107,6 +115,8 @@ class StartWindow(QWidget):
         saLayout.addWidget(self.cbRefC)
         saLayout.addWidget(self.cbLast)
         saLayout.addWidget(self.cbOptimal)
+        saLayout.addWidget(self.optimizedSeedLabel)
+        saLayout.addWidget(self.optimizedSeed)
         saLayout.addWidget(self.timecomp)
         saLayout.addWidget(self.linecomp)
 
@@ -230,6 +240,7 @@ class StartWindow(QWidget):
         logPrint("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
+        self.optimizedSeed.setCurrentIndex(int(settings.value("optimizedSeed",0)))
 
         self.ip.setText(settings.value("ip", ""))
         self.storageLocation = settings.value("storageLocation", "")
@@ -297,8 +308,10 @@ class StartWindow(QWidget):
         logPrint("updateForMode")
         if self.mode.currentIndex () == 1:
             self.cbOptimal.setEnabled(False)
+            self.optimizedSeed.setEnabled(False)
         else:
             self.cbOptimal.setEnabled(True)
+            self.optimizedSeed.setEnabled(True)
 
     def racingLineWarning(self, on):
         if on:
