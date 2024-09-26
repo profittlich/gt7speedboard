@@ -67,6 +67,7 @@ class Configuration:
 
         self.fontScale = 1
 
+        self.fontSizeVerySmallPreset = 32
         self.fontSizeSmallPreset = 48
         self.fontSizeNormalPreset = 64
         self.fontSizeLargePreset = 72
@@ -135,6 +136,7 @@ class Configuration:
             if "pollInterval" in d: self.pollInterval = d["pollInterval"]
 
             #if "fontScale" in d: self.fontScale = d["fontScale"]
+            if "fontSizeVerySmall" in d: self.fontSizeVerySmallPreset = d["fontSizeVerySmall"]
             if "fontSizeSmall" in d: self.fontSizeSmallPreset = d["fontSizeSmall"]
             if "fontSizeNormal" in d: self.fontSizeNormalPreset = d["fontSizeNormal"]
             if "fontSizeLarge" in d: self.fontSizeLargePreset = d["fontSizeLarge"]
@@ -200,6 +202,7 @@ class Configuration:
             d["pollInterval"] = self.pollInterval
 
             #d["fontScale"] = self.fontScale
+            d["fontSizeVerySmall"] = self.fontSizeVerySmallPreset
             d["fontSizeSmall"] = self.fontSizeSmallPreset
             d["fontSizeNormal"] = self.fontSizeNormalPreset
             d["fontSizeLarge"] = self.fontSizeLargePreset

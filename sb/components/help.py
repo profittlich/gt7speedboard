@@ -16,7 +16,7 @@ class Help(sb.component.Component):
         self.widget = QLabel("KEYBOARD SHORTCUTS:\n\n" + shortcutText)
         self.pageScroller.setWidget(self.widget)
         font = self.widget.font()
-        font.setPointSize(cfg.fontSizeSmall)
+        font.setPointSize(cfg.fontSizeVerySmall)
         font.setBold(True)
         self.widget.setFont(font)
         self.widget.setAlignment(Qt.AlignmentFlag.AlignLeft)

@@ -20,6 +20,7 @@ shortcutText = "ESC \t return to configuration\n" \
              + "UP \t Show brake point notifications a bit later\n"  \
              + "DOWN \t Show brake point notifications a bit earlier\n"  \
              + "0 (zero)\t Reset brake point notification timing\n"  \
+             + "Tab\t Cycle source for full screen colors\n"  \
              + "- \t Reduce number of laps by 1 (e.g. when being lapped)\n"  \
              + "+ \t Increase number of laps by 1\n"  \
              + "R \t start/stop raw recording (not recommended)\n"
@@ -288,6 +289,16 @@ class StartWindow(QWidget):
         self.throttlepoints.stateChanged.connect(self.brakePointWarning)
         self.linecomp.stateChanged.connect(self.racingLineWarning)
         self.cbCaution.stateChanged.connect(self.chooseCautionFile)
+        self.mode.currentIndexChanged.connect(self.updateForMode)
+
+        self.updateForMode()
+
+    def updateForMode(self):
+        logPrint("updateForMode")
+        if self.mode.currentIndex () == 1:
+            self.cbOptimal.setEnabled(False)
+        else:
+            self.cbOptimal.setEnabled(True)
 
     def racingLineWarning(self, on):
         if on:

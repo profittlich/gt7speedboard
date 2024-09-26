@@ -218,7 +218,7 @@ class Speed(sb.component.Component):
             speedLayout.addWidget(self.speedRefC , 2, 4)
         if self.cfg.showLastLap:
             speedLayout.addWidget(self.speedLast, 2, 5)
-        if self.cfg.showOptimalLap:
+        if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
             speedLayout.addWidget(self.speedOptimized, 2, 6)
 
         if self.cfg.linecomp:
@@ -234,7 +234,7 @@ class Speed(sb.component.Component):
                 speedLayout.addWidget(self.lineRefC, 1, 4)
             if self.cfg.showLastLap:
                 speedLayout.addWidget(self.lineLast, 1, 5)
-            if self.cfg.showOptimalLap:
+            if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
                 speedLayout.addWidget(self.lineOptimized, 1, 6)
             speedLayout.setRowStretch(1, 1)
         if self.cfg.timecomp:
@@ -251,7 +251,7 @@ class Speed(sb.component.Component):
                 speedLayout.addWidget(self.timeDiffRefC, 3, 4)
             if self.cfg.showLastLap:
                 speedLayout.addWidget(self.timeDiffLast, 3, 5)
-            if self.cfg.showOptimalLap:
+            if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
                 speedLayout.addWidget(self.timeDiffOptimized, 3, 6)
 
         if self.cfg.brakepoints or self.cfg.throttlepoints:
@@ -267,7 +267,7 @@ class Speed(sb.component.Component):
                 speedLayout.addWidget(self.pedalRefC, 0, 4)
             if self.cfg.showLastLap:
                 speedLayout.addWidget(self.pedalLast, 0, 5)
-            if self.cfg.showOptimalLap:
+            if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
                 speedLayout.addWidget(self.pedalOptimized, 0, 6)
             speedLayout.setRowStretch(0, 1)
         speedLayout.setRowStretch(2, 4)
@@ -470,6 +470,7 @@ class Speed(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         self.updateSpeed(curPoint)
+        self.markBigCountdownField()
 
     def initRace(self):
         pal = self.pedalLast.palette()

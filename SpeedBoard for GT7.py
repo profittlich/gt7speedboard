@@ -241,6 +241,7 @@ class MainWindow(QMainWindow):
 
         self.cfg.fontScale = self.startWindow.fontScale.value()
 
+        self.cfg.fontSizeVerySmall = int(round(self.cfg.fontSizeVerySmallPreset * self.cfg.fontScale))
         self.cfg.fontSizeSmall = int(round(self.cfg.fontSizeSmallPreset * self.cfg.fontScale))
         self.cfg.fontSizeNormal = int(round(self.cfg.fontSizeNormalPreset * self.cfg.fontScale))
         self.cfg.fontSizeLarge = int(round(self.cfg.fontSizeLargePreset * self.cfg.fontScale))
@@ -923,6 +924,26 @@ class MainWindow(QMainWindow):
         self.setPalette(self.defaultPalette)
         self.setCentralWidget(self.startWindow)
 
+    def cycleBigCountdownBreakponts(self):
+        self.cfg.bigCountdownBrakepoint += 1
+        hit = False
+        while not hit:
+            if self.cfg.bigCountdownBrakepoint > 5:
+                self.cfg.bigCountdownBrakepoint = 0
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 1 and self.cfg.showBestLap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 2 and self.cfg.showRefALap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 3 and self.cfg.showRefBLap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 4 and self.cfg.showRefCLap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 5 and self.cfg.showOptimalLap:
+                hit = True
+            else:
+                self.cfg.bigCountdownBrakepoint += 1
+
     def keyPressEvent(self, e):
         if self.centralWidget() == self.masterWidget and self.messageWaitsForKey:
             if e.key() != Qt.Key.Key_Shift.value:
@@ -935,6 +956,8 @@ class MainWindow(QMainWindow):
                 self.exitDash()
             elif e.key() == Qt.Key.Key_Space.value:
                 self.newMessage = "CAUTION"
+            elif e.key() == Qt.Key.Key_Tab.value:
+                self.cycleBigCountdownBreakponts()
             elif e.key() == Qt.Key.Key_B.value:
                 if self.bestLap >= 0:
                     saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.bestLap, "best",))
@@ -1026,11 +1049,6 @@ class MainWindow(QMainWindow):
         logPrint("Flip to page", nr)
         self.masterWidget.setCurrentIndex(nr)
         self.masterWidgetIndex = self.masterWidget.currentIndex()
-
-    def keyReleaseEvent(self, e):
-        if self.centralWidget() == self.masterWidget:
-            if e.key() == Qt.Key.Key_Tab.value:
-                self.returnToDash()
 
     # TODO consider moving to Lap class
     def saveAllLaps(self, name):
