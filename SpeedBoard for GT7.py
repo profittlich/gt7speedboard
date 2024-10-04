@@ -56,9 +56,6 @@ class MainWindow(QMainWindow):
         self.trackDetector = None
         self.goFullscreen = True
 
-        logPrint("Clear sessions")
-        self.sessionStats = []
-
         self.masterWidget = None
         self.masterWidgetIndex = 0
         self.cfg.loadConstants()
@@ -817,7 +814,7 @@ class MainWindow(QMainWindow):
 
                     # Update fuel usage and outlook
                     fuelDiff = self.lastFuel - curPoint.current_fuel/fuel_capacity
-                    if fuelDiff > 0:
+                    if fuelDiff > 0 and self.previousLaps[-1].valid:
                         logPrint("Append fuel", fuelDiff)
                         self.lastFuelUsage.append(fuelDiff)
                     if len(self.lastFuelUsage) > self.cfg.fuelStatisticsLaps:
