@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v5+dev)")
+        self.setWindowTitle("SpeedBoard for GT7 (v6)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
