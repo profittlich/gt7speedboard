@@ -1035,6 +1035,11 @@ class MainWindow(QMainWindow):
                     self.flipPage(0)
                 else:
                     self.flipPage(2)
+            elif e.key() == Qt.Key.Key_V.value:
+                if self.masterWidget.currentIndex() == 4:
+                    self.flipPage(0)
+                else:
+                    self.flipPage(4)
             elif e.key() == Qt.Key.Key_T.value:
                 self.statsComponent.updateRunStats(saveRuns=True)
                 self.showUiMsg("Run table saved.", 2)

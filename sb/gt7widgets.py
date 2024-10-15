@@ -21,6 +21,8 @@ shortcutText = "ESC \t return to configuration\n" \
              + "UP \t Show brake point notifications a bit later\n"  \
              + "DOWN \t Show brake point notifications a bit earlier\n"  \
              + "0 (zero)\t Reset brake point notification timing\n"  \
+             + "P\t Reset laps since pit stop counter\n"  \
+             + "V\t View map\n"  \
              + "Tab\t Cycle source for full screen colors\n"  \
              + "- \t Reduce number of laps by 1 (e.g. when being lapped)\n"  \
              + "+ \t Increase number of laps by 1\n"  \
