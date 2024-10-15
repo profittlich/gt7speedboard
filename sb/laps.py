@@ -12,6 +12,10 @@ class PositionPoint:
         self.position_y = 0
         self.position_z = 0
 
+    def flatDistance(self, p2):
+        return math.sqrt( (self.position_x-p2.position_x)**2 + (self.position_z-p2.position_z)**2)
+
+
 class Lap:
     def __init__(self, time = None, pts = None, valid=True, following=None, preceeding=None):
         self.time = time

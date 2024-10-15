@@ -722,7 +722,8 @@ class MainWindow(QMainWindow):
                     logPrint("Lap ended", self.cfg.circuitExperienceNoThrottleTimeout ,"seconds ago")
 
                 cleanLap = self.cleanUpLapCE(self.curLap)
-                self.mapViewCE.endLap(cleanLap.points)
+                if curPoint.current_lap != 0:
+                    self.mapViewCE.endLap(cleanLap.points)
                 self.mapViewCE.update()
             else:
                 cleanLap = self.curLap

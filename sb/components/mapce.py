@@ -33,10 +33,7 @@ class MapCE(sb.component.Component):
             color = self.cfg.mapCurrentColor
             if len(self.data.previousLaps) > 0:
                 speedDiff = self.data.previousLaps[self.data.bestLap].points[self.data.closestIBest].car_speed - curPoint.car_speed
-                if speedDiff == 0:
-                    color = self.cfg.mapStandingColor
-                else:
-                    color = self.speedDiffQColor(speedDiff)
+                color = self.speedDiffQColor(speedDiff)
             self.mapViewCE.setPoints(self.data.previousPoint, curPoint, color)
             self.mapViewCE.update()
 

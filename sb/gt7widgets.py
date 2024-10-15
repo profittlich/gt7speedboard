@@ -1,7 +1,8 @@
-from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings
-from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox
+from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QPoint, QPointF
+from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient, QBrush
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox, QTabWidget, QSpacerItem, QSizePolicy
 import math
+import copy
 from sb.helpers import logPrint
 
 shortcutText = "ESC \t return to configuration\n" \
@@ -40,32 +41,16 @@ class StartWindow(QWidget):
         mainLayout.addWidget(modeLabel)
         mainLayout.addWidget(self.mode)
 
-        cols = QWidget()
-        mainLayoutCols = QHBoxLayout()
-        cols.setLayout(mainLayoutCols)
-        mainLayout.addWidget(cols)
-
-        ll = QWidget()
-        mainLayoutL = QVBoxLayout()
-        ll.setLayout(mainLayoutL)
-        mainLayoutCols.addWidget(ll)
-
-        lr = QWidget()
-        mainLayoutR = QVBoxLayout()
-        lr.setLayout(mainLayoutR)
-        mainLayoutCols.addWidget(lr)
-
-        # GENERAL
-        #gnGroup = QGroupBox("General")
-        #mainLayoutL.addWidget(gnGroup)
-        #gnLayout = QVBoxLayout()
-        #gnGroup.setLayout(gnLayout)
+        tabWidget = QTabWidget()
+        tabWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        mainLayout.addWidget(tabWidget)
 
         # VIEW
-        vwGroup = QGroupBox("View")
-        mainLayoutR.addWidget(vwGroup)
+        vwGroup = QWidget()
         vwLayout = QVBoxLayout()
         vwGroup.setLayout(vwLayout)
+
+        tabWidget.addTab(vwGroup, "View")
 
         self.fontScale = QDoubleSpinBox()
         self.fontScale.setMinimum(0.1)
@@ -77,12 +62,13 @@ class StartWindow(QWidget):
 
         vwLayout.addWidget(QLabel("Font scale:"))
         vwLayout.addWidget(self.fontScale)
+        vwLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         # SPEED ASSISTS
-        saGroup = QGroupBox("Speed assists")
-        mainLayoutL.addWidget(saGroup)
+        saGroup = QWidget()
         saLayout = QVBoxLayout()
         saGroup.setLayout(saLayout)
+        tabWidget.addTab(saGroup, "Speed assists")
         self.cbOptimal = QCheckBox("Optimized lap (experimental)")
 
         self.optimizedSeedLabel = QLabel("Initialize optimized lap with:")
@@ -119,13 +105,14 @@ class StartWindow(QWidget):
         saLayout.addWidget(self.optimizedSeed)
         saLayout.addWidget(self.timecomp)
         saLayout.addWidget(self.linecomp)
+        saLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
 
         # BRAKE POINTS
         bpGroup = QGroupBox("Location assists")
         bpLayout = QVBoxLayout()
         bpGroup.setLayout(bpLayout)
-        mainLayoutL.addWidget(bpGroup)
+        tabWidget.addTab(bpGroup, "Location assists")
 
         self.brakepoints = QCheckBox("Show brake points")
         self.throttlepoints = QCheckBox("Show throttle points")
@@ -153,12 +140,13 @@ class StartWindow(QWidget):
         bpLayout.addWidget(self.switchToBestLap)
         bpLayout.addWidget(self.messagesEnabled)
         bpLayout.addWidget(self.cbCaution)
+        bpLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         
         # RECORDING
-        recGroup = QGroupBox("Recording")
-        mainLayoutL.addWidget(recGroup)
+        recGroup = QWidget()
         recLayout = QVBoxLayout()
         recGroup.setLayout(recLayout)
+        tabWidget.addTab(recGroup, "Recording")
 
         self.recordingEnabled = QCheckBox("Allow recording raw data by pressing R (not recommended)")
         self.sessionName = QLineEdit()
@@ -175,12 +163,13 @@ class StartWindow(QWidget):
         recLayout.addWidget(self.lStorageLocation)
         recLayout.addWidget(pbChooseStorage)
         recLayout.addWidget(self.recordingEnabled)
+        recLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         
         # FUEL
-        fuGroup = QGroupBox("Fuel")
+        fuGroup = QWidget()
         fuLayout = QVBoxLayout()
         fuGroup.setLayout(fuLayout)
-        mainLayoutR.addWidget(fuGroup)
+        tabWidget.addTab(fuGroup, "Fuel")
 
         self.fuelMultiplier = QSpinBox()
         self.fuelMultiplier.setMinimum(1)
@@ -201,14 +190,16 @@ class StartWindow(QWidget):
         fuLayout.addWidget(self.maxFuelConsumption)
         fuLayout.addWidget(QLabel("Fuel meter turns red at:"))
         fuLayout.addWidget(self.fuelWarning)
+        fuLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         # SHORTCUTS
-        ksGroup = QGroupBox("Keyboard shortcuts")
+        ksGroup = QWidget()
         ksLayout = QVBoxLayout()
         ksGroup.setLayout(ksLayout)
-        mainLayoutR.addWidget(ksGroup)
+        tabWidget.addTab(ksGroup, "Keyboard shortcuts")
 
         ksLayout.addWidget(QLabel(shortcutText))
+        ksLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         # CONNECT
         self.starter = QPushButton("Start")
@@ -425,129 +416,123 @@ class MapView(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.size = [2000, 2000]
-        self.map = QPixmap(self.size[0], self.size[1])
-        self.map.fill(QColor("#222"))#Qt.GlobalColor.black)
+        self.size = [500, 500]
         self.liveMap = QPixmap(self.size[0], self.size[1])
-        self.liveMap.fill(QColor("#222"))#Qt.GlobalColor.black)
+        self.liveMap.fill(QColor("#000"))#Qt.GlobalColor.black)
         self.previousPoints = []
         self.curPoints = []
         self.mapOffset = None
-        self.mapWindow = [self.size[0]/2,self.size[1]/2]
-        self.mapColor = QColor("#77f")
-        self.zoom = 0.7
+        self.pixmapOffset = [ 250, 250 ]
+        self.zoom = 1
+        self.debug = True
 
     def setPoints(self, p1, p2, color = Qt.GlobalColor.red):
         self.previousPoints.append (p1)
         self.curPoints.append (p2)
         self.liveColor = color
 
+
     def endLap(self, cleanLap):
-        if self.mapOffset is None:
-            return
-        painter = QPainter(self.map)
-        pen = QPen(self.mapColor)
-        pen.setWidth(5)
-        painter.setPen(pen)
-        for pi in range(1, len(cleanLap)):
-            px1 = self.size[0]/2 + (self.zoom * (cleanLap[pi-1].position_x + self.mapOffset[0])) 
-            pz1 = self.size[1]/2 + (self.zoom * (cleanLap[pi-1].position_z + self.mapOffset[1])) 
-            px2 = self.size[0]/2 + (self.zoom * (cleanLap[pi].position_x + self.mapOffset[0])) 
-            pz2 = self.size[1]/2 + (self.zoom * (cleanLap[pi].position_z + self.mapOffset[1]))
-            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-
-        if len(cleanLap) > 0:
-            px1 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz1 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1])) 
-            px2 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz2 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1]))
-            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-            px1 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz1 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1])) 
-            px2 = self.size[0]/2 + 10 + (self.zoom * (cleanLap[-1].position_x + self.mapOffset[0])) 
-            pz2 = self.size[1]/2 - 10 + (self.zoom * (cleanLap[-1].position_z + self.mapOffset[1]))
-            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2))
-
-        painter.end()
-        self.liveMap = self.map.copy()
+        painter = QPainter(self.liveMap)
+        brush = QBrush(QColor(0,0,0,96))
+        painter.setBrush(brush)
+        painter.drawRect(0,0,self.liveMap.width(), self.liveMap.height())
 
     def paintEvent(self, event):
         aspectRatio = self.width()/self.height()
-        baseAspectRatio = self.size[0] / self.size[1]
+        baseAspectRatio = self.liveMap.width() / self.liveMap.height()
+
+        px2 = -20
+        pz2 = -20
 
         while len (self.previousPoints) > 0  and len(self.curPoints) > 0:
             previousPoint = self.previousPoints.pop()
             curPoint = self.curPoints.pop()
-            if previousPoint.position_x - curPoint.position_x > 5 or previousPoint.position_z - curPoint.position_z > 5:
+            if previousPoint.position_x - curPoint.position_x > 15 or previousPoint.position_z - curPoint.position_z > 15:
                 continue
 
+            if self.mapOffset is None:
+                self.mapOffset = [ -curPoint.position_x, -curPoint.position_z ]
+    
+            px1 = (self.zoom * (previousPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
+            pz1 = (self.zoom * (previousPoint.position_z + self.mapOffset[1])) + self.pixmapOffset[1] 
+            px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
+            pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
+
+            if px2 < 10:
+                logPrint("Resize map")
+                temp = self.liveMap.copy()
+                self.liveMap = QPixmap(temp.width()+100, temp.height())
+                self.liveMap.fill(QColor("#000"))
+                painter = QPainter(self.liveMap)
+                painter.drawPixmap(100, 0, temp.width(), temp.height(), temp)
+                painter.end()
+                self.pixmapOffset[0] += 100
+
+            if pz2 < 10:
+                logPrint("Resize map")
+                temp = self.liveMap.copy()
+                self.liveMap = QPixmap(temp.width(), temp.height()+100)
+                self.liveMap.fill(QColor("#000"))
+                painter = QPainter(self.liveMap)
+                painter.drawPixmap(0, 100, temp.width(), temp.height(), temp)
+                painter.end()
+                self.pixmapOffset[1] += 100
+
+            if px2 >= self.liveMap.width()-10:
+                logPrint("Resize map")
+                temp = self.liveMap.copy()
+                self.liveMap = QPixmap(temp.width()+100, temp.height())
+                self.liveMap.fill(QColor("#000"))
+                painter = QPainter(self.liveMap)
+                brush = QBrush(QColor(0,0,0))
+                painter.drawPixmap(0, 0, temp.width(), temp.height(), temp)
+                painter.end()
+
+            if pz2 >= self.liveMap.height()-10:
+                logPrint("Resize map")
+                temp = self.liveMap.copy()
+                self.liveMap = QPixmap(temp.width(), temp.height()+100)
+                self.liveMap.fill(QColor("#000"))
+                painter = QPainter(self.liveMap)
+                painter.drawPixmap(0, 0, temp.width(), temp.height(), temp)
+                painter.end()
+
+            px1 = (self.zoom * (previousPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
+            pz1 = (self.zoom * (previousPoint.position_z + self.mapOffset[1])) + self.pixmapOffset[1] 
+            px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
+            pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
+
+            baseAspectRatio = self.liveMap.width() / self.liveMap.height()
+                
+            if self.debug:
+                self.debug = False
+
             painter = QPainter(self.liveMap)
+            brush = QBrush(QColor(0,0,0))
+            painter.setBrush(brush)
+            pen = QPen(QColor(0,0,0))
+            painter.setPen(pen)
+
             pen = QPen(self.liveColor)
             pen.setWidth(5)
             painter.setPen(pen)
             
-            if self.mapOffset is None:
-                self.mapOffset = (-previousPoint.position_x, -previousPoint.position_z)
-            
-            px1 = self.size[0]/2 + (self.zoom * (previousPoint.position_x + self.mapOffset[0])) 
-            pz1 = self.size[1]/2 + (self.zoom * (previousPoint.position_z + self.mapOffset[1])) 
-            px2 = self.size[0]/2 + (self.zoom * (curPoint.position_x + self.mapOffset[0])) 
-            pz2 = self.size[1]/2 + (self.zoom * (curPoint.position_z + self.mapOffset[1]))
-            
-            temp = self.zoom
-            self.zoom=0.25
-            #TODO: Handle leaving the pixmap area
-            if max(px1,px2) > (self.mapWindow[0] + (self.size[0]-100)*self.zoom*aspectRatio):                                           # and (self.mapWindow[0] + 1000*self.zoom*aspectRatio) < 2000 - self.width():
-                self.mapWindow[0] += math.ceil(abs(max(px1,px2) - (self.mapWindow[0] + (self.size[0]-100)*self.zoom*aspectRatio))/10)
-            if min(px1,px2) < (self.mapWindow[0] - (self.size[0]-100)*self.zoom*aspectRatio):                                           # and (self.mapWindow[0] - 1000*self.zoom*aspectRatio) > self.width():
-                self.mapWindow[0] -= math.ceil (abs(min(px1,px2) - (self.mapWindow[0] - (self.size[0]-100)*self.zoom*aspectRatio))/10)
-            if max(pz1,pz2) > (self.mapWindow[1] + (self.size[1]-100)*self.zoom):                                                       # and (self.mapWindow[1] + self.size[1]/2*self.zoom) < self.size[1] - self.height():
-                self.mapWindow[1] += math.ceil(abs(max(pz1,pz2) - (self.mapWindow[1] + (self.size[1]-100)*self.zoom))/10)
-            if min(pz1,pz2) < (self.mapWindow[1] - (self.size[1]-100)*self.zoom):                                                       # and (self.mapWindow[1] - self.size[1]/2*self.zoom) > self.height():
-                self.mapWindow[1] -= math.ceil (abs(min(pz1,pz2) - (self.mapWindow[1] - (self.size[1]-100)*self.zoom))/10)
-            self.zoom = temp
-            painter.drawLine(int(px1), int(pz1),int( px2), int(pz2),)
+            painter.drawLine(int(px1), int(pz1), int(px2), int(pz2))
             painter.end()
-
-            if px1 < 0 or px2 < 0 or pz1 < 0 or pz2 < 0 or px1 > self.size[0] or px2 > self.size[0] or pz1 > self.size[1] or pz2 > self.size[1] :
-                logPrint("Outside:", px1, pz1, px2, pz2)
-                if max(px1, px2) > self.size[0]:
-                    self.size[0] *= 2
-                    newLive = QPixmap(self.size[0], self.size[1])
-                    cp = QPainter(newLive)
-                    cp.drawPixmap(0,0, self.liveMap)
-                    cp.end()
-                    self.liveMap = newLive
-                    newBase = QPixmap(self.size[0], self.size[1])
-                    cp2 = QPainter(newBase)
-                    cp2.drawPixmap(0,0, self.map)
-                    cp2.end()
-                    self.map = newBase
-                if max(pz1, pz2) > self.size[1]:
-                    self.size[1] *= 2
-                    newLive = QPixmap(self.size[0], self.size[1])
-                    cp = QPainter(newLive)
-                    cp.drawPixmap(0,0, self.liveMap)
-                    cp.end()
-                    self.liveMap = newLive
-                    newBase = QPixmap(self.size[0], self.size[1])
-                    cp2 = QPainter(newBase)
-                    cp2.drawPixmap(0,0, self.map)
-                    cp2.end()
-                    self.map = newBase
-                    
 
         qp = QPainter()
         qp.begin(self)
+        qp.fillRect(self.rect(), QColor("#000"))
 
 
-        temp = self.zoom
-        self.zoom=0.25
-        #qp.drawPixmap(self.rect(), self.liveMap.copy(int(self.mapWindow[0] - aspectRatio * 1000*self.zoom), int(self.mapWindow[1]-1000*self.zoom), int(aspectRatio * self.zoom * 2000), int(self.zoom * 2000)).scaled(self.width(), self.height()))
-        #qp.drawPixmap(self.rect(), self.liveMap.copy(0, 0, self.size[0], self.size[1]).scaled(self.width(), self.height()))
-        #logPrint(self.size, aspectRatio,self.size[1] - self.size[1]/aspectRatio)
-        qp.drawPixmap(self.rect(), self.liveMap.copy(0, int((self.size[1] - self.size[1]/aspectRatio)/2), self.size[0], int(self.size[1]/aspectRatio)).scaled(self.width(), self.height()))
-        self.zoom = temp
+        stretch = aspectRatio / baseAspectRatio
+        if aspectRatio < baseAspectRatio:
+            qp.drawPixmap(0, int((self.height() - stretch * self.height())/2), self.width(), int(stretch * self.height()), self.liveMap)
+            qp.drawEllipse(int(px2 * self.width() / self.liveMap.width()) - 8, int(pz2 * self.height() / self.liveMap.height() * stretch + (self.height() - stretch * self.height())/2) - 8, 16, 16)
+        else:
+            qp.drawPixmap(int((self.width() - (1/stretch) * self.width())/2), 0, int((1/stretch) * self.width()), self.height(), self.liveMap)
+            qp.drawEllipse(int(px2 * self.width() / self.liveMap.width() / stretch - 8 + (self.width() - (1/stretch) * self.width())/2), int(pz2 * self.height() / self.liveMap.height()) - 8, 16, 16)
 
         qp.end()
 
@@ -691,7 +676,7 @@ class TimeDeviation(QWidget):
             lineLen = max(0, min(lineLen, lineLen * (1-(-self.difference - self.maxDiff) / (self.additionalDiffFactor * self.maxDiff))))
         lineLen = int(lineLen)
         if lineLen < self.width():
-            pen = QPen(QColor(0, 0, 0, 64))
+            pen = QPen(QColor(0, 0, 0, 92))
             pen.setWidth(5)
             qp.setPen(pen)
             qp.drawLine(0, int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2), int(self.width()), int(self.height()/2) + int(clippedDifference/self.maxDiff * self.height() / 2))
