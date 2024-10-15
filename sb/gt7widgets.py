@@ -42,13 +42,13 @@ class StartWindow(QWidget):
         mainLayout.addWidget(self.mode)
 
         tabWidget = QTabWidget()
-        tabWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         mainLayout.addWidget(tabWidget)
 
         # VIEW
         vwGroup = QWidget()
         vwLayout = QVBoxLayout()
         vwGroup.setLayout(vwLayout)
+        vwGroup.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         tabWidget.addTab(vwGroup, "View")
 
@@ -62,6 +62,7 @@ class StartWindow(QWidget):
 
         vwLayout.addWidget(QLabel("Font scale:"))
         vwLayout.addWidget(self.fontScale)
+        vwLayout.addWidget(self.lapDecimals)
         vwLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         # SPEED ASSISTS
@@ -78,6 +79,7 @@ class StartWindow(QWidget):
         self.optimizedSeed.addItem("Reference lap B")
         self.optimizedSeed.addItem("Reference lap C")
 
+        self.comparisonLapLabel = QLabel("Show comparison laps:")
         self.cbBest = QCheckBox("Best lap")
         self.cbMedian = QCheckBox("Median lap")
         self.cbRefA = QCheckBox("Reference lap A")
@@ -93,7 +95,7 @@ class StartWindow(QWidget):
         self.timecomp = QCheckBox("Show graphical lap time comparisons")
         self.linecomp = QCheckBox("Show racing line comparisons")
         
-        vwLayout.addWidget(self.lapDecimals)
+        saLayout.addWidget(self.comparisonLapLabel)
         saLayout.addWidget(self.cbBest)
         saLayout.addWidget(self.cbMedian)
         saLayout.addWidget(self.cbRefA)
@@ -109,7 +111,7 @@ class StartWindow(QWidget):
 
 
         # BRAKE POINTS
-        bpGroup = QGroupBox("Location assists")
+        bpGroup = QWidget()
         bpLayout = QVBoxLayout()
         bpGroup.setLayout(bpLayout)
         tabWidget.addTab(bpGroup, "Location assists")
@@ -225,7 +227,6 @@ class StartWindow(QWidget):
         addr.setLayout(layout)
 
 
-        mainLayout.insertStretch(-1)
         mainLayout.addWidget(addr)
 
         logPrint("Load preferences")
