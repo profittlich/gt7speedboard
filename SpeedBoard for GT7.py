@@ -76,42 +76,25 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.startWindow)
 
 
-    def makeHeaderWidget(self, title):
-        headerWidget = QLabel(title.upper())
-        font = headerWidget.font()
-        font.setPointSize(self.cfg.fontSizeNormal)
-        font.setBold(True)
-        headerWidget.setFont(font)
-        headerWidget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pal = headerWidget.palette()
-        pal.setColor(headerWidget.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(headerWidget.foregroundRole(), self.cfg.foregroundColor)
-        headerWidget.setPalette(pal)
-        return headerWidget
-
     def makeDashWidget(self):
         self.components = []
 
         if self.cfg.circuitExperience:
             mapCEComponent = sb.components.mapce.MapCE(self.cfg, self)
             self.components.append(mapCEComponent)
-            self.mapViewCE = mapCEComponent.getWidget()
-            headerFuel = self.makeHeaderWidget(mapCEComponent.title())
+            self.mapViewCEWidget, mapViewHeader, self.mapViewCE = mapCEComponent.getTitledWidget("Map")
         else:
             fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self.cfg, self)
             self.components.append(fuelComponent)
-            fuelWidget = fuelComponent.getWidget()
-            headerFuel = self.makeHeaderWidget(fuelComponent.title())
+            fuelWidget = fuelComponent.getTitledWidget("Fuel")[0]
 
         tyreComponent = sb.components.tyretemps.TyreTemps(self.cfg, self)
         self.components.append(tyreComponent)
-        tyreWidget = tyreComponent.getWidget()
-        headerTyres = self.makeHeaderWidget(tyreComponent.title())
+        tyreWidget = tyreComponent.getTitledWidget("Tyres")[0]
 
         speedComponent = sb.components.speed.Speed(self.cfg, self)
         self.components.append(speedComponent)
-        speedWidget = speedComponent.getWidget()
-        self.headerSpeed = self.makeHeaderWidget(speedComponent.title())
+        speedWidget, self.headerSpeed, speedWidgetLone = speedComponent.getTitledWidget(speedComponent.title())
 
         headerComponent = sb.components.lapheader.LapHeader(self.cfg, self)
         self.components.append(headerComponent)
@@ -155,30 +138,25 @@ class MainWindow(QMainWindow):
         if not self.cfg.circuitExperience:
             mapComponent = sb.components.mapce.MapCE(self.cfg, self)
             self.components.append(mapComponent)
-            self.mapView = mapComponent.getWidget()
-            self.masterWidget.addWidget(self.mapView)
+            self.mapViewWidget, mapViewHeader, self.mapView = mapComponent.getTitledWidget("Map")
+            self.masterWidget.addWidget(self.mapViewWidget)
 
         self.dashWidget.setLayout(masterLayout)
 
         masterLayout.setColumnStretch(0, 1)
         masterLayout.setColumnStretch(1, 1)
         masterLayout.setRowStretch(0, 1)
-        masterLayout.setRowStretch(1, 1)
-        masterLayout.setRowStretch(2, 10)
-        masterLayout.setRowStretch(3, 1)
-        masterLayout.setRowStretch(4, 4)
+        masterLayout.setRowStretch(1, 11)
+        masterLayout.setRowStretch(2, 5)
         masterLayout.addWidget(self.header, 0, 0, 1, 2)
-        masterLayout.addWidget(headerFuel, 1, 1, 1, 1)
-        masterLayout.addWidget(headerTyres, 3, 0, 1, 1)
-        masterLayout.addWidget(self.headerSpeed, 1, 0, 1, 1)
         if self.cfg.circuitExperience:
-            masterLayout.addWidget(self.mapViewCE, 2, 1, 3, 1)
+            masterLayout.addWidget(self.mapViewCEWidget, 1, 1, 3, 1)
         else:
-            masterLayout.addWidget(fuelWidget, 2, 1, 3, 1)
+            masterLayout.addWidget(fuelWidget, 1, 1, 3, 1)
 
-        masterLayout.addWidget(tyreWidget, 4, 0, 1, 1)
+        masterLayout.addWidget(tyreWidget, 2, 0, 1, 1)
 
-        masterLayout.addWidget(speedWidget, 2, 0, 1, 1)
+        masterLayout.addWidget(speedWidget, 1, 0, 1, 1)
 
         pal = self.palette()
         pal.setColor(self.backgroundRole(), self.cfg.brightBackgroundColor)
