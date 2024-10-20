@@ -75,6 +75,8 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.startWindow)
 
+        self.curOptimizingLap = Lap()
+
 
     def makeDashWidget(self):
         self.components = []
@@ -295,13 +297,12 @@ class MainWindow(QMainWindow):
         self.lapOffset = 0
 
         self.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
+        self.curLap = Lap()
 
         self.initRace()
         self.messageWaitsForKey = False
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
-
-        logPrint("Ref A:", msToTime(self.refLaps[0].time))
 
         self.receiver.setQueue(self.queue)
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
@@ -315,7 +316,6 @@ class MainWindow(QMainWindow):
         self.trackPreviouslyIdentified = "Unknown Track"
         self.trackPreviouslyDescribed = ""
         self.previousPackageId = 0
-        self.curLap = None
         self.resetCurrentLapData()
 
         # Timer
@@ -336,6 +336,7 @@ class MainWindow(QMainWindow):
             self.optimizedLap = copy.deepcopy(self.refLaps[1])
         elif self.cfg.optimizedSeed == 3:
             self.optimizedLap = copy.deepcopy(self.refLaps[2])
+        logPrint("discard", len(self.curOptimizingLap.points))
         self.curOptimizingLap = Lap()
         self.curOptimizingIndex = 0
         self.curOptimizingLiveIndex = 0
@@ -413,6 +414,15 @@ class MainWindow(QMainWindow):
 
         for c in self.components:
             c.initRace()
+
+        if self.cfg.circuitExperience:
+            self.mapViewCE.clear()
+            self.mapViewCE.update()
+        else:
+            self.mapView.clear()
+            for p in range(1,len(self.curLap.points)):
+                self.mapView.setPoints(self.curLap.points[p-1], self.curLap.points[p])
+            self.mapView.update()
 
         self.loadMessages(self.cfg.messageFile)
 
@@ -643,6 +653,8 @@ class MainWindow(QMainWindow):
     def optimizeLap(self, curPoint):
         if len(self.optimizedLap.points) == 0:
             self.curOptimizingLap.points.append(curPoint)
+            if len(self.curOptimizingLap.points) != len(self.curLap.points):
+                self.curOptimizingLap.points = copy.deepcopy(self.curLap.points)
             self.curOptimizingLiveIndex = len(self.curLap.points)
             self.curOptimizingIndex = self.closestIOptimized
         else:
@@ -653,24 +665,26 @@ class MainWindow(QMainWindow):
                     #logPrint(nowBraking, len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex)
                     lenOpt = self.closestIOptimized - self.curOptimizingIndex
                     lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
-                    if lenOpt > lenLive:
-                        logPrint("Current segment was faster")
+                    if lenOpt > lenLive or lenOpt == 0:
+                        logPrint("Current segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
                         self.curOptimizingLap.points += self.curLap.points[self.curOptimizingLiveIndex:-1]
                     else:
-                        logPrint("Previous segment was faster")
+                        logPrint("Previous segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
                         self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:self.closestIOptimized-1]
                     self.curOptimizingLiveIndex = len(self.curLap.points)-1
                     self.curOptimizingIndex = self.closestIOptimized-1
-                    logPrint("///////",len(self.curLap.points), len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.optimizedLap.points))
+                    if lenOpt > lenLive:
+                        logPrint("///////",len(self.curLap.points), len(self.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.optimizedLap.points))
+        #logPrint( len(self.curOptimizingLap.points), len(self.curLap.points))
 
     def updateOptimizedLap(self):
         lenOpt = self.closestIOptimized - self.curOptimizingIndex
         lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
-        if lenOpt > lenLive:
-            logPrint("Current segment was faster")
+        if lenOpt > lenLive or lenOpt == 0:
+            logPrint("Current final segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
             self.curOptimizingLap.points += self.curLap.points[self.curOptimizingLiveIndex:]
         else:
-            logPrint("Previous segment was faster")
+            logPrint("Previous final segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
             self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:]
         self.optimizedLap = self.curOptimizingLap
         logPrint("Optimized lap:", len(self.optimizedLap.points), "points vs.", len(self.curLap.points))
@@ -684,7 +698,7 @@ class MainWindow(QMainWindow):
             logPrint("Not in Circuit Experience!")
             self.exitDash()
             QMessageBox.critical(self, "Not in Circuit Experience", "Circuit Experience mode is set, but not driven. Unfortunately, this is not supported. Please switch to Laps mode or drive a Circuit Experience.")
-            return
+            return True
         fuel_capacity = curPoint.fuel_capacity
         if fuel_capacity == 0: # EV
             fuel_capacity = 100
@@ -707,11 +721,12 @@ class MainWindow(QMainWindow):
                 cleanLap = self.curLap
                 self.mapView.endLap(cleanLap.points) # TODO into component
                 self.mapView.update()
+                    
             lapLen = cleanLap.length()
             
             if lapLen == 0:
                 logPrint("LAP CHANGE EMPTY")
-                return
+                return True
             # Handle short and "real" laps differently
             if lapLen < 10: # TODO const
                 logPrint("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
@@ -820,6 +835,8 @@ class MainWindow(QMainWindow):
             self.curOptimizingLiveIndex = 0
             self.curOptimizingBrake = False
             logPrint("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
+            return True
+        return False
 
     def updateDisplay(self):
         # Grab all new telemetry packages
@@ -862,8 +879,8 @@ class MainWindow(QMainWindow):
                     continue
 
                 self.determineLapProgress(curPoint)
-                self.handleLapChanges(curPoint)
-
+                isNewLap = self.handleLapChanges(curPoint)
+ 
                 if not self.cfg.circuitExperience:
                     self.optimizeLap(curPoint)
 

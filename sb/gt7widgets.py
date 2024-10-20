@@ -46,27 +46,6 @@ class StartWindow(QWidget):
         tabWidget = QTabWidget()
         mainLayout.addWidget(tabWidget)
 
-        # VIEW
-        vwGroup = QWidget()
-        vwLayout = QVBoxLayout()
-        vwGroup.setLayout(vwLayout)
-        vwGroup.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        tabWidget.addTab(vwGroup, "View")
-
-        self.fontScale = QDoubleSpinBox()
-        self.fontScale.setMinimum(0.1)
-        self.fontScale.setMaximum(2)
-        self.fontScale.setSingleStep(0.1)
-        self.fontScale.setValue(1)
-
-        self.lapDecimals = QCheckBox("Show decimals in lap displays")
-
-        vwLayout.addWidget(QLabel("Font scale:"))
-        vwLayout.addWidget(self.fontScale)
-        vwLayout.addWidget(self.lapDecimals)
-        vwLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-
         # SPEED ASSISTS
         saGroup = QWidget()
         saLayout = QVBoxLayout()
@@ -146,29 +125,6 @@ class StartWindow(QWidget):
         bpLayout.addWidget(self.cbCaution)
         bpLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         
-        # RECORDING
-        recGroup = QWidget()
-        recLayout = QVBoxLayout()
-        recGroup.setLayout(recLayout)
-        tabWidget.addTab(recGroup, "Recording")
-
-        self.recordingEnabled = QCheckBox("Allow recording raw data by pressing R (not recommended)")
-        self.sessionName = QLineEdit()
-        self.saveSessionName = QCheckBox("Remember session name")
-        pbChooseStorage = QPushButton("Choose storage location")
-        self.lStorageLocation = QLabel()
-        self.storageLocation = ""
-        self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
-        pbChooseStorage.clicked.connect(self.chooseStorage)
-        
-        recLayout.addWidget(QLabel("Session name:"))
-        recLayout.addWidget(self.sessionName)
-        recLayout.addWidget(self.saveSessionName)
-        recLayout.addWidget(self.lStorageLocation)
-        recLayout.addWidget(pbChooseStorage)
-        recLayout.addWidget(self.recordingEnabled)
-        recLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-        
         # FUEL
         fuGroup = QWidget()
         fuLayout = QVBoxLayout()
@@ -196,6 +152,50 @@ class StartWindow(QWidget):
         fuLayout.addWidget(self.fuelWarning)
         fuLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
+        # VIEW
+        vwGroup = QWidget()
+        vwLayout = QVBoxLayout()
+        vwGroup.setLayout(vwLayout)
+        vwGroup.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        tabWidget.addTab(vwGroup, "View")
+
+        self.fontScale = QDoubleSpinBox()
+        self.fontScale.setMinimum(0.1)
+        self.fontScale.setMaximum(2)
+        self.fontScale.setSingleStep(0.1)
+        self.fontScale.setValue(1)
+
+        self.lapDecimals = QCheckBox("Show decimals in lap displays")
+
+        vwLayout.addWidget(QLabel("Font scale:"))
+        vwLayout.addWidget(self.fontScale)
+        vwLayout.addWidget(self.lapDecimals)
+        vwLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        # RECORDING
+        recGroup = QWidget()
+        recLayout = QVBoxLayout()
+        recGroup.setLayout(recLayout)
+        tabWidget.addTab(recGroup, "Recording")
+
+        self.recordingEnabled = QCheckBox("Allow recording raw data by pressing R (not recommended)")
+        self.sessionName = QLineEdit()
+        self.saveSessionName = QCheckBox("Remember session name")
+        pbChooseStorage = QPushButton("Choose storage location")
+        self.lStorageLocation = QLabel()
+        self.storageLocation = ""
+        self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
+        pbChooseStorage.clicked.connect(self.chooseStorage)
+        
+        recLayout.addWidget(QLabel("Session name:"))
+        recLayout.addWidget(self.sessionName)
+        recLayout.addWidget(self.saveSessionName)
+        recLayout.addWidget(self.lStorageLocation)
+        recLayout.addWidget(pbChooseStorage)
+        recLayout.addWidget(self.recordingEnabled)
+        recLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+        
         # SHORTCUTS
         ksGroup = QWidget()
         ksLayout = QVBoxLayout()
@@ -419,6 +419,14 @@ class MapView(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.clear()
+
+    def setPoints(self, p1, p2, color = Qt.GlobalColor.red):
+        self.previousPoints.append (p1)
+        self.curPoints.append (p2)
+        self.liveColor = color
+
+    def clear(self):
         self.size = [500, 500]
         self.liveMap = QPixmap(self.size[0], self.size[1])
         self.liveMap.fill(QColor("#000"))#Qt.GlobalColor.black)
@@ -428,12 +436,6 @@ class MapView(QWidget):
         self.pixmapOffset = [ 250, 250 ]
         self.zoom = 1
         self.debug = True
-
-    def setPoints(self, p1, p2, color = Qt.GlobalColor.red):
-        self.previousPoints.append (p1)
-        self.curPoints.append (p2)
-        self.liveColor = color
-
 
     def endLap(self, cleanLap):
         painter = QPainter(self.liveMap)
