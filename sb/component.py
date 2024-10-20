@@ -50,3 +50,9 @@ class Component:
 
     def newLap(self, curPoint, lastLap):
         pass
+
+    def newTrack(self, curPoint, track):
+        pass
+
+    def maybeNewTrack(self, curPoint, track):
+        pass

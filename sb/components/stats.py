@@ -174,5 +174,8 @@ class Stats(sb.component.Component):
                 logPrint("Best:", msToTime(i.bestLap()[0]))
                 logPrint("Median:", msToTime(i.medianLap()[0]))
 
+    def maybeNewTrack(self, curPoint, track):
+        self.updateLiveStats(curPoint)
+
     def title(self):
         return "Statistics"

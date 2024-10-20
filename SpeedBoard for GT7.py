@@ -591,6 +591,9 @@ class MainWindow(QMainWindow):
 
         curTrack = self.trackDetector.getTrack()
         if self.trackPreviouslyDescribed != curTrack:
+            for c in self.components:
+                c.maybeNewTrack(curPoint, curTrack)
+
             if self.trackPreviouslyIdentified != curTrack and self.trackDetector.trackIdentified():
                 logPrint("=== Welcome to " + curTrack)
                 self.showUiMsg("Welcome to<br>" + curTrack, 1)
@@ -600,10 +603,12 @@ class MainWindow(QMainWindow):
                 self.initRace()
                 self.lastLap = tempLap
                 self.messages = tempMsg
+
+                for c in self.components:
+                    c.newTrack(curPoint, curTrack)
                 
             logPrint("Track:", curTrack, "prev:", self.trackPreviouslyIdentified, self.trackPreviouslyDescribed)
             self.trackPreviouslyDescribed = curTrack
-            self.statsComponent.updateLiveStats(curPoint)
 
     def determineLapProgress(self, curPoint):
         self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
