@@ -437,7 +437,7 @@ class MapView(QWidget):
         self.zoom = 1
         self.debug = True
 
-    def endLap(self, cleanLap):
+    def endLap(self):
         painter = QPainter(self.liveMap)
         brush = QBrush(QColor(0,0,0,96))
         painter.setBrush(brush)

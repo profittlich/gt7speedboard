@@ -8,13 +8,14 @@ from sb.gt7widgets import *
 from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
-class MapCE(sb.component.Component):
+# TODO rename file
+class Map(sb.component.Component):
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
-        self.mapViewCE = MapView()
+        self.mapView = MapView()
 
     def getWidget(self):
-        return self.mapViewCE
+        return self.mapView
 
     def speedDiffQColor(self, d):
         col = QColor()
@@ -28,14 +29,14 @@ class MapCE(sb.component.Component):
         return col
 
 
-    def updateMapCE(self, curPoint):
+    def updateMap(self, curPoint):
         if not self.data.previousPoint is None:
             color = self.cfg.mapCurrentColor
             if len(self.data.previousLaps) > 0:
                 speedDiff = self.data.previousLaps[self.data.bestLap].points[self.data.closestIBest].car_speed - curPoint.car_speed
                 color = self.speedDiffQColor(speedDiff)
-            self.mapViewCE.setPoints(self.data.previousPoint, curPoint, color)
-            self.mapViewCE.update()
+            self.mapView.setPoints(self.data.previousPoint, curPoint, color)
+            self.mapView.update()
 
         if curPoint.throttle == 0 and curPoint.brake == 0:
             self.data.noThrottleCount+=1
@@ -43,7 +44,13 @@ class MapCE(sb.component.Component):
             self.data.noThrottleCount=0
 
     def addPoint(self, curPoint, curLap):
-        self.updateMapCE(curPoint)
+        self.updateMap(curPoint)
 
     def title(self):
         return "Map"
+
+    def initRace(self):
+        self.mapView.clear()
+        for p in range(1,len(self.data.curLap.points)):
+            self.mapView.setPoints(self.data.curLap.points[p-1], self.data.curLap.points[p])
+        self.mapView.update()

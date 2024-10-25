@@ -82,9 +82,9 @@ class MainWindow(QMainWindow):
         self.components = []
 
         if self.cfg.circuitExperience:
-            mapCEComponent = sb.components.mapce.MapCE(self.cfg, self)
+            mapCEComponent = sb.components.mapce.Map(self.cfg, self)
             self.components.append(mapCEComponent)
-            self.mapViewCEWidget, mapViewHeader, self.mapViewCE = mapCEComponent.getTitledWidget("Map")
+            mapViewCEWidget, mapViewHeader, self.mapViewCE = mapCEComponent.getTitledWidget("Map")
         else:
             fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self.cfg, self)
             self.components.append(fuelComponent)
@@ -138,10 +138,10 @@ class MainWindow(QMainWindow):
         self.masterWidget.addWidget(self.help)
 
         if not self.cfg.circuitExperience:
-            mapComponent = sb.components.mapce.MapCE(self.cfg, self)
+            mapComponent = sb.components.mapce.Map(self.cfg, self)
             self.components.append(mapComponent)
-            self.mapViewWidget, mapViewHeader, self.mapView = mapComponent.getTitledWidget("Map")
-            self.masterWidget.addWidget(self.mapViewWidget)
+            mapViewWidget, mapViewHeader, self.mapView = mapComponent.getTitledWidget("Map")
+            self.masterWidget.addWidget(mapViewWidget)
 
         self.dashWidget.setLayout(masterLayout)
 
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow):
         masterLayout.setRowStretch(2, 5)
         masterLayout.addWidget(self.header, 0, 0, 1, 2)
         if self.cfg.circuitExperience:
-            masterLayout.addWidget(self.mapViewCEWidget, 1, 1, 3, 1)
+            masterLayout.addWidget(mapViewCEWidget, 1, 1, 3, 1)
         else:
             masterLayout.addWidget(fuelWidget, 1, 1, 3, 1)
 
@@ -324,7 +324,6 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.updateDisplay)
         self.timer.start()
 
-        self.debugCount = 0
         self.noThrottleCount = 0
 
     def initOptimizedLap(self):
@@ -390,7 +389,6 @@ class MainWindow(QMainWindow):
         else:
             self.headerSpeed.setText("SPEED")
 
-        self.debugOldLapTime = datetime.datetime.now()
         logPrint("INIT RACE")
         self.newMessage = None
         self.lastLap = -1
@@ -415,14 +413,14 @@ class MainWindow(QMainWindow):
         for c in self.components:
             c.initRace()
 
-        if self.cfg.circuitExperience:
-            self.mapViewCE.clear()
-            self.mapViewCE.update()
-        else:
-            self.mapView.clear()
-            for p in range(1,len(self.curLap.points)):
-                self.mapView.setPoints(self.curLap.points[p-1], self.curLap.points[p])
-            self.mapView.update()
+#        if self.cfg.circuitExperience:
+#            self.mapViewCE.clear() # TODO component API
+#            self.mapViewCE.update()
+#        else:
+#            self.mapView.clear() # TODO component API
+#            for p in range(1,len(self.curLap.points)):
+#                self.mapView.setPoints(self.curLap.points[p-1], self.curLap.points[p])
+#            self.mapView.update()
 
         self.loadMessages(self.cfg.messageFile)
 
@@ -704,6 +702,7 @@ class MainWindow(QMainWindow):
             self.exitDash()
             QMessageBox.critical(self, "Not in Circuit Experience", "Circuit Experience mode is set, but not driven. Unfortunately, this is not supported. Please switch to Laps mode or drive a Circuit Experience.")
             return True
+
         fuel_capacity = curPoint.fuel_capacity
         if fuel_capacity == 0: # EV
             fuel_capacity = 100
@@ -720,11 +719,11 @@ class MainWindow(QMainWindow):
 
                 cleanLap = self.cleanUpLapCE(self.curLap)
                 if curPoint.current_lap != 0:
-                    self.mapViewCE.endLap(cleanLap.points)
+                    self.mapViewCE.endLap() # TODO component API
                 self.mapViewCE.update()
             else:
                 cleanLap = self.curLap
-                self.mapView.endLap(cleanLap.points) # TODO into component
+                self.mapView.endLap() # TODO into component
                 self.mapView.update()
                     
             lapLen = cleanLap.length()
@@ -737,21 +736,19 @@ class MainWindow(QMainWindow):
                 logPrint("LAP CHANGE short", lapLen, self.lastLap, curPoint.current_lap)
             else:
                 logPrint("Track Detect Data:", self.trackDetector.totalPoints)
-                debugNewLapTime = datetime.datetime.now()
-                logPrint("LAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)), debugNewLapTime - self.debugOldLapTime)
-                self.debugOldLapTime = debugNewLapTime
+                logPrint("LAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)))
                 if curPoint.current_lap == 1 or self.lastLap >= curPoint.current_lap:
                     logPrint("lap is 1 -> init")
-                    self.statsComponent.initRun()
+                    self.statsComponent.initRun() # TODO component API
 
             # Update live stats
-            self.statsComponent.updateLiveStats(curPoint)
+            self.statsComponent.updateLiveStats(curPoint) # TODO component API
 
             if not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and ((self.cfg.circuitExperience and lapLen > 0) or curPoint.last_lap != -1):
                     # Determine lap time
                     if self.cfg.circuitExperience:
-                        lastLapTime = 1000 * (len(cleanLap.points)/self.cfg.psFPS + 1/(2*self.cfg.psFPS))
+                        lastLapTime = 1000 * (len(cleanLap.points)/self.cfg.psFPS + 1/(2*self.cfg.psFPS)) # TODO use helper function
                     else:
                         lastLapTime = curPoint.last_lap
 
@@ -832,7 +829,7 @@ class MainWindow(QMainWindow):
                     self.resetCurrentLapData()
 
                 # Update live stats
-                self.statsComponent.updateLiveStats(curPoint)
+                self.statsComponent.updateLiveStats(curPoint) # TODO component API
 
             self.lastLap = curPoint.current_lap
             self.curOptimizingLap = Lap()
@@ -846,7 +843,6 @@ class MainWindow(QMainWindow):
     def updateDisplay(self):
         # Grab all new telemetry packages
         while not self.queue.empty():
-            self.debugCount += 1
             d = self.queue.get()
             newPoint = Point(d[0], d[1])
 
