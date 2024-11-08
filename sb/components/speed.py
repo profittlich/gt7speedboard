@@ -377,6 +377,26 @@ class Speed(sb.component.Component):
         self.updateOneSpeedEntry(median, curPoint)
         self.updateOneSpeedEntry(opti, curPoint)
 
+    def cycleBigCountdownBreakponts(self):
+        self.cfg.bigCountdownBrakepoint += 1
+        hit = False
+        while not hit:
+            if self.cfg.bigCountdownBrakepoint > 5:
+                self.cfg.bigCountdownBrakepoint = 0
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 1 and self.cfg.showBestLap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 2 and self.cfg.showRefALap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 3 and self.cfg.showRefBLap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 4 and self.cfg.showRefCLap:
+                hit = True
+            elif self.cfg.bigCountdownBrakepoint == 5 and self.cfg.showOptimalLap:
+                hit = True
+            else:
+                self.cfg.bigCountdownBrakepoint += 1
+
     def updateOneSpeedEntry(self, refLap, curPoint):
         bgPal = self.speedWidget.palette()
         bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.brightBackgroundColor)

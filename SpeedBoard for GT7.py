@@ -94,9 +94,9 @@ class MainWindow(QMainWindow):
         self.components.append(tyreComponent)
         tyreWidget = tyreComponent.getTitledWidget("Tyres")[0]
 
-        speedComponent = sb.components.speed.Speed(self.cfg, self)
-        self.components.append(speedComponent)
-        speedWidget, self.headerSpeed, speedWidgetLone = speedComponent.getTitledWidget(speedComponent.title())
+        self.speedComponent = sb.components.speed.Speed(self.cfg, self)
+        self.components.append(self.speedComponent)
+        speedWidget, self.headerSpeed, speedWidgetLone = self.speedComponent.getTitledWidget(self.speedComponent.title())
 
         headerComponent = sb.components.lapheader.LapHeader(self.cfg, self)
         self.components.append(headerComponent)
@@ -911,26 +911,6 @@ class MainWindow(QMainWindow):
         self.setPalette(self.defaultPalette)
         self.setCentralWidget(self.startWindow)
 
-    def cycleBigCountdownBreakponts(self):
-        self.cfg.bigCountdownBrakepoint += 1
-        hit = False
-        while not hit:
-            if self.cfg.bigCountdownBrakepoint > 5:
-                self.cfg.bigCountdownBrakepoint = 0
-                hit = True
-            elif self.cfg.bigCountdownBrakepoint == 1 and self.cfg.showBestLap:
-                hit = True
-            elif self.cfg.bigCountdownBrakepoint == 2 and self.cfg.showRefALap:
-                hit = True
-            elif self.cfg.bigCountdownBrakepoint == 3 and self.cfg.showRefBLap:
-                hit = True
-            elif self.cfg.bigCountdownBrakepoint == 4 and self.cfg.showRefCLap:
-                hit = True
-            elif self.cfg.bigCountdownBrakepoint == 5 and self.cfg.showOptimalLap:
-                hit = True
-            else:
-                self.cfg.bigCountdownBrakepoint += 1
-
     def keyPressEvent(self, e):
         if self.centralWidget() == self.masterWidget and self.messageWaitsForKey:
             if e.key() != Qt.Key.Key_Shift.value:
@@ -944,7 +924,7 @@ class MainWindow(QMainWindow):
             elif e.key() == Qt.Key.Key_Space.value:
                 self.newMessage = "CAUTION"
             elif e.key() == Qt.Key.Key_Tab.value:
-                self.cycleBigCountdownBreakponts()
+                self.speedComponent.cycleBigCountdownBreakponts()
             elif e.key() == Qt.Key.Key_B.value:
                 if self.bestLap >= 0:
                     saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.bestLap, "best",))
