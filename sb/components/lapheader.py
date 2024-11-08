@@ -46,8 +46,9 @@ class LapHeader(sb.component.Component):
         else:
             lapValue = curPoint.current_lap
             if self.cfg.lapDecimals:
-                lapValue += self.data.lapProgress
-                lapValue = round(lapValue, 2)
+                #lapValue += self.data.lapProgress
+                #lapValue = round(lapValue, 2)
+                lapValue = str(lapValue) + " (" + str(round(self.data.lapProgress * 100)) + "%)"
             self.header.setText("LAP " + str(lapValue) + lapSuffix)
 
     def addPoint(self, curPoint, curLap):

@@ -464,40 +464,54 @@ class MapView(QWidget):
             px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
             pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
 
-            if px2 < 10:
+            if px2 < 20:
                 logPrint("Resize map")
+                step = 1
+                if px2 < 0:
+                    step = -px2
                 temp = self.liveMap.copy()
-                self.liveMap = QPixmap(temp.width()+100, temp.height())
+                step = int(math.ceil(step))
+                self.liveMap = QPixmap(temp.width()+step, temp.height())
                 self.liveMap.fill(QColor("#000"))
                 painter = QPainter(self.liveMap)
-                painter.drawPixmap(100, 0, temp.width(), temp.height(), temp)
+                painter.drawPixmap(step, 0, temp.width(), temp.height(), temp)
                 painter.end()
-                self.pixmapOffset[0] += 100
+                self.pixmapOffset[0] += step
 
-            if pz2 < 10:
+            if pz2 < 20:
                 logPrint("Resize map")
+                step = 1
+                if pz2 < 0:
+                    step = -pz2
                 temp = self.liveMap.copy()
-                self.liveMap = QPixmap(temp.width(), temp.height()+100)
+                step = int(math.ceil(step))
+                self.liveMap = QPixmap(temp.width(), temp.height()+step)
                 self.liveMap.fill(QColor("#000"))
                 painter = QPainter(self.liveMap)
-                painter.drawPixmap(0, 100, temp.width(), temp.height(), temp)
+                painter.drawPixmap(0, step, temp.width(), temp.height(), temp)
                 painter.end()
-                self.pixmapOffset[1] += 100
+                self.pixmapOffset[1] += step
 
-            if px2 >= self.liveMap.width()-10:
+            if px2 >= self.liveMap.width()-20:
                 logPrint("Resize map")
+                step = 1
+                if px2 >= self.liveMap.width():
+                    step = math.ceil(px2) - self.liveMap.width()
                 temp = self.liveMap.copy()
-                self.liveMap = QPixmap(temp.width()+100, temp.height())
+                self.liveMap = QPixmap(temp.width()+step, temp.height())
                 self.liveMap.fill(QColor("#000"))
                 painter = QPainter(self.liveMap)
                 brush = QBrush(QColor(0,0,0))
                 painter.drawPixmap(0, 0, temp.width(), temp.height(), temp)
                 painter.end()
 
-            if pz2 >= self.liveMap.height()-10:
+            if pz2 >= self.liveMap.height()-20:
                 logPrint("Resize map")
+                step = 1
+                if pz2 >= self.liveMap.height():
+                    step = math.ceil(pz2) - self.liveMap.height()
                 temp = self.liveMap.copy()
-                self.liveMap = QPixmap(temp.width(), temp.height()+100)
+                self.liveMap = QPixmap(temp.width(), temp.height()+step)
                 self.liveMap.fill(QColor("#000"))
                 painter = QPainter(self.liveMap)
                 painter.drawPixmap(0, 0, temp.width(), temp.height(), temp)
@@ -528,7 +542,8 @@ class MapView(QWidget):
 
         qp = QPainter()
         qp.begin(self)
-        qp.fillRect(self.rect(), QColor("#000"))
+        qp.fillRect(self.rect(), QColor("#222"))
+        qp.setCompositionMode(QPainter.CompositionMode.CompositionMode_Lighten)
 
 
         stretch = aspectRatio / baseAspectRatio

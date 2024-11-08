@@ -131,10 +131,10 @@ class MainWindow(QMainWindow):
 
         self.statsComponent = sb.components.stats.Stats(self.cfg, self)
         self.components.append(self.statsComponent)
-        self.statsPageScroller = self.statsComponent.getWidget()
+        self.statsWidget = self.statsComponent.getTitledWidget("Statistics")[0]
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
-        self.masterWidget.addWidget(self.statsPageScroller)
+        self.masterWidget.addWidget(self.statsWidget)
         self.masterWidget.addWidget(self.help)
 
         if not self.cfg.circuitExperience:
@@ -413,15 +413,6 @@ class MainWindow(QMainWindow):
         for c in self.components:
             c.initRace()
 
-#        if self.cfg.circuitExperience:
-#            self.mapViewCE.clear() # TODO component API
-#            self.mapViewCE.update()
-#        else:
-#            self.mapView.clear() # TODO component API
-#            for p in range(1,len(self.curLap.points)):
-#                self.mapView.setPoints(self.curLap.points[p-1], self.curLap.points[p])
-#            self.mapView.update()
-
         self.loadMessages(self.cfg.messageFile)
 
 
@@ -496,12 +487,6 @@ class MainWindow(QMainWindow):
             if lap[i].brake > self.cfg.brakeMinimumLevel:
                 return max(i-startI,0)
         return None
-
-    #def getLapLength(self, lap):
-        #totalDist = 0
-        #for i in range(1, len(lap)):
-            #totalDist += self.distance(lap[i-1], lap[i])
-        #return totalDist
 
     def purgeBadLapsCE(self):
         logPrint("PURGE laps")
