@@ -1,9 +1,11 @@
-from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QPoint, QPointF
-from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient, QBrush
+from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QPoint, QPointF, QUrl
+from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient, QBrush, QDesktopServices
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox, QTabWidget, QSpacerItem, QSizePolicy
 import math
 import copy
 from sb.helpers import logPrint
+import requests
+import json
 
 shortcutText = "ESC \t return to configuration\n" \
              + "? \t show keyboard shortcuts\n" \
@@ -34,14 +36,30 @@ class StartWindow(QWidget):
         self.setWindowTitle("GT7 SpeedBoard 1.0")
         modeLabel = QLabel("Mode:")
 
+        pbCheckUpdates = QPushButton("Check for updates")
+        pbCheckUpdates.setFlat(True)
+        pal = pbCheckUpdates.palette()
+        pal.setColor(pbCheckUpdates.foregroundRole(), QColor("#8af"))
+        pbCheckUpdates.setPalette(pal)
+        pbCheckUpdates.setCursor(Qt.CursorShape.PointingHandCursor)
+        pbCheckUpdates.clicked.connect(self.checkUpdates)
+
+        updateLayout = QHBoxLayout()
+        updateLayout.setContentsMargins(0,0,0,0)
+        firstRow = QWidget()
+        firstRow.setLayout(updateLayout)
+
         self.mode = QComboBox()
         self.mode.addItem("Laps")
         self.mode.addItem("Circuit Experience (experimental)")
+        updateLayout.addWidget(self.mode,10)
+        updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
         
         mainLayout = QVBoxLayout()
         self.setLayout(mainLayout)
         mainLayout.addWidget(modeLabel)
-        mainLayout.addWidget(self.mode)
+        #mainLayout.addWidget(self.mode)
+        mainLayout.addWidget(firstRow)
 
         tabWidget = QTabWidget()
         mainLayout.addWidget(tabWidget)
@@ -306,6 +324,17 @@ class StartWindow(QWidget):
         else:
             self.cbOptimal.setEnabled(True)
             self.optimizedSeed.setEnabled(True)
+
+    def checkUpdates(self):
+        x = requests.get('https://api.github.com/repos/profittlich/gt7speedboard/releases/latest')
+        j = json.loads(x.text)
+        if j['tag_name'] == "v6":
+            QMessageBox.information(self, "Check updates", "You have the latest version.")
+        else:
+            result = QMessageBox.question(self, "Check updates", "There is a newer version:\n\n" + j['name'] + "\n\nDo you want to visit the download page?")
+            if result == QMessageBox.StandardButton.Yes:
+                QDesktopServices.openUrl(QUrl(j['html_url']))
+
 
     def racingLineWarning(self, on):
         if on:
