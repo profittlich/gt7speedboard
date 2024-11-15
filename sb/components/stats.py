@@ -74,6 +74,7 @@ class Stats(sb.component.Component):
         self.statsPage.setPalette(pal)
         self.liveStats = ""
         self.runStats = ""
+        self.assumedTrack = ""
 
     def getWidget(self):
         return self.statsPageScroller
@@ -118,6 +119,7 @@ class Stats(sb.component.Component):
     def updateLiveStats(self, curPoint):
         liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
         liveStats += "Current track: " + self.data.trackDetector.getTrack() + "<br>"
+        liveStats += "Assumed track: " + self.assumedTrack + "<br>"
         liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
         liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
         if self.data.bestLap >= 0 and self.data.previousLaps[self.data.bestLap].valid:
@@ -137,33 +139,43 @@ class Stats(sb.component.Component):
         self.liveStats = liveStats
         self.updateStats()
 
-    def initRun(self):
-        logPrint("initRun", self.sessionStats)
+    def newRun(self):
+        logPrint("newRun", self.sessionStats)
         if len(self.sessionStats) > 0 and self.sessionStats[-1].sessionStart == len(self.data.previousLaps):
             logPrint("Re-using untouched Run")
             return
         self.sessionStats.append (Run(len(self.data.previousLaps)))
 
 
-    def initRace(self):
+    def newSession(self):
+        logPrint("newSession")
         logPrint("Clear sessions")
         self.sessionStats = []
         self.sessionStart = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.newRun()
         self.updateRunStats()
 
-    def newLap(self, curPoint, cleanLap):
-        self.updateRunStats()
+    def leftCircuit(self):
+        self.newRun()
+
+    def completedLap(self, curPoint, cleanLap, isFullLap):
+        logPrint("completedLap", isFullLap, self.data.lastLap, "->", curPoint.current_lap)
+        if curPoint.current_lap == 1 or self.data.lastLap >= curPoint.current_lap:
+            logPrint("lap is 1 -> init")
+            self.newRun()
 
         if self.cfg.circuitExperience:
             lastLapTime = 1000 * (len(cleanLap.points)/self.cfg.psFPS + 1/(2*self.cfg.psFPS))
         else:
             lastLapTime = curPoint.last_lap
 
+        logPrint(lastLapTime)
+
         # Update session stats
-        if lastLapTime > 0:
+        if lastLapTime > 0 and isFullLap:
             if len(self.sessionStats) == 0: # Started app during lap
                 logPrint("no stats --> init")
-                self.initRun()
+                self.newRun()
             self.sessionStats[-1].carId = curPoint.car_id
             self.sessionStats[-1].addLapTime(lastLapTime, self.data.lastLap)
             pTop = self.data.previousLaps[-1].topSpeed()
@@ -173,6 +185,16 @@ class Stats(sb.component.Component):
             for i in self.sessionStats:
                 logPrint("Best:", msToTime(i.bestLap()[0]))
                 logPrint("Median:", msToTime(i.medianLap()[0]))
+
+        self.updateRunStats()
+        self.updateLiveStats(curPoint)
+
+    def newTrack(self, curPoint, track):
+        logPrint("newTrack")
+        self.assumedTrack = track
+        self.newRun()
+        self.updateLiveStats(curPoint)
+   
 
     def maybeNewTrack(self, curPoint, track):
         self.updateLiveStats(curPoint)

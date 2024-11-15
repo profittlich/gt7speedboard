@@ -492,7 +492,7 @@ class Speed(sb.component.Component):
         self.updateSpeed(curPoint)
         self.markBigCountdownField()
 
-    def initRace(self):
+    def newSession(self):
         pal = self.pedalLast.palette()
         self.pedalLast.setText("")
         pal.setColor(self.pedalLast.backgroundRole(), self.cfg.backgroundColor)
@@ -602,7 +602,9 @@ class Speed(sb.component.Component):
         font.setUnderline(itOptimized)
         self.speedOptimized.setFont(font)
 
-    def newLap(self, curPoint, lastLap):
+    def completedLap(self, curPoint, lastLap, isFullLap):
+        if not isFullLap:
+            return
         # Check if the full screen color flashing should be for the best lap from now on
         if self.cfg.switchToBestLap:
             logPrint("Compare ref/best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[0].time))

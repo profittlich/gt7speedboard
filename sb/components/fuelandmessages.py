@@ -78,10 +78,7 @@ class FuelAndMessages(sb.component.Component):
             if self.cfg.lapDecimals and curPoint.current_lap > 0:
                 lapValue += self.data.lapProgress
                 lapValue = round(lapValue, 2)
-            if self.data.manualPitStop:
-                refuelLaps = "<br>" + str (lapValue) + " SINCE PIT STOP"
-            else:
-                refuelLaps = "<br>" + str (lapValue) + " SINCE REFUEL"
+            refuelLaps = "<br>" + str (max(0,lapValue)) + " SINCE PIT STOP"
         else:
             refuelLaps = ""
 
@@ -173,6 +170,10 @@ class FuelAndMessages(sb.component.Component):
                 self.laps.setPalette(pal)
 
     def addPoint(self, curPoint, curLap):
+        if self.cfg.messagesEnabled and not self.data.newMessage is None:
+            self.data.messages.append([self.data.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.data.curLap.points)-1)], self.data.newMessage])
+            self.data.newMessage = None
+
         self.updateFuelAndWarnings(curPoint, curLap)
 
     def title(self):

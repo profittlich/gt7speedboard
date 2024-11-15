@@ -465,7 +465,6 @@ class MapView(QWidget):
             pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
 
             if px2 < 20:
-                logPrint("Resize map")
                 step = 1
                 if px2 < 0:
                     step = -px2
@@ -479,7 +478,6 @@ class MapView(QWidget):
                 self.pixmapOffset[0] += step
 
             if pz2 < 20:
-                logPrint("Resize map")
                 step = 1
                 if pz2 < 0:
                     step = -pz2
@@ -493,7 +491,6 @@ class MapView(QWidget):
                 self.pixmapOffset[1] += step
 
             if px2 >= self.liveMap.width()-20:
-                logPrint("Resize map")
                 step = 1
                 if px2 >= self.liveMap.width():
                     step = math.ceil(px2) - self.liveMap.width()
@@ -506,7 +503,6 @@ class MapView(QWidget):
                 painter.end()
 
             if pz2 >= self.liveMap.height()-20:
-                logPrint("Resize map")
                 step = 1
                 if pz2 >= self.liveMap.height():
                     step = math.ceil(pz2) - self.liveMap.height()

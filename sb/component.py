@@ -38,21 +38,28 @@ class Component:
         header = self.makeHeaderWidget(title)
         masterLayout.addWidget(header, 0, 0, 1, 1)
         widget = self.getWidget()
-        masterLayout.addWidget(widget, 1, 0, 1, 1)
+        if not widget is None:
+            masterLayout.addWidget(widget, 1, 0, 1, 1)
         return [result, header, widget]
 
 
     def addPoint(self, curPoint, curLap):
         pass
 
-    def initRace(self):
+    def newSession(self):
         pass
 
-    def newLap(self, curPoint, lastLap):
+    def completedLap(self, curPoint, lastLap, isFullLap):
         pass
 
     def newTrack(self, curPoint, track):
         pass
 
     def maybeNewTrack(self, curPoint, track):
+        pass
+
+    def pitStop(self):
+        pass
+
+    def leftCircuit(self):
         pass

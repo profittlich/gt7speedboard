@@ -135,6 +135,7 @@ class MainWindow(QMainWindow):
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
         self.masterWidget.addWidget(self.statsWidget)
+        #self.statsWidget.show()
         self.masterWidget.addWidget(self.help)
 
         if not self.cfg.circuitExperience:
@@ -142,6 +143,8 @@ class MainWindow(QMainWindow):
             self.components.append(mapComponent)
             mapViewWidget, mapViewHeader, self.mapView = mapComponent.getTitledWidget("Map")
             self.masterWidget.addWidget(mapViewWidget)
+            #self.debugWidget = mapViewWidget
+            #self.debugWidget.show()
 
         self.dashWidget.setLayout(masterLayout)
 
@@ -299,7 +302,7 @@ class MainWindow(QMainWindow):
         self.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
         self.curLap = Lap()
 
-        self.initRace()
+        self.newSession()
         self.messageWaitsForKey = False
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
@@ -326,42 +329,6 @@ class MainWindow(QMainWindow):
 
         self.noThrottleCount = 0
 
-    def initOptimizedLap(self):
-        if self.cfg.optimizedSeed == 0:
-            self.optimizedLap = Lap()
-        elif self.cfg.optimizedSeed == 1:
-            self.optimizedLap = copy.deepcopy(self.refLaps[0])
-        elif self.cfg.optimizedSeed == 2:
-            self.optimizedLap = copy.deepcopy(self.refLaps[1])
-        elif self.cfg.optimizedSeed == 3:
-            self.optimizedLap = copy.deepcopy(self.refLaps[2])
-        logPrint("discard", len(self.curOptimizingLap.points))
-        self.curOptimizingLap = Lap()
-        self.curOptimizingIndex = 0
-        self.curOptimizingLiveIndex = 0
-        self.curOptimizingBrake = False
-
-    def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
-        logPrint("showUiMsg")
-        self.uiMsg.setText(msg)
-        if leftAlign:
-            self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignLeft)
-            self.uiMsg.setMargin(15)
-        else:
-            self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.uiMsg.setMargin(0)
-        self.masterWidget.setCurrentIndex(1)
-        if waitForKey:
-            self.messageWaitsForKey = True
-        else:
-            self.messageWaitsForKey = False
-            self.returnTimer = QTimer()
-            self.returnTimer.setInterval(int(1000 * t))
-            self.returnTimer.setSingleShot(True)
-            self.returnTimer.timeout.connect(self.returnToDash)
-            self.returnTimer.start()
-
-
     def returnToDash(self):
         if self.centralWidget() == self.masterWidget:
             self.flipPage(self.masterWidgetIndex)
@@ -382,7 +349,19 @@ class MainWindow(QMainWindow):
                 self.queue.get_nowait()
             self.receiver = None
 
-    def initRace(self):
+    def exitDash(self):
+        if self.isRecording:
+            self.isRecording = False
+            self.receiver.stopRecording()
+        self.stopDash()
+        self.showNormal()
+        self.startWindow = StartWindow()
+        self.startWindow.starter.clicked.connect(self.startDash)
+        self.startWindow.ip.returnPressed.connect(self.startDash)
+        self.setPalette(self.defaultPalette)
+        self.setCentralWidget(self.startWindow)
+
+    def newSession(self):
 
         if self.brakeOffset != 0:
             self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
@@ -396,6 +375,7 @@ class MainWindow(QMainWindow):
         self.lastFuelUsage = []
         self.fuelFactor = 0
         self.refueled = 0
+        logPrint("PIT STOP:", self.refueled)
         self.manualPitStop = False
         
         self.initOptimizedLap()
@@ -411,7 +391,7 @@ class MainWindow(QMainWindow):
         self.medianLap = -1
 
         for c in self.components:
-            c.initRace()
+            c.newSession()
 
         self.loadMessages(self.cfg.messageFile)
 
@@ -583,7 +563,7 @@ class MainWindow(QMainWindow):
                 self.trackPreviouslyIdentified = curTrack
                 tempLap = self.lastLap
                 tempMsg = self.messages
-                self.initRace()
+                self.newSession()
                 self.lastLap = tempLap
                 self.messages = tempMsg
 
@@ -638,6 +618,21 @@ class MainWindow(QMainWindow):
         elif tp != -1:
             self.lapProgress = tp
 
+    def initOptimizedLap(self):
+        if self.cfg.optimizedSeed == 0:
+            self.optimizedLap = Lap()
+        elif self.cfg.optimizedSeed == 1:
+            self.optimizedLap = copy.deepcopy(self.refLaps[0])
+        elif self.cfg.optimizedSeed == 2:
+            self.optimizedLap = copy.deepcopy(self.refLaps[1])
+        elif self.cfg.optimizedSeed == 3:
+            self.optimizedLap = copy.deepcopy(self.refLaps[2])
+        logPrint("discard", len(self.curOptimizingLap.points))
+        self.curOptimizingLap = Lap()
+        self.curOptimizingIndex = 0
+        self.curOptimizingLiveIndex = 0
+        self.curOptimizingBrake = False
+
     def optimizeLap(self, curPoint):
         if len(self.optimizedLap.points) == 0:
             self.curOptimizingLap.points.append(curPoint)
@@ -681,17 +676,13 @@ class MainWindow(QMainWindow):
         self.curOptimizingIndex = 0
         self.curOptimizingBrake = False
 
-    def handleLapChanges(self, curPoint):
+    def checkCircuitExperienceMode(self, curPoint):
         if self.cfg.circuitExperience and curPoint.current_lap > 1:
             logPrint("Not in Circuit Experience!")
             self.exitDash()
             QMessageBox.critical(self, "Not in Circuit Experience", "Circuit Experience mode is set, but not driven. Unfortunately, this is not supported. Please switch to Laps mode or drive a Circuit Experience.")
-            return True
 
-        fuel_capacity = curPoint.fuel_capacity
-        if fuel_capacity == 0: # EV
-            fuel_capacity = 100
-
+    def handleLapChanges(self, curPoint):
         if (
             self.lastLap != curPoint.current_lap
             or (self.cfg.circuitExperience and (curPoint.distance(self.previousPoint) > self.cfg.circuitExperienceJumpDistance or self.noThrottleCount >= self.cfg.psFPS * self.cfg.circuitExperienceNoThrottleTimeout))
@@ -722,12 +713,6 @@ class MainWindow(QMainWindow):
             else:
                 logPrint("Track Detect Data:", self.trackDetector.totalPoints)
                 logPrint("LAP CHANGE", self.lastLap, curPoint.current_lap, str(round(lapLen, 3)) + " m", indexToTime(len (cleanLap.points)))
-                if curPoint.current_lap == 1 or self.lastLap >= curPoint.current_lap:
-                    logPrint("lap is 1 -> init")
-                    self.statsComponent.initRun() # TODO component API
-
-            # Update live stats
-            self.statsComponent.updateLiveStats(curPoint) # TODO component API
 
             if not (self.lastLap == -1 and curPoint.current_fuel < 99):
                 if self.lastLap > 0 and ((self.cfg.circuitExperience and lapLen > 0) or curPoint.last_lap != -1):
@@ -739,7 +724,7 @@ class MainWindow(QMainWindow):
 
                     showBestLapMessage = True
 
-                    logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1])) 
+                    logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1]), "vs.", self.cfg.validLapEndpointDistance) 
                     # Process a completed valid lap (circuit experience laps are always valid)
                     if self.cfg.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.cfg.validLapEndpointDistance:
                         if len(self.previousLaps) > 0:
@@ -757,7 +742,7 @@ class MainWindow(QMainWindow):
                             self.updateOptimizedLap()
 
                         for c in self.components:
-                            c.newLap(curPoint, cleanLap)
+                            c.completedLap(curPoint, cleanLap, True)
 
 
                     else: # Incomplete laps are sometimes useful, but can't be used for everything
@@ -766,6 +751,9 @@ class MainWindow(QMainWindow):
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint))
+
+                        for c in self.components:
+                            c.completedLap(curPoint, cleanLap, False)
 
                     logPrint("Laps:", len(self.previousLaps))
 
@@ -794,6 +782,10 @@ class MainWindow(QMainWindow):
                     logPrint("Last lap:", len(self.previousLaps)-1, msToTime (self.previousLaps[-1].time))
 
                     # Update fuel usage and outlook
+                    fuel_capacity = curPoint.fuel_capacity
+                    if fuel_capacity == 0: # EV
+                        fuel_capacity = 100
+
                     fuelDiff = self.lastFuel - curPoint.current_fuel/fuel_capacity
                     if fuelDiff > 0 and self.previousLaps[-1].valid:
                         logPrint("Append fuel", fuelDiff)
@@ -801,6 +793,7 @@ class MainWindow(QMainWindow):
                     if len(self.lastFuelUsage) > self.cfg.fuelStatisticsLaps:
                         self.lastFuelUsage = self.lastFuelUsage[1:]
                     self.refueled += 1
+                    logPrint("PIT STOP:", self.refueled)
                     self.lastFuel = curPoint.current_fuel/fuel_capacity
     
                     if len(self.lastFuelUsage) > 0:
@@ -824,6 +817,35 @@ class MainWindow(QMainWindow):
             logPrint("Fuel", self.fuelFactor, self.lastFuel, self.lastFuelUsage)
             return True
         return False
+
+    def checkPitStop(self, curPoint):
+        if self.previousPoint is None:
+            logPrint("FIRST")
+        if not self.previousPoint is None and curPoint.distance(self.previousPoint) > 30.0:
+            logPrint ("JUMP by", curPoint.distance(self.previousPoint), "to", curPoint.position_x, " / ", curPoint.position_z, " laps ", self.previousPoint.current_lap, curPoint.current_lap)
+            if curPoint.current_lap == 0:
+                self.refueled = 0
+                logPrint("PIT STOP:", self.refueled)
+                if self.lapProgress > 0.5:
+                    self.refueled -= 1
+                    logPrint("PIT STOP:", self.refueled)
+                for c in self.components:
+                    c.leftCircuit()
+            elif curPoint.current_lap == self.previousPoint.current_lap and curPoint.car_speed > 0.001:
+                # TODO difference to reaet to track: Standing time?
+                self.refueled = 0
+                logPrint("PIT STOP:", self.refueled)
+                if self.lapProgress > 0.5:
+                    self.refueled -= 1
+                    logPrint("PIT STOP:", self.refueled)
+                for c in self.components:
+                    c.pitStop()
+            elif curPoint.current_lap == self.previousPoint.current_lap and curPoint.car_speed < 0.001:
+                logPrint("RESET TO TRACK")
+            else:
+                logPrint("WARNING: Unknown jump constellation")
+
+
 
     def updateDisplay(self):
         # Grab all new telemetry packages
@@ -855,15 +877,13 @@ class MainWindow(QMainWindow):
 
             # Handle telemetry
             for curPoint in pointsToHandle:
-                # Update local messages
-                if self.cfg.messagesEnabled and not self.newMessage is None:
-                    self.messages.append([self.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.curLap.points)-1)], self.newMessage])
-                    self.newMessage = None
-
                 # Only handle packages when driving
                 if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
                     continue
 
+                self.checkCircuitExperienceMode(curPoint)
+
+                self.checkPitStop(curPoint)
                 self.determineLapProgress(curPoint)
                 isNewLap = self.handleLapChanges(curPoint)
  
@@ -898,18 +918,6 @@ class MainWindow(QMainWindow):
                     prefix += self.cfg.sessionName + "-"
                 self.receiver.startRecording(prefix)
                 self.isRecording = True
-
-    def exitDash(self):
-        if self.isRecording:
-            self.isRecording = False
-            self.receiver.stopRecording()
-        self.stopDash()
-        self.showNormal()
-        self.startWindow = StartWindow()
-        self.startWindow.starter.clicked.connect(self.startDash)
-        self.startWindow.ip.returnPressed.connect(self.startDash)
-        self.setPalette(self.defaultPalette)
-        self.setCentralWidget(self.startWindow)
 
     def keyPressEvent(self, e):
         if self.centralWidget() == self.masterWidget and self.messageWaitsForKey:
@@ -960,18 +968,20 @@ class MainWindow(QMainWindow):
                 if ok:
                     self.newRunDescription = text
             elif e.key() == Qt.Key.Key_C.value:
-                self.initRace()
+                self.newSession()
             elif e.key() == Qt.Key.Key_P.value:
                 self.manualPitStop = True
                 self.refueled = 0
+                logPrint("PIT STOP:", self.refueled)
                 if self.lapProgress > 0.5:
                     self.refueled -= 1
+                    logPrint("PIT STOP:", self.refueled)
             elif e.key() == Qt.Key.Key_0.value:
                 self.brakeOffset = 0
                 logPrint("Brake offset", self.brakeOffset)
                 self.headerSpeed.setText("SPEED")
                 self.headerSpeed.update()
-            elif e.key() == Qt.Key.Key_Plus.value:
+            elif e.key() == Qt.Key.Key_Plus.value or e.key() == Qt.Key.Key_Equal.value:
                 self.lapOffset += 1
             elif e.key() == Qt.Key.Key_Minus.value:
                 self.lapOffset -= 1
@@ -1016,6 +1026,27 @@ class MainWindow(QMainWindow):
         elif self.centralWidget() == self.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
                 self.flipPage(e.key() - Qt.Key.Key_1.value)
+
+    def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
+        logPrint("showUiMsg")
+        self.uiMsg.setText(msg)
+        if leftAlign:
+            self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            self.uiMsg.setMargin(15)
+        else:
+            self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.uiMsg.setMargin(0)
+        self.masterWidget.setCurrentIndex(1)
+        if waitForKey:
+            self.messageWaitsForKey = True
+        else:
+            self.messageWaitsForKey = False
+            self.returnTimer = QTimer()
+            self.returnTimer.setInterval(int(1000 * t))
+            self.returnTimer.setSingleShot(True)
+            self.returnTimer.timeout.connect(self.returnToDash)
+            self.returnTimer.start()
+
 
     def flipPage(self, nr):
         logPrint("Flip to page", nr)

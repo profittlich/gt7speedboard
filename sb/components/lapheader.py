@@ -22,6 +22,7 @@ class LapHeader(sb.component.Component):
         pal.setColor(self.header.backgroundRole(), cfg.backgroundColor)
         pal.setColor(self.header.foregroundRole(), cfg.foregroundColor)
         self.header.setPalette(pal)
+        self.inPit = False
 
 
     def getWidget(self):
@@ -33,6 +34,8 @@ class LapHeader(sb.component.Component):
             lapSuffix += " [+" + str(self.data.lapOffset) + "]"
         elif self.data.lapOffset < 0:
             lapSuffix += " [" + str(self.data.lapOffset) + "]"
+        if self.inPit:
+            lapSuffix += " PIT STOP"
         if self.data.isRecording:
             lapSuffix += " [RECORDING]"
         if self.cfg.circuitExperience:
@@ -51,5 +54,14 @@ class LapHeader(sb.component.Component):
                 lapValue = str(lapValue) + " (" + str(round(self.data.lapProgress * 100)) + "%)"
             self.header.setText("LAP " + str(lapValue) + lapSuffix)
 
+    def pitStop(self):
+        self.inPit = True
+
+    def completedLap(self, curPoint, lastLap, isFullLap):
+        self.inPit = False
+
     def addPoint(self, curPoint, curLap):
+        if curPoint.car_speed > 110:
+            self.inPit = False
+
         self.updateLaps(curPoint)

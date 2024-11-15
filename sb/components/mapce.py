@@ -49,7 +49,7 @@ class Map(sb.component.Component):
     def title(self):
         return "Map"
 
-    def initRace(self):
+    def newSession(self):
         self.mapView.clear()
         for p in range(1,len(self.data.curLap.points)):
             self.mapView.setPoints(self.data.curLap.points[p-1], self.data.curLap.points[p])
