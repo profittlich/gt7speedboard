@@ -54,3 +54,8 @@ class Map(sb.component.Component):
         for p in range(1,len(self.data.curLap.points)):
             self.mapView.setPoints(self.data.curLap.points[p-1], self.data.curLap.points[p])
         self.mapView.update()
+
+    def completedLap(self, curPoint, lastLap, isFullLap):
+        if not self.cfg.circuitExperience or curPoint.current_lap != 0:
+            self.mapView.endLap()
+        self.mapView.update()

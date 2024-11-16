@@ -34,8 +34,8 @@ class LapHeader(sb.component.Component):
             lapSuffix += " [+" + str(self.data.lapOffset) + "]"
         elif self.data.lapOffset < 0:
             lapSuffix += " [" + str(self.data.lapOffset) + "]"
-        if self.inPit:
-            lapSuffix += " PIT STOP"
+        #if self.inPit:
+            #lapSuffix += " PIT STOP"
         if self.data.isRecording:
             lapSuffix += " [RECORDING]"
         if self.cfg.circuitExperience:
@@ -49,8 +49,6 @@ class LapHeader(sb.component.Component):
         else:
             lapValue = curPoint.current_lap
             if self.cfg.lapDecimals:
-                #lapValue += self.data.lapProgress
-                #lapValue = round(lapValue, 2)
                 lapValue = str(lapValue) + " (" + str(round(self.data.lapProgress * 100)) + "%)"
             self.header.setText("LAP " + str(lapValue) + lapSuffix)
 

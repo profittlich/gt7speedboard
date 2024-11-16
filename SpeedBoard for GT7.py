@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         if self.cfg.circuitExperience:
             mapCEComponent = sb.components.mapce.Map(self.cfg, self)
             self.components.append(mapCEComponent)
-            mapViewCEWidget, mapViewHeader, self.mapViewCE = mapCEComponent.getTitledWidget("Map")
+            mapViewCEWidget, mapViewHeader, mapViewCE = mapCEComponent.getTitledWidget("Map")
         else:
             fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self.cfg, self)
             self.components.append(fuelComponent)
@@ -94,17 +94,17 @@ class MainWindow(QMainWindow):
         self.components.append(tyreComponent)
         tyreWidget = tyreComponent.getTitledWidget("Tyres")[0]
 
-        self.speedComponent = sb.components.speed.Speed(self.cfg, self)
+        self.speedComponent = sb.components.speed.Speed(self.cfg, self) # TODO Still self due to keyboard shortcuts
         self.components.append(self.speedComponent)
-        speedWidget, self.headerSpeed, speedWidgetLone = self.speedComponent.getTitledWidget(self.speedComponent.title())
+        speedWidget, self.headerSpeed, speedWidgetLone = self.speedComponent.getTitledWidget(self.speedComponent.title()) # TODO Still self due to brake offset display
 
         headerComponent = sb.components.lapheader.LapHeader(self.cfg, self)
         self.components.append(headerComponent)
-        self.header = headerComponent.getWidget()
+        header = headerComponent.getWidget()
 
         helpComponent = sb.components.help.Help(self.cfg, self)
         self.components.append(helpComponent)
-        self.help = helpComponent.getWidget()
+        helpWidget = helpComponent.getWidget()
 
         # Lvl 1
         masterLayout = QGridLayout()
@@ -129,19 +129,19 @@ class MainWindow(QMainWindow):
         self.uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.uiMsgPageScroller.setWidgetResizable(True)
 
-        self.statsComponent = sb.components.stats.Stats(self.cfg, self)
+        self.statsComponent = sb.components.stats.Stats(self.cfg, self) # TODO Still self due to keyboard shortcuts
         self.components.append(self.statsComponent)
-        self.statsWidget = self.statsComponent.getTitledWidget("Statistics")[0]
+        statsWidget = self.statsComponent.getTitledWidget("Statistics")[0]
 
         self.masterWidget.addWidget(self.uiMsgPageScroller)
-        self.masterWidget.addWidget(self.statsWidget)
-        #self.statsWidget.show()
-        self.masterWidget.addWidget(self.help)
+        self.masterWidget.addWidget(statsWidget)
+        #statsWidget.show()
+        self.masterWidget.addWidget(helpWidget)
 
         if not self.cfg.circuitExperience:
             mapComponent = sb.components.mapce.Map(self.cfg, self)
             self.components.append(mapComponent)
-            mapViewWidget, mapViewHeader, self.mapView = mapComponent.getTitledWidget("Map")
+            mapViewWidget, mapViewHeader, mapView = mapComponent.getTitledWidget("Map")
             self.masterWidget.addWidget(mapViewWidget)
             #self.debugWidget = mapViewWidget
             #self.debugWidget.show()
@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
         masterLayout.setRowStretch(0, 1)
         masterLayout.setRowStretch(1, 11)
         masterLayout.setRowStretch(2, 5)
-        masterLayout.addWidget(self.header, 0, 0, 1, 2)
+        masterLayout.addWidget(header, 0, 0, 1, 2)
         if self.cfg.circuitExperience:
             masterLayout.addWidget(mapViewCEWidget, 1, 1, 3, 1)
         else:
@@ -694,13 +694,8 @@ class MainWindow(QMainWindow):
                     logPrint("Lap ended", self.cfg.circuitExperienceNoThrottleTimeout ,"seconds ago")
 
                 cleanLap = self.cleanUpLapCE(self.curLap)
-                if curPoint.current_lap != 0:
-                    self.mapViewCE.endLap() # TODO component API
-                self.mapViewCE.update()
             else:
                 cleanLap = self.curLap
-                self.mapView.endLap() # TODO into component
-                self.mapView.update()
                     
             lapLen = cleanLap.length()
             
@@ -805,9 +800,6 @@ class MainWindow(QMainWindow):
                     logPrint("Ignore pre-lap")
                     self.lastFuel = 1
                     self.resetCurrentLapData()
-
-                # Update live stats
-                self.statsComponent.updateLiveStats(curPoint) # TODO component API
 
             self.lastLap = curPoint.current_lap
             self.curOptimizingLap = Lap()
