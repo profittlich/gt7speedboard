@@ -9,6 +9,9 @@ from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
 class Help(sb.component.Component):
+    def description():
+        return "List of keyboard shortcuts"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -33,3 +36,7 @@ class Help(sb.component.Component):
     def getWidget(self):
         return self.pageScroller
 
+    def title(self):
+        return "Help"
+
+sb.component.componentLibrary['Help'] = Help

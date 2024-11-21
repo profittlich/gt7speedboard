@@ -2,7 +2,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
-
+componentLibrary = {}
 
 class Component:
     def __init__(self, cfg, data):
@@ -11,6 +11,10 @@ class Component:
 
     def title(self):
         return None
+
+    @staticmethod
+    def description():
+        return ""
 
     def getWidget(self):
         return None
@@ -35,12 +39,12 @@ class Component:
         masterLayout.setRowStretch(1, 1000)
         masterLayout.setContentsMargins(0,0,0,0)
         result.setLayout(masterLayout)
-        header = self.makeHeaderWidget(title)
-        masterLayout.addWidget(header, 0, 0, 1, 1)
+        self.header = self.makeHeaderWidget(title)
+        masterLayout.addWidget(self.header, 0, 0, 1, 1)
         widget = self.getWidget()
         if not widget is None:
             masterLayout.addWidget(widget, 1, 0, 1, 1)
-        return [result, header, widget]
+        return result
 
 
     def addPoint(self, curPoint, curLap):
@@ -62,4 +66,7 @@ class Component:
         pass
 
     def leftCircuit(self):
+        pass
+
+    def keyPressEvent(self, e):
         pass

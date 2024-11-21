@@ -17,7 +17,7 @@ class Run:
         self.lapTimes = []
         self.sessionStart = sessionStart
         self.description = ""
-    
+
     def addLapTime(self, t, l):
         self.lapTimes.append((t, l))
 
@@ -49,6 +49,9 @@ class Run:
         return (0,0)
 
 class Stats(sb.component.Component):
+    def description():
+        return "Statistics and runs"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -201,3 +204,10 @@ class Stats(sb.component.Component):
 
     def title(self):
         return "Statistics"
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key.Key_T.value:
+            self.updateRunStats(saveRuns=True)
+            self.data.showUiMsg("Run table saved.", 2)
+
+sb.component.componentLibrary['Stats'] = Stats

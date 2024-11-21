@@ -7,6 +7,9 @@ from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
 class TyreTemps(sb.component.Component):
+    def description():
+        return "Tyre temperature display"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -106,3 +109,5 @@ class TyreTemps(sb.component.Component):
 
     def title(self):
         return "Tyres"
+
+sb.component.componentLibrary['TyreTemps'] = TyreTemps

@@ -10,6 +10,9 @@ from sb.helpers import logPrint
 from sb.helpers import indexToTime, msToTime
 
 class Speed(sb.component.Component):
+    def description():
+        return "Speed and time comparisons to previous laps"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -490,6 +493,11 @@ class Speed(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         self.updateSpeed(curPoint)
+        if self.data.brakeOffset != 0:
+            self.header.setText("[" + str(round(self.data.brakeOffset/-60, 2)) + "] SPEED")
+        else:
+            self.header.setText("SPEED")
+        self.header.update()
         self.markBigCountdownField()
 
     def newSession(self):
@@ -632,3 +640,8 @@ class Speed(sb.component.Component):
 
     def title(self):
         return "Speed"
+
+    def keyPressEvent(self, e):
+        self.cycleBigCountdownBreakponts()
+
+sb.component.componentLibrary['Speed'] = Speed

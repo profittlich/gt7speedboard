@@ -9,6 +9,9 @@ from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
 class FuelAndMessages(sb.component.Component):
+    def description():
+        return "Fuel level, fuel estimation and location-based messages"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -178,3 +181,5 @@ class FuelAndMessages(sb.component.Component):
 
     def title(self):
         return "Fuel"
+
+sb.component.componentLibrary['FuelAndMessages'] = FuelAndMessages

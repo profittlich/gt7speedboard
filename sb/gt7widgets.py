@@ -454,6 +454,7 @@ class MapView(QWidget):
         self.previousPoints.append (p1)
         self.curPoints.append (p2)
         self.liveColor = color
+        self.preparePaintEvent()
 
     def clear(self):
         self.size = [500, 500]
@@ -464,6 +465,8 @@ class MapView(QWidget):
         self.mapOffset = None
         self.pixmapOffset = [ 250, 250 ]
         self.zoom = 1
+        self.px2 = -20
+        self.pz2 = -20
         self.debug = True
 
     def endLap(self):
@@ -472,12 +475,7 @@ class MapView(QWidget):
         painter.setBrush(brush)
         painter.drawRect(0,0,self.liveMap.width(), self.liveMap.height())
 
-    def paintEvent(self, event):
-        aspectRatio = self.width()/self.height()
-        baseAspectRatio = self.liveMap.width() / self.liveMap.height()
-
-        px2 = -20
-        pz2 = -20
+    def preparePaintEvent(self):
 
         while len (self.previousPoints) > 0  and len(self.curPoints) > 0:
             previousPoint = self.previousPoints.pop()
@@ -490,13 +488,13 @@ class MapView(QWidget):
     
             px1 = (self.zoom * (previousPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
             pz1 = (self.zoom * (previousPoint.position_z + self.mapOffset[1])) + self.pixmapOffset[1] 
-            px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
-            pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
+            self.px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
+            self.pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
 
-            if px2 < 20:
+            if self.px2 < 20:
                 step = 1
-                if px2 < 0:
-                    step = -px2
+                if self.px2 < 0:
+                    step = -self.px2
                 temp = self.liveMap.copy()
                 step = int(math.ceil(step))
                 self.liveMap = QPixmap(temp.width()+step, temp.height())
@@ -506,10 +504,10 @@ class MapView(QWidget):
                 painter.end()
                 self.pixmapOffset[0] += step
 
-            if pz2 < 20:
+            if self.pz2 < 20:
                 step = 1
-                if pz2 < 0:
-                    step = -pz2
+                if self.pz2 < 0:
+                    step = -self.pz2
                 temp = self.liveMap.copy()
                 step = int(math.ceil(step))
                 self.liveMap = QPixmap(temp.width(), temp.height()+step)
@@ -519,10 +517,10 @@ class MapView(QWidget):
                 painter.end()
                 self.pixmapOffset[1] += step
 
-            if px2 >= self.liveMap.width()-20:
+            if self.px2 >= self.liveMap.width()-20:
                 step = 1
-                if px2 >= self.liveMap.width():
-                    step = math.ceil(px2) - self.liveMap.width()
+                if self.px2 >= self.liveMap.width():
+                    step = math.ceil(self.px2) - self.liveMap.width()
                 temp = self.liveMap.copy()
                 self.liveMap = QPixmap(temp.width()+step, temp.height())
                 self.liveMap.fill(QColor("#000"))
@@ -531,10 +529,10 @@ class MapView(QWidget):
                 painter.drawPixmap(0, 0, temp.width(), temp.height(), temp)
                 painter.end()
 
-            if pz2 >= self.liveMap.height()-20:
+            if self.pz2 >= self.liveMap.height()-20:
                 step = 1
-                if pz2 >= self.liveMap.height():
-                    step = math.ceil(pz2) - self.liveMap.height()
+                if self.pz2 >= self.liveMap.height():
+                    step = math.ceil(self.pz2) - self.liveMap.height()
                 temp = self.liveMap.copy()
                 self.liveMap = QPixmap(temp.width(), temp.height()+step)
                 self.liveMap.fill(QColor("#000"))
@@ -544,11 +542,9 @@ class MapView(QWidget):
 
             px1 = (self.zoom * (previousPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
             pz1 = (self.zoom * (previousPoint.position_z + self.mapOffset[1])) + self.pixmapOffset[1] 
-            px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
-            pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
+            self.px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
+            self.pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
 
-            baseAspectRatio = self.liveMap.width() / self.liveMap.height()
-                
             if self.debug:
                 self.debug = False
 
@@ -562,9 +558,12 @@ class MapView(QWidget):
             pen.setWidth(5)
             painter.setPen(pen)
             
-            painter.drawLine(int(px1), int(pz1), int(px2), int(pz2))
+            painter.drawLine(int(px1), int(pz1), int(self.px2), int(self.pz2))
             painter.end()
 
+    def paintEvent(self, event):
+        aspectRatio = self.width()/self.height()
+        baseAspectRatio = self.liveMap.width() / self.liveMap.height()
         qp = QPainter()
         qp.begin(self)
         qp.fillRect(self.rect(), QColor("#222"))
@@ -574,10 +573,10 @@ class MapView(QWidget):
         stretch = aspectRatio / baseAspectRatio
         if aspectRatio < baseAspectRatio:
             qp.drawPixmap(0, int((self.height() - stretch * self.height())/2), self.width(), int(stretch * self.height()), self.liveMap)
-            qp.drawEllipse(int(px2 * self.width() / self.liveMap.width()) - 8, int(pz2 * self.height() / self.liveMap.height() * stretch + (self.height() - stretch * self.height())/2) - 8, 16, 16)
+            qp.drawEllipse(int(self.px2 * self.width() / self.liveMap.width()) - 8, int(self.pz2 * self.height() / self.liveMap.height() * stretch + (self.height() - stretch * self.height())/2) - 8, 16, 16)
         else:
             qp.drawPixmap(int((self.width() - (1/stretch) * self.width())/2), 0, int((1/stretch) * self.width()), self.height(), self.liveMap)
-            qp.drawEllipse(int(px2 * self.width() / self.liveMap.width() / stretch - 8 + (self.width() - (1/stretch) * self.width())/2), int(pz2 * self.height() / self.liveMap.height()) - 8, 16, 16)
+            qp.drawEllipse(int(self.px2 * self.width() / self.liveMap.width() / stretch - 8 + (self.width() - (1/stretch) * self.width())/2), int(self.pz2 * self.height() / self.liveMap.height()) - 8, 16, 16)
 
         qp.end()
 

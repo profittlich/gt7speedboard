@@ -10,6 +10,9 @@ from sb.helpers import logPrint
 
 # TODO rename file
 class Map(sb.component.Component):
+    def description():
+        return "Map of previous racing lines"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
         self.mapView = MapView()
@@ -42,6 +45,7 @@ class Map(sb.component.Component):
             self.data.noThrottleCount+=1
         elif self.data.noThrottleCount > 0:
             self.data.noThrottleCount=0
+        self.mapView.update()
 
     def addPoint(self, curPoint, curLap):
         self.updateMap(curPoint)
@@ -59,3 +63,5 @@ class Map(sb.component.Component):
         if not self.cfg.circuitExperience or curPoint.current_lap != 0:
             self.mapView.endLap()
         self.mapView.update()
+
+sb.component.componentLibrary['Map'] = Map

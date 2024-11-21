@@ -53,7 +53,7 @@ ID,ShortName,Maker
 959,TT Coupe 3.2 quattro '03,5
 998,Sauber Mercedes C9 '89,22
 1027,DeLorean S2 '04,65
-1040,Ford GT LM Race Car Spec II,13
+1040,GT LM Race Car Spec II,13
 1044,Sports 800 '65,43
 1067,XJR-9 '88,17
 1069,2J '70,93
@@ -67,8 +67,8 @@ ID,ShortName,Maker
 1402,Viper SRT10 Coupe '06,11
 1409,F40 '92,110
 1410,512 BB '76,110
-1425,Ford GT LM Spec II Test Car,13
-1426,Ford GT '06,13
+1425,GT LM Spec II Test Car,13
+1426, GT '06,13
 1431,RE Amemiya FD3S RX-7,87
 1433,Amuse S2000 GT1 Turbo,59
 1448,SILVIA spec-R Aero (S15) '02,28
@@ -91,7 +91,7 @@ ID,ShortName,Maker
 1536,Zonda R '09,30
 1537,Prius G '09,43
 1539,GranTurismo S '08,116
-1540,McLaren F1 '94,117
+1540,F1 '94,117
 1542,Corvette Convertible (C3) '69,7
 1543,Challenger R/T '70,11
 1545,Murcielago LP 640 '09,112
@@ -112,7 +112,7 @@ ID,ShortName,Maker
 1746,Roadster Touring Car,21
 1770,Aventador LP 700-4 '11,112
 1773,Scirocco R '10,46
-1778,Volkswagen 1200 '66,46
+1778,1200 '66,46
 1796,A110 '72,86
 1797,SLS AMG GT3 '11,153
 1893,Z8 '01,6
@@ -136,7 +136,7 @@ ID,ShortName,Maker
 1965,R18 TDI '11,5
 1973,Abarth 500 '09,125
 1975,RX500 '70,21
-1984,McLaren F1 GTR - BMW '95,117
+1984,F1 GTR - BMW '95,117
 1985,Firebird Trans Am '78,52
 1986,R8 Gordini '66,34
 1987,Megane R.S. Trophy '11,34
@@ -157,7 +157,7 @@ ID,ShortName,Maker
 2077,Red Bull X2014 Standard,33
 2078,Red Bull X2014 Junior,33
 2080,FT-1,43
-2087,BMW VGT,6
+2087,VGT,6
 2095,Concept XR-PHEV EVOLUTION VGT,25
 2098,GTI Roadster VGT,46
 2099,VIZIV GT VGT,38
@@ -166,27 +166,27 @@ ID,ShortName,Maker
 2106,FT-1 VGT,43
 2107,Chaparral 2X VGT,93
 2108,SRT Tomahawk X VGT,11
-2109,MINI Clubman VGT,51
+2109,Clubman VGT,51
 2110,SRT Tomahawk GTS-R VGT,11
 2111,SRT Tomahawk S VGT,11
-2112,Alpine VGT,86
-2113,PEUGEOT VGT,32
-2116,Alpine VGT Race,86
-2117,INFINITI CONCEPT VGT,49
+2112,VGT,86
+2113,VGT,32
+2116,VGT Race,86
+2117,CONCEPT VGT,49
 2118,LM55 VGT,21
-2121,Honda Sports VGT,15
+2121,Sports VGT,15
 2122,IsoRivolta Zagato VGT,134
 2123,LF-LC GT VGT,50
 2124,GTI Supersport VGT,46
 2127,GT-R LM NISMO '15,28
 2131,V12 Vantage GT3 '12,4
-2134,Bugatti VGT,113
-2135,HYUNDAI N 2025 VGT,16
+2134,VGT,113
+2135,N 2025 VGT,16
 2136,4C '14,3
 2138,Mustang GT '15,13
 2139,RC F '14,50
 2141,Golf VII GTI '14,46
-2142,NISSAN CONCEPT 2020 VGT,28
+2142,CONCEPT 2020 VGT,28
 2143,R8 LMS '15,5
 2144,S-FR '15,43
 2145,Focus ST '15,13
@@ -220,8 +220,8 @@ ID,ShortName,Maker
 2176,RCZ GT Line '15,32
 2177,Huracan GT3 '15,112
 2178,S-FR Racing Concept '16,43
-2179,Bugatti VGT (Gr.1),113
-2180,HYUNDAI N 2025 VGT (Gr.1),16
+2179,VGT (Gr.1),113
+2180,N 2025 VGT (Gr.1),16
 2181,LM55 VGT (Gr.1),21
 2182,650S GT3 '15,117
 2183,Corvette C7 Gr.3,7
@@ -231,14 +231,14 @@ ID,ShortName,Maker
 2187,FT-1 VGT (Gr.3),43
 2188,R.S.01 GT3 '16,34
 2190,GT by Citroen Race Car (Gr.3),9
-2192,Volkswagen GTI VGT (Gr.3),46
-3183,PEUGEOT VGT (Gr.3),32
+2192,GTI VGT (Gr.3),46
+3183,VGT (Gr.3),32
 3185,4C Gr.3,3
-3187,Alpine VGT '17,86
+3187,VGT '17,86
 3188,SRT Tomahawk VGT (Gr.1),11
 3192,SLS AMG Gr.4,153
 3209,M4 Safety Car,6
-3210,Mercedes-AMG GT Safety Car,153
+3210,GT Safety Car,153
 3214,Civic Type R (FK2) '15,15
 3215,208 GTi by Peugeot Sport '14,32
 3216,R.S.01 '16,34
@@ -249,7 +249,7 @@ ID,ShortName,Maker
 3221,M6 GT3 Sprint Model '16,6
 3222,86 GRMN '16,43
 3223,Viper SRT GT3-R '15,11
-3224,Mercedes-AMG GT3 '16,153
+3224,GT3 '16,153
 3225,GT-R Safety Car,28
 3227,LC500 '17,50
 3228,RC F GT3 prototype '16,50
@@ -302,13 +302,13 @@ ID,ShortName,Maker
 3311,911 RSR (991) '17,136
 3312,TS050 - Hybrid '16,43
 3313,919 Hybrid '16,136
-3314,Audi VGT,5
-3315,McLaren VGT,117
+3314,VGT,5
+3315,VGT,117
 3316,COPEN RJ VGT,10
 3332,L500R HYbrid VGT 2017,32
 3333,L750R HYbrid VGT 2017,32
 3334,R18 '16,5
-3335,McLaren VGT (Gr.1),117
+3335,VGT (Gr.1),117
 3336,F-150 SVT Raptor '11,13
 3337,A110 '17,86
 3338,CHC 1967 Chevy Nova,147
@@ -323,7 +323,7 @@ ID,ShortName,Maker
 3348,NSX CONCEPT-GT '16,15
 3349,RC F GT500 '16,50
 3350,GT-R NISMO GT500 '16,28
-3351,Audi e-tron VGT,5
+3351,e-tron VGT,5
 3352,GR Supra Racing Concept '18,43
 3353,Clio R.S. 220 Trophy '16,34
 3354,BRZ S '15,38
@@ -331,7 +331,7 @@ ID,ShortName,Maker
 3357,S660 '15,15
 3358,911 GT3 (996) '01,136
 3359,911 GT3 (997) '09,136
-3360,McLaren P1 GTR '16,117
+3360,P1 GTR '16,117
 3361,E-type Coupe '61,17
 3362,F50 '95,110
 3363,DB3S '53,4
@@ -359,7 +359,7 @@ ID,ShortName,Maker
 3392,Aventador LP 750-4 SV '15,112
 3393,Carrera GT '04,136
 3394,DBR9 GT1 '10,4
-3396,Jaguar VGT Coupe,17
+3396,VGT Coupe,17
 3397,CLK-LM '98,22
 3398,CTR3 '07,35
 3399,GR Supra Race Car '19,43
@@ -377,8 +377,8 @@ ID,ShortName,Maker
 3413,BRZ STI Sport '18,38
 3414,Lambo V12 VGT,112
 3415,8C 2900B Touring Berlinetta '38,3
-3416,Mercedes-AMG GT R '17,153
-3417,Jaguar VGT SV,17
+3416,GT R '17,153
+3417,VGT SV,17
 3418,GR Supra RZ '20,43
 3419,RX-VISION GT3 CONCEPT,21
 3420,Focus RS '18,13
@@ -391,7 +391,7 @@ ID,ShortName,Maker
 3431,911 Carrera RS (964) '92,136
 3433,FXX K '14,110
 3434,Testarossa '91,110
-3436,Ford GT Race Car '18,13
+3436,GT Race Car '18,13
 3437,Mangusta '69,140
 3438,Abarth 595 SS '70,125
 3439,911 Carrera RS (993) '95,136
@@ -407,16 +407,16 @@ ID,ShortName,Maker
 3454,3.0 CSL '71,6
 3456,Swift Sport '17,39
 3457,A220 Race Car '68,86
-3458,Mercedes-AMG C 63 S '15,153
+3458,C 63 S '15,153
 3467,Civic Type R Limited Edition (FK8) '20,15
 3469,F8 Tributo '19,110
 3471,Celica GT-Four (ST205) '94,43
 3477,Silvia spec-R Aero (S15) Touring Car,28
-3478,Porsche VGT,136
+3478,VGT,136
 3479,Jaguar VGT Roadster,17
 3480,Swift Sport Gr.4,39
 3481,GR86 RZ '21,43
-3485,Mercedes-AMG GT Black Series '20,153
+3485,GT Black Series '20,153
 3487,Mustang Boss 429 '69,13
 3495,RX-VISION '15,21
 3500,G70 3.3T AWD Prestige Package '22,152
@@ -428,9 +428,9 @@ ID,ShortName,Maker
 3474,BRZ GT300 '21,38
 3506,BRZ S '21,38
 3426,Roadster Shop Rampage,151
-3476,Suzuki Vision Gran Turismo,39
+3476,Vision Gran Turismo,39
 3499,GR010 HYBRID '21,43
-3508,SUZUKI Vision Gran Turismo (Gr.3 Version),39
+3508,Vision Gran Turismo (Gr.3 Version),39
 3444,1932 Ford Roadster Hot Rod,13
 808,V6 Escudo Pikes Peak Special spec.98,39
 3459,918 Spyder '13,136
@@ -440,7 +440,7 @@ ID,ShortName,Maker
 3505,Mangusta (Christian Dior),140
 3475,MP4/4 '88,117
 3462,GTO 'The Judge' '69,52
-3507,Porsche VGT Spyder,136
+3507,VGT Spyder,136
 3511,ID.R '19,46
 3513,Silvia K's Type S (S14) '94,28
 836,Skyline 2000GT-R (KPGC110) '73,28
@@ -453,7 +453,7 @@ ID,ShortName,Maker
 3517,Red Bull X2019 25th Anniversary,33
 3411,Giulia GTAm '20,3
 3473,Chiron '16,113
-3510,Ferrari Vision Gran Turismo,110
+3510,Vision Gran Turismo,110
 3518,Corvette C8 Stingray '20,7
 781,Celica GT-FOUR Rally Car (ST205) '95,43
 2119,Italdesign VGT Street Mode,135
@@ -500,3 +500,25 @@ ID,ShortName,Maker
 3547,R4 GTL '85,34
 3551,M3 '97,6
 3554,Van DX '16,159
+3546,Prototype 2024,160
+3412,R8 Coupé V10 plus '16,5
+36,Chevelle SS 454 Sport Coupé '70,7
+1544,430 Scuderia '07,110
+3555,Escort RS Cosworth '92,13
+37,Civic SiR･II (EG) '93,15
+140,NSX GT500 '00,15
+1506,Gallardo LP 560-4 '08,112
+3548,Urus '18,112
+3557,W 196 R '55,22
+799,Lancer Evolution VIII MR GSR '04,25
+3553,GT-R Premium Edition T-Spec '24,28
+102,Skyline GTS-R (R31) '87,28
+3558,911 Turbo S (992) '20,136
+3560,Mission X '23,136
+3468,RGT 4.2 '16,35
+3550,Impreza Rally Car '98,38
+116,GT-One (TS020) '99,43
+3549,240 SE Estate '93,161
+3482,V40 T5 R-Design '13,161
+3542,Vision Gran Turismo,162
+3559,Jimny Sierra JC '18,39

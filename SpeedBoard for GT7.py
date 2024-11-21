@@ -43,6 +43,65 @@ import sb.components.speed
 import sb.components.stats
 import sb.components.help
 
+defaultLayout = [
+                    [ # Screen 1
+                        [ # Page 1
+                            { "component" : "LapHeader", "stretch" : 1},
+                            { "list" :
+                                [
+                                    { "list" :
+                                        [
+                                            { "component" : "Speed", "stretch" : 2},
+                                            { "component" : "TyreTemps", "stretch" : 1},
+                                        ], "stretch" : 1
+                                    },
+                                    { "component" : "FuelAndMessages", "stretch" : 1},
+                                ], "stretch" : 100
+                            }
+                        ],
+                        # Pages 2..
+                        { "component" : "Stats", "stretch" : 1},
+                        { "component" : "Help", "stretch" : 1},
+                        { "component" : "Map", "stretch" : 1},
+                    ],
+                    [ # Screen 2
+                        { "component" : "Map", "stretch" : 1},
+                    ]
+                ]
+
+j = json.dumps(defaultLayout, indent = 4)
+with open("defaultLayout.json", "w") as jf:
+    jf.write(j)
+
+circuitExperienceLayout = [
+                    [ # Screen 1
+                        [ # Page 1
+                            { "component" : "LapHeader", "stretch" : 1},
+                            { "list" :
+                                [
+                                    { "list" :
+                                        [
+                                            { "component" : "Speed", "stretch" : 2},
+                                            { "component" : "TyreTemps", "stretch" : 1},
+                                        ], "stretch" : 1
+                                    },
+                                    { "component" : "Map", "stretch" : 1},
+                                ], "stretch" : 100
+                            }
+                        ],
+                        # Pages 2..
+                        { "component" : "Stats", "stretch" : 1},
+                        { "component" : "Help", "stretch" : 1},
+                    ],
+                ]
+
+class Screen(QStackedWidget):
+    def __init__(self, keyRedirect):
+        super().__init__()
+        self.keyRedirect = keyRedirect
+
+    def keyPressEvent(self, e):
+        self.keyRedirect.keyPressEvent(e)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -57,7 +116,6 @@ class MainWindow(QMainWindow):
         self.goFullscreen = True
 
         self.masterWidget = None
-        self.masterWidgetIndex = 0
         self.cfg.loadConstants()
         self.threadpool = QThreadPool()
 
@@ -72,47 +130,88 @@ class MainWindow(QMainWindow):
 
         self.newMessage = None
         self.messages = []
+        self.messageWaitsForKey = False
 
         self.setCentralWidget(self.startWindow)
 
         self.curOptimizingLap = Lap()
 
+    def createComponent(self, name):
+        newComponent = sb.component.componentLibrary[name](self.cfg, self)
+        self.components.append(newComponent)
+        title = newComponent.title()
+        if title is None:
+            print("New component:", name)
+            return newComponent.getWidget()
+        else:
+            print("New component:", title)
+            return newComponent.getTitledWidget(newComponent.title())
+
+    def makeDashEntry(self, e, horizontal = True):
+        page = QWidget()
+        if horizontal:
+            layout = QHBoxLayout()
+        else:
+            layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        page.setLayout(layout)
+        if "list" in e:
+            for c in e['list']:
+                w = self.makeDashEntry(c, not horizontal)
+                layout.addWidget(w[0], w[1])
+        elif "component" in e:
+            print(e['component'])
+            layout.addWidget (self.createComponent(e['component']))
+        return [page, e['stretch']]
+
+    def makeDashPage(self, e):
+        page = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        page.setLayout(layout)
+        if isinstance(e, list):
+            print("Page with multiple components")
+            for c in e:
+                w = self.makeDashEntry(c)
+                layout.addWidget(w[0], w[1])
+        elif isinstance(e, dict):
+            print("Page:", e['component'])
+            layout.addWidget (self.createComponent(e['component']))
+        return page
+
+
+    def makeDashScreen(self, e):
+        print("Screen")
+        screen = Screen(self)
+        for c in e:
+            screen.addWidget(self.makeDashPage(c))
+        return screen
+
+    def makeDashFromSpec(self, spec):
+        screens = []
+        for c in spec:
+            screens.append(self.makeDashScreen(c))
+        return screens
+        
 
     def makeDashWidget(self):
         self.components = []
 
         if self.cfg.circuitExperience:
-            mapCEComponent = sb.components.mapce.Map(self.cfg, self)
-            self.components.append(mapCEComponent)
-            mapViewCEWidget, mapViewHeader, mapViewCE = mapCEComponent.getTitledWidget("Map")
+            self.specWidgets = self.makeDashFromSpec(circuitExperienceLayout)
         else:
-            fuelComponent = sb.components.fuelandmessages.FuelAndMessages(self.cfg, self)
-            self.components.append(fuelComponent)
-            fuelWidget = fuelComponent.getTitledWidget("Fuel")[0]
+            self.specWidgets = self.makeDashFromSpec(defaultLayout)
 
-        tyreComponent = sb.components.tyretemps.TyreTemps(self.cfg, self)
-        self.components.append(tyreComponent)
-        tyreWidget = tyreComponent.getTitledWidget("Tyres")[0]
-
-        self.speedComponent = sb.components.speed.Speed(self.cfg, self) # TODO Still self due to keyboard shortcuts
-        self.components.append(self.speedComponent)
-        speedWidget, self.headerSpeed, speedWidgetLone = self.speedComponent.getTitledWidget(self.speedComponent.title()) # TODO Still self due to brake offset display
-
-        headerComponent = sb.components.lapheader.LapHeader(self.cfg, self)
-        self.components.append(headerComponent)
-        header = headerComponent.getWidget()
-
-        helpComponent = sb.components.help.Help(self.cfg, self)
-        self.components.append(helpComponent)
-        helpWidget = helpComponent.getWidget()
+        i = 1
+        for s in self.specWidgets:
+            s.setWindowTitle("SpeedBoard for GT7 - Screen " + str(i))
+            i += 1
+            s.show()
 
         # Lvl 1
-        masterLayout = QGridLayout()
         self.masterWidget = QStackedWidget()
-        self.dashWidget = QWidget()
-        self.masterWidget.addWidget(self.dashWidget)
 
-        self.uiMsgPageScroller = QScrollArea()
+        uiMsgPageScroller = QScrollArea()
         self.uiMsg = QLabel("Welcome to Speedboard for GT7")
         self.uiMsg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.uiMsg.setAutoFillBackground(True)
@@ -124,44 +223,13 @@ class MainWindow(QMainWindow):
         pal.setColor(self.uiMsg.foregroundRole(), self.cfg.foregroundColor)
         self.uiMsg.setPalette(pal)
 
-        self.uiMsgPageScroller.setWidget(self.uiMsg)
-        self.uiMsgPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.uiMsgPageScroller.setWidgetResizable(True)
+        uiMsgPageScroller.setWidget(self.uiMsg)
+        uiMsgPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        uiMsgPageScroller.setWidgetResizable(True)
 
-        self.statsComponent = sb.components.stats.Stats(self.cfg, self) # TODO Still self due to keyboard shortcuts
-        self.components.append(self.statsComponent)
-        statsWidget = self.statsComponent.getTitledWidget("Statistics")[0]
-
-        self.masterWidget.addWidget(self.uiMsgPageScroller)
-        self.masterWidget.addWidget(statsWidget)
-        #statsWidget.show()
-        self.masterWidget.addWidget(helpWidget)
-
-        if not self.cfg.circuitExperience:
-            mapComponent = sb.components.mapce.Map(self.cfg, self)
-            self.components.append(mapComponent)
-            mapViewWidget, mapViewHeader, mapView = mapComponent.getTitledWidget("Map")
-            self.masterWidget.addWidget(mapViewWidget)
-            #self.debugWidget = mapViewWidget
-            #self.debugWidget.show()
-
-        self.dashWidget.setLayout(masterLayout)
-
-        masterLayout.setColumnStretch(0, 1)
-        masterLayout.setColumnStretch(1, 1)
-        masterLayout.setRowStretch(0, 1)
-        masterLayout.setRowStretch(1, 11)
-        masterLayout.setRowStretch(2, 5)
-        masterLayout.addWidget(header, 0, 0, 1, 2)
-        if self.cfg.circuitExperience:
-            masterLayout.addWidget(mapViewCEWidget, 1, 1, 3, 1)
-        else:
-            masterLayout.addWidget(fuelWidget, 1, 1, 3, 1)
-
-        masterLayout.addWidget(tyreWidget, 2, 0, 1, 1)
-
-        masterLayout.addWidget(speedWidget, 1, 0, 1, 1)
+        self.masterWidget.addWidget(self.specWidgets[0])
+        self.masterWidget.addWidget(uiMsgPageScroller)
 
         pal = self.palette()
         pal.setColor(self.backgroundRole(), self.cfg.brightBackgroundColor)
@@ -331,7 +399,7 @@ class MainWindow(QMainWindow):
 
     def returnToDash(self):
         if self.centralWidget() == self.masterWidget:
-            self.flipPage(self.masterWidgetIndex)
+            self.masterWidget.setCurrentIndex(0)
 
     def stopDash(self):
         if not self.trackDetector is None:
@@ -362,11 +430,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.startWindow)
 
     def newSession(self):
-
-        if self.brakeOffset != 0:
-            self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
-        else:
-            self.headerSpeed.setText("SPEED")
 
         logPrint("INIT RACE")
         self.newMessage = None
@@ -765,8 +828,6 @@ class MainWindow(QMainWindow):
                     ## Reset brake point offsets for new best lap
                     if self.bestLap != newBestLap and self.cfg.bigCountdownBrakepoint == 1:
                         self.brakeOffset = 0
-                        self.headerSpeed.setText("SPEED")
-                        self.headerSpeed.update()
                     self.bestLap = newBestLap
                     self.medianLap = self.findMedianLap()
 
@@ -813,7 +874,7 @@ class MainWindow(QMainWindow):
     def checkPitStop(self, curPoint):
         if self.previousPoint is None:
             logPrint("FIRST")
-        if not self.previousPoint is None and curPoint.distance(self.previousPoint) > 30.0:
+        if not self.previousPoint is None and curPoint.distance(self.previousPoint) > 20.0: # TODO const
             logPrint ("JUMP by", curPoint.distance(self.previousPoint), "to", curPoint.position_x, " / ", curPoint.position_z, " laps ", self.previousPoint.current_lap, curPoint.current_lap)
             if curPoint.current_lap == 0:
                 self.refueled = 0
@@ -871,6 +932,8 @@ class MainWindow(QMainWindow):
             for curPoint in pointsToHandle:
                 # Only handle packages when driving
                 if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
+                    loadCarIds()
+                    print("Skip with car", idToCar(curPoint.car_id), curPoint.car_id)
                     continue
 
                 self.checkCircuitExperienceMode(curPoint)
@@ -923,8 +986,6 @@ class MainWindow(QMainWindow):
                 self.exitDash()
             elif e.key() == Qt.Key.Key_Space.value:
                 self.newMessage = "CAUTION"
-            elif e.key() == Qt.Key.Key_Tab.value:
-                self.speedComponent.cycleBigCountdownBreakponts()
             elif e.key() == Qt.Key.Key_B.value:
                 if self.bestLap >= 0:
                     saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.bestLap, "best",))
@@ -971,8 +1032,6 @@ class MainWindow(QMainWindow):
             elif e.key() == Qt.Key.Key_0.value:
                 self.brakeOffset = 0
                 logPrint("Brake offset", self.brakeOffset)
-                self.headerSpeed.setText("SPEED")
-                self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Plus.value or e.key() == Qt.Key.Key_Equal.value:
                 self.lapOffset += 1
             elif e.key() == Qt.Key.Key_Minus.value:
@@ -980,41 +1039,43 @@ class MainWindow(QMainWindow):
             elif e.key() == Qt.Key.Key_Up.value:
                 self.brakeOffset -= 3
                 logPrint("Brake offset", self.brakeOffset)
-                if self.brakeOffset != 0:
-                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
-                else:
-                    self.headerSpeed.setText("SPEED")
-                self.headerSpeed.update()
             elif e.key() == Qt.Key.Key_Down.value:
                 self.brakeOffset += 3
                 logPrint("Brake offset", self.brakeOffset)
-                if self.brakeOffset != 0:
-                    self.headerSpeed.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] SPEED")
-                else:
-                    self.headerSpeed.setText("SPEED")
-                self.headerSpeed.update()
+            elif e.key() == Qt.Key.Key_Left.value:
+                 cur = self.specWidgets[0].currentIndex()
+                 if cur == 0:
+                     self.specWidgets[0].setCurrentIndex(self.specWidgets[0].count()-1)
+                 else:
+                     self.specWidgets[0].setCurrentIndex(cur-1)
+            elif e.key() == Qt.Key.Key_Right.value:
+                 cur = self.specWidgets[0].currentIndex()
+                 if cur == self.specWidgets[0].count() - 1:
+                     self.specWidgets[0].setCurrentIndex(0)
+                 else:
+                     self.specWidgets[0].setCurrentIndex(cur+1)
             elif e.key() == Qt.Key.Key_S.value:
-                if self.masterWidget.currentIndex() == 2:
+                if self.specWidgets[0].currentIndex() == 1:
                     self.flipPage(0)
                 else:
-                    self.flipPage(2)
+                    self.flipPage(1)
             elif e.key() == Qt.Key.Key_V.value:
-                if self.masterWidget.currentIndex() == 4:
-                    self.flipPage(0)
-                else:
-                    self.flipPage(4)
-            elif e.key() == Qt.Key.Key_T.value:
-                self.statsComponent.updateRunStats(saveRuns=True)
-                self.showUiMsg("Run table saved.", 2)
-            elif e.key() == Qt.Key.Key_Question:
-                if self.masterWidget.currentIndex() == 3:
+                if self.specWidgets[0].currentIndex() == 3:
                     self.flipPage(0)
                 else:
                     self.flipPage(3)
+            elif e.key() == Qt.Key.Key_Question:
+                if self.specWidgets[0].currentIndex() == 2:
+                    self.flipPage(0)
+                else:
+                    self.flipPage(2)
             #elif e.key() == Qt.Key.Key_T.value:
                 #tester = Worker(someDelay, "Complete", 0.2)
                 #tester.signals.finished.connect(self.showUiMsg)
                 #self.threadpool.start(tester)
+            else:
+                for c in self.components:
+                    c.keyPressEvent(e)
         elif self.centralWidget() == self.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
                 self.flipPage(e.key() - Qt.Key.Key_1.value)
@@ -1042,8 +1103,7 @@ class MainWindow(QMainWindow):
 
     def flipPage(self, nr):
         logPrint("Flip to page", nr)
-        self.masterWidget.setCurrentIndex(nr)
-        self.masterWidgetIndex = self.masterWidget.currentIndex()
+        self.specWidgets[0].setCurrentIndex(nr)
 
     # TODO consider moving to Lap class
     def saveAllLaps(self, name):
@@ -1148,23 +1208,38 @@ if __name__ == '__main__':
     app.setOrganizationDomain("pitstop.profittlich.com");
     app.setApplicationName("GT7 SpeedBoard");
 
-    window = MainWindow()
+    customIP = None
+    fullscreen = True
 
     i = 1
     while i < len(sys.argv):
         if sys.argv[i] == "--ip" and i < len(sys.argv)-1:
-            window.startWindow.ip.setText(sys.argv[i+1])
+            customIP = sys.argv[i+1]
             i+=1
         elif sys.argv[i] == "--no-fs":
-            window.goFullscreen = False
-        elif sys.argv[i] == "--clearsettings":
+            fullscreen = False
+        elif sys.argv[i] == "--clear-settings":
             settings = QSettings()
             settings.clear()
             settings.sync()
             logPrint("Settings cleared")
             sys.exit(0)
+        elif sys.argv[i] == "--list-components":
+            print ("")
+            print ("Available components:")
+            print ("")
+            for i in sb.component.componentLibrary:
+                print(i, " " * (30 - len(i)), sb.component.componentLibrary[i].description())
+            print ("")
+            sys.exit(0)
         i+=1
     
+    window = MainWindow()
+
+    window.goFullscreen = fullscreen
+    if not customIP is None:
+        window.startWindow.ip.setText(customIP)
+
     window.show()
     window.startWindow.ip.setFocus()
 

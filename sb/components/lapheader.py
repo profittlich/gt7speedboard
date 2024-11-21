@@ -9,6 +9,9 @@ from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
 class LapHeader(sb.component.Component):
+    def description():
+        return "Remaining or driven laps display"
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -63,3 +66,5 @@ class LapHeader(sb.component.Component):
             self.inPit = False
 
         self.updateLaps(curPoint)
+
+sb.component.componentLibrary['LapHeader'] = LapHeader
