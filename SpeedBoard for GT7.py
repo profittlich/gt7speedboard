@@ -698,7 +698,7 @@ class MainWindow(QMainWindow):
 
     def optimizeLap(self, curPoint):
         if len(self.optimizedLap.points) == 0:
-            self.curOptimizingLap.points.append(curPoint)
+            self.curOptimizingLap.points.append(copy.deepcopy(curPoint))
             if len(self.curOptimizingLap.points) != len(self.curLap.points):
                 self.curOptimizingLap.points = copy.deepcopy(self.curLap.points)
             self.curOptimizingLiveIndex = len(self.curLap.points)
@@ -713,7 +713,7 @@ class MainWindow(QMainWindow):
                     lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
                     if lenOpt > lenLive or lenOpt == 0:
                         logPrint("Current segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
-                        self.curOptimizingLap.points += self.curLap.points[self.curOptimizingLiveIndex:-1]
+                        self.curOptimizingLap.points += copy.deepcopy(self.curLap.points[self.curOptimizingLiveIndex:-1])
                     else:
                         logPrint("Previous segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
                         self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:self.closestIOptimized-1]
@@ -728,10 +728,10 @@ class MainWindow(QMainWindow):
         lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
         if lenOpt > lenLive or lenOpt == 0:
             logPrint("Current final segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
-            self.curOptimizingLap.points += self.curLap.points[self.curOptimizingLiveIndex:]
+            self.curOptimizingLap.points += copy.deepcopy(self.curLap.points[self.curOptimizingLiveIndex:])
         else:
             logPrint("Previous final segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
-            self.curOptimizingLap.points += self.optimizedLap.points[self.curOptimizingIndex:]
+            self.curOptimizingLap.points += copy.deepcopy(self.optimizedLap.points[self.curOptimizingIndex:])
         self.optimizedLap = self.curOptimizingLap
         logPrint("Optimized lap:", len(self.optimizedLap.points), "points vs.", len(self.curLap.points))
         self.curOptimizingLap = Lap()

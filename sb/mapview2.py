@@ -752,7 +752,7 @@ class MapView2(QWidget):
 
             lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
             mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
-            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp2.current_lap), 20, 15, self.l1Color, 2)
+            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp1.current_lap), 20, 15, self.l1Color, 2)
             mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(lp1.distance(lp2)) ,20, 30, self.l1Color, 2)
             self.layers[self.lap1Markers].append(mk3)
             self.layers[self.lap1Markers].append(mk4)
