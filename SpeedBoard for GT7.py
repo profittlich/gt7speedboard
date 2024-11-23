@@ -64,9 +64,9 @@ defaultLayout = [
                         { "component" : "Help", "stretch" : 1},
                         { "component" : "Map", "stretch" : 1},
                     ],
-                    [ # Screen 2
-                        { "component" : "Map", "stretch" : 1},
-                    ]
+                    #[ # Screen 2
+                        #{ "component" : "Map", "stretch" : 1},
+                    #]
                 ]
 
 j = json.dumps(defaultLayout, indent = 4)
