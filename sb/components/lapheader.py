@@ -41,6 +41,8 @@ class LapHeader(sb.component.Component):
             #lapSuffix += " PIT STOP"
         if self.data.isRecording:
             lapSuffix += " [RECORDING]"
+        if self.cfg.developmentMode:
+            lapSuffix += " [DEV]"
         if self.cfg.circuitExperience:
             self.header.setText("CIRCUIT EXPERIENCE" + lapSuffix)
         elif curPoint.total_laps > 0:

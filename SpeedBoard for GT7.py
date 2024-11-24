@@ -107,6 +107,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.cfg = sb.configuration.Configuration()
+        self.cfg.developmentMode = False
 
         self.defaultPalette = self.palette()
 
@@ -382,6 +383,9 @@ class MainWindow(QMainWindow):
         if self.goFullscreen:
             self.showFullScreen()
         self.showUiMsg("Press ESC to return to the settings", 2)
+
+        if self.cfg.developmentMode:
+            self.toggleRecording()
 
         self.trackDetector = TrackDetector()
         self.trackPreviouslyIdentified = "Unknown Track"
@@ -733,6 +737,9 @@ class MainWindow(QMainWindow):
             logPrint("Previous final segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
             self.curOptimizingLap.points += copy.deepcopy(self.optimizedLap.points[self.curOptimizingIndex:])
         self.optimizedLap = self.curOptimizingLap
+        if self.cfg.developmentMode:
+            saveThread = Worker(self.appendOptimizedLap, "Optimized lap saved.", 1.0, (self.optimizedLap, "optimized",))
+            self.threadpool.start(saveThread)
         logPrint("Optimized lap:", len(self.optimizedLap.points), "points vs.", len(self.curLap.points))
         self.curOptimizingLap = Lap()
         self.curOptimizingLiveIndex = 0
@@ -959,7 +966,7 @@ class MainWindow(QMainWindow):
 
 
     def toggleRecording(self):
-        if self.cfg.recordingEnabled:
+        if self.cfg.recordingEnabled or self.cfg.developmentMode:
             if self.isRecording:
                 self.isRecording = False
                 self.receiver.stopRecording()
@@ -970,7 +977,7 @@ class MainWindow(QMainWindow):
                 prefix = self.cfg.storageLocation + "/"
                 if len(self.cfg.sessionName) > 0:
                     prefix += self.cfg.sessionName + "-"
-                self.receiver.startRecording(prefix)
+                self.receiver.startRecording(prefix, not self.cfg.developmentMode)
                 self.isRecording = True
 
     def keyPressEvent(self, e):
@@ -1133,6 +1140,17 @@ class MainWindow(QMainWindow):
         self.saveLap(index, name)
 
     # TODO consider moving to Lap class
+    def appendOptimizedLap(self, index, name):
+        if not hasattr(self, 'dev_contLap'):
+            self.dev_contLap = 1
+        else:
+            self.dev_contLap += 1
+        for p in index.points:
+            p.current_lap = self.dev_contLap
+            p.recreatePackage()
+        self.appendLap(index, name)
+
+    # TODO consider moving to Lap class
     def saveLap(self, index, name):
         logPrint("store lap:", name)
         if not os.path.exists(self.cfg.storageLocation):
@@ -1141,6 +1159,29 @@ class MainWindow(QMainWindow):
         if len(self.cfg.sessionName) > 0:
             prefix += self.cfg.sessionName + " - "
         with open ( prefix + self.trackPreviouslyIdentified + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
+            if isinstance(index, Lap):
+                lap = index
+            else:
+                lap = self.previousLaps[index]
+            if not lap.preceeding is None:
+                logPrint("Going from", lap.preceeding.current_lap)
+                f.write(lap.preceeding.raw)
+            logPrint("via", lap.points[0].current_lap)
+            for p in lap.points:
+                f.write(p.raw)
+            if not lap.following is None:
+                logPrint("to", lap.following.current_lap)
+                f.write(lap.following.raw)
+
+    # TODO consider moving to Lap class
+    def appendLap(self, index, name):
+        logPrint("append lap:", name)
+        if not os.path.exists(self.cfg.storageLocation):
+            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
+        prefix = self.cfg.storageLocation + "/"
+        if len(self.cfg.sessionName) > 0:
+            prefix += self.cfg.sessionName + " - "
+        with open ( prefix + self.trackPreviouslyIdentified + " - lap - " + name + ".gt7laps", "ab") as f:
             if isinstance(index, Lap):
                 lap = index
             else:
@@ -1209,12 +1250,15 @@ if __name__ == '__main__':
 
     customIP = None
     fullscreen = True
+    developmentMode = False
 
     i = 1
     while i < len(sys.argv):
         if sys.argv[i] == "--ip" and i < len(sys.argv)-1:
             customIP = sys.argv[i+1]
             i+=1
+        elif sys.argv[i] == "--dev":
+            developmentMode = True
         elif sys.argv[i] == "--no-fs":
             fullscreen = False
         elif sys.argv[i] == "--clear-settings":
@@ -1236,6 +1280,7 @@ if __name__ == '__main__':
     window = MainWindow()
 
     window.goFullscreen = fullscreen
+    window.cfg.developmentMode = developmentMode
     if not customIP is None:
         window.startWindow.ip.setText(customIP)
 

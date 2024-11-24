@@ -36,17 +36,24 @@ class MapView2(QWidget):
         self.brakeSegments = []
         self.setMouseTracking(True)
 
-    def setLaps(self, a, lap1, b, lap2):
-        self.fileA = a
-        self.fileB = b
-        self.lap1 = lap1
-        self.lap2 = lap2
-        self.zoom = 1/1.1
-        self.offsetX = 0
-        self.offsetZ = 0
+    def setLapsIndex(self, idx1, idx2):
+        self.idx1 = idx1
+        self.idx2 = idx2
+        self.lap1 = self.laps1[idx1]
+        self.lap2 = self.laps2[idx2]
         self.findExtents()
         self.makeGraphic()
         self.makeLapInfo()
+
+    def setLaps(self, a, laps1, idx1, b, laps2, idx2):
+        self.fileA = a
+        self.fileB = b
+        self.laps1 = laps1
+        self.laps2 = laps2
+        self.zoom = 1/1.1
+        self.offsetX = 0
+        self.offsetZ = 0
+        self.setLapsIndex(idx1, idx2)
 
     # MAP CONTROL
     def moveLeft(self):
@@ -932,13 +939,41 @@ class MapView2(QWidget):
             logPrint("SHIFT pressed")
             self.shiftPressed = True
         elif e.key() == Qt.Key.Key_Right.value:
-            self.moveRight()
+            if not self.shiftPressed:
+                self.moveRight()
+            else:
+                newIdx = self.idx1 + 1
+                if newIdx >= len(self.laps1):
+                    newIdx = 0
+                self.setLapsIndex(newIdx, self.idx2)
+                self.update()
         elif e.key() == Qt.Key.Key_Left.value:
-            self.moveLeft()
+            if not self.shiftPressed:
+                self.moveLeft()
+            else:
+                newIdx = self.idx1 - 1
+                if newIdx < 0:
+                    newIfx = len(self.laps1)-1
+                self.setLapsIndex(newIdx, self.idx2)
+                self.update()
         elif e.key() == Qt.Key.Key_Up.value:
-            self.moveUp()
+            if not self.shiftPressed:
+                self.moveUp()
+            else:
+                newIdx = self.idx2 + 1
+                if newIdx >= len(self.laps2):
+                    newIdx = 0
+                self.setLapsIndex(self.idx1, newIdx)
+                self.update()
         elif e.key() == Qt.Key.Key_Down.value:
-            self.moveDown()
+            if not self.shiftPressed:
+                self.moveDown()
+            else:
+                newIdx = self.idx2 - 1
+                if newIdx < 0:
+                    newIfx = len(self.laps2)-1
+                self.setLapsIndex(self.idx1, newIdx)
+                self.update()
         elif e.key() == Qt.Key.Key_Plus.value:
             self.zoomIn()
         elif e.key() == Qt.Key.Key_Minus.value:

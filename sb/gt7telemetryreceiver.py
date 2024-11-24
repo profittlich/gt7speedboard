@@ -40,9 +40,10 @@ class GT7TelemetryReceiver:
         self.s.sendto(send_data.encode('utf-8'), (self.ip, self.SendPort))
         #logPrint('send heartbeat')
 
-    def startRecording(self, sessionName):
+    def startRecording(self, sessionName, withTimeStamp = True):
         logPrint("Start recording")
         self.startRec = True
+        self.timeStampRecording = withTimeStamp
         self.sessionName = sessionName
 
     def stopRecording(self):
@@ -70,7 +71,10 @@ class GT7TelemetryReceiver:
         while self.running:
             try:
                 if self.startRec:
-                    fn = self.sessionName + "recording-" + dt.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7"
+                    if self.timeStampRecording:
+                        fn = self.sessionName + "recording-" + dt.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7"
+                    else:
+                        fn = self.sessionName + "recording-last.gt7"
                     logPrint("record to", fn)
                     self.record = open (fn, "wb")
                     self.startRec = False

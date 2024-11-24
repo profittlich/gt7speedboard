@@ -116,9 +116,7 @@ class MainWindow(QMainWindow):
         self.startWidget.loadReferenceLapB(lfb)
 
     def compare(self):
-        lap1 = self.startWidget.aLaps[self.startWidget.idxRefA.currentIndex()]
-        lap2 = self.startWidget.bLaps[self.startWidget.idxRefB.currentIndex()]
-        self.masterWidget.setLaps(self.startWidget.refAFile, lap1, self.startWidget.refBFile, lap2)
+        self.masterWidget.setLaps(self.startWidget.refAFile, self.startWidget.aLaps, self.startWidget.idxRefA.currentIndex(), self.startWidget.refBFile, self.startWidget.bLaps, self.startWidget.idxRefB.currentIndex())
         
         self.stackWidget.setCurrentIndex(1)
 
