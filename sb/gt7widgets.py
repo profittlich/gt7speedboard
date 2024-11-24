@@ -328,7 +328,7 @@ class StartWindow(QWidget):
     def checkUpdates(self):
         x = requests.get('https://api.github.com/repos/profittlich/gt7speedboard/releases/latest')
         j = json.loads(x.text)
-        if j['tag_name'] == "v6":
+        if j['tag_name'] == "v7":
             QMessageBox.information(self, "Check updates", "You have the latest version.")
         else:
             result = QMessageBox.question(self, "Check updates", "There is a newer version:\n\n" + j['name'] + "\n\nDo you want to visit the download page?")

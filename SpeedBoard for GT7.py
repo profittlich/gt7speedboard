@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v6)")
+        self.setWindowTitle("SpeedBoard for GT7 (v7)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
@@ -875,8 +875,8 @@ class MainWindow(QMainWindow):
         if self.previousPoint is None:
             logPrint("FIRST")
         if not self.previousPoint is None and curPoint.distance(self.previousPoint) > 20.0: # TODO const
-            logPrint ("JUMP by", curPoint.distance(self.previousPoint), "to", curPoint.position_x, " / ", curPoint.position_z, " laps ", self.previousPoint.current_lap, curPoint.current_lap)
-            if curPoint.current_lap == 0:
+            logPrint ("JUMP by", curPoint.distance(self.previousPoint), "to", curPoint.position_x, " / ", curPoint.position_z, " laps ", self.previousPoint.current_lap, curPoint.current_lap, "driving", curPoint.car_speed, "km/h")
+            if curPoint.current_lap <= 0:
                 self.refueled = 0
                 logPrint("PIT STOP:", self.refueled)
                 if self.lapProgress > 0.5:
@@ -884,7 +884,7 @@ class MainWindow(QMainWindow):
                     logPrint("PIT STOP:", self.refueled)
                 for c in self.components:
                     c.leftCircuit()
-            elif curPoint.current_lap == self.previousPoint.current_lap and curPoint.car_speed > 0.001:
+            elif (curPoint.current_lap == self.previousPoint.current_lap or curPoint.current_lap+1 == self.previousPoint.current_lap) and curPoint.car_speed > 0.1:
                 # TODO difference to reaet to track: Standing time?
                 self.refueled = 0
                 logPrint("PIT STOP:", self.refueled)
@@ -893,7 +893,7 @@ class MainWindow(QMainWindow):
                     logPrint("PIT STOP:", self.refueled)
                 for c in self.components:
                     c.pitStop()
-            elif curPoint.current_lap == self.previousPoint.current_lap and curPoint.car_speed < 0.001:
+            elif curPoint.current_lap == self.previousPoint.current_lap and curPoint.car_speed < 0.1:
                 logPrint("RESET TO TRACK")
             else:
                 logPrint("WARNING: Unknown jump constellation")
@@ -933,7 +933,6 @@ class MainWindow(QMainWindow):
                 # Only handle packages when driving
                 if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
                     loadCarIds()
-                    print("Skip with car", idToCar(curPoint.car_id), curPoint.car_id)
                     continue
 
                 self.checkCircuitExperienceMode(curPoint)

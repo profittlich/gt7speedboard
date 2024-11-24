@@ -74,16 +74,12 @@ class FuelAndMessages(sb.component.Component):
             self.data.refueled = 0
             if self.data.lapProgress > 0.5 and curPoint.current_lap > 0:
                 self.data.refueled -= 1
-            self.data.manualPitStop = False
 
-        if (curPoint.current_fuel / fuel_capacity) < 1 or self.data.manualPitStop:
-            lapValue = self.data.refueled
-            if self.cfg.lapDecimals and curPoint.current_lap > 0:
-                lapValue += self.data.lapProgress
-                lapValue = round(lapValue, 2)
-            refuelLaps = "<br>" + str (max(0,lapValue)) + " SINCE PIT STOP"
-        else:
-            refuelLaps = ""
+        lapValue = self.data.refueled
+        if self.cfg.lapDecimals and curPoint.current_lap > 0:
+            lapValue += self.data.lapProgress
+            lapValue = round(lapValue, 2)
+        refuelLaps = "<br>" + str (max(0,lapValue)) + " SINCE PIT STOP"
 
         if self.data.fuelFactor != 0:
             fuelLapPercent = "<br>" + str(round(100 * self.data.fuelFactor,1)) + postfix + " PER LAP<br>" + str(round(1 / self.data.fuelFactor,1)) + " FULL RANGE"

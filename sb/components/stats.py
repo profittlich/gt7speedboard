@@ -88,6 +88,7 @@ class Stats(sb.component.Component):
             self.sessionStats[-1].description = self.data.newRunDescription + "<br>"
             self.data.newRunDescription = None
             self.updateRunStats()
+        self.updateLiveStats()
 
 
     def updateStats(self):

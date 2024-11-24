@@ -31,6 +31,7 @@ class MapView2(QWidget):
         self.fileA = ""
         self.fileB = ""
         self.shiftPressed = False
+        self.lastFreePoint = None
 
         self.brakeSegments = []
         self.setMouseTracking(True)
@@ -743,22 +744,45 @@ class MapView2(QWidget):
             mp = PositionPoint()
             mp.position_x = wx
             mp.position_z = wz
-            
-            lp2, ip2 = self.findClosestPointNoLimit (self.lap2.points, mp)
-            mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
-            mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%, brake " + str(int(lp2.brake)) + "%, lap " + str(lp2.current_lap) + " (" + str(lp2.position_x) + " / " + str(lp2.position_y) + " / " + str(lp2.position_z) +  ")", 20, 0, self.l2Color, 2)
-            self.layers[self.lap2Markers].append(mk1)
-            self.layers[self.lap2Markers].append(mk2)
 
-            lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
-            mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
-            mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp1.current_lap), 20, 15, self.l1Color, 2)
-            mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(lp1.distance(lp2)) ,20, 30, self.l1Color, 2)
-            self.layers[self.lap1Markers].append(mk3)
-            self.layers[self.lap1Markers].append(mk4)
-            self.layers[self.lap1Markers].append(mk5)
-
-            self.temporaryMarkers.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2), mk1, mk2, mk3, mk4, mk5))
+            if not self.shiftPressed:            
+                lp2, ip2 = self.findClosestPointNoLimit (self.lap2.points, mp)
+                mk1 = CircleMarker("Mouse", lp2.position_x, lp2.position_z, 0x00ffffff, 2)
+                mk2 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip2) + ": " + str(int(lp2.car_speed)) + " km/h, gear " + str(lp2.current_gear) + ", " + str (lp2.rpm) + " rpm, throttle " + str(int(lp2.throttle)) + "%, brake " + str(int(lp2.brake)) + "%, lap " + str(lp2.current_lap) + " (" + str(lp2.position_x) + " / " + str(lp2.position_y) + " / " + str(lp2.position_z) +  ")", 20, 0, self.l2Color, 2)
+                self.layers[self.lap2Markers].append(mk1)
+                self.layers[self.lap2Markers].append(mk2)
+    
+                lp1, ip1 = self.findClosestPointNoLimit (self.lap1.points, lp2)
+                mk3 = CircleMarker("Mouse", lp1.position_x, lp1.position_z, 0x00ffffff, 2)
+                mk4 = Text("Mouse", lp2.position_x, lp2.position_z, str(ip1) + ": " + str(int(lp1.car_speed)) + " km/h, gear " + str(lp1.current_gear) + ", " + str (lp1.rpm) + " rpm, throttle " + str(int(lp1.throttle)) + "%, brake " + str(int(lp1.brake)) + "%, lap " + str(lp1.current_lap), 20, 15, self.l1Color, 2)
+                mk5 = Text("Mouse", lp2.position_x, lp2.position_z, "Distance: " + str(lp1.distance(lp2)) ,20, 30, self.l1Color, 2)
+                self.layers[self.lap1Markers].append(mk3)
+                self.layers[self.lap1Markers].append(mk4)
+                self.layers[self.lap1Markers].append(mk5)
+    
+                self.temporaryMarkers.append((self.lap1.points.index(lp1), self.lap2.points.index(lp2), mk1, mk2, mk3, mk4, mk5))
+            elif self.lastFreePoint is None:
+                mk1 = CircleMarker("Mouse", mp.position_x, mp.position_z, 0x00ffffff, 2)
+                mk2 = Text("Mouse", mp.position_x, mp.position_z, str(mp.position_x) + " / " + str(mp.position_z), 20, 0, self.l2Color, 2)
+                mk3 = CircleMarker("Mouse", mp.position_x, mp.position_z, 0x00ffffff, 2)
+                mk4 = Text("Mouse", mp.position_x, mp.position_z, str(mp.position_x) + " / " + str(mp.position_z), 20, 0, self.l2Color, 2)
+                mk5 = Text("Mouse", mp.position_x, mp.position_z, str(mp.position_x) + " / " + str(mp.position_z), 20, 0, self.l2Color, 2)
+                self.layers[self.lap2Markers].append(mk1)
+                self.layers[self.lap2Markers].append(mk2)
+                self.temporaryMarkers.append((mp, mp, mk1, mk2, mk3, mk4, mk5))
+                self.lastFreePoint = mp
+            else:
+                mk1 = CircleMarker("Mouse", mp.position_x, mp.position_z, 0x00ffffff, 2)
+                mk2 = Text("Mouse", mp.position_x, mp.position_z, str(mp.position_x) + " / " + str(mp.position_z), 20, 0, self.l2Color, 2)
+                mk3 = Line("Mouse", mp.position_x, mp.position_z, self.lastFreePoint.position_x, self.lastFreePoint.position_z, 0x00ffffff, 2)
+                mk4 = Text("Mouse", mp.position_x, mp.position_z, "Distance: " + str(self.lastFreePoint.flatDistance(mp)), 20, 15, self.l2Color, 2)
+                mk5 = Text("Mouse", mp.position_x, mp.position_z, str(mp.position_x) + " / " + str(mp.position_z), 20, 0, self.l2Color, 2)
+                self.layers[self.lap2Markers].append(mk1)
+                self.layers[self.lap2Markers].append(mk2)
+                self.layers[self.lap2Markers].append(mk3)
+                self.layers[self.lap2Markers].append(mk4)
+                self.temporaryMarkers.append((mp, mp, mk1, mk2, mk3, mk4, mk5))
+                self.lastFreePoint = None
 
             self.update()
             
