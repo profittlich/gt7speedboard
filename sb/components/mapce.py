@@ -15,10 +15,15 @@ class Map(sb.component.Component):
     
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
+        self.widget = QWidget()
+        layout = QHBoxLayout()
+        self.widget.setLayout(layout) 
+
         self.mapView = MapView()
+        layout.addWidget(self.mapView)
 
     def getWidget(self):
-        return self.mapView
+        return self.widget
 
     def speedDiffQColor(self, d):
         col = QColor()

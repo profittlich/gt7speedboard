@@ -42,6 +42,9 @@ import sb.components.mapce
 import sb.components.speed
 import sb.components.stats
 import sb.components.help
+import sb.components.pedals
+import sb.components.mapopt
+import sb.components.mapopting
 
 defaultLayout = [
                     [ # Screen 1
@@ -69,9 +72,9 @@ defaultLayout = [
                     #]
                 ]
 
-j = json.dumps(defaultLayout, indent = 4)
-with open("defaultLayout.json", "w") as jf:
-    jf.write(j)
+#j = json.dumps(defaultLayout, indent = 4)
+#with open("defaultLayout.json", "w") as jf:
+    #jf.write(j)
 
 circuitExperienceLayout = [
                     [ # Screen 1
@@ -135,7 +138,14 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.startWindow)
 
+        logPrint("new optimizing lap")
         self.curOptimizingLap = Lap()
+
+    def loadLayout(self, fn):
+        global defaultLayout
+        with open(fn, "r") as f:
+            txt = f.read()
+            defaultLayout = json.loads(txt)
 
     def createComponent(self, name):
         newComponent = sb.component.componentLibrary[name](self.cfg, self)
@@ -370,6 +380,7 @@ class MainWindow(QMainWindow):
 
         self.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
         self.curLap = Lap()
+        self.curLapInvalidated = False
 
         self.newSession()
         self.messageWaitsForKey = False
@@ -468,6 +479,7 @@ class MainWindow(QMainWindow):
         if not self.curLap is None and len(self.curLap.points) > 1:
             logPrint(" Old lap:", len(self.curLap.points))#, self.curLap.distance(self.curLap.points[0], self.curLap.points[-1]), "m")
         self.curLap = Lap()
+        self.curLapInvalidated = False
         self.closestILast = 0
         self.closestIBest = 0
         self.closestIMedian = 0
@@ -695,6 +707,7 @@ class MainWindow(QMainWindow):
         elif self.cfg.optimizedSeed == 3:
             self.optimizedLap = copy.deepcopy(self.refLaps[2])
         logPrint("discard", len(self.curOptimizingLap.points))
+        logPrint("new optimizing lap")
         self.curOptimizingLap = Lap()
         self.curOptimizingIndex = 0
         self.curOptimizingLiveIndex = 0
@@ -716,7 +729,7 @@ class MainWindow(QMainWindow):
                     lenOpt = self.closestIOptimized - self.curOptimizingIndex
                     lenLive = len(self.curLap.points) - self.curOptimizingLiveIndex
                     if lenOpt > lenLive or lenOpt == 0:
-                        logPrint("Current segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
+                        logPrint("Current segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.curOptimizingLap.points), len(self.curLap.points))
                         self.curOptimizingLap.points += copy.deepcopy(self.curLap.points[self.curOptimizingLiveIndex:-1])
                     else:
                         logPrint("Previous segment was faster", lenOpt, lenLive, self.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
@@ -741,6 +754,7 @@ class MainWindow(QMainWindow):
             saveThread = Worker(self.appendOptimizedLap, "Optimized lap saved.", 1.0, (self.optimizedLap, "optimized",))
             self.threadpool.start(saveThread)
         logPrint("Optimized lap:", len(self.optimizedLap.points), "points vs.", len(self.curLap.points))
+        logPrint("new optimizing lap")
         self.curOptimizingLap = Lap()
         self.curOptimizingLiveIndex = 0
         self.curOptimizingIndex = 0
@@ -791,7 +805,7 @@ class MainWindow(QMainWindow):
 
                     logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1]), "vs.", self.cfg.validLapEndpointDistance) 
                     # Process a completed valid lap (circuit experience laps are always valid)
-                    if self.cfg.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.cfg.validLapEndpointDistance:
+                    if self.cfg.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.cfg.validLapEndpointDistance and not self.curLapInvalidated:
                         if len(self.previousLaps) > 0:
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, True, following=curPoint, preceeding=self.previousLaps[-1].points[-1]))
                         else:
@@ -870,6 +884,7 @@ class MainWindow(QMainWindow):
                     self.resetCurrentLapData()
 
             self.lastLap = curPoint.current_lap
+            logPrint("new optimizing lap")
             self.curOptimizingLap = Lap()
             self.curOptimizingIndex = 0
             self.curOptimizingLiveIndex = 0
@@ -881,7 +896,8 @@ class MainWindow(QMainWindow):
     def checkPitStop(self, curPoint):
         if self.previousPoint is None:
             logPrint("FIRST")
-        if not self.previousPoint is None and curPoint.distance(self.previousPoint) > 20.0: # TODO const
+        if not self.previousPoint is None and curPoint.distance(self.previousPoint) > 10.0: # TODO const
+            self.curLapInvalidated = True
             logPrint ("JUMP by", curPoint.distance(self.previousPoint), "to", curPoint.position_x, " / ", curPoint.position_z, " laps ", self.previousPoint.current_lap, curPoint.current_lap, "driving", curPoint.car_speed, "km/h")
             if curPoint.current_lap <= 0:
                 self.refueled = 0
@@ -891,7 +907,7 @@ class MainWindow(QMainWindow):
                     logPrint("PIT STOP:", self.refueled)
                 for c in self.components:
                     c.leftCircuit()
-            elif (curPoint.current_lap == self.previousPoint.current_lap or curPoint.current_lap+1 == self.previousPoint.current_lap) and curPoint.car_speed > 0.1:
+            elif (curPoint.current_lap == self.previousPoint.current_lap or curPoint.current_lap-1 == self.previousPoint.current_lap) and curPoint.car_speed > 0.1:
                 # TODO difference to reaet to track: Standing time?
                 self.refueled = 0
                 logPrint("PIT STOP:", self.refueled)
@@ -944,9 +960,9 @@ class MainWindow(QMainWindow):
 
                 self.checkCircuitExperienceMode(curPoint)
 
-                self.checkPitStop(curPoint)
                 self.determineLapProgress(curPoint)
                 isNewLap = self.handleLapChanges(curPoint)
+                self.checkPitStop(curPoint)
  
                 if not self.cfg.circuitExperience:
                     self.optimizeLap(curPoint)
@@ -1251,11 +1267,15 @@ if __name__ == '__main__':
     customIP = None
     fullscreen = True
     developmentMode = False
+    customLayout = None
 
     i = 1
     while i < len(sys.argv):
         if sys.argv[i] == "--ip" and i < len(sys.argv)-1:
             customIP = sys.argv[i+1]
+            i+=1
+        elif sys.argv[i] == "--layout" and i < len(sys.argv)-1:
+            customLayout = sys.argv[i+1]
             i+=1
         elif sys.argv[i] == "--dev":
             developmentMode = True
@@ -1283,6 +1303,8 @@ if __name__ == '__main__':
     window.cfg.developmentMode = developmentMode
     if not customIP is None:
         window.startWindow.ip.setText(customIP)
+    if not customLayout is None:
+        window.loadLayout(customLayout)
 
     window.show()
     window.startWindow.ip.setFocus()

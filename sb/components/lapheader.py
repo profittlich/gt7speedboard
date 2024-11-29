@@ -40,7 +40,7 @@ class LapHeader(sb.component.Component):
         #if self.inPit:
             #lapSuffix += " PIT STOP"
         if self.data.isRecording:
-            lapSuffix += " [RECORDING]"
+            lapSuffix += " [REC]"
         if self.cfg.developmentMode:
             lapSuffix += " [DEV]"
         if self.cfg.circuitExperience:

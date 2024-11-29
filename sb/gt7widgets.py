@@ -449,6 +449,7 @@ class MapView(QWidget):
     def __init__(self):
         super().__init__()
         self.clear()
+        self.bulkRendering = False
 
     def setPoints(self, p1, p2, color = Qt.GlobalColor.red):
         self.previousPoints.append (p1)
@@ -476,11 +477,11 @@ class MapView(QWidget):
         painter.drawRect(0,0,self.liveMap.width(), self.liveMap.height())
 
     def preparePaintEvent(self):
-
         while len (self.previousPoints) > 0  and len(self.curPoints) > 0:
             previousPoint = self.previousPoints.pop()
             curPoint = self.curPoints.pop()
-            if previousPoint.position_x - curPoint.position_x > 15 or previousPoint.position_z - curPoint.position_z > 15:
+            if abs(previousPoint.position_x - curPoint.position_x) > 5 or abs(previousPoint.position_z - curPoint.position_z) > 5:
+                logPrint("Skip jump")
                 continue
 
             if self.mapOffset is None:
@@ -490,6 +491,7 @@ class MapView(QWidget):
             pz1 = (self.zoom * (previousPoint.position_z + self.mapOffset[1])) + self.pixmapOffset[1] 
             self.px2 = (self.zoom * (curPoint.position_x + self.mapOffset[0])) + self.pixmapOffset[0] 
             self.pz2 = (self.zoom * (curPoint.position_z + self.mapOffset[1]) + self.pixmapOffset[1])
+
 
             if self.px2 < 20:
                 step = 1
@@ -561,7 +563,10 @@ class MapView(QWidget):
             painter.drawLine(int(px1), int(pz1), int(self.px2), int(self.pz2))
             painter.end()
 
+
     def paintEvent(self, event):
+        if self.bulkRendering:
+            return
         aspectRatio = self.width()/self.height()
         baseAspectRatio = self.liveMap.width() / self.liveMap.height()
         qp = QPainter()
@@ -580,6 +585,62 @@ class MapView(QWidget):
 
         qp.end()
 
+
+class PedalWidget(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.maxDist = 100
+        self.distr = 0
+        self.distl = 0
+        self.vr = None
+        self.vl = None
+        self.redGradient = QLinearGradient (10,0,120,0);
+        self.redGradient.setColorAt(0.0, QColor("#222"))
+        self.redGradient.setColorAt(0.2, QColor("#222"))
+        self.redGradient.setColorAt(1.0, Qt.GlobalColor.red);
+        self.greenGradient = QLinearGradient (10,0,120,0);
+        self.greenGradient.setColorAt(0.0, QColor("#222"))
+        self.greenGradient.setColorAt(0.2, QColor("#222"))
+        self.greenGradient.setColorAt(1.0, Qt.GlobalColor.green);
+
+    def setDistance(self, dl, dr):
+        self.distr = dr
+        self.distl = dl
+
+    def paintEvent(self, event):
+
+        qp = QPainter()
+        qp.begin(self)
+        qp.fillRect(0, 0, int(self.width()), int(self.height()), QColor("#222"))
+        pen = QPen(Qt.GlobalColor.white)
+        pen.setWidth(5)
+        qp.setPen(pen)
+        font = self.font()
+        font.setPointSize(36)
+        font.setBold(True)
+        self.setFont(font)
+        clippedDistL = -min(self.maxDist, max(-self.maxDist, self.distl))
+        clippedDistR = min(self.maxDist, max(-self.maxDist, self.distr))
+
+        self.redGradient.setStart(self.width()/2,0)
+        self.redGradient.setFinalStop(self.width()/2 + clippedDistL/self.maxDist * self.width() / 2, 0)
+        if clippedDistL == -100:
+            qp.fillRect(int(self.width()/2), 0, int(clippedDistL/self.maxDist * self.width() / 2), int(self.height()), Qt.GlobalColor.red)
+        else:
+            qp.fillRect(int(self.width()/2), 0, int(clippedDistL/self.maxDist * self.width() / 2), int(self.height()), self.redGradient)
+        qp.drawLine(int(self.width()/2) + int(clippedDistL/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDistL/self.maxDist * self.width() / 2), int(self.height()))
+
+        self.greenGradient.setStart(self.width()/2,0)
+        self.greenGradient.setFinalStop(self.width()/2 + clippedDistR/self.maxDist * self.width() / 2, 0)
+        if clippedDistR == 100:
+            qp.fillRect(int(self.width()/2), 0, int(clippedDistR/self.maxDist * self.width() / 2), int(self.height()), Qt.GlobalColor.green)
+        else:
+            qp.fillRect(int(self.width()/2), 0, int(clippedDistR/self.maxDist * self.width() / 2), int(self.height()), self.greenGradient)
+        qp.drawLine(int(self.width()/2) + int(clippedDistR/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDistR/self.maxDist * self.width() / 2), int(self.height()))
+
+        qp.drawLine(int(self.width()/2), 0, int(self.width()/2), int (self.height()))
+        qp.end()
 
 class LineDeviation(QWidget):
 

@@ -41,6 +41,8 @@ def indexToTime(i):
     return "{minu:1.0f}:{spref}{sec:2.3f}".format(minu = minu, spref=spref, sec = sec)
 
 def msToTime (ms):
+    if ms < 0:
+        return "no time"
     tm = int((ms/1000) // 60)
     ts = int((ms/1000) % 60)
     tms = int(round((ms/1000 % 60 - ts) * 1000))
