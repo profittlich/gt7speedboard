@@ -36,6 +36,8 @@ class StartWindow(QWidget):
         self.setWindowTitle("GT7 SpeedBoard 1.0")
         modeLabel = QLabel("Mode:")
 
+        self.cbCheckUpdatesStart = QCheckBox("Automatically check for updates")
+
         pbCheckUpdates = QPushButton("Check for updates")
         pbCheckUpdates.setFlat(True)
         pal = pbCheckUpdates.palette()
@@ -53,6 +55,7 @@ class StartWindow(QWidget):
         self.mode.addItem("Laps")
         self.mode.addItem("Circuit Experience (experimental)")
         updateLayout.addWidget(self.mode,10)
+        updateLayout.addWidget(self.cbCheckUpdatesStart)
         updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
         
         mainLayout = QVBoxLayout()
@@ -206,7 +209,7 @@ class StartWindow(QWidget):
         self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
         pbChooseStorage.clicked.connect(self.chooseStorage)
         
-        recLayout.addWidget(QLabel("Session name:"))
+        recLayout.addWidget(QLabel("Session name (optional):"))
         recLayout.addWidget(self.sessionName)
         recLayout.addWidget(self.saveSessionName)
         recLayout.addWidget(self.lStorageLocation)
@@ -249,9 +252,12 @@ class StartWindow(QWidget):
 
         mainLayout.addWidget(addr)
 
+        self.cbCheckUpdatesStart.stateChanged.connect(self.checkUpdatesAtStart)
+
         logPrint("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
+        self.cbCheckUpdatesStart.setChecked(settings.value("checkUpdatesAtStart", True) in [ True, "true"])
         self.optimizedSeed.setCurrentIndex(int(settings.value("optimizedSeed",0)))
 
         self.ip.setText(settings.value("ip", ""))
@@ -314,6 +320,9 @@ class StartWindow(QWidget):
         self.cbCaution.stateChanged.connect(self.chooseCautionFile)
         self.mode.currentIndexChanged.connect(self.updateForMode)
 
+        if self.cbCheckUpdatesStart.isChecked():
+            self.checkUpdates(True)
+
         self.updateForMode()
 
     def updateForMode(self):
@@ -325,15 +334,27 @@ class StartWindow(QWidget):
             self.cbOptimal.setEnabled(True)
             self.optimizedSeed.setEnabled(True)
 
-    def checkUpdates(self):
-        x = requests.get('https://api.github.com/repos/profittlich/gt7speedboard/releases/latest')
-        j = json.loads(x.text)
-        if j['tag_name'] == "v7":
-            QMessageBox.information(self, "Check updates", "You have the latest version.")
+    def checkUpdates(self, quiet = False):
+        try:
+            x = requests.get('https://api.github.com/repos/profittlich/gt7speedboard/releases/latest')
+            j = json.loads(x.text)
+            if j['tag_name'] == "v7":
+                if not quiet:
+                    QMessageBox.information(self, "Check updates", "You have the latest version.")
+            else:
+                result = QMessageBox.question(self, "Check updates", "There is a newer version:\n\n" + j['name'] + "\n\nDo you want to visit the download page?")
+                if result == QMessageBox.StandardButton.Yes:
+                    QDesktopServices.openUrl(QUrl(j['html_url']))
+        except:
+            QMessageBox.critical(self, "Check updates", "Unable to check for updates.\nTry again later.")
+
+    def checkUpdatesAtStart(self, on):
+        settings = QSettings()
+        if on:
+            settings.setValue("checkUpdatesAtStart", True)
         else:
-            result = QMessageBox.question(self, "Check updates", "There is a newer version:\n\n" + j['name'] + "\n\nDo you want to visit the download page?")
-            if result == QMessageBox.StandardButton.Yes:
-                QDesktopServices.openUrl(QUrl(j['html_url']))
+            settings.setValue("checkUpdatesAtStart", False)
+        settings.sync()
 
 
     def racingLineWarning(self, on):

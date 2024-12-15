@@ -803,7 +803,7 @@ class MainWindow(QMainWindow):
 
                     showBestLapMessage = True
 
-                    logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1]), "vs.", self.cfg.validLapEndpointDistance) 
+                    logPrint("Closed loop distance:", cleanLap.points[0].distance(cleanLap.points[-1]), "vs.", self.cfg.validLapEndpointDistance, self.curLapInvalidated) 
                     # Process a completed valid lap (circuit experience laps are always valid)
                     if self.cfg.circuitExperience or cleanLap.points[0].distance(cleanLap.points[-1]) < self.cfg.validLapEndpointDistance and not self.curLapInvalidated:
                         if len(self.previousLaps) > 0:
@@ -907,7 +907,7 @@ class MainWindow(QMainWindow):
                     logPrint("PIT STOP:", self.refueled)
                 for c in self.components:
                     c.leftCircuit()
-            elif (curPoint.current_lap == self.previousPoint.current_lap or curPoint.current_lap-1 == self.previousPoint.current_lap) and curPoint.car_speed > 0.1:
+            elif (curPoint.current_lap == self.previousPoint.current_lap or curPoint.current_lap-1 == self.previousPoint.current_lap) and curPoint.car_speed > 0.001:
                 # TODO difference to reaet to track: Standing time?
                 self.refueled = 0
                 logPrint("PIT STOP:", self.refueled)
@@ -917,7 +917,7 @@ class MainWindow(QMainWindow):
                 for c in self.components:
                     c.pitStop()
             elif curPoint.current_lap == self.previousPoint.current_lap and curPoint.car_speed < 0.1:
-                logPrint("RESET TO TRACK")
+                logPrint("RESET TO TRACK", curPoint.current_lap, self.previousPoint.current_lap, curPoint.car_speed)
             else:
                 logPrint("WARNING: Unknown jump constellation")
 
