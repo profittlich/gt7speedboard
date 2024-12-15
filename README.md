@@ -26,7 +26,7 @@ Features:
 - The location-based markers
 
 ![SpeedBoard](doc/speedboard4.png)
-![SpeedBoard configuration](doc/speedboardconfig4.png)
+![SpeedBoard configuration](doc/speedboardconfig7.png)
 ![SpeedBoard statistics](doc/stats.png)
 ![SpeedBoard track detection](doc/trackdetect4.png)
 
