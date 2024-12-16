@@ -10,6 +10,7 @@ from sb.helpers import logPrint
 from sb.helpers import indexToTime, msToTime
 from sb.helpers import idToCar
 
+
 class Run:
     def __init__(self, sessionStart):
         self.carId = None
@@ -100,6 +101,22 @@ class Stats(sb.component.Component):
         carStatTxt = '<br><font size="3">RUNS:</font><table>'
         carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h);Description\n"
         sessionI = 1
+        absoluteBest = 1000000000
+        bestMedian = 1000000000
+        bestSpeed = 0
+
+        for i in self.sessionStats:
+            if i.carId is None:
+                continue
+            bst = i.bestLap()
+            if bst[0] < absoluteBest:
+                absoluteBest = bst[0]
+            mdn = i.medianLap()
+            if mdn[0] < bestMedian:
+                bestMedian = mdn[0]
+            if i.topSpeed > bestSpeed:
+                bestSpeed = i.topSpeed
+
         for i in self.sessionStats:
             if i.carId is None:
                 continue
@@ -108,7 +125,20 @@ class Stats(sb.component.Component):
             lapsWith = " laps with "
             if len(i.lapTimes) == 1:
                 lapsWith = " lap with "
-            carStatTxt += '<tr><td style="padding:10px; background-color:' + self.cfg.backgroundColor.name() + '"><font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font>'
+            carStatTxt += '<tr><td style="padding:10px; background-color:' + self.cfg.backgroundColor.name() + '"><font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " 
+            if bst[0] == absoluteBest:
+                carStatTxt += '<font color="green">' + msToTime(bst[0]) + '</font>'
+            else:
+                carStatTxt += msToTime(bst[0]) 
+            carStatTxt += " | Median: " 
+            if mdn[0] == bestMedian:
+                carStatTxt += '<font color="green">' + msToTime(mdn[0])  + '</font>'
+            else:
+                carStatTxt += msToTime(mdn[0]) 
+            if i.topSpeed == bestSpeed:
+                carStatTxt += ' | Top speed: <font color="green">' + str (round(i.topSpeed, 1)) + ' km/h</font></font>'
+            else:
+                carStatTxt += " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font>'
             if i.description != "":
                 carStatTxt += '<br><font size="1">' + i.description + "</font></td></tr>"
             else:
@@ -145,6 +175,9 @@ class Stats(sb.component.Component):
             self.data.optimizedLap.updateTime()
             liveStats += "Optimized lap (est.): " + msToTime (self.data.optimizedLap.time) + "<br>"
         liveStats += "</font>"
+
+        #liveStats += '<img src="data:image/png;base64, ' + testimg + '">'
+
         self.liveStats = liveStats
         self.updateStats()
 
@@ -169,7 +202,7 @@ class Stats(sb.component.Component):
 
     def completedLap(self, curPoint, cleanLap, isFullLap):
         logPrint("completedLap", isFullLap, self.data.lastLap, "->", curPoint.current_lap)
-        if curPoint.current_lap == 1 or self.data.lastLap >= curPoint.current_lap:
+        if curPoint.current_lap == 2 or self.data.lastLap >= curPoint.current_lap:
             logPrint("lap is 1 -> init")
             self.newRun()
 
