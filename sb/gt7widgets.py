@@ -94,6 +94,7 @@ class StartWindow(QWidget):
         self.cbRefC.stateChanged.connect(self.chooseReferenceLapC)
         self.refCFile = ""
         self.cbLast = QCheckBox("Last lap")
+        self.speedcomp = QCheckBox("Show speed comparisons")
         self.timecomp = QCheckBox("Show graphical lap time comparisons")
         self.linecomp = QCheckBox("Show racing line comparisons")
         
@@ -107,6 +108,7 @@ class StartWindow(QWidget):
         saLayout.addWidget(self.cbOptimal)
         saLayout.addWidget(self.optimizedSeedLabel)
         saLayout.addWidget(self.optimizedSeed)
+        saLayout.addWidget(self.speedcomp)
         saLayout.addWidget(self.timecomp)
         saLayout.addWidget(self.linecomp)
         saLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
@@ -295,6 +297,7 @@ class StartWindow(QWidget):
         self.sessionName.setText(settings.value("sessionName", ""))
         self.saveSessionName.setChecked(settings.value("saveSessionName") in [ True, "true"])
 
+        self.speedcomp.setChecked(settings.value("speedcomp") in [ True, "true"])
         self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
         self.timecomp.setChecked(settings.value("timecomp", True) in [ True, "true"])
         self.cautionFile = settings.value("messageFile")

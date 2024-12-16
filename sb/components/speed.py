@@ -35,10 +35,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedBest.setFont(font)
-        pal = self.speedBest.palette()
-        pal.setColor(self.speedBest.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedBest.foregroundRole(), self.cfg.foregroundColor)
-        self.speedBest.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedBest.palette()
+            pal.setColor(self.speedBest.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedBest.foregroundRole(), self.cfg.foregroundColor)
+            self.speedBest.setPalette(pal)
 
         self.lineBest = LineDeviation()
         self.timeDiffBest = TimeDeviation()
@@ -62,10 +63,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedLast.setFont(font)
-        pal = self.speedLast.palette()
-        pal.setColor(self.speedLast.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedLast.foregroundRole(), self.cfg.foregroundColor)
-        self.speedLast.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedLast.palette()
+            pal.setColor(self.speedLast.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedLast.foregroundRole(), self.cfg.foregroundColor)
+            self.speedLast.setPalette(pal)
 
         self.lineLast = LineDeviation()
         self.timeDiffLast = TimeDeviation()
@@ -89,10 +91,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedRefA.setFont(font)
-        pal = self.speedRefA.palette()
-        pal.setColor(self.speedRefA.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedRefA.foregroundRole(), self.cfg.foregroundColor)
-        self.speedRefA.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedRefA.palette()
+            pal.setColor(self.speedRefA.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedRefA.foregroundRole(), self.cfg.foregroundColor)
+            self.speedRefA.setPalette(pal)
 
         self.lineRefA = LineDeviation()
         self.timeDiffRefA = TimeDeviation()
@@ -116,10 +119,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedRefB.setFont(font)
-        pal = self.speedRefB.palette()
-        pal.setColor(self.speedRefB.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedRefB.foregroundRole(), self.cfg.foregroundColor)
-        self.speedRefB.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedRefB.palette()
+            pal.setColor(self.speedRefB.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedRefB.foregroundRole(), self.cfg.foregroundColor)
+            self.speedRefB.setPalette(pal)
 
         self.lineRefB = LineDeviation()
         self.timeDiffRefB = TimeDeviation()
@@ -143,10 +147,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedRefC.setFont(font)
-        pal = self.speedRefC.palette()
-        pal.setColor(self.speedRefC.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedRefC.foregroundRole(), self.cfg.foregroundColor)
-        self.speedRefC.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedRefC.palette()
+            pal.setColor(self.speedRefC.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedRefC.foregroundRole(), self.cfg.foregroundColor)
+            self.speedRefC.setPalette(pal)
 
         self.lineRefC = LineDeviation()
         self.timeDiffRefC = TimeDeviation()
@@ -170,10 +175,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedMedian.setFont(font)
-        pal = self.speedMedian.palette()
-        pal.setColor(self.speedMedian.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedMedian.foregroundRole(), self.cfg.foregroundColor)
-        self.speedMedian.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedMedian.palette()
+            pal.setColor(self.speedMedian.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedMedian.foregroundRole(), self.cfg.foregroundColor)
+            self.speedMedian.setPalette(pal)
 
         self.lineMedian = LineDeviation()
         self.timeDiffMedian = TimeDeviation()
@@ -197,10 +203,11 @@ class Speed(sb.component.Component):
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.speedOptimized.setFont(font)
-        pal = self.speedOptimized.palette()
-        pal.setColor(self.speedOptimized.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.speedOptimized.foregroundRole(), self.cfg.foregroundColor)
-        self.speedOptimized.setPalette(pal)
+        if self.cfg.speedcomp:
+            pal = self.speedOptimized.palette()
+            pal.setColor(self.speedOptimized.backgroundRole(), self.cfg.backgroundColor)
+            pal.setColor(self.speedOptimized.foregroundRole(), self.cfg.foregroundColor)
+            self.speedOptimized.setPalette(pal)
 
         self.lineOptimized = LineDeviation()
         self.timeDiffOptimized = TimeDeviation()
@@ -223,6 +230,23 @@ class Speed(sb.component.Component):
             speedLayout.addWidget(self.speedLast, 2, 5)
         if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
             speedLayout.addWidget(self.speedOptimized, 2, 6)
+        speedLayout.setRowStretch(2, 4)
+        if not self.cfg.speedcomp:
+            if self.cfg.showBestLap:
+                self.speedBest = QLabel("")
+            if self.cfg.showMedianLap:
+                self.speedMedian = QLabel("")
+            if self.cfg.showRefALap:
+                self.speedRefA = QLabel("")
+            if self.cfg.showRefBLap:
+                self.speedRefB = QLabel("")
+            if self.cfg.showRefCLap:
+                self.speedRefC = QLabel("")
+            if self.cfg.showLastLap:
+                self.speedLast = QLabel("")
+            if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
+                self.speedOptimized = QLabel("")
+            speedLayout.setRowStretch(2, 1)
 
         if self.cfg.linecomp:
             if self.cfg.showBestLap:
@@ -273,7 +297,6 @@ class Speed(sb.component.Component):
             if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
                 speedLayout.addWidget(self.pedalOptimized, 0, 6)
             speedLayout.setRowStretch(0, 1)
-        speedLayout.setRowStretch(2, 4)
 
         self.markBigCountdownField()
 

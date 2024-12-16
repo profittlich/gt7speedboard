@@ -282,6 +282,7 @@ class MainWindow(QMainWindow):
         saveSessionName = self.startWindow.saveSessionName.isChecked()
         self.cfg.storageLocation = self.startWindow.storageLocation
         
+        self.cfg.speedcomp = self.startWindow.speedcomp.isChecked()
         self.cfg.linecomp = self.startWindow.linecomp.isChecked()
         self.cfg.timecomp = self.startWindow.timecomp.isChecked()
         self.cfg.loadMessagesFromFile = self.startWindow.cbCaution.isChecked()
@@ -355,6 +356,7 @@ class MainWindow(QMainWindow):
             settings.setValue("sessionName", "")
         settings.setValue("storageLocation", self.cfg.storageLocation)
 
+        settings.setValue("speedcomp", self.cfg.speedcomp)
         settings.setValue("linecomp", self.cfg.linecomp)
         settings.setValue("timecomp", self.cfg.timecomp)
         settings.setValue("loadMessagesFromFile", self.cfg.loadMessagesFromFile)
