@@ -832,7 +832,7 @@ class MainWindow(QMainWindow):
                             self.previousLaps.append(Lap(lastLapTime, cleanLap.points, False, following=curPoint))
 
                         for c in self.components:
-                            c.completedLap(curPoint, cleanLap, False)
+                            c.completedLap(curPoint, self.previousLaps[-1], False)
 
                     logPrint("Laps:", len(self.previousLaps))
 

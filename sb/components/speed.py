@@ -611,6 +611,11 @@ class Speed(sb.component.Component):
         self.speedOptimized.setFont(font)
 
     def completedLap(self, curPoint, lastLap, isFullLap):
+        if lastLap.valid:
+            self.speedLast.setText("LAST")
+        else:
+            self.speedLast.setText("(LAST)")
+
         if not isFullLap:
             return
         # Check if the full screen color flashing should be for the best lap from now on
