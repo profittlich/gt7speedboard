@@ -85,7 +85,7 @@ class Stats(sb.component.Component):
     def addPoint(self, curPoint, curLap):
         # Update live stats description
         if not self.data.newRunDescription is None and len(self.sessionStats) > 0:
-            self.sessionStats[-1].description = self.data.newRunDescription + "<br>"
+            self.sessionStats[-1].description = self.data.newRunDescription
             self.data.newRunDescription = None
             self.updateRunStats()
         self.updateLiveStats(curPoint)
@@ -97,7 +97,7 @@ class Stats(sb.component.Component):
 
 
     def updateRunStats(self, saveRuns = False):
-        carStatTxt = '<br><font size="3">RUNS:</font><br>'
+        carStatTxt = '<br><font size="3">RUNS:</font><table>'
         carStatCSV = "Run;Valid laps;Car;Best lap;Best lap (ms);Median lap;Median lap (ms);Top speed (km/h);Description\n"
         sessionI = 1
         for i in self.sessionStats:
@@ -108,9 +108,14 @@ class Stats(sb.component.Component):
             lapsWith = " laps with "
             if len(i.lapTimes) == 1:
                 lapsWith = " lap with "
-            carStatTxt += '<font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font><br><font size="1">' + i.description + "</font>"
+            carStatTxt += '<tr><td style="padding:10px; background-color:' + self.cfg.backgroundColor.name() + '"><font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " + msToTime(bst[0]) + " | Median: " + msToTime(mdn[0]) + " | Top speed: " + str (round(i.topSpeed, 1)) + ' km/h</font>'
+            if i.description != "":
+                carStatTxt += '<br><font size="1">' + i.description + "</font></td></tr>"
+            else:
+                carStatTxt += "</td></tr>"
             carStatCSV += str(sessionI) + ";" + str(len(i.lapTimes)) + ";" + idToCar(i.carId) + ";" + str(bst[1]) + ";" + str(bst[0]) + ";" + str(mdn[1]) + ";" + str(mdn[0]) + ";" + str(i.topSpeed) + ";" + i.description + "\n"
             sessionI += 1
+        carStatTxt += "</table>"
         if saveRuns:
             prefix = self.cfg.storageLocation + "/"
             if len(self.cfg.sessionName) > 0:
@@ -121,7 +126,7 @@ class Stats(sb.component.Component):
         self.updateStats()
 
     def updateLiveStats(self, curPoint):
-        liveStats = '<br><br><font size="3">CURRENT STATS:</font><br><font size="1">'
+        liveStats = '<font size="3">CURRENT STATS:</font><br><font size="1">'
         liveStats += "Current track: " + self.data.trackDetector.getTrack() + "<br>"
         liveStats += "Assumed track: " + self.assumedTrack + "<br>"
         liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
