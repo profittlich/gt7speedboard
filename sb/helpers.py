@@ -3,6 +3,8 @@ import os
 import platform
 import csv
 import inspect
+import time
+import statistics
 
 from PyQt6.QtCore import *
 from sb.crypt import salsa20_dec, salsa20_enc
@@ -27,6 +29,45 @@ class Worker(QRunnable, QObject):
         else:
             self.signals.finished.emit(altMsg, self.t)
 
+class StopWatch():
+    def __init__(self):
+        self.stopWatchTimes = []
+        self.stopWatchCount = 0
+        self.stopWatchIndex = 0
+        self.stopWatchTime = time.perf_counter()
+
+    def init(self):
+        self.stopWatchTime = time.perf_counter()
+        self.stopWatchIndex = 0
+        self.stopWatchCount += 1
+
+    def lap(self, title=None):
+        newTime = time.perf_counter()
+        if len(self.stopWatchTimes) <= self.stopWatchIndex:
+            self.stopWatchTimes.append([[], title])
+        self.stopWatchTimes[self.stopWatchIndex][0].append(newTime - self.stopWatchTime)
+        self.stopWatchIndex += 1
+        self.stopWatchTime = newTime
+
+    def print(self):
+        logPrint(" === STOP WATCH RESULTS ===")
+        for i in range(len(self.stopWatchTimes)):
+            q = sorted(self.stopWatchTimes[i][0])
+            if len(self.stopWatchTimes[i][0]) >= 2:
+                logPrint(i, 
+                    "\tmean:", "{0:6.0f}".format(round(1000000 * sum(self.stopWatchTimes[i][0]) / len(self.stopWatchTimes[i][0]))), 
+                    "\tmedian:", "{0:6.0f}".format(round(1000000 * q[int(len(q)/2)])),
+                    "\tmin:", "{0:6.0f}".format(round(1000000*min(self.stopWatchTimes[i][0]))), 
+                    "\tQ90:", "{0:6.0f}".format(round(1000000 * q[int(0.9*len(q))])),
+                    "\tQ99:", "{0:6.0f}".format(round(1000000 * q[int(0.99*len(q))])),
+                    "\tQ99.9:", "{0:6.0f}".format(round(1000000 * q[int(0.999*len(q))])),
+                    "\tmax:", "{0:6.0f}".format(round(1000000*max(self.stopWatchTimes[i][0]))), "{0:5.0f}".format(self.stopWatchTimes[i][0].index(max(self.stopWatchTimes[i][0]))),
+                    "\tstdev:", "{0:6.0f}".format(round(1000000 * statistics.stdev(self.stopWatchTimes[i][0]))),
+                    "\tsamples:", len(self.stopWatchTimes[i][0]),
+                    self.stopWatchTimes[i][1], 
+                    )
+            else:
+                logPrint(self.stopWatchTimes[i][1], self.stopWatchTimes[i][0])
 
 def indexToTime(i):
     fsec = i * 1/59.94

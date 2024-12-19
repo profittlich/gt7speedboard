@@ -1,6 +1,6 @@
-from PyQt6.QtCore import QSize, Qt, QTimer, QRegularExpression, QSettings, QPoint, QPointF, QUrl
-from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QPainter, QPalette, QPen, QLinearGradient, QGradient, QBrush, QDesktopServices
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QSpinBox, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QDoubleSpinBox, QTabWidget, QSpacerItem, QSizePolicy
+from PyQt6.QtGui import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
 import math
 import copy
 from sb.helpers import logPrint
@@ -432,6 +432,56 @@ class StartWindow(QWidget):
             self.cbCaution.setText("Use pre-loaded warning locations")
 
 
+class ColorMainWidget(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.color = QColor("#00000000")
+
+    def setColor(self, c):
+        if c != self.color:
+            self.color = c
+            self.update()
+
+    def paintEvent(self, event):
+
+        qp = QPainter()
+        qp.begin(self)
+        qp.setPen(self.color)
+        qp.setBrush(self.color)
+        try:
+            qp.drawRect(0,0, int(self.width()), int(self.height()))
+        except OverflowError as e:
+            logPrint(e)
+        qp.end()
+        super().paintEvent(event)
+
+class ColorLabel(QLabel):
+    def __init__(self):
+        super().__init__()
+        self.color = QColor("#00000000")
+        self.qp = QPainter()
+
+    def __init__(self, t):
+        super().__init__(t)
+        self.color = QColor("#00000000")
+        self.qp = QPainter()
+
+    def setColor(self, c):
+        if c != self.color:
+            self.color = c
+            self.update()
+
+    def paintEvent(self, event):
+
+        self.qp.begin(self)
+        self.qp.setPen(self.color)
+        self.qp.setBrush(self.color)
+        try:
+            self.qp.drawRect(0,0, int(self.width()), int(self.height()))
+        except OverflowError as e:
+            logPrint(e)
+        self.qp.end()
+        super().paintEvent(event)
 
 class FuelGauge(QWidget):
 
@@ -518,7 +568,7 @@ class MapView(QWidget):
 
 
             if self.px2 < 20:
-                step = 1
+                step = 10
                 if self.px2 < 0:
                     step = -self.px2
                 temp = self.liveMap.copy()
@@ -531,7 +581,7 @@ class MapView(QWidget):
                 self.pixmapOffset[0] += step
 
             if self.pz2 < 20:
-                step = 1
+                step = 10
                 if self.pz2 < 0:
                     step = -self.pz2
                 temp = self.liveMap.copy()
@@ -544,7 +594,7 @@ class MapView(QWidget):
                 self.pixmapOffset[1] += step
 
             if self.px2 >= self.liveMap.width()-20:
-                step = 1
+                step = 10
                 if self.px2 >= self.liveMap.width():
                     step = math.ceil(self.px2) - self.liveMap.width()
                 temp = self.liveMap.copy()
@@ -556,7 +606,7 @@ class MapView(QWidget):
                 painter.end()
 
             if self.pz2 >= self.liveMap.height()-20:
-                step = 1
+                step = 10
                 if self.pz2 >= self.liveMap.height():
                     step = math.ceil(self.pz2) - self.liveMap.height()
                 temp = self.liveMap.copy()

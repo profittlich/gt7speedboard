@@ -16,19 +16,16 @@ class Speed(sb.component.Component):
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
-        self.pedalBest = QLabel("")
+        self.pedalBest = ColorLabel("")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalBest.setAutoFillBackground(True)
         font = self.pedalBest.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalBest.setFont(font)
-        pal = self.pedalBest.palette()
-        pal.setColor(self.pedalBest.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalBest.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalBest.setPalette(pal)
+        self.pedalBest.setColor(self.cfg.backgroundColor)
 
-        self.speedBest = QLabel("BEST")
+        self.speedBest = ColorLabel("BEST")
         self.speedBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedBest.setAutoFillBackground(True)
         font = self.speedBest.font()
@@ -36,27 +33,21 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedBest.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedBest.palette()
-            pal.setColor(self.speedBest.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedBest.foregroundRole(), self.cfg.foregroundColor)
-            self.speedBest.setPalette(pal)
+            self.speedBest.setColor(self.cfg.backgroundColor)
 
         self.lineBest = LineDeviation()
         self.timeDiffBest = TimeDeviation()
 
-        self.pedalLast = QLabel("")
+        self.pedalLast = ColorLabel("")
         self.pedalLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalLast.setAutoFillBackground(True)
         font = self.pedalLast.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalLast.setFont(font)
-        pal = self.pedalLast.palette()
-        pal.setColor(self.pedalLast.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalLast.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalLast.setPalette(pal)
+        self.pedalLast.setColor(self.cfg.backgroundColor)
 
-        self.speedLast = QLabel("LAST")
+        self.speedLast = ColorLabel("LAST")
         self.speedLast.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedLast.setAutoFillBackground(True)
         font = self.speedLast.font()
@@ -64,27 +55,21 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedLast.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedLast.palette()
-            pal.setColor(self.speedLast.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedLast.foregroundRole(), self.cfg.foregroundColor)
-            self.speedLast.setPalette(pal)
+            self.speedLast.setColor(self.cfg.backgroundColor)
 
         self.lineLast = LineDeviation()
         self.timeDiffLast = TimeDeviation()
 
-        self.pedalRefA = QLabel("")
+        self.pedalRefA = ColorLabel("")
         self.pedalRefA.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalRefA.setAutoFillBackground(True)
         font = self.pedalRefA.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalRefA.setFont(font)
-        pal = self.pedalRefA.palette()
-        pal.setColor(self.pedalRefA.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalRefA.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalRefA.setPalette(pal)
+        self.pedalRefA.setColor(self.cfg.backgroundColor)
 
-        self.speedRefA = QLabel("REF A")
+        self.speedRefA = ColorLabel("REF A")
         self.speedRefA.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefA.setAutoFillBackground(True)
         font = self.speedRefA.font()
@@ -92,27 +77,21 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedRefA.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedRefA.palette()
-            pal.setColor(self.speedRefA.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedRefA.foregroundRole(), self.cfg.foregroundColor)
-            self.speedRefA.setPalette(pal)
+            self.speedRefA.setColor(self.cfg.backgroundColor)
 
         self.lineRefA = LineDeviation()
         self.timeDiffRefA = TimeDeviation()
 
-        self.pedalRefB = QLabel("")
+        self.pedalRefB = ColorLabel("")
         self.pedalRefB.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalRefB.setAutoFillBackground(True)
         font = self.pedalRefB.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalRefB.setFont(font)
-        pal = self.pedalRefB.palette()
-        pal.setColor(self.pedalRefB.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalRefB.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalRefB.setPalette(pal)
+        self.pedalRefB.setColor(self.cfg.backgroundColor)
 
-        self.speedRefB = QLabel("REF B")
+        self.speedRefB = ColorLabel("REF B")
         self.speedRefB.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefB.setAutoFillBackground(True)
         font = self.speedRefB.font()
@@ -120,27 +99,21 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedRefB.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedRefB.palette()
-            pal.setColor(self.speedRefB.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedRefB.foregroundRole(), self.cfg.foregroundColor)
-            self.speedRefB.setPalette(pal)
+            self.speedRefB.setColor(self.cfg.backgroundColor)
 
         self.lineRefB = LineDeviation()
         self.timeDiffRefB = TimeDeviation()
 
-        self.pedalRefC = QLabel("")
+        self.pedalRefC = ColorLabel("")
         self.pedalRefC.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalRefC.setAutoFillBackground(True)
         font = self.pedalRefC.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalRefC.setFont(font)
-        pal = self.pedalRefC.palette()
-        pal.setColor(self.pedalRefC.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalRefC.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalRefC.setPalette(pal)
+        self.pedalRefC.setColor(self.cfg.backgroundColor)
 
-        self.speedRefC = QLabel("REF C")
+        self.speedRefC = ColorLabel("REF C")
         self.speedRefC.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefC.setAutoFillBackground(True)
         font = self.speedRefC.font()
@@ -148,27 +121,21 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedRefC.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedRefC.palette()
-            pal.setColor(self.speedRefC.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedRefC.foregroundRole(), self.cfg.foregroundColor)
-            self.speedRefC.setPalette(pal)
+            self.speedRefC.setColor(self.cfg.backgroundColor)
 
         self.lineRefC = LineDeviation()
         self.timeDiffRefC = TimeDeviation()
 
-        self.pedalMedian = QLabel("")
+        self.pedalMedian = ColorLabel("")
         self.pedalMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalMedian.setAutoFillBackground(True)
         font = self.pedalMedian.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalMedian.setFont(font)
-        pal = self.pedalMedian.palette()
-        pal.setColor(self.pedalMedian.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalMedian.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalMedian.setPalette(pal)
+        self.pedalMedian.setColor(self.cfg.backgroundColor)
 
-        self.speedMedian = QLabel("MEDIAN")
+        self.speedMedian = ColorLabel("MEDIAN")
         self.speedMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedMedian.setAutoFillBackground(True)
         font = self.speedMedian.font()
@@ -176,27 +143,21 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedMedian.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedMedian.palette()
-            pal.setColor(self.speedMedian.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedMedian.foregroundRole(), self.cfg.foregroundColor)
-            self.speedMedian.setPalette(pal)
+            self.speedMedian.setColor(self.cfg.backgroundColor)
 
         self.lineMedian = LineDeviation()
         self.timeDiffMedian = TimeDeviation()
 
-        self.pedalOptimized = QLabel("")
+        self.pedalOptimized = ColorLabel("")
         self.pedalOptimized.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalOptimized.setAutoFillBackground(True)
         font = self.pedalOptimized.font()
         font.setPointSize(self.cfg.fontSizeNormal)
         font.setBold(True)
         self.pedalOptimized.setFont(font)
-        pal = self.pedalOptimized.palette()
-        pal.setColor(self.pedalOptimized.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.pedalOptimized.foregroundRole(), self.cfg.foregroundColor)
-        self.pedalOptimized.setPalette(pal)
+        self.pedalOptimized.setColor(self.cfg.backgroundColor)
 
-        self.speedOptimized = QLabel("OPT")
+        self.speedOptimized = ColorLabel("OPT")
         self.speedOptimized.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedOptimized.setAutoFillBackground(True)
         font = self.speedOptimized.font()
@@ -204,10 +165,7 @@ class Speed(sb.component.Component):
         font.setBold(True)
         self.speedOptimized.setFont(font)
         if self.cfg.speedcomp:
-            pal = self.speedOptimized.palette()
-            pal.setColor(self.speedOptimized.backgroundRole(), self.cfg.backgroundColor)
-            pal.setColor(self.speedOptimized.foregroundRole(), self.cfg.foregroundColor)
-            self.speedOptimized.setPalette(pal)
+            self.speedOptimized.setColor(self.cfg.backgroundColor)
 
         self.lineOptimized = LineDeviation()
         self.timeDiffOptimized = TimeDeviation()
@@ -233,19 +191,19 @@ class Speed(sb.component.Component):
         speedLayout.setRowStretch(2, 4)
         if not self.cfg.speedcomp:
             if self.cfg.showBestLap:
-                self.speedBest = QLabel("")
+                self.speedBest = ColorLabel("")
             if self.cfg.showMedianLap:
-                self.speedMedian = QLabel("")
+                self.speedMedian = ColorLabel("")
             if self.cfg.showRefALap:
-                self.speedRefA = QLabel("")
+                self.speedRefA = ColorLabel("")
             if self.cfg.showRefBLap:
-                self.speedRefB = QLabel("")
+                self.speedRefB = ColorLabel("")
             if self.cfg.showRefCLap:
-                self.speedRefC = QLabel("")
+                self.speedRefC = ColorLabel("")
             if self.cfg.showLastLap:
-                self.speedLast = QLabel("")
+                self.speedLast = ColorLabel("")
             if self.cfg.showOptimalLap and not self.cfg.circuitExperience:
-                self.speedOptimized = QLabel("")
+                self.speedOptimized = ColorLabel("")
             speedLayout.setRowStretch(2, 1)
 
         if self.cfg.linecomp:
@@ -391,9 +349,7 @@ class Speed(sb.component.Component):
         if len(self.data.previousLaps) > 0 and self.data.previousLaps[self.data.bestLap].valid:
             best.nextBrake = self.data.findNextBrake(self.data.previousLaps[self.data.bestLap].points, best.closestIndex)
 
-        pal = self.data.palette()
-        pal.setColor(self.pedalBest.backgroundRole(), self.cfg.brightBackgroundColor)
-        self.data.setPalette(pal)
+        self.data.setColor(self.cfg.brightBackgroundColor)
 
         self.updateOneSpeedEntry(last, curPoint)
         self.updateOneSpeedEntry(refA, curPoint)
@@ -424,72 +380,66 @@ class Speed(sb.component.Component):
                 self.cfg.bigCountdownBrakepoint += 1
 
     def updateOneSpeedEntry(self, refLap, curPoint):
-        bgPal = self.speedWidget.palette()
-        bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.brightBackgroundColor)
+        bgCol = self.cfg.brightBackgroundColor
 
         if not refLap.closestPoint is None:
             # SPEED
             speedDiff = refLap.closestPoint.car_speed - curPoint.car_speed
-            pal = refLap.speedWidget.palette()
-            pal.setColor(refLap.speedWidget.backgroundRole(), self.speedDiffQColor(speedDiff))
-            refLap.speedWidget.setPalette(pal)
+            refLap.speedWidget.setColor(self.speedDiffQColor(speedDiff))
 
             # BRAKE POINTS
             if self.cfg.throttlepoints or self.cfg.brakepoints:
                 refLap.pedalWidget.setText("")
-                pal = refLap.pedalWidget.palette()
-                pal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.backgroundColor)
+                col = self.cfg.backgroundColor
 
             if self.cfg.throttlepoints:
                 if refLap.closestOffsetPoint.throttle > 98:
                     refLap.pedalWidget.setText("GAS")
-                    pal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#f2f"))
+                    col = QColor("#f2f")
                     if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), QColor("#626"))
+                        bgCol = QColor("#626")
 
             if self.cfg.brakepoints:
                 if refLap.closestOffsetPoint.brake > 0:
                     refLap.pedalWidget.setText("BRAKE")
-                    pal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestOffsetPoint.brake))
+                    col = self.brakeQColor(refLap.closestOffsetPoint.brake)
                     if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                        bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.brakeQColor(refLap.closestOffsetPoint.brake))
+                        bgCol = self.brakeQColor(refLap.closestOffsetPoint.brake)
 
                 elif self.cfg.countdownBrakepoint and not refLap.nextBrake is None:
                     refLap.pedalWidget.setText(str(math.ceil (refLap.nextBrake/60)))
                     if refLap.nextBrake >= 120:
                         if refLap.nextBrake%60 >= 30:
-                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.countdownColor3)
+                            col = self.cfg.countdownColor3
                             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                                bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.countdownColor3)
+                                bgCol = self.cfg.countdownColor3
                     elif refLap.nextBrake >= 60:
                         if refLap.nextBrake%60 >= 30:
-                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.countdownColor2)
+                            col = self.cfg.countdownColor2
                             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                                bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.countdownColor2)
+                                bgCol = self.cfg.countdownColor2
                     else:
                         if refLap.nextBrake%30 >= 15:
-                            pal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.countdownColor1)
+                            col = self.cfg.countdownColor1
                             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                                bgPal.setColor(refLap.pedalWidget.backgroundRole(), self.cfg.countdownColor1)
+                                bgCol = self.cfg.countdownColor1
 
-            refLap.pedalWidget.setPalette(pal)
+            refLap.pedalWidget.setColor(col)
             refLap.lineWidget.setPoints(curPoint, refLap.closestPoint)
             refLap.lineWidget.update()
 
             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                self.data.setPalette(bgPal)
+                self.data.setColor(bgCol)
 
             # TIME DIFF
             refLap.timeDiffWidget.setDiff(refLap.closestIndex - len(self.data.curLap.points))
             refLap.timeDiffWidget.update()
         else:
-            pal = refLap.speedWidget.palette()
-            pal.setColor(refLap.speedWidget.backgroundRole(), self.cfg.backgroundColor)
-            refLap.speedWidget.setPalette(pal)
-            refLap.pedalWidget.setPalette(pal)
+            refLap.speedWidget.setColor(self.cfg.backgroundColor)
+            refLap.pedalWidget.setColor(self.cfg.backgroundColor)
             refLap.pedalWidget.setText("")
             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                self.data.setPalette(bgPal)
+                self.data.setColor(bgCol)
             refLap.timeDiffWidget.setDiff(0)
             refLap.timeDiffWidget.update()
 
@@ -527,37 +477,37 @@ class Speed(sb.component.Component):
         pal = self.pedalLast.palette()
         self.pedalLast.setText("")
         pal.setColor(self.pedalLast.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalLast.setPalette(pal)
+        self.pedalLast.setColor(self.cfg.backgroundColor)
 
         pal = self.pedalBest.palette()
         self.pedalBest.setText("")
         pal.setColor(self.pedalBest.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalBest.setPalette(pal)
+        self.pedalBest.setColor(self.cfg.backgroundColor)
 
         pal = self.pedalMedian.palette()
         self.pedalMedian.setText("")
         pal.setColor(self.pedalMedian.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalMedian.setPalette(pal)
+        self.pedalMedian.setColor(self.cfg.backgroundColor)
 
         pal = self.pedalRefA.palette()
         self.pedalRefA.setText("")
         pal.setColor(self.pedalRefA.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalRefA.setPalette(pal)
+        self.pedalRefA.setColor(self.cfg.backgroundColor)
 
         pal = self.pedalRefB.palette()
         self.pedalRefB.setText("")
         pal.setColor(self.pedalRefB.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalRefB.setPalette(pal)
+        self.pedalRefB.setColor(self.cfg.backgroundColor)
 
         pal = self.pedalRefC.palette()
         self.pedalRefC.setText("")
         pal.setColor(self.pedalRefC.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalRefC.setPalette(pal)
+        self.pedalRefC.setColor(self.cfg.backgroundColor)
 
         pal = self.pedalOptimized.palette()
         self.pedalOptimized.setText("")
         pal.setColor(self.pedalOptimized.backgroundRole(), self.cfg.backgroundColor)
-        self.pedalOptimized.setPalette(pal)
+        self.pedalOptimized.setColor(self.cfg.backgroundColor)
 
         self.lineBest.setPoints(None,None)
         self.lineBest.update()

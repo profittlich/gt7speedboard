@@ -4,6 +4,7 @@ from PyQt6.QtCore import *
 
 import sb.component
 from sb.gt7telepoint import Point
+from sb.gt7widgets import ColorLabel
 from sb.helpers import logPrint
 
 class TyreTemps(sb.component.Component):
@@ -13,53 +14,41 @@ class TyreTemps(sb.component.Component):
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
-        self.tyreFR = QLabel("?°C")
+        self.tyreFR = ColorLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreFR.setAutoFillBackground(True)
         font = self.tyreFR.font()
         font.setPointSize(self.cfg.fontSizeLarge)
         font.setBold(True)
         self.tyreFR.setFont(font)
-        pal = self.tyreFR.palette()
-        pal.setColor(self.tyreFR.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.tyreFR.foregroundRole(), self.cfg.foregroundColor)
-        self.tyreFR.setPalette(pal)
+        self.tyreFR.setColor(self.cfg.backgroundColor)
 
-        self.tyreFL = QLabel("?°C")
+        self.tyreFL = ColorLabel("?°C")
         self.tyreFL.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreFL.setAutoFillBackground(True)
         font = self.tyreFL.font()
         font.setPointSize(self.cfg.fontSizeLarge)
         font.setBold(True)
         self.tyreFL.setFont(font)
-        pal = self.tyreFL.palette()
-        pal.setColor(self.tyreFL.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.tyreFL.foregroundRole(), self.cfg.foregroundColor)
-        self.tyreFL.setPalette(pal)
+        self.tyreFL.setColor(self.cfg.backgroundColor)
         
-        self.tyreRR = QLabel("?°C")
+        self.tyreRR = ColorLabel("?°C")
         self.tyreRR.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreRR.setAutoFillBackground(True)
         font = self.tyreRR.font()
         font.setPointSize(self.cfg.fontSizeLarge)
         font.setBold(True)
         self.tyreRR.setFont(font)
-        pal = self.tyreRR.palette()
-        pal.setColor(self.tyreRR.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.tyreRR.foregroundRole(), self.cfg.foregroundColor)
-        self.tyreRR.setPalette(pal)
+        self.tyreRR.setColor(self.cfg.backgroundColor)
 
-        self.tyreRL = QLabel("?°C")
+        self.tyreRL = ColorLabel("?°C")
         self.tyreRL.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreRL.setAutoFillBackground(True)
         font = self.tyreRL.font()
         font.setPointSize(self.cfg.fontSizeLarge)
         font.setBold(True)
         self.tyreRL.setFont(font)
-        pal = self.tyreRL.palette()
-        pal.setColor(self.tyreRL.backgroundRole(), self.cfg.backgroundColor)
-        pal.setColor(self.tyreRL.foregroundRole(), self.cfg.foregroundColor)
-        self.tyreRL.setPalette(pal)
+        self.tyreRL.setColor(self.cfg.backgroundColor)
 
         self.tyreWidget = QWidget()
         tyreLayout = QGridLayout()
@@ -85,24 +74,16 @@ class TyreTemps(sb.component.Component):
 
     def updateTyreTemps(self, curPoint):
         self.tyreFL.setText (str(round(curPoint.tyre_temp_FL)) + "°C")
-        pal = self.tyreFL.palette()
-        pal.setColor(self.tyreFL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FL)))
-        self.tyreFL.setPalette(pal)
+        self.tyreFL.setColor(QColor(self.tyreTempQColor(curPoint.tyre_temp_FL)))
 
         self.tyreFR.setText (str(round(curPoint.tyre_temp_FR)) + "°C")
-        pal = self.tyreFR.palette()
-        pal.setColor(self.tyreFR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_FR)))
-        self.tyreFR.setPalette(pal)
+        self.tyreFR.setColor(QColor(self.tyreTempQColor(curPoint.tyre_temp_FR)))
 
         self.tyreRR.setText (str(round(curPoint.tyre_temp_RR)) + "°C")
-        pal = self.tyreRR.palette()
-        pal.setColor(self.tyreRR.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RR)))
-        self.tyreRR.setPalette(pal)
+        self.tyreRR.setColor(QColor(self.tyreTempQColor(curPoint.tyre_temp_RR)))
 
         self.tyreRL.setText (str(round(curPoint.tyre_temp_RL)) + "°C")
-        pal = self.tyreRL.palette()
-        pal.setColor(self.tyreRL.backgroundRole(), QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
-        self.tyreRL.setPalette(pal)
+        self.tyreRL.setColor(QColor(self.tyreTempQColor(curPoint.tyre_temp_RL)))
 
     def addPoint(self, curPoint, curLap):
         self.updateTyreTemps(curPoint)

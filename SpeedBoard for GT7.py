@@ -106,7 +106,7 @@ class Screen(QStackedWidget):
     def keyPressEvent(self, e):
         self.keyRedirect.keyPressEvent(e)
 
-class MainWindow(QMainWindow):
+class MainWindow(ColorMainWidget):
     def __init__(self):
         super().__init__()
         self.cfg = sb.configuration.Configuration()
@@ -247,6 +247,7 @@ class MainWindow(QMainWindow):
         self.setPalette(pal)
 
     def startDash(self):
+        self.oldT = time.perf_counter()
         self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == 1
 
         if self.cfg.circuitExperience:
@@ -433,6 +434,8 @@ class MainWindow(QMainWindow):
             while not self.queue.empty():
                 self.queue.get_nowait()
             self.receiver = None
+        for c in self.components:
+            c.stop()
 
     def exitDash(self):
         if self.isRecording:
@@ -924,7 +927,6 @@ class MainWindow(QMainWindow):
                 logPrint("WARNING: Unknown jump constellation")
 
 
-
     def updateDisplay(self):
         # Grab all new telemetry packages
         while not self.queue.empty():
@@ -954,7 +956,8 @@ class MainWindow(QMainWindow):
             pointsToHandle.append(newPoint)
 
             # Handle telemetry
-            for curPoint in pointsToHandle:
+            lenPointsToHandle = len(pointsToHandle)
+            for i, curPoint in zip (range(lenPointsToHandle), pointsToHandle):
                 # Only handle packages when driving
                 if curPoint.is_paused or not curPoint.in_race: # TODO detect replay and allow storing laps from it
                     loadCarIds()
@@ -976,6 +979,14 @@ class MainWindow(QMainWindow):
                 
                 self.previousPoint = curPoint
                 self.curLap.points.append(curPoint)
+
+                qs = self.queue.qsize()
+                newT = time.perf_counter()
+                #logPrint(round(1000*(newT-self.oldT),2))
+                if qs>1:
+                    logPrint("Congestion:", i, lenPointsToHandle, qs, round(1000*(newT-self.oldT),2))
+                    logPrint("LATENCY:", qs * 1000/self.cfg.psFPS, "ms")
+                self.oldT = newT
 
 
     def closeEvent(self, event):

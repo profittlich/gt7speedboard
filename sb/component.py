@@ -70,3 +70,6 @@ class Component:
 
     def keyPressEvent(self, e):
         pass
+
+    def stop(self):
+        pass
