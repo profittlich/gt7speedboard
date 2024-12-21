@@ -445,6 +445,9 @@ class MainWindow(ColorMainWidget):
         for c in self.components:
             c.stop()
 
+        for s in range (1, len(self.specWidgets)):
+            self.specWidgets[s].close()
+
     def exitDash(self):
         if self.isRecording:
             self.isRecording = False
