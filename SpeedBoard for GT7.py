@@ -392,6 +392,8 @@ class MainWindow(ColorMainWidget):
         self.curLapInvalidated = False
 
         self.newSession()
+        self.newRunDescription = None
+
         self.messageWaitsForKey = False
 
         self.receiver = tele.GT7TelemetryReceiver(ip)
@@ -470,8 +472,6 @@ class MainWindow(ColorMainWidget):
         self.initOptimizedLap()
 
         self.cfg.bigCountdownBrakepoint = self.cfg.initialBigCountdownBrakepoint
-
-        self.newRunDescription = None
 
         self.previousPoint = None
 

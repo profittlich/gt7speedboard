@@ -85,7 +85,7 @@ class Stats(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         # Update live stats description
-        if not self.data.newRunDescription is None and len(self.sessionStats) > 0:
+        if not self.data.newRunDescription is None and len(self.sessionStats) > 0 and curPoint.current_lap > 1:
             self.sessionStats[-1].description = self.data.newRunDescription
             self.data.newRunDescription = None
             self.updateRunStats()
@@ -119,6 +119,9 @@ class Stats(sb.component.Component):
 
         for i in self.sessionStats:
             if i.carId is None:
+                if i.description != "":
+                    carStatTxt += '<tr><td style="border-color:white;border-style:solid;padding:10px;background-color:' + self.cfg.backgroundColor.name() + '"><font size="1">R' + str(sessionI) + ": Wait for complete lap...</font>" 
+                    carStatTxt += '<br><font size="1"><i>' + i.description + "</i></font></td></tr>"
                 continue
             bst = i.bestLap()
             mdn = i.medianLap()
@@ -159,7 +162,8 @@ class Stats(sb.component.Component):
     def updateLiveStats(self, curPoint):
         liveStats = '<font size="3">CURRENT STATS:</font><br><font size="1">'
         liveStats += "Current track: " + self.data.trackDetector.getTrack() + "<br>"
-        liveStats += "Assumed track: " + self.assumedTrack + "<br>"
+        if self.data.trackDetector.getTrack () != self.assumedTrack:
+            liveStats += "Assumed track: " + self.assumedTrack + "<br>"
         liveStats += "Current car: " + idToCar(curPoint.car_id) + "<br>"
         liveStats += "Current lap: " + str(curPoint.current_lap) + "<br>"
         if self.data.bestLap >= 0 and self.data.previousLaps[self.data.bestLap].valid:
@@ -175,6 +179,8 @@ class Stats(sb.component.Component):
         if len(self.data.optimizedLap.points) > 0:
             self.data.optimizedLap.updateTime()
             liveStats += "Optimized lap (est.): " + msToTime (self.data.optimizedLap.time) + "<br>"
+        if not self.data.newRunDescription is None:
+            liveStats += "Next run description: " + self.data.newRunDescription + "<br>"
         liveStats += "</font>"
 
         #liveStats += '<img src="data:image/png;base64, ' + testimg + '">'
