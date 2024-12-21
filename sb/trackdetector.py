@@ -20,6 +20,10 @@ class TrackInfo:
         self.forwardCount = 0
         self.reverseCount = 0
         self.identifiedAt = 2**31
+        self.pitEntry = None
+        self.pitExit = None
+        self.pitDistance = None
+        self.eliminateDistance = None
 
 class TrackDetector:
     def __init__(self):
@@ -48,18 +52,6 @@ class TrackDetector:
         self.cooldown = 1200
 
 
-
-    def loadRefs(self, refs):
-        self.loadedTracks = []
-        for r in refs:
-            curTrack = TrackInfo()
-            curTrack.lap = loadLap(r)
-            curTrack.hits = [ False ] * len(curTrack.lap.points)
-            curTrack.name = r.replace(".gt7track", "")
-            curTrack.name = curTrack.name[curTrack.name.rfind("/")+1:]
-            self.loadedTracks.append(curTrack)
-        self.tracks = copy.deepcopy(self.loadedTracks)
-
     def loadRefsFromDirectory(self, drctry):
         self.loadedTracks = []
         fns = glob.glob('*.gt7track', root_dir=drctry)
@@ -67,7 +59,20 @@ class TrackDetector:
             curTrack = TrackInfo()
             curTrack.lap = loadLap(drctry + "/" + fn)
             curTrack.hits = [ False ] * len(curTrack.lap.points)
-            curTrack.name = fn.replace(".gt7track", "")
+            filename = fn.replace(".gt7track", "")
+            fields = filename.split("!")
+            curTrack.name = fields[0]
+            for cfg in fields[1:]:
+                if cfg[:len("PIT-")] == "PIT-":
+                    pitfields = cfg.split("-")
+                    curTrack.pitExit = int(pitfields[1])
+                    curTrack.pitEntry = int(pitfields[2])
+                    curTrack.pitDistance = float(pitfields[3])
+                    logPrint(curTrack.name, "pit configuration:", curTrack.pitExit, curTrack.pitEntry, curTrack.pitDistance)
+                elif cfg[:len("WIDTH-")] == "WIDTH-":
+                    pitfields = cfg.split("-")
+                    curTrack.eliminateDistance = float(pitfields[1])/2.0
+                    logPrint(curTrack.name, "width configuration:", curTrack.eliminateDistance)
             self.loadedTracks.append(curTrack)
         self.tracks = copy.deepcopy(self.loadedTracks)
             
@@ -181,10 +186,13 @@ class TrackDetector:
                 # TODO detect finish line position
                 lp, pi, d = t.lap.findClosestPointNoLimit(curPoint)
     
-                eliminateDistance = self.eliminateDistance
-                if "Daytona" in t.name:
-                    eliminateDistance = 60 # TODO: Daytona has a distant pit lane, find better solution than a special case
-    
+                if t.eliminateDistance is None:
+                    eliminateDistance = self.eliminateDistance
+                else:
+                    eliminateDistance = t.eliminateDistance
+                if not t.pitDistance is None and ((t.pitEntry > t.pitExit and (pi < t.pitExit or pi > t.pitEntry)) or (t.pitEntry < t.pitExit and pi < t.pitExit and pi > t.pitEntry)):
+                    eliminateDistance = t.pitDistance
+                    
                 if d > eliminateDistance:
                     self.tracks.remove(t)
                     if self.checkPrefix():

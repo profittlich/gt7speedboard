@@ -70,7 +70,6 @@ class FuelAndMessages(sb.component.Component):
             postfix = " kWh"
 
         if len(curLap.points) > 0 and curPoint.current_fuel > curLap.points[-1].current_fuel:
-            logPrint("Refueled!", self.data.refueled, self.data.lapProgress)
             self.data.refueled = 0
             if self.data.lapProgress > 0.5 and curPoint.current_lap > 0:
                 self.data.refueled -= 1

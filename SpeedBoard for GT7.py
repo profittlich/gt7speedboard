@@ -116,6 +116,8 @@ class MainWindow(ColorMainWidget):
 
         loadCarIds()
 
+        self.components = []
+
         self.trackDetector = None
         self.goFullscreen = True
 
@@ -123,7 +125,7 @@ class MainWindow(ColorMainWidget):
         self.cfg.loadConstants()
         self.threadpool = QThreadPool()
 
-        self.startWindow = StartWindow()
+        self.startWindow = StartWindow(True)
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
@@ -151,12 +153,15 @@ class MainWindow(ColorMainWidget):
         newComponent = sb.component.componentLibrary[name](self.cfg, self)
         self.components.append(newComponent)
         title = newComponent.title()
+        widget = None
         if title is None:
             print("New component:", name)
-            return newComponent.getWidget()
+            widget = newComponent.getWidget()
         else:
             print("New component:", title)
-            return newComponent.getTitledWidget(newComponent.title())
+            widget = newComponent.getTitledWidget(newComponent.title())
+        widget.installEventFilter(sb.component.KeyboardFilter())
+        return widget
 
     def makeDashEntry(self, e, horizontal = True):
         page = QWidget()
@@ -247,7 +252,8 @@ class MainWindow(ColorMainWidget):
         self.setPalette(pal)
 
     def startDash(self):
-        self.oldT = time.perf_counter()
+        self.lastPointTimeStamp = time.perf_counter()
+        self.congestion = None
         self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == 1
 
         if self.cfg.circuitExperience:
@@ -443,7 +449,7 @@ class MainWindow(ColorMainWidget):
             self.receiver.stopRecording()
         self.stopDash()
         self.showNormal()
-        self.startWindow = StartWindow()
+        self.startWindow = StartWindow(False)
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
         self.setPalette(self.defaultPalette)
@@ -981,12 +987,16 @@ class MainWindow(ColorMainWidget):
                 self.curLap.points.append(curPoint)
 
                 qs = self.queue.qsize()
-                newT = time.perf_counter()
-                #logPrint(round(1000*(newT-self.oldT),2))
-                if qs>1:
-                    logPrint("Congestion:", i, lenPointsToHandle, qs, round(1000*(newT-self.oldT),2))
-                    logPrint("LATENCY:", qs * 1000/self.cfg.psFPS, "ms")
-                self.oldT = newT
+                newPointTimeStamp = time.perf_counter()
+                #logPrint(round(1000*(newPointTimeStamp-self.lastPointTimeStamp),2))
+                dt = round(1000*(newPointTimeStamp-self.lastPointTimeStamp),2)
+                if qs>1 and dt > 2000 / self.cfg.psFPS:
+                    self.congestion = newPointTimeStamp
+                    logPrint("Telemetry data congestion:", qs, dt, "LATENCY:", round(qs * 1000/self.cfg.psFPS, 2), "ms @" + str(self.cfg.psFPS), "FPS")
+                elif not self.congestion is None and qs <= 1:
+                    logPrint("Congestion resolved after", round(1000*(newPointTimeStamp-self.congestion),2), "ms")
+                    self.congestion = None
+                self.lastPointTimeStamp = newPointTimeStamp
 
 
     def closeEvent(self, event):
