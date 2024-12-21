@@ -31,7 +31,7 @@ shortcutText = "ESC \t return to configuration\n" \
              + "R \t start/stop raw recording (not recommended)\n"
 
 class StartWindow(QWidget):
-    def __init__(self):
+    def __init__(self, allowAutoUpdate):
         super().__init__()
         self.setWindowTitle("GT7 SpeedBoard 1.0")
         modeLabel = QLabel("Mode:")
@@ -335,7 +335,7 @@ class StartWindow(QWidget):
         self.cbCaution.stateChanged.connect(self.chooseCautionFile)
         self.mode.currentIndexChanged.connect(self.updateForMode)
 
-        if self.cbCheckUpdatesStart.isChecked():
+        if allowAutoUpdate and self.cbCheckUpdatesStart.isChecked():
             self.checkUpdates(True)
 
         self.updateForMode()
