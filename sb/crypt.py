@@ -29,7 +29,7 @@ def salsa20_enc(dat, iv1):
     IV.extend(iv1.to_bytes(4, 'little'))
     dat[0:4] = 0x47375330.to_bytes(4, 'little')
     cipher = Salsa20.new(key=KEY[0:32], nonce=bytes(IV))
-    ddata = cipher.encrypt(bytes(dat))
+    ddata = bytearray(cipher.encrypt(bytes(dat)))
     ddata[0x40:0x44] = oiv
     return ddata
 

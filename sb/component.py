@@ -4,6 +4,12 @@ from PyQt6.QtCore import *
 
 componentLibrary = {}
 
+class KeyboardFilter(QObject):
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.KeyEvent:
+            return True
+        return False
+
 class Component:
     def __init__(self, cfg, data):
         self.cfg = cfg

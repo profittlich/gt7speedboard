@@ -259,6 +259,18 @@ class StartWindow(QWidget):
         logPrint("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
+
+        checkUpdVal = settings.value("checkUpdatesAtStart")
+        logPrint(checkUpdVal)
+        if checkUpdVal is None:
+            result = QMessageBox.question(self, "Check updates", "Do you want automatically check for updates?")
+            self.checkUpdatesAtStart(result == QMessageBox.StandardButton.Yes)
+
+        storLoc = settings.value("storageLocation")
+        if storLoc is None:
+            QMessageBox.information(self, "Storage location", "You must choose a storage location for your data.")
+            self.chooseStorage()
+
         self.cbCheckUpdatesStart.setChecked(settings.value("checkUpdatesAtStart", True) in [ True, "true"])
         self.optimizedSeed.setCurrentIndex(int(settings.value("optimizedSeed",0)))
 
@@ -375,6 +387,9 @@ class StartWindow(QWidget):
         else:
             self.storageLocation = chosen
             self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
+            settings = QSettings()
+            settings.setValue("storageLocation", self.storageLocation)
+            settings.sync()
             logPrint(chosen)
 
     def chooseReferenceLapA(self, on):
