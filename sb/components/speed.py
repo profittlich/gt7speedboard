@@ -381,6 +381,7 @@ class Speed(sb.component.Component):
 
     def updateOneSpeedEntry(self, refLap, curPoint):
         bgCol = self.cfg.brightBackgroundColor
+        col = self.cfg.backgroundColor
 
         if not refLap.closestPoint is None:
             # SPEED
@@ -390,7 +391,6 @@ class Speed(sb.component.Component):
             # BRAKE POINTS
             if self.cfg.throttlepoints or self.cfg.brakepoints:
                 refLap.pedalWidget.setText("")
-                col = self.cfg.backgroundColor
 
             if self.cfg.throttlepoints:
                 if refLap.closestOffsetPoint.throttle > 98:

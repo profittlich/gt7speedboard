@@ -309,7 +309,7 @@ class StartWindow(QWidget):
         self.sessionName.setText(settings.value("sessionName", ""))
         self.saveSessionName.setChecked(settings.value("saveSessionName") in [ True, "true"])
 
-        self.speedcomp.setChecked(settings.value("speedcomp") in [ True, "true"])
+        self.speedcomp.setChecked(settings.value("speedcomp", True) in [ True, "true"])
         self.linecomp.setChecked(settings.value("linecomp") in [ True, "true"])
         self.timecomp.setChecked(settings.value("timecomp", True) in [ True, "true"])
         self.cautionFile = settings.value("messageFile")
@@ -475,11 +475,17 @@ class ColorLabel(QLabel):
         super().__init__()
         self.color = QColor("#00000000")
         self.qp = QPainter()
+        pal = self.palette()
+        pal.setColor(self.foregroundRole(), QColor("#fff"))
+        self.setPalette(pal)
 
     def __init__(self, t):
         super().__init__(t)
         self.color = QColor("#00000000")
         self.qp = QPainter()
+        pal = self.palette()
+        pal.setColor(self.foregroundRole(), QColor("#fff"))
+        self.setPalette(pal)
 
     def setColor(self, c):
         if c != self.color:
