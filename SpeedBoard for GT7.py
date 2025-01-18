@@ -203,6 +203,7 @@ class MainWindow(ColorMainWidget):
         self.cfg.developmentMode = False
 
         self.defaultPalette = self.palette()
+        self.specWidgets = []
 
         loadCarIds()
 
@@ -219,7 +220,7 @@ class MainWindow(ColorMainWidget):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v7)")
+        self.setWindowTitle("SpeedBoard for GT7 (v7.5)")
         self.queue = queue.Queue()
         self.receiver = None
         self.isRecording = False
