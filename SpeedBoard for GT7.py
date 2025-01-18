@@ -556,6 +556,7 @@ class MainWindow(ColorMainWidget):
         self.startWindow.ip.returnPressed.connect(self.startDash)
         self.setPalette(self.defaultPalette)
         self.setCentralWidget(self.startWindow)
+        self.setColor(self.defaultPalette.color(self.backgroundRole()))
 
     def newSession(self):
 
