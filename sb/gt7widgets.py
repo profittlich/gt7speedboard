@@ -52,8 +52,11 @@ class StartWindow(QWidget):
         firstRow.setLayout(updateLayout)
 
         self.mode = QComboBox()
-        self.mode.addItem("Laps")
+        self.mode.addItem("Laps (Default dashboard)")
+        self.mode.addItem("Laps (Dense dashboard)")
+        self.mode.addItem("Laps (Multi screen)")
         self.mode.addItem("Circuit Experience (experimental)")
+        self.circuitExperienceIndex = 3
         updateLayout.addWidget(self.mode,10)
         updateLayout.addWidget(self.cbCheckUpdatesStart)
         updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
@@ -342,7 +345,7 @@ class StartWindow(QWidget):
 
     def updateForMode(self):
         logPrint("updateForMode")
-        if self.mode.currentIndex () == 1:
+        if self.mode.currentIndex () == self.circuitExperienceIndex:
             self.cbOptimal.setEnabled(False)
             self.optimizedSeed.setEnabled(False)
         else:

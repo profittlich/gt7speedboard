@@ -72,9 +72,99 @@ defaultLayout = [
                     #]
                 ]
 
+multiScreenLayout = [
+                    [ # Screen 1
+                        [ # Page 1
+                            { "component" : "LapHeader", "stretch" : 1},
+                            { "list" :
+                                [
+                                    { "list" :
+                                        [
+                                            { "component" : "Speed", "stretch" : 2},
+                                            { "component" : "TyreTemps", "stretch" : 1},
+                                        ], "stretch" : 1
+                                    },
+                                    { "component" : "FuelAndMessages", "stretch" : 1},
+                                ], "stretch" : 100
+                            }
+                        ],
+                        # Pages 2..
+                        { "component" : "Help", "stretch" : 1},
+                    ],
+                    [ # Screen 2
+                        { "component" : "Map", "stretch" : 1},
+                    ],
+                    [ # Screen 2
+                        { "component" : "Stats", "stretch" : 1},
+                    ]
+                ]
+
 #j = json.dumps(defaultLayout, indent = 4)
 #with open("defaultLayout.json", "w") as jf:
     #jf.write(j)
+
+bigLayout = [
+    [
+        [
+            {
+                "component": "LapHeader",
+                "stretch": 1
+            },
+            {
+                "list": [
+                    {
+                        "list": [
+                            {
+                                "component": "Speed",
+                                "stretch": 2
+                            },
+                            {
+                                "list": [
+                                    {
+                                        "component": "Map",
+                                        "stretch": 1
+                                    },
+                                    {
+                                        "component": "TyreTemps",
+                                        "stretch": 1
+                                    }
+                                ],
+                                "stretch": 1
+                            }
+                        ],
+                        "stretch": 1
+                    },
+                    {
+                        "list": [
+                            {
+                                "component": "Pedals",
+                                "stretch": 1
+                            },
+                            {
+                                "component": "FuelAndMessages",
+                                "stretch": 4
+                            }
+                        ],
+                        "stretch": 1
+                    }
+                ],
+                "stretch": 100
+            }
+        ],
+        {
+            "component": "Stats",
+            "stretch": 1
+        },
+        {
+            "component": "Help",
+            "stretch": 1
+        },
+        {
+            "component": "Map",
+            "stretch": 1
+        }
+    ]
+]
 
 circuitExperienceLayout = [
                     [ # Screen 1
@@ -144,10 +234,9 @@ class MainWindow(ColorMainWidget):
         self.curOptimizingLap = Lap()
 
     def loadLayout(self, fn):
-        global defaultLayout
         with open(fn, "r") as f:
             txt = f.read()
-            defaultLayout = json.loads(txt)
+            self.selectedLayout = json.loads(txt)
 
     def createComponent(self, name):
         newComponent = sb.component.componentLibrary[name](self.cfg, self)
@@ -216,7 +305,7 @@ class MainWindow(ColorMainWidget):
         if self.cfg.circuitExperience:
             self.specWidgets = self.makeDashFromSpec(circuitExperienceLayout)
         else:
-            self.specWidgets = self.makeDashFromSpec(defaultLayout)
+            self.specWidgets = self.makeDashFromSpec(self.selectedLayout)
 
         i = 1
         for s in self.specWidgets:
@@ -254,7 +343,15 @@ class MainWindow(ColorMainWidget):
     def startDash(self):
         self.lastPointTimeStamp = time.perf_counter()
         self.congestion = None
-        self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == 1
+        self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == self.startWindow.circuitExperienceIndex
+        if not self.cfg.circuitExperience:
+            ci = self.startWindow.mode.currentIndex()
+            if ci == 0:
+                self.selectedLayout = defaultLayout
+            elif ci == 1:
+                self.selectedLayout = bigLayout
+            elif ci == 2:
+                self.selectedLayout = multiScreenLayout
 
         if self.cfg.circuitExperience:
             msg = QMessageBox()
@@ -402,7 +499,7 @@ class MainWindow(ColorMainWidget):
         self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
         self.thread.start()
 
-        if self.goFullscreen:
+        if self.goFullscreen and self.selectedLayout != multiScreenLayout:
             self.showFullScreen()
         self.showUiMsg("Press ESC to return to the settings", 2)
 
