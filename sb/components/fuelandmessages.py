@@ -7,6 +7,8 @@ import sb.component
 from sb.gt7widgets import *
 from sb.gt7telepoint import Point
 from sb.helpers import logPrint
+from sb.helpers import Worker
+import os
 
 class FuelAndMessages(sb.component.Component):
     def description():
@@ -14,6 +16,9 @@ class FuelAndMessages(sb.component.Component):
     
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
+
+        self.newMessage = None
+        self.messages = []
 
         self.fuelWidget = QWidget()
 
@@ -58,6 +63,9 @@ class FuelAndMessages(sb.component.Component):
         fuelLayout.addWidget(self.fuelBar, 0, 2, 1, 1)
         fuelLayout.addWidget(self.laps, 1, 0, 1, 3)
 
+    def newSession(self):
+        self.newMessage = None
+        self.loadMessages(self.cfg.messageFile)
 
     def getWidget(self):
         return self.fuelWidget
@@ -100,7 +108,7 @@ class FuelAndMessages(sb.component.Component):
         self.laps.setTextFormat(Qt.TextFormat.RichText)
         messageShown = False
         if self.cfg.messagesEnabled: # TODO: put at end and remove messageShown?
-            for m in self.data.messages:
+            for m in self.messages:
                 if curPoint.distance(m[0]) < self.cfg.messageDisplayDistance:
                     pal = self.laps.palette()
                     if (datetime.datetime.now().microsecond + self.cfg.messageBlinkingPhase) % 500000 < 250000:
@@ -168,13 +176,55 @@ class FuelAndMessages(sb.component.Component):
                 self.laps.setPalette(pal)
 
     def addPoint(self, curPoint, curLap):
-        if self.cfg.messagesEnabled and not self.data.newMessage is None:
-            self.data.messages.append([self.data.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.data.curLap.points)-1)], self.data.newMessage])
-            self.data.newMessage = None
+        if self.cfg.messagesEnabled and not self.newMessage is None:
+            self.messages.append([self.data.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.data.curLap.points)-1)], self.newMessage])
+            self.newMessage = None
 
         self.updateFuelAndWarnings(curPoint, curLap)
 
     def title(self):
         return "Fuel"
+
+    def loadMessages(self, fn):
+        self.messages = []
+        if self.cfg.loadMessagesFromFile:
+            with open (fn, "r") as f:
+                j = f.read()
+                logPrint(j)
+                d = json.loads(j)
+                logPrint(d)
+                for m in d:
+                    p = PositionPoint()
+                    p.position_x = m['X']
+                    p.position_y = m['Y']
+                    p.position_z = m['Z']
+                    self.messages.append([p, m['message']])
+                    logPrint("Message:", m)
+
+    def saveMessages(self):
+        logPrint("Save messages")
+        if not os.path.exists(self.cfg.storageLocation):
+            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
+        d = []
+        for m in self.messages:
+            d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
+
+        j = json.dumps(d, indent=4)
+        logPrint(j)
+        prefix = self.cfg.storageLocation + "/"
+        if len(self.cfg.sessionName) > 0:
+            prefix += self.cfg.sessionName + " - "
+        with open ( prefix + self.data.trackPreviouslyIdentified + " - messages - " + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
+            f.write(j)
+
+    def localKeyPressEvent(self, e):
+        if e.key() == Qt.Key.Key_Space.value:
+            logPrint("New CAUTION")
+            self.newMessage = "CAUTION"
+        elif e.key() == Qt.Key.Key_W.value: # TODO move to component
+            logPrint("store message positions")
+            saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
+            saveThread.signals.finished.connect(self.data.showUiMsg)
+            self.data.threadpool.start(saveThread)
 
 sb.component.componentLibrary['FuelAndMessages'] = FuelAndMessages

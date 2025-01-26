@@ -58,6 +58,9 @@ class Map(sb.component.Component):
     def title(self):
         return "Map"
 
+    def newTrack(self, curPoint, track):
+        self.newSession()
+
     def newSession(self):
         self.mapView.clear()
         for p in range(1,len(self.data.curLap.points)):

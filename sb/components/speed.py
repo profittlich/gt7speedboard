@@ -473,6 +473,9 @@ class Speed(sb.component.Component):
         self.header.update()
         self.markBigCountdownField()
 
+    def newTrack(self, curPoint, track):
+        self.newSession()
+
     def newSession(self):
         pal = self.pedalLast.palette()
         self.pedalLast.setText("")

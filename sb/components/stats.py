@@ -240,6 +240,7 @@ class Stats(sb.component.Component):
         self.updateLiveStats(curPoint)
 
     def newTrack(self, curPoint, track):
+        self.newSession()
         logPrint("newTrack")
         self.assumedTrack = track
         self.newRun()
