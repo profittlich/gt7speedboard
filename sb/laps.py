@@ -39,6 +39,30 @@ class Lap:
         else:
             self.time = self.following.last_lap
 
+    def findClosestPoint(self, p, startIdx, cfg, brakeOffset):
+        shortestDistance = 100000000
+        result = None
+        for p2 in range(startIdx, len(self.points)-10): #TODO why -10? Confusion at the finish line... Maybe do dynamic length
+            curDist = p.distance(self.points[p2])
+            if curDist < cfg.closestPointValidDistance and curDist < shortestDistance:
+                shortestDistance = curDist
+                result = p2
+            if not result is None and curDist > cfg.closestPointGetAwayDistance:
+                break
+            if curDist >= cfg.closestPointCancelSearchDistance:
+                break
+
+        if result is None:
+            for p2 in range(100, len(self.points)-10, 100):
+                curDist = p.distance(self.points[p2])
+                if curDist < cfg.closestPointValidDistance:
+                    logPrint("Found global position at", p2)
+                    startIdx = p2-100
+                    break
+                
+            return None, startIdx, None
+        return self.points[result], result, self.points[min(len(self.points)-1, max(0,result+brakeOffset))]
+
     def findClosestPointNoLimit(self, p):
         shortestDistance = 100000000
         result = None
@@ -49,6 +73,13 @@ class Lap:
                 result = p2
 
         return self.points[result], result, shortestDistance
+
+    def findNextBrake(self, startI, cfg, brakeOffset):
+        startI += brakeOffset
+        for i in range(max(startI,0), min(int(math.ceil(startI + cfg.psFPS * 3)), len(self.points))):
+            if self.points[i].brake > cfg.brakeMinimumLevel:
+                return max(i-startI,0)
+        return None
 
     def topSpeed(self):
         topSpeed = 0

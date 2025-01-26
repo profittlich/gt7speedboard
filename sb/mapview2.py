@@ -115,6 +115,7 @@ class MapView2(QWidget):
         return col
 
     # DATA ANALYSIS
+    # TODO consider Lap class version
     def findClosestPointNoLimit(self, lap, p):
         shortestDistance = 100000000
         result = None

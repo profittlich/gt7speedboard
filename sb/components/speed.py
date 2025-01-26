@@ -341,13 +341,13 @@ class Speed(sb.component.Component):
         opti.timeDiffWidget = self.timeDiffOptimized
         opti.id = 5
              
-        refA.nextBrake = self.data.findNextBrake(self.data.refLaps[0].points, refA.closestIndex) # TODO refactor
-        refB.nextBrake = self.data.findNextBrake(self.data.refLaps[1].points, refB.closestIndex)
-        refC.nextBrake = self.data.findNextBrake(self.data.refLaps[2].points, refC.closestIndex)
-        opti.nextBrake = self.data.findNextBrake(self.data.optimizedLap.points, opti.closestIndex)
+        refA.nextBrake = self.data.refLaps[0].findNextBrake(refA.closestIndex, self.cfg, self.data.brakeOffset) # TODO refactor
+        refB.nextBrake = self.data.refLaps[1].findNextBrake(refB.closestIndex, self.cfg, self.data.brakeOffset)
+        refC.nextBrake = self.data.refLaps[2].findNextBrake(refC.closestIndex, self.cfg, self.data.brakeOffset)
+        opti.nextBrake = self.data.optimizedLap.findNextBrake(opti.closestIndex, self.cfg, self.data.brakeOffset)
 
         if len(self.data.previousLaps) > 0 and self.data.previousLaps[self.data.bestLap].valid:
-            best.nextBrake = self.data.findNextBrake(self.data.previousLaps[self.data.bestLap].points, best.closestIndex)
+            best.nextBrake = self.data.previousLaps[self.data.bestLap].findNextBrake(best.closestIndex, self.cfg, self.data.brakeOffset)
 
         self.data.setColor(self.cfg.brightBackgroundColor)
 
