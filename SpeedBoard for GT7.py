@@ -233,8 +233,6 @@ class MainWindow(ColorMainWidget):
         self.receiver = None
         self.isRecording = False
 
-        self.newMessage = None
-        self.messages = []
         self.messageWaitsForKey = False
 
         self.setCentralWidget(self.startWindow)
@@ -569,10 +567,9 @@ class MainWindow(ColorMainWidget):
         self.setCentralWidget(self.startWindow)
         self.setColor(self.defaultPalette.color(self.backgroundRole()))
 
-    def newSession(self):
+    def newSession(self, notifyComponents = True):
 
         logPrint("INIT RACE")
-        self.newMessage = None
         self.lastLap = -1
         self.lastFuel = -1
         self.lastFuelUsage = []
@@ -591,11 +588,9 @@ class MainWindow(ColorMainWidget):
         self.bestLap = -1
         self.medianLap = -1
 
-        for c in self.components:
-            c.newSession()
-
-        self.loadMessages(self.cfg.messageFile)
-
+        if notifyComponents:
+            for c in self.components:
+                c.newSession()
 
     def resetCurrentLapData(self):
         logPrint("Reset cur lap storage") 
@@ -626,51 +621,7 @@ class MainWindow(ColorMainWidget):
         self.closestOffsetPointOptimized = None
         self.lapProgress = 0
 
-    # TODO: consider using versions from Lap class
-    def findClosestPoint(self, lap, p, startIdx):
-        shortestDistance = 100000000
-        result = None
-        for p2 in range(startIdx, len(lap)-10): #TODO why -10? Confusion at the finish line... Maybe do dynamic length
-            curDist = p.distance(lap[p2])
-            if curDist < self.cfg.closestPointValidDistance and curDist < shortestDistance:
-                shortestDistance = curDist
-                result = p2
-            if not result is None and curDist > self.cfg.closestPointGetAwayDistance:
-                break
-            if curDist >= self.cfg.closestPointCancelSearchDistance:
-                break
-
-        if result is None:
-            for p2 in range(100, len(lap)-10, 100):
-                curDist = p.distance(lap[p2])
-                if curDist < self.cfg.closestPointValidDistance:
-                    logPrint("Found global position at", p2)
-                    startIdx = p2-100
-                    break
-                
-            return None, startIdx, None
-        return lap[result], result, lap[min(len(lap)-1, max(0,result+self.brakeOffset))]
-
-    # TODO: consider using versions from Lap class
-    def findClosestPointNoLimit(self, lap, p):
-        shortestDistance = 100000000
-        result = None
-        for p2 in lap:
-            curDist = p.distance(p2)
-            if curDist < shortestDistance:
-                shortestDistance = curDist
-                result = p2
-
-        return result
-
-    def findNextBrake(self, lap, startI):
-        startI += self.brakeOffset
-        for i in range(max(startI,0), min(int(math.ceil(startI + self.cfg.psFPS * 3)), len(lap))):
-            if lap[i].brake > self.cfg.brakeMinimumLevel:
-                return max(i-startI,0)
-        return None
-
-    def purgeBadLapsCE(self):
+    def purgeBadLapsCE(self): # TODO consider Circuit Experience component
         logPrint("PURGE laps")
         longestLength = 0
         longestLap = None
@@ -686,12 +637,12 @@ class MainWindow(ColorMainWidget):
             for l in self.previousLaps:
                 logPrint ("Check lap", l.time)
                 d = longestLap.points[-1].distance(l.points[-1])
-                c = self.findClosestPointNoLimit(l.points, longestLap.points[-1])
+                c = l.findClosestPointNoLimit(longestLap.points[-1])
                 d2 = -1
                 d3 = -1
                 if not c is None:
                     d2 = c.distance(longestLap.points[-1])
-                c3 = self.findClosestPointNoLimit(longestLap.points, l.points[-1])
+                c3 = longestLap.findClosestPointNoLimit(l.points[-1])
                 if not c3 is None:
                     d3 = c3.distance(l.points[-1])
                 logPrint("End distance:", d)
@@ -764,10 +715,8 @@ class MainWindow(ColorMainWidget):
                 self.showUiMsg("Welcome to<br>" + curTrack, 1)
                 self.trackPreviouslyIdentified = curTrack
                 tempLap = self.lastLap
-                tempMsg = self.messages
-                self.newSession()
+                self.newSession(False)
                 self.lastLap = tempLap
-                self.messages = tempMsg
 
                 for c in self.components:
                     c.newTrack(curPoint, curTrack)
@@ -776,17 +725,17 @@ class MainWindow(ColorMainWidget):
             self.trackPreviouslyDescribed = curTrack
 
     def determineLapProgress(self, curPoint):
-        self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.findClosestPoint (self.refLaps[0].points, curPoint, self.closestIRefA)
-        self.closestPointRefB, self.closestIRefB, self.closestOffsetPointRefB = self.findClosestPoint (self.refLaps[1].points, curPoint, self.closestIRefB)
-        self.closestPointRefC, self.closestIRefC, self.closestOffsetPointRefC = self.findClosestPoint (self.refLaps[2].points, curPoint, self.closestIRefC)
-        self.closestPointOptimized, self.closestIOptimized, self.closestOffsetPointOptimized = self.findClosestPoint (self.optimizedLap.points, curPoint, self.closestIOptimized)
+        self.closestPointRefA, self.closestIRefA, self.closestOffsetPointRefA = self.refLaps[0].findClosestPoint (curPoint, self.closestIRefA, self.cfg, self.brakeOffset)
+        self.closestPointRefB, self.closestIRefB, self.closestOffsetPointRefB = self.refLaps[1].findClosestPoint (curPoint, self.closestIRefB, self.cfg, self.brakeOffset)
+        self.closestPointRefC, self.closestIRefC, self.closestOffsetPointRefC = self.refLaps[2].findClosestPoint (curPoint, self.closestIRefC, self.cfg, self.brakeOffset)
+        self.closestPointOptimized, self.closestIOptimized, self.closestOffsetPointOptimized = self.optimizedLap.findClosestPoint (curPoint, self.closestIOptimized, self.cfg, self.brakeOffset)
        
         if len(self.previousLaps) > 0:
-            self.closestPointLast, self.closestILast, self.closestOffsetPointLast = self.findClosestPoint (self.previousLaps[-1].points, curPoint, self.closestILast)
+            self.closestPointLast, self.closestILast, self.closestOffsetPointLast = self.previousLaps[-1].findClosestPoint (curPoint, self.closestILast, self.cfg, self.brakeOffset)
 
             if self.bestLap >= 0 and self.previousLaps[self.bestLap].valid:
-                self.closestPointBest, self.closestIBest, self.closestOffsetPointBest = self.findClosestPoint (self.previousLaps[self.bestLap].points, curPoint, self.closestIBest)
-                self.closestPointMedian, self.closestIMedian, self.closestOffsetPointMedian = self.findClosestPoint (self.previousLaps[self.medianLap].points, curPoint, self.closestIMedian)
+                self.closestPointBest, self.closestIBest, self.closestOffsetPointBest = self.previousLaps[self.bestLap].findClosestPoint (curPoint, self.closestIBest, self.cfg, self.brakeOffset)
+                self.closestPointMedian, self.closestIMedian, self.closestOffsetPointMedian = self.previousLaps[self.medianLap].findClosestPoint (curPoint, self.closestIMedian, self.cfg, self.brakeOffset)
 
         lpBest = -1
         lpA = -1
@@ -820,7 +769,7 @@ class MainWindow(ColorMainWidget):
         elif tp != -1:
             self.lapProgress = tp
 
-    def initOptimizedLap(self):
+    def initOptimizedLap(self): # TODO: consider Lap Optimization component
         if self.cfg.optimizedSeed == 0:
             self.optimizedLap = Lap()
         elif self.cfg.optimizedSeed == 1:
@@ -1116,7 +1065,7 @@ class MainWindow(ColorMainWidget):
         event.accept()
 
 
-    def toggleRecording(self):
+    def toggleRecording(self): # TODO: consider recording component
         if self.cfg.recordingEnabled or self.cfg.developmentMode:
             if self.isRecording:
                 self.isRecording = False
@@ -1137,43 +1086,35 @@ class MainWindow(ColorMainWidget):
                 self.messageWaitsForKey = False
                 self.returnToDash()
         elif self.centralWidget() == self.masterWidget and not e.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            if e.key() == Qt.Key.Key_R.value:
+            if e.key() == Qt.Key.Key_R.value: # TODO move to component
                 self.toggleRecording()
             elif e.key() == Qt.Key.Key_Escape.value:
                 self.exitDash()
-            elif e.key() == Qt.Key.Key_Space.value:
-                self.newMessage = "CAUTION"
-            elif e.key() == Qt.Key.Key_B.value:
+            elif e.key() == Qt.Key.Key_B.value: # TODO move to component
                 if self.bestLap >= 0:
                     saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.bestLap, "best",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_L.value:
+            elif e.key() == Qt.Key.Key_L.value: # TODO move to component
                 if len(self.previousLaps) > 0:
                     saveThread = Worker(self.saveLap, "Last lap saved.", 1.0, (-1, "last",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_M.value:
+            elif e.key() == Qt.Key.Key_M.value: # TODO move to component
                 if self.medianLap >= 0:
                     saveThread = Worker(self.saveLap, "Median lap saved.", 1.0, (self.medianLap, "median",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_O.value:
+            elif e.key() == Qt.Key.Key_O.value: # TODO move to component
                 if len(self.optimizedLap.points) > 0:
                     saveThread = Worker(self.saveOptimizedLap, "Optimized lap saved.", 1.0, (self.optimizedLap, "optimized",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_A.value:
+            elif e.key() == Qt.Key.Key_A.value: # TODO move to component
                 if len(self.previousLaps) > 0:
                     saveThread = Worker(self.saveAllLaps, "All laps saved.", 1.0, ("combined",))
                     saveThread.signals.finished.connect(self.showUiMsg)
                     self.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_W.value:
-                logPrint("store message positions")
-                saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
-                saveThread.signals.finished.connect(self.showUiMsg)
-                self.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_D.value:
             elif e.key() == Qt.Key.Key_C.value:
                 self.newSession()
             elif e.key() == Qt.Key.Key_P.value:
@@ -1208,25 +1149,21 @@ class MainWindow(ColorMainWidget):
                      self.specWidgets[0].setCurrentIndex(0)
                  else:
                      self.specWidgets[0].setCurrentIndex(cur+1)
-            elif e.key() == Qt.Key.Key_S.value:
+            elif e.key() == Qt.Key.Key_S.value: # TODO redesign page shortcuts
                 if self.specWidgets[0].currentIndex() == 1:
                     self.flipPage(0)
                 else:
                     self.flipPage(1)
-            elif e.key() == Qt.Key.Key_V.value:
+            elif e.key() == Qt.Key.Key_V.value: # TODO redesign page shortcuts
                 if self.specWidgets[0].currentIndex() == 3:
                     self.flipPage(0)
                 else:
                     self.flipPage(3)
-            elif e.key() == Qt.Key.Key_Question:
+            elif e.key() == Qt.Key.Key_Question: # TODO redesign page shortcuts
                 if self.specWidgets[0].currentIndex() == 2:
                     self.flipPage(0)
                 else:
                     self.flipPage(2)
-            #elif e.key() == Qt.Key.Key_T.value:
-                #tester = Worker(someDelay, "Complete", 0.2)
-                #tester.signals.finished.connect(self.showUiMsg)
-                #self.threadpool.start(tester)
             else:
                 for c in self.components:
                     c.delegateKeyPressEvent(e)
@@ -1343,38 +1280,6 @@ class MainWindow(ColorMainWidget):
             if not lap.following is None:
                 logPrint("to", lap.following.current_lap)
                 f.write(lap.following.raw)
-
-    def saveMessages(self):
-        logPrint("Save messages")
-        if not os.path.exists(self.cfg.storageLocation):
-            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
-        d = []
-        for m in self.messages:
-            d.append({ "X": m[0].position_x, "Y": m[0].position_y, "Z": m[0].position_z, "message" :m[1]})
-
-        j = json.dumps(d, indent=4)
-        logPrint(j)
-        prefix = self.cfg.storageLocation + "/"
-        if len(self.cfg.sessionName) > 0:
-            prefix += self.cfg.sessionName + " - "
-        with open ( prefix + self.trackPreviouslyIdentified + " - messages - " + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
-            f.write(j)
-
-    def loadMessages(self, fn):
-        self.messages = []
-        if self.cfg.loadMessagesFromFile:
-            with open (fn, "r") as f:
-                j = f.read()
-                logPrint(j)
-                d = json.loads(j)
-                logPrint(d)
-                for m in d:
-                    p = PositionPoint()
-                    p.position_x = m['X']
-                    p.position_y = m['Y']
-                    p.position_z = m['Z']
-                    self.messages.append([p, m['message']])
-                    logPrint("Message:", m)
 
 
 def excepthook(exc_type, exc_value, exc_tb):
