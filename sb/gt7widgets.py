@@ -56,6 +56,7 @@ class StartWindow(QWidget):
         self.mode.addItem("Laps (Dense dashboard)")
         self.mode.addItem("Laps (Multi screen)")
         self.mode.addItem("Circuit Experience (experimental)")
+        self.mode.addItem("BrakeBoard (experimental)")
         self.circuitExperienceIndex = 3
         updateLayout.addWidget(self.mode,10)
         updateLayout.addWidget(self.cbCheckUpdatesStart)
@@ -742,21 +743,38 @@ class PedalWidget(QWidget):
 
 class LineDeviation(QWidget):
 
-    def __init__(self):
+    def __init__(self, maxDist = 3, colorScaleMode = 0, greenRange = 0.1, yellowRange = 0.3):
         super().__init__()
-        self.maxDist = 3
+        self.maxDist = maxDist
         self.dist = 0
         self.invert = True
         self.p1 = None
         self.p2 = None
+        self.colorScaleMode = colorScaleMode
+        self.greenRange = greenRange
+        self.yellowRange = yellowRange
         self.redGradient = QLinearGradient (10,0,120,0);
         self.redGradient.setColorAt(0.0, QColor("#222"))
         self.redGradient.setColorAt(0.2, QColor("#222"))
         self.redGradient.setColorAt(1.0, Qt.GlobalColor.red);
+        self.yellowGradient = QLinearGradient (10,0,120,0);
+        self.yellowGradient.setColorAt(0.0, QColor("#222"))
+        self.yellowGradient.setColorAt(0.2, QColor("#222"))
+        self.yellowGradient.setColorAt(1.0, Qt.GlobalColor.yellow);
         self.greenGradient = QLinearGradient (10,0,120,0);
         self.greenGradient.setColorAt(0.0, QColor("#222"))
         self.greenGradient.setColorAt(0.2, QColor("#222"))
         self.greenGradient.setColorAt(1.0, Qt.GlobalColor.green);
+
+    def setColorScaleMode (self, m, greenRange = None, yellowRange = None):
+        self.colorScaleMode = m
+        if not greenRange is None:
+            self.greenRange = greenRange
+        if not yellowRange is None:
+            self.yellowRange = yellowRange
+
+    def setMaxDeviation(self, d):
+        self.maxDist = d
 
     def abs(self, x, y, z):
         return math.sqrt(x**2 + y**2 + z**2)
@@ -818,7 +836,7 @@ class LineDeviation(QWidget):
         font.setBold(True)
         self.setFont(font)
         clippedDist = min(self.maxDist, max(-self.maxDist, self.dist))
-        if not self.p1 is None and not self.p2 is None:
+        if self.colorScaleMode == 0:
             if self.dist < 0:
                 self.redGradient.setStart(self.width()/2,0)
                 self.redGradient.setFinalStop(self.width()/2 + clippedDist/self.maxDist * self.width() / 2, 0)
@@ -828,6 +846,24 @@ class LineDeviation(QWidget):
                 self.greenGradient.setStart(self.width()/2,0)
                 self.greenGradient.setFinalStop(self.width()/2 + clippedDist/self.maxDist * self.width() / 2, 0)
                 qp.fillRect(int(self.width()/2), 0, int(clippedDist/self.maxDist * self.width() / 2), int(self.height()), self.greenGradient)
+                qp.drawLine(int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), int(self.height()))
+        elif self.colorScaleMode == 1:
+            if abs(self.dist) <= self.greenRange:
+                curGradient = self.greenGradient
+            elif abs(self.dist) <= self.yellowRange:
+                curGradient = self.yellowGradient
+            else:
+                curGradient = self.redGradient
+
+            if self.dist < 0:
+                curGradient.setStart(self.width()/2,0)
+                curGradient.setFinalStop(self.width()/2 + clippedDist/self.maxDist * self.width() / 2, 0)
+                qp.fillRect(int(self.width()/2), 0, int(clippedDist/self.maxDist * self.width() / 2), int(self.height()), curGradient)
+                qp.drawLine(int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), int(self.height()))
+            else:
+                curGradient.setStart(self.width()/2,0)
+                curGradient.setFinalStop(self.width()/2 + clippedDist/self.maxDist * self.width() / 2, 0)
+                qp.fillRect(int(self.width()/2), 0, int(clippedDist/self.maxDist * self.width() / 2), int(self.height()), curGradient)
                 qp.drawLine(int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), 0, int(self.width()/2) + int(clippedDist/self.maxDist * self.width() / 2), int(self.height()))
         qp.drawLine(int(self.width()/2), 0, int(self.width()/2), int (self.height()))
         qp.end()

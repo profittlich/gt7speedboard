@@ -43,6 +43,7 @@ import sb.components.speed
 import sb.components.stats
 import sb.components.help
 import sb.components.pedals
+import sb.components.brakeboard
 import sb.components.mapopt
 import sb.components.mapopting
 
@@ -185,6 +186,13 @@ circuitExperienceLayout = [
                         # Pages 2..
                         { "component" : "Stats", "stretch" : 1},
                         { "component" : "Help", "stretch" : 1},
+                    ],
+                ]
+
+brakeBoardLayout = [
+                    [ # Screen 1
+                        # Pages 2..
+                        { "component" : "BrakeBoard", "stretch" : 1},
                     ],
                 ]
 
@@ -353,6 +361,10 @@ class MainWindow(ColorMainWidget):
                 self.selectedLayout = bigLayout
             elif ci == 2:
                 self.selectedLayout = multiScreenLayout
+            #elif ci == 3:
+                #self.selectedLayout = circuitExperienceLayout
+            elif ci == 4:
+                self.selectedLayout = brakeBoardLayout
 
         if self.cfg.circuitExperience:
             msg = QMessageBox()
