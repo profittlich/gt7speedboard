@@ -619,7 +619,7 @@ class Speed(sb.component.Component):
     def title(self):
         return "Speed"
 
-    def keyPressEvent(self, e):
+    def localKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Tab:
             self.cycleBigCountdownBreakponts()
 

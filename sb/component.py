@@ -2,13 +2,9 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
-componentLibrary = {}
+from sb.helpers import *
 
-class KeyboardFilter(QObject):
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.KeyEvent:
-            return True
-        return False
+componentLibrary = {}
 
 class Component:
     def __init__(self, cfg, data):
@@ -74,7 +70,11 @@ class Component:
     def leftCircuit(self):
         pass
 
-    def keyPressEvent(self, e):
+    def delegateKeyPressEvent(self, e):
+        self.localKeyPressEvent(e)
+        self.data.setFocus()
+
+    def localKeyPressEvent(self, e):
         pass
 
     def stop(self):

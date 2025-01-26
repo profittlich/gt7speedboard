@@ -79,15 +79,16 @@ class Stats(sb.component.Component):
         self.liveStats = ""
         self.runStats = ""
         self.assumedTrack = ""
+        self.newRunDescription = None
 
     def getWidget(self):
         return self.statsPageScroller
 
     def addPoint(self, curPoint, curLap):
         # Update live stats description
-        if not self.data.newRunDescription is None and len(self.sessionStats) > 0 and curPoint.current_lap > 1:
-            self.sessionStats[-1].description = self.data.newRunDescription
-            self.data.newRunDescription = None
+        if not self.newRunDescription is None and len(self.sessionStats) > 0 and curPoint.current_lap > 1:
+            self.sessionStats[-1].description = self.newRunDescription
+            self.newRunDescription = None
             self.updateRunStats()
         self.updateLiveStats(curPoint)
 
@@ -179,8 +180,8 @@ class Stats(sb.component.Component):
         if len(self.data.optimizedLap.points) > 0:
             self.data.optimizedLap.updateTime()
             liveStats += "Optimized lap (est.): " + msToTime (self.data.optimizedLap.time) + "<br>"
-        if not self.data.newRunDescription is None:
-            liveStats += "Next run description: " + self.data.newRunDescription + "<br>"
+        if not self.newRunDescription is None:
+            liveStats += "Next run description: " + self.newRunDescription + "<br>"
         liveStats += "</font>"
 
         #liveStats += '<img src="data:image/png;base64, ' + testimg + '">'
@@ -251,9 +252,13 @@ class Stats(sb.component.Component):
     def title(self):
         return "Statistics"
 
-    def keyPressEvent(self, e):
+    def localKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_T.value:
             self.updateRunStats(saveRuns=True)
             self.data.showUiMsg("Run table saved.", 2)
+        elif e.key() == Qt.Key.Key_D.value:
+            text, ok = QInputDialog().getText(self.data, "Set run description", "Description:")
+            if ok:
+                self.newRunDescription = text
 
 sb.component.componentLibrary['Stats'] = Stats

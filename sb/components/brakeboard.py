@@ -59,6 +59,7 @@ class BrakeBoard(sb.component.Component):
 
         self.brakeTargetLevel = 50
         self.brakeDownTime = None
+        self.brakeFromFull = False
         self.prevBrakes = []
 
         self.startTime = None
@@ -66,42 +67,85 @@ class BrakeBoard(sb.component.Component):
 
         self.mode = 0 # brake target
         self.state = "begin"
+        self.difficulty = 0
+
+        self.difficultyNames = { 0:"EASY", 1:"MEDIUM", 2:"HARD", 3:"SENNA" }
 
         random.seed()
+        self.updateDifficulty()
+        self.updateMode()
     
     def getWidget(self):
         return self.mainWidget
+
+    def cycleDifficulty(self):
+        self.difficulty += 1
+        if not self.difficulty in self.difficultyNames:
+            self.difficulty = 0
+        self.updateDifficulty()
+        self.updateMode()
+
+    def updateDifficulty(self):
+        if self.difficulty == 0:
+            self.brakeHoldTime = 60
+            self.brakeHoldCorridor = 5
+            self.brakeLevelTolerance = 12
+
+            self.brakeTimingTolerance = 0.08
+        elif self.difficulty == 1:
+            self.brakeHoldTime = 30
+            self.brakeHoldCorridor = 5
+            self.brakeLevelTolerance = 8
+
+            self.brakeTimingTolerance = 0.04
+        elif self.difficulty == 2:
+            self.brakeHoldTime = 30
+            self.brakeHoldCorridor = 5
+            self.brakeLevelTolerance = 4
+
+            self.brakeTimingTolerance = 0.02
+        elif self.difficulty == 3:
+            self.brakeHoldTime = 15
+            self.brakeHoldCorridor = 5
+            self.brakeLevelTolerance = 1
+
+            self.brakeTimingTolerance = 0.01
 
     def cycleModes(self):
         self.state = "begin"
         self.mode += 1
         if self.mode > 1:
             self.mode = 0
+        self.updateMode()
 
+    def updateMode(self):
         logPrint("Next brakeboard mode:", self.mode)
+        self.state = "begin"
 
         if self.mode == 0:
             self.brakeTargetLevel = 50
-            self.topLabel.setText("MODE: BRAKE LEVEL")
+            self.topLabel.setText("MODE: BRAKE LEVEL, " + self.difficultyNames[self.difficulty])
             self.bottomLabel.setText("PRESS THE BRAKE PEDAL TO " + str(self.brakeTargetLevel) + "%" + " AND HOLD")
             self.mainLabel.setText("\u2197 50%")
             self.prevBrakes = []
-            self.deviation.setMaxDeviation(100)
-            self.deviation.setColorScaleMode(1, 30, 60)
+            self.deviation.setMaxDeviation(5 * self.brakeLevelTolerance)
+            self.deviation.setColorScaleMode(1, self.brakeLevelTolerance, 3 * self.brakeLevelTolerance)
         elif self.mode == 1:
-            self.topLabel.setText("MODE: BRAKE TIMING")
+            self.topLabel.setText("MODE: BRAKE TIMING, " + self.difficultyNames[self.difficulty])
             self.bottomLabel.setText("PRESS THE BRAKE PEDAL AT THE RIGHT TIME")
             self.mainLabel.setText("WAIT")
             self.startTime = time.perf_counter()
             self.delayTime = random.randrange(1000,5000)
-            self.deviation.setMaxDeviation(0.1)
-            self.deviation.setColorScaleMode(1, 0.01, 0.05)
+            self.deviation.setMaxDeviation(10 * self.brakeTimingTolerance)
+            self.deviation.setColorScaleMode(1, self.brakeTimingTolerance, 3 * self.brakeTimingTolerance)
             logPrint(self.delayTime)
 
 
-    def keyPressEvent(self, e):
+    def localKeyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Tab:
             self.cycleModes()
+        elif e.key() == Qt.Key.Key_H:
+            self.cycleDifficulty()
 
 
     def brakeTiming(self, curPoint):
@@ -152,12 +196,12 @@ class BrakeBoard(sb.component.Component):
                     self.mainLabel.setText("MISS!")
                     self.deviation.setDistance(-1000)
                     self.deviation.update()
-                elif self.targetTime - self.brakeDownTime < -0.01: # TODO constants
+                elif self.targetTime - self.brakeDownTime < -self.brakeTimingTolerance:
                     self.mainLabel.setText("LATE")
                     self.bottomLabel.setText(str(round(self.brakeDownTime - self.targetTime, 3)) + "s")
                     self.deviation.setDistance(self.targetTime - self.brakeDownTime)
                     self.deviation.update()
-                elif self.targetTime - self.brakeDownTime > 0.01:
+                elif self.targetTime - self.brakeDownTime > self.brakeTimingTolerance:
                     self.mainLabel.setText("EARLY")
                     self.bottomLabel.setText(str(round(self.brakeDownTime - self.targetTime, 3)) + "s")
                     self.deviation.setDistance(self.targetTime - self.brakeDownTime)
@@ -192,22 +236,33 @@ class BrakeBoard(sb.component.Component):
 
     def brakeTarget(self, curPoint):
         if self.state == "begin":
-            if curPoint.brake > 2:
+            if not self.brakeFromFull and curPoint.brake > 2:
+                self.state = "braking"
+                logPrint(self.state)
+                self.prevBrakes.append(curPoint.brake)
+            elif self.brakeFromFull and curPoint.brake == 100:
+                self.state = "brakingfull"
+                logPrint(self.state)
+                self.bottomLabel.setText("GO BACK TO " + str(self.brakeTargetLevel) + "%" + " AND HOLD")
+        elif self.state == "brakingfull":
+            if curPoint.brake < 98:
                 self.state = "braking"
                 logPrint(self.state)
                 self.prevBrakes.append(curPoint.brake)
         elif self.state == "braking":
             self.prevBrakes.append(curPoint.brake)
             logPrint(curPoint.brake)
-            if len(self.prevBrakes) > 30:
-                self.prevBrakes = self.prevBrakes[-30:]
+            if len(self.prevBrakes) > self.brakeHoldTime:
+                self.prevBrakes = self.prevBrakes[-self.brakeHoldTime:]
             if sum(self.prevBrakes) / len(self.prevBrakes) < 2:
                 self.state = "begin"
                 logPrint(self.state)
-            elif len(self.prevBrakes) == 30 and abs(max(self.prevBrakes) - min(self.prevBrakes)) < 5:
+                if self.brakeFromFull:
+                    self.bottomLabel.setText("PRESS THE BRAKE PEDAL FULLY, THEN GO BACK TO " + str(self.brakeTargetLevel) + "%" + " AND HOLD")
+            elif len(self.prevBrakes) == self.brakeHoldTime and abs(max(self.prevBrakes) - min(self.prevBrakes)) < self.brakeHoldCorridor:
                 self.state = "brakelevelreached"
                 logPrint(self.state)
-                self.deviation.setDistance(self.brakeTargetLevel - sum(self.prevBrakes) / len(self.prevBrakes))
+                self.deviation.setDistance(self.brakeTargetLevel - round(sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])))
                 self.deviation.update()
         elif self.state == "brakelevelreached":
             if curPoint.brake < 2:
@@ -215,25 +270,29 @@ class BrakeBoard(sb.component.Component):
                 logPrint(self.state)
                 self.prevBrakes = []
                 self.brakeTargetLevel = random.randrange(25,100,25)
-                self.mainLabel.setText("\u2197 " + str(self.brakeTargetLevel) + "%")
-                #self.mainLabel.setText("\u2198 " + str(self.brakeTargetLevel) + "%")
-                self.bottomLabel.setText("PRESS THE BRAKE PEDAL TO " + str(self.brakeTargetLevel) + "%" + " AND HOLD")
+                self.brakeFromFull = bool(random.getrandbits(1))
+                if self.brakeFromFull:
+                    self.mainLabel.setText("\u2198 " + str(self.brakeTargetLevel) + "%")
+                    self.bottomLabel.setText("PRESS THE BRAKE PEDAL FULLY, THEN GO BACK TO " + str(self.brakeTargetLevel) + "%" + " AND HOLD")
+                else:
+                    self.mainLabel.setText("\u2197 " + str(self.brakeTargetLevel) + "%")
+                    self.bottomLabel.setText("PRESS THE BRAKE PEDAL TO " + str(self.brakeTargetLevel) + "%" + " AND HOLD")
                 self.deviation.setDistance(0)
                 self.deviation.update()
             else:
-                logPrint (self.brakeTargetLevel - sum(self.prevBrakes) / len(self.prevBrakes))
-                logPrint (self.brakeTargetLevel , sum(self.prevBrakes) / len(self.prevBrakes))
-                if (self.brakeTargetLevel - sum(self.prevBrakes) / len(self.prevBrakes)) > 5: # TODO constants
+                logPrint (self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:]))
+                logPrint (self.brakeTargetLevel , sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:]))
+                if (self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])) >= self.brakeLevelTolerance: # TODO constants
                     self.mainLabel.setText("TOO SOFT")
-                elif (self.brakeTargetLevel - sum(self.prevBrakes) / len(self.prevBrakes)) < -5:
+                elif (self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])) <= -self.brakeLevelTolerance:
                     self.mainLabel.setText("TOO HARD")
-                elif round(self.brakeTargetLevel - sum(self.prevBrakes) / len(self.prevBrakes)) > 0:
+                elif round(self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])) > 0:
                     self.mainLabel.setText("GOOD")
-                elif round(self.brakeTargetLevel - sum(self.prevBrakes) / len(self.prevBrakes)) < 0:
+                elif round(self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])) < 0:
                     self.mainLabel.setText("GOOD")
                 else:
                     self.mainLabel.setText("PERFECT")
-                self.bottomLabel.setText(str (round(sum(self.prevBrakes) / len(self.prevBrakes))) + "% vs " + str(self.brakeTargetLevel) + "%")
+                self.bottomLabel.setText(str (round(sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:]))) + "% vs " + str(self.brakeTargetLevel) + "%")
 
 
     def addPoint(self, curPoint, curLap):

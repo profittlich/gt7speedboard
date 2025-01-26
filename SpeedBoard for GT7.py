@@ -258,7 +258,6 @@ class MainWindow(ColorMainWidget):
         else:
             print("New component:", title)
             widget = newComponent.getTitledWidget(newComponent.title())
-        widget.installEventFilter(sb.component.KeyboardFilter())
         return widget
 
     def makeDashEntry(self, e, horizontal = True):
@@ -502,7 +501,6 @@ class MainWindow(ColorMainWidget):
         self.curLapInvalidated = False
 
         self.newSession()
-        self.newRunDescription = None
 
         self.messageWaitsForKey = False
 
@@ -1176,9 +1174,6 @@ class MainWindow(ColorMainWidget):
                 saveThread.signals.finished.connect(self.showUiMsg)
                 self.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_D.value:
-                text, ok = QInputDialog().getText(self, "Set run description", "Description:")
-                if ok:
-                    self.newRunDescription = text
             elif e.key() == Qt.Key.Key_C.value:
                 self.newSession()
             elif e.key() == Qt.Key.Key_P.value:
@@ -1234,7 +1229,7 @@ class MainWindow(ColorMainWidget):
                 #self.threadpool.start(tester)
             else:
                 for c in self.components:
-                    c.keyPressEvent(e)
+                    c.delegateKeyPressEvent(e)
         elif self.centralWidget() == self.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
                 self.flipPage(e.key() - Qt.Key.Key_1.value)
@@ -1391,7 +1386,6 @@ def excepthook(exc_type, exc_value, exc_tb):
         f.write(str(datetime.datetime.now ()) + "\n\n")
         f.write(str(tb) + "\n")
     QApplication.quit()
-
 
 
 if __name__ == '__main__':
