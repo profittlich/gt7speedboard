@@ -174,13 +174,17 @@ class BrakeBoard(sb.component.Component):
                 self.state = "countdown1"
                 self.startTime = now
                 self.mainLabel.setText("1")
+                self.mainLabel.setStyleSheet("color:black")
                 self.mainLabel.setColor(self.cfg.countdownColor1)
         elif self.state == "countdown1":
             if now - self.startTime >= 0.25:
+                self.mainLabel.setStyleSheet("")
                 self.mainLabel.setColor(self.cfg.backgroundColor)
             if now - self.startTime >= 0.5:
+                self.mainLabel.setStyleSheet("color:black")
                 self.mainLabel.setColor(self.cfg.countdownColor1)
             if now - self.startTime >= 0.75:
+                self.mainLabel.setStyleSheet("")
                 self.mainLabel.setColor(self.cfg.backgroundColor)
             if now - self.startTime >= 1.0:
                 self.state = "brakepoint"
