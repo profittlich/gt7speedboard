@@ -46,10 +46,21 @@ import sb.components.pedals
 import sb.components.brakeboard
 import sb.components.mapopt
 import sb.components.mapopting
+import sb.components.savelaps
 
 defaultLayout = [
                     [ # Screen 1
                         [ # Page 1
+                            {
+                                "component": "SaveLaps",
+                                "actions": { 
+                                    "Key_B":"saveBest",
+                                    "Key_M":"saveMedian",
+                                    "Key_L":"saveLast",
+                                    "Key_O":"saveOptimized",
+                                    "Key_A":"saveAll",
+                                }
+                            },
                             { "component" : "LapHeader", "stretch" : 1},
                             { "list" :
                                 [
@@ -73,6 +84,16 @@ defaultLayout = [
 multiScreenLayout = [
                     [ # Screen 1
                         [ # Page 1
+                            {
+                                "component": "SaveLaps",
+                                "actions": { 
+                                    "Key_B":"saveBest",
+                                    "Key_M":"saveMedian",
+                                    "Key_L":"saveLast",
+                                    "Key_O":"saveOptimized",
+                                    "Key_A":"saveAll",
+                                }
+                            },
                             { "component" : "LapHeader", "stretch" : 1},
                             { "list" :
                                 [
@@ -104,6 +125,16 @@ multiScreenLayout = [
 bigLayout = [
     [
         [
+            {
+                "component": "SaveLaps",
+                "actions": { 
+                    "Key_B":"saveBest",
+                    "Key_M":"saveMedian",
+                    "Key_L":"saveLast",
+                    "Key_O":"saveOptimized",
+                    "Key_A":"saveAll",
+                }
+            },
             {
                 "component": "LapHeader",
                 "stretch": 1
@@ -160,6 +191,16 @@ bigLayout = [
 circuitExperienceLayout = [
                     [ # Screen 1
                         [ # Page 1
+                            {
+                                "component": "SaveLaps",
+                                "actions": { 
+                                    "Key_B":"saveBest",
+                                    "Key_M":"saveMedian",
+                                    "Key_L":"saveLast",
+                                    "Key_O":"saveOptimized",
+                                    "Key_A":"saveAll",
+                                }
+                            },
                             { "component" : "LapHeader", "stretch" : 1},
                             { "list" :
                                 [
@@ -318,6 +359,7 @@ class MainWindow(ColorMainWidget):
         else:
             print("New component:", title)
             widget = newComponent.getTitledWidget(newComponent.title())
+        logPrint(e['component'], widget)
         return (widget, shortcuts)
 
     def makeDashEntry(self, e, horizontal = True):
@@ -332,7 +374,8 @@ class MainWindow(ColorMainWidget):
         if "list" in e:
             for c in e['list']:
                 w = self.makeDashEntry(c, not horizontal)
-                layout.addWidget(w[0], w[1])
+                if not w[0] is None:
+                    layout.addWidget(w[0], w[1])
                 shortcuts += w[2]
         elif "component" in e:
             print(e['component'])
@@ -340,7 +383,12 @@ class MainWindow(ColorMainWidget):
             shortcuts += s
             if not compWidget is None:
                 layout.addWidget (compWidget)
-        return [page, e['stretch'], shortcuts]
+        stretch = 1
+        if 'stretch' in e:
+            stretch = e['stretch']
+        if layout.count() == 0:
+            return [None, stretch, shortcuts]
+        return [page, stretch, shortcuts]
 
     def makeDashPage(self, e):
         shortcuts = []
@@ -396,11 +444,6 @@ class MainWindow(ColorMainWidget):
         self.usedShortcuts = set()
         self.usedShortcuts.add (Qt.Key.Key_R)
         self.usedShortcuts.add (Qt.Key.Key_Escape)
-        self.usedShortcuts.add (Qt.Key.Key_B)
-        self.usedShortcuts.add (Qt.Key.Key_L)
-        self.usedShortcuts.add (Qt.Key.Key_M)
-        self.usedShortcuts.add (Qt.Key.Key_O)
-        self.usedShortcuts.add (Qt.Key.Key_A)
         self.usedShortcuts.add (Qt.Key.Key_C)
         self.usedShortcuts.add (Qt.Key.Key_P)
         self.usedShortcuts.add (Qt.Key.Key_0)
@@ -1193,31 +1236,6 @@ class MainWindow(ColorMainWidget):
                 self.toggleRecording()
             elif e.key() == Qt.Key.Key_Escape.value:
                 self.exitDash()
-            elif e.key() == Qt.Key.Key_B.value: # TODO move to component
-                if self.data.bestLap >= 0:
-                    saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.data.bestLap, "best",))
-                    saveThread.signals.finished.connect(self.showUiMsg)
-                    self.data.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_L.value: # TODO move to component
-                if len(self.data.previousLaps) > 0:
-                    saveThread = Worker(self.saveLap, "Last lap saved.", 1.0, (-1, "last",))
-                    saveThread.signals.finished.connect(self.showUiMsg)
-                    self.data.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_M.value: # TODO move to component
-                if self.data.medianLap >= 0:
-                    saveThread = Worker(self.saveLap, "Median lap saved.", 1.0, (self.data.medianLap, "median",))
-                    saveThread.signals.finished.connect(self.showUiMsg)
-                    self.data.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_O.value: # TODO move to component
-                if len(self.data.optimizedLap.points) > 0:
-                    saveThread = Worker(self.saveOptimizedLap, "Optimized lap saved.", 1.0, (self.data.optimizedLap, "optimized",))
-                    saveThread.signals.finished.connect(self.showUiMsg)
-                    self.data.threadpool.start(saveThread)
-            elif e.key() == Qt.Key.Key_A.value: # TODO move to component
-                if len(self.data.previousLaps) > 0:
-                    saveThread = Worker(self.saveAllLaps, "All laps saved.", 1.0, ("combined",))
-                    saveThread.signals.finished.connect(self.showUiMsg)
-                    self.data.threadpool.start(saveThread)
             elif e.key() == Qt.Key.Key_C.value:
                 self.newSession()
             elif e.key() == Qt.Key.Key_P.value:
