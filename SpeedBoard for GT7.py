@@ -1309,34 +1309,6 @@ class MainWindow(ColorMainWidget):
         self.specWidgets[0].setCurrentIndex(nr)
 
     # TODO consider moving to Lap class
-    def saveAllLaps(self, name):
-        logPrint("store all laps:", name)
-        if not os.path.exists(self.cfg.storageLocation):
-            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
-        prefix = self.cfg.storageLocation + "/"
-        if len(self.cfg.sessionName) > 0:
-            prefix += self.cfg.sessionName + " - "
-        with open ( prefix + self.data.trackPreviouslyIdentified + " - laps - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7laps", "wb") as f:
-            if not self.data.previousLaps[0].preceeding is None:
-                f.write(self.data.previousLaps[0].preceeding.raw)
-            for index in range(len(self.data.previousLaps)):
-                if index > 0 and not self.data.previousLaps[index].preceeding is None and self.data.previousLaps[index].preceeding != self.data.previousLaps[index-1].points[-1]:
-                    f.write(self.data.previousLaps[index].preceeding.raw)
-                for p in self.data.previousLaps[index].points:
-                    f.write(p.raw)
-                if index < len(self.data.previousLaps)-1 and not self.data.previousLaps[index].following is None and self.data.previousLaps[index].following != self.data.previousLaps[index+1].points[0]:
-                    f.write(self.data.previousLaps[index].following.raw)
-            if not self.data.previousLaps[-1].following is None:
-                f.write(self.data.previousLaps[-1].following.raw)
-
-    # TODO consider moving to Lap class
-    def saveOptimizedLap(self, index, name):
-        for p in index.points:
-            p.current_lap = 1
-            p.recreatePackage()
-        self.saveLap(index, name)
-
-    # TODO consider moving to Lap class
     def appendOptimizedLap(self, index, name):
         if not hasattr(self, 'dev_contLap'):
             self.dev_contLap = 1
@@ -1346,29 +1318,6 @@ class MainWindow(ColorMainWidget):
             p.current_lap = self.dev_contLap
             p.recreatePackage()
         self.appendLap(index, name)
-
-    # TODO consider moving to Lap class
-    def saveLap(self, index, name):
-        logPrint("store lap:", name)
-        if not os.path.exists(self.cfg.storageLocation):
-            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
-        prefix = self.cfg.storageLocation + "/"
-        if len(self.cfg.sessionName) > 0:
-            prefix += self.cfg.sessionName + " - "
-        with open ( prefix + self.data.trackPreviouslyIdentified + " - lap - " + name + "_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".gt7lap", "wb") as f:
-            if isinstance(index, Lap):
-                lap = index
-            else:
-                lap = self.data.previousLaps[index]
-            if not lap.preceeding is None:
-                logPrint("Going from", lap.preceeding.current_lap)
-                f.write(lap.preceeding.raw)
-            logPrint("via", lap.points[0].current_lap)
-            for p in lap.points:
-                f.write(p.raw)
-            if not lap.following is None:
-                logPrint("to", lap.following.current_lap)
-                f.write(lap.following.raw)
 
     # TODO consider moving to Lap class
     def appendLap(self, index, name):
