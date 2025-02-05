@@ -53,6 +53,12 @@ class Stats(sb.component.Component):
     def description():
         return "Statistics and runs"
     
+    def actions():
+        return {
+                "saveRuns":"Save CSV table of runs",
+                "setRunDescription":"Set a description for the current run"
+               }
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -253,11 +259,11 @@ class Stats(sb.component.Component):
     def title(self):
         return "Statistics"
 
-    def localKeyPressEvent(self, e):
-        if e.key() == Qt.Key.Key_T.value:
+    def callAction(self, a):
+        if a == "saveRuns":
             self.updateRunStats(saveRuns=True)
             self.data.showUiMsg("Run table saved.", 2)
-        elif e.key() == Qt.Key.Key_D.value:
+        elif a == "setRunDescription":
             text, ok = QInputDialog().getText(self.data, "Set run description", "Description:")
             if ok:
                 self.newRunDescription = text

@@ -18,6 +18,10 @@ class Component:
     def description():
         return ""
 
+    @staticmethod
+    def actions():
+        return {}
+
     def getWidget(self):
         return None
 
@@ -70,11 +74,7 @@ class Component:
     def leftCircuit(self):
         pass
 
-    def delegateKeyPressEvent(self, e):
-        self.localKeyPressEvent(e)
-        self.data.setFocus()
-
-    def localKeyPressEvent(self, e):
+    def callAction(self, a):
         pass
 
     def stop(self):

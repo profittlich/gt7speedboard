@@ -12,6 +12,12 @@ from sb.helpers import logPrint
 class BrakeBoard(sb.component.Component):
     def description():
         return "Pedal coach"
+
+    def actions():
+        return {
+                "cycleModes":"Cycle BrakeBoard modes",
+                "cycleDifficulty":"Cycle BrakeBoard difficulty"
+               }
     
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
@@ -141,12 +147,11 @@ class BrakeBoard(sb.component.Component):
             logPrint(self.delayTime)
 
 
-    def localKeyPressEvent(self, e):
-        if e.key() == Qt.Key.Key_Tab:
+    def callAction(self, a):
+        if a == "cycleModes":
             self.cycleModes()
-        elif e.key() == Qt.Key.Key_H:
+        elif a == "cycleDifficulty":
             self.cycleDifficulty()
-
 
     def brakeTiming(self, curPoint):
         now = time.perf_counter()

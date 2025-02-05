@@ -14,6 +14,12 @@ class FuelAndMessages(sb.component.Component):
     def description():
         return "Fuel level, fuel estimation and location-based messages"
     
+    def actions():
+        return {
+                "setCautionMarker":"Set warning marker to current location",
+                "saveMessages":"Save warning markers to file"
+               }
+
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -217,11 +223,11 @@ class FuelAndMessages(sb.component.Component):
         with open ( prefix + self.data.trackPreviouslyIdentified + " - messages - " + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sblm", "w") as f:
             f.write(j)
 
-    def localKeyPressEvent(self, e):
-        if e.key() == Qt.Key.Key_Space.value:
+    def callAction(self, a):
+        if a == "setCautionMarker":
             logPrint("New CAUTION")
             self.newMessage = "CAUTION"
-        elif e.key() == Qt.Key.Key_W.value: # TODO move to component
+        elif a == "saveMessages":
             logPrint("store message positions")
             saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
             saveThread.signals.finished.connect(self.data.showUiMsg)

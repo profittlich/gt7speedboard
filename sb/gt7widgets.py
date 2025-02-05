@@ -15,17 +15,12 @@ shortcutText = "ESC \t return to configuration\n" \
              + "O \t save optimized lap\n" \
              + "A \t save all laps\n" \
              + "C \t clear lap data\n" \
-             + "SPACE \t set warning marker to current location\n" \
-             + "W \t save warning markers to file\n" \
-             + "D \t Set a description for the current run\n" \
              + "S \t Show runs and statistics\n"  \
-             + "T \t Save CSV table of runs\n"  \
              + "UP \t Show brake point notifications a bit later\n"  \
              + "DOWN \t Show brake point notifications a bit earlier\n"  \
              + "0 (zero)\t Reset brake point notification timing\n"  \
              + "P\t Reset laps since pit stop counter\n"  \
              + "V\t View map\n"  \
-             + "Tab\t Cycle source for full screen colors\n"  \
              + "- \t Reduce number of laps by 1 (e.g. when being lapped)\n"  \
              + "+ \t Increase number of laps by 1\n"  \
              + "R \t start/stop raw recording (not recommended)\n"

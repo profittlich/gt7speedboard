@@ -55,16 +55,16 @@ defaultLayout = [
                                 [
                                     { "list" :
                                         [
-                                            { "component" : "Speed", "stretch" : 2},
+                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference" }},
                                             { "component" : "TyreTemps", "stretch" : 1},
                                         ], "stretch" : 1
                                     },
-                                    { "component" : "FuelAndMessages", "stretch" : 1},
+                                    { "component" : "FuelAndMessages", "stretch" : 1, "actions" : { "Key_Space" : "setCautionMarker", "Key_W" : "saveMessages" }},
                                 ], "stretch" : 100
                             }
                         ],
                         # Pages 2..
-                        { "component" : "Stats", "stretch" : 1},
+                        { "component" : "Stats", "stretch" : 1, "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
                         { "component" : "Help", "stretch" : 1},
                         { "component" : "Map", "stretch" : 1},
                     ],
@@ -81,11 +81,11 @@ multiScreenLayout = [
                                 [
                                     { "list" :
                                         [
-                                            { "component" : "Speed", "stretch" : 2},
+                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference" }},
                                             { "component" : "TyreTemps", "stretch" : 1},
                                         ], "stretch" : 1
                                     },
-                                    { "component" : "FuelAndMessages", "stretch" : 1},
+                                    { "component" : "FuelAndMessages", "stretch" : 1, "actions" : { "Key_Space" : "setCautionMarker", "Key_W" : "saveMessages" }},
                                 ], "stretch" : 100
                             }
                         ],
@@ -96,7 +96,7 @@ multiScreenLayout = [
                         { "component" : "Map", "stretch" : 1},
                     ],
                     [ # Screen 2
-                        { "component" : "Stats", "stretch" : 1},
+                        { "component" : "Stats", "stretch" : 1, "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
                     ]
                 ]
 
@@ -115,10 +115,7 @@ bigLayout = [
                 "list": [
                     {
                         "list": [
-                            {
-                                "component": "Speed",
-                                "stretch": 2
-                            },
+                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference" }},
                             {
                                 "list": [
                                     {
@@ -141,10 +138,7 @@ bigLayout = [
                                 "component": "Pedals",
                                 "stretch": 1
                             },
-                            {
-                                "component": "FuelAndMessages",
-                                "stretch": 4
-                            }
+                            { "component" : "FuelAndMessages", "stretch" : 4, "actions" : { "Key_Space" : "setCautionMarker", "Key_W" : "saveMessages" }},
                         ],
                         "stretch": 1
                     }
@@ -152,10 +146,7 @@ bigLayout = [
                 "stretch": 100
             }
         ],
-        {
-            "component": "Stats",
-            "stretch": 1
-        },
+        { "component" : "Stats", "stretch" : 1, "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
         {
             "component": "Help",
             "stretch": 1
@@ -163,7 +154,7 @@ bigLayout = [
         {
             "component": "Map",
             "stretch": 1
-        }
+        },
     ]
 ]
 
@@ -192,7 +183,8 @@ circuitExperienceLayout = [
 brakeBoardLayout = [
                     [ # Screen 1
                         # Pages 2..
-                        { "component" : "BrakeBoard", "stretch" : 1},
+                        { "component" : "BrakeBoard", "stretch" : 1, "actions" : { "Key_Tab" : "cycleModes", "Key_D" : "cycleDifficulty" }},
+                        { "component" : "Help", "stretch" : 1},
                     ],
                 ]
 
@@ -203,6 +195,63 @@ class Screen(QStackedWidget):
 
     def keyPressEvent(self, e):
         self.keyRedirect.keyPressEvent(e)
+
+class Data:
+    def __init__(self):
+        self.curLap = None
+        self.lastLap = None
+        self.previousLaps = None
+        self.previousPoint = None
+
+        self.refLaps = None
+
+        self.bestLap = None
+        self.medianLap = None
+
+        self.optimizedLap = None
+        self.curOptimizingLap = None
+
+        self.brakeOffset = None
+        self.lapOffset = None
+
+        self.closestIBest = None
+        self.closestILast = None
+        self.closestIMedian = None
+        self.closestIOptimized = None
+        self.closestIRefA = None
+        self.closestIRefB = None
+        self.closestIRefC = None
+
+        self.closestOffsetPointBest = None
+        self.closestOffsetPointLast = None
+        self.closestOffsetPointMedian = None
+        self.closestOffsetPointOptimized = None
+        self.closestOffsetPointRefA = None
+        self.closestOffsetPointRefB = None
+        self.closestOffsetPointRefC = None
+
+        self.closestPointBest = None
+        self.closestPointLast = None
+        self.closestPointMedian = None
+        self.closestPointOptimized = None
+        self.closestPointRefA = None
+        self.closestPointRefB = None
+        self.closestPointRefC = None
+
+        self.componentKeys = None
+
+        self.fuelFactor = None
+        self.refueled = None
+        self.lapProgress = None
+        self.noThrottleCount = None # TODO messy in mapce
+
+        self.threadpool = None
+
+        self.trackDetector = None
+        self.trackPreviouslyIdentified = None
+
+        self.masterWidget = None # TODO messy in speed
+        self.isRecording = None
 
 class MainWindow(ColorMainWidget):
     def __init__(self):
@@ -216,6 +265,7 @@ class MainWindow(ColorMainWidget):
         loadCarIds()
 
         self.components = []
+        self.componentKeys = {}
 
         self.trackDetector = None
         self.goFullscreen = True
@@ -245,13 +295,20 @@ class MainWindow(ColorMainWidget):
             txt = f.read()
             self.selectedLayout = json.loads(txt)
 
-    def createComponent(self, name):
-        newComponent = sb.component.componentLibrary[name](self.cfg, self)
+    def createComponent(self, e):
+        newComponent = sb.component.componentLibrary[e['component']](self.cfg, self)
         self.components.append(newComponent)
+        if 'actions' in e:
+            for k in e['actions']:
+                if k in Qt.Key.__dict__:
+                    if not Qt.Key.__dict__[k] in self.componentKeys:
+                        self.componentKeys[Qt.Key.__dict__[k]] = (newComponent, e['actions'][k], k)
+                    else:
+                        QMessageBox.critical(self, "Duplicate keyboard shortcut", "Duplicate keyboard shortcut in configuration.\n" + k + " will not be used for component " + e['component'] + "!")
         title = newComponent.title()
         widget = None
         if title is None:
-            print("New component:", name)
+            print("New component:", e['component'])
             widget = newComponent.getWidget()
         else:
             print("New component:", title)
@@ -272,7 +329,9 @@ class MainWindow(ColorMainWidget):
                 layout.addWidget(w[0], w[1])
         elif "component" in e:
             print(e['component'])
-            layout.addWidget (self.createComponent(e['component']))
+            compWidget = self.createComponent(e)
+            if not compWidget is None:
+                layout.addWidget (compWidget)
         return [page, e['stretch']]
 
     def makeDashPage(self, e):
@@ -287,7 +346,9 @@ class MainWindow(ColorMainWidget):
                 layout.addWidget(w[0], w[1])
         elif isinstance(e, dict):
             print("Page:", e['component'])
-            layout.addWidget (self.createComponent(e['component']))
+            compWidget = self.createComponent(e)
+            if not compWidget is None:
+                layout.addWidget (compWidget)
         return page
 
 
@@ -302,11 +363,13 @@ class MainWindow(ColorMainWidget):
         screens = []
         for c in spec:
             screens.append(self.makeDashScreen(c))
+        logPrint(self.componentKeys)
         return screens
         
 
     def makeDashWidget(self):
         self.components = []
+        self.componentKeys = {}
 
         if self.cfg.circuitExperience:
             self.specWidgets = self.makeDashFromSpec(circuitExperienceLayout)
@@ -1164,9 +1227,8 @@ class MainWindow(ColorMainWidget):
                     self.flipPage(0)
                 else:
                     self.flipPage(2)
-            else:
-                for c in self.components:
-                    c.delegateKeyPressEvent(e)
+            elif e.key() in self.componentKeys:
+                self.componentKeys[e.key()][0].callAction(self.componentKeys[e.key()][1])
         elif self.centralWidget() == self.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
                 self.flipPage(e.key() - Qt.Key.Key_1.value)

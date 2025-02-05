@@ -39,4 +39,17 @@ class Help(sb.component.Component):
     def title(self):
         return "Help"
 
+    def newSession(self):
+        newText = "KEYBOARD SHORTCUTS:\n\n" + shortcutText
+        for k in self.data.componentKeys:
+            key = self.data.componentKeys[k]
+            actions = key[0].__class__.actions()
+            logPrint(actions)
+            if key[1] in actions:
+                newText += "\n" + key[2].replace("Key_", "") + "\t " + actions[key[1]]
+            else:
+                newText += "\n" + key[2].replace("Key_", "") + "\t unknown action"
+        self.widget.setText(newText)
+
+
 sb.component.componentLibrary['Help'] = Help

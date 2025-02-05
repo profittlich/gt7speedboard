@@ -13,6 +13,11 @@ class Speed(sb.component.Component):
     def description():
         return "Speed and time comparisons to previous laps"
     
+    def actions():
+        return {
+                "cycleFocusReference":"Cycle source for full screen colors"
+               }
+    
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
@@ -622,8 +627,8 @@ class Speed(sb.component.Component):
     def title(self):
         return "Speed"
 
-    def localKeyPressEvent(self, e):
-        if e.key() == Qt.Key.Key_Tab:
+    def callAction(self, a):
+        if a == "cycleFocusReference":
             self.cycleBigCountdownBreakponts()
 
 sb.component.componentLibrary['Speed'] = Speed
