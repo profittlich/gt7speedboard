@@ -264,7 +264,7 @@ class Stats(sb.component.Component):
             self.updateRunStats(saveRuns=True)
             self.data.showUiMsg("Run table saved.", 2)
         elif a == "setRunDescription":
-            text, ok = QInputDialog().getText(self.data, "Set run description", "Description:")
+            text, ok = QInputDialog().getText(self.statsPageScroller, "Set run description", "Description:")
             if ok:
                 self.newRunDescription = text
 
