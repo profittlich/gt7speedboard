@@ -64,13 +64,10 @@ defaultLayout = [
                             }
                         ],
                         # Pages 2..
-                        { "component" : "Stats", "stretch" : 1, "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
-                        { "component" : "Help", "stretch" : 1},
-                        { "component" : "Map", "stretch" : 1},
+                        { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
+                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
+                        { "component" : "Map", "shortcut":"Key_V", "stretch" : 1},
                     ],
-                    #[ # Screen 2
-                        #{ "component" : "Map", "stretch" : 1},
-                    #]
                 ]
 
 multiScreenLayout = [
@@ -90,7 +87,7 @@ multiScreenLayout = [
                             }
                         ],
                         # Pages 2..
-                        { "component" : "Help", "stretch" : 1},
+                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
                     ],
                     [ # Screen 2
                         { "component" : "Map", "stretch" : 1},
@@ -146,13 +143,15 @@ bigLayout = [
                 "stretch": 100
             }
         ],
-        { "component" : "Stats", "stretch" : 1, "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
+        { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
         {
             "component": "Help",
+            "shortcut":"Key_Question", 
             "stretch": 1
         },
         {
             "component": "Map",
+            "shortcut":"Key_V", 
             "stretch": 1
         },
     ]
@@ -175,16 +174,15 @@ circuitExperienceLayout = [
                             }
                         ],
                         # Pages 2..
-                        { "component" : "Stats", "stretch" : 1},
-                        { "component" : "Help", "stretch" : 1},
+                        { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
+                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
                     ],
                 ]
 
 brakeBoardLayout = [
                     [ # Screen 1
-                        # Pages 2..
                         { "component" : "BrakeBoard", "stretch" : 1, "actions" : { "Key_Tab" : "cycleModes", "Key_D" : "cycleDifficulty" }},
-                        { "component" : "Help", "stretch" : 1},
+                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
                     ],
                 ]
 
@@ -255,6 +253,7 @@ class RuntimeData:
         self.isRecording = None
 
         self.setColor = None
+        self.showUiMsg = None
 
 class MainWindow(ColorMainWidget):
     def __init__(self):
@@ -294,12 +293,21 @@ class MainWindow(ColorMainWidget):
 
     def createComponent(self, e):
         newComponent = sb.component.componentLibrary[e['component']](self.cfg, self.data)
+        shortcuts = []
         self.components.append(newComponent)
+        if 'shortcut' in e:
+            if e['shortcut'] in Qt.Key.__dict__:
+                if not Qt.Key.__dict__[e['shortcut']] in self.usedShortcuts:
+                    shortcuts.append(Qt.Key.__dict__[e['shortcut']])
+                    self.usedShortcuts.add(Qt.Key.__dict__[e['shortcut']])
+                else:
+                    QMessageBox.critical(self, "Duplicate keyboard shortcut", "Duplicate keyboard shortcut in configuration.\n" + e['shortcut'] + " will not be used for page of component " + e['component'] + "!")
         if 'actions' in e:
             for k in e['actions']:
                 if k in Qt.Key.__dict__:
-                    if not Qt.Key.__dict__[k] in self.data.componentKeys:
+                    if not Qt.Key.__dict__[k] in self.usedShortcuts:
                         self.data.componentKeys[Qt.Key.__dict__[k]] = (newComponent, e['actions'][k], k)
+                        self.usedShortcuts.add(Qt.Key.__dict__[k])
                     else:
                         QMessageBox.critical(self, "Duplicate keyboard shortcut", "Duplicate keyboard shortcut in configuration.\n" + k + " will not be used for component " + e['component'] + "!")
         title = newComponent.title()
@@ -310,10 +318,11 @@ class MainWindow(ColorMainWidget):
         else:
             print("New component:", title)
             widget = newComponent.getTitledWidget(newComponent.title())
-        return widget
+        return (widget, shortcuts)
 
     def makeDashEntry(self, e, horizontal = True):
         page = QWidget()
+        shortcuts = []
         if horizontal:
             layout = QHBoxLayout()
         else:
@@ -324,14 +333,17 @@ class MainWindow(ColorMainWidget):
             for c in e['list']:
                 w = self.makeDashEntry(c, not horizontal)
                 layout.addWidget(w[0], w[1])
+                shortcuts += w[2]
         elif "component" in e:
             print(e['component'])
-            compWidget = self.createComponent(e)
+            compWidget, s = self.createComponent(e)
+            shortcuts += s
             if not compWidget is None:
                 layout.addWidget (compWidget)
-        return [page, e['stretch']]
+        return [page, e['stretch'], shortcuts]
 
     def makeDashPage(self, e):
+        shortcuts = []
         page = QWidget()
         layout = QVBoxLayout()
         layout.setContentsMargins(0,0,0,0)
@@ -340,20 +352,26 @@ class MainWindow(ColorMainWidget):
             print("Page with multiple components")
             for c in e:
                 w = self.makeDashEntry(c)
+                shortcuts += w[2]
                 layout.addWidget(w[0], w[1])
         elif isinstance(e, dict):
             print("Page:", e['component'])
-            compWidget = self.createComponent(e)
+            compWidget, s = self.createComponent(e)
+            shortcuts += s
             if not compWidget is None:
                 layout.addWidget (compWidget)
-        return page
+        return (page, shortcuts)
 
 
     def makeDashScreen(self, e):
         print("Screen")
         screen = Screen(self)
         for c in e:
-            screen.addWidget(self.makeDashPage(c))
+            p, s = self.makeDashPage(c)
+            screen.addWidget(p)
+            for i in s:
+                self.pageKeys[i] = (screen, screen.count()-1)
+        logPrint(self.pageKeys)
         return screen
 
     def makeDashFromSpec(self, spec):
@@ -372,6 +390,26 @@ class MainWindow(ColorMainWidget):
         self.data.isRecording = False
         self.data.curOptimizingLap = Lap()
         self.data.setColor = self.setColor
+        self.data.showUiMsg = self.showUiMsg
+
+        self.pageKeys = {}
+        self.usedShortcuts = set()
+        self.usedShortcuts.add (Qt.Key.Key_R)
+        self.usedShortcuts.add (Qt.Key.Key_Escape)
+        self.usedShortcuts.add (Qt.Key.Key_B)
+        self.usedShortcuts.add (Qt.Key.Key_L)
+        self.usedShortcuts.add (Qt.Key.Key_M)
+        self.usedShortcuts.add (Qt.Key.Key_O)
+        self.usedShortcuts.add (Qt.Key.Key_A)
+        self.usedShortcuts.add (Qt.Key.Key_C)
+        self.usedShortcuts.add (Qt.Key.Key_P)
+        self.usedShortcuts.add (Qt.Key.Key_0)
+        self.usedShortcuts.add (Qt.Key.Key_Equal)
+        self.usedShortcuts.add (Qt.Key.Key_Minus)
+        self.usedShortcuts.add (Qt.Key.Key_Up)
+        self.usedShortcuts.add (Qt.Key.Key_Down)
+        self.usedShortcuts.add (Qt.Key.Key_Left)
+        self.usedShortcuts.add (Qt.Key.Key_Right)
 
         if self.cfg.circuitExperience:
             self.specWidgets = self.makeDashFromSpec(circuitExperienceLayout)
@@ -1214,23 +1252,15 @@ class MainWindow(ColorMainWidget):
                      self.specWidgets[0].setCurrentIndex(0)
                  else:
                      self.specWidgets[0].setCurrentIndex(cur+1)
-            elif e.key() == Qt.Key.Key_S.value: # TODO redesign page shortcuts
-                if self.specWidgets[0].currentIndex() == 1:
-                    self.flipPage(0)
+            elif e.key() in self.pageKeys:
+                k = self.pageKeys[e.key()]
+                if k[0].currentIndex() == k[1]:
+                    k[0].setCurrentIndex(0)
                 else:
-                    self.flipPage(1)
-            elif e.key() == Qt.Key.Key_V.value: # TODO redesign page shortcuts
-                if self.specWidgets[0].currentIndex() == 3:
-                    self.flipPage(0)
-                else:
-                    self.flipPage(3)
-            elif e.key() == Qt.Key.Key_Question: # TODO redesign page shortcuts
-                if self.specWidgets[0].currentIndex() == 2:
-                    self.flipPage(0)
-                else:
-                    self.flipPage(2)
+                    k[0].setCurrentIndex(k[1])
             elif e.key() in self.data.componentKeys:
                 self.data.componentKeys[e.key()][0].callAction(self.data.componentKeys[e.key()][1])
+            logPrint(e.key(), self.pageKeys)
         elif self.centralWidget() == self.data.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
                 self.flipPage(e.key() - Qt.Key.Key_1.value)
