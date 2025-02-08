@@ -302,6 +302,8 @@ class MainWindow(ColorMainWidget):
         self.cfg = sb.configuration.Configuration()
         self.cfg.developmentMode = False
 
+        self.data = None
+
         self.defaultPalette = self.palette()
         self.specWidgets = []
 
@@ -1227,61 +1229,64 @@ class MainWindow(ColorMainWidget):
                 self.data.isRecording = True
 
     def keyPressEvent(self, e):
-        if self.centralWidget() == self.data.masterWidget and self.messageWaitsForKey:
-            if e.key() != Qt.Key.Key_Shift.value:
-                self.messageWaitsForKey = False
-                self.returnToDash()
-        elif self.centralWidget() == self.data.masterWidget and not e.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            if e.key() == Qt.Key.Key_R.value: # TODO move to component
-                self.toggleRecording()
-            elif e.key() == Qt.Key.Key_Escape.value:
-                self.exitDash()
-            elif e.key() == Qt.Key.Key_C.value:
-                self.newSession()
-            elif e.key() == Qt.Key.Key_P.value:
-                self.manualPitStop = True
-                self.data.refueled = 0
-                logPrint("PIT STOP:", self.data.refueled)
-                if self.data.lapProgress > 0.5:
-                    self.data.refueled -= 1
+        logPrint("A")
+        if not self.data is None and self.centralWidget() == self.data.masterWidget:
+            logPrint("B")
+            if self.messageWaitsForKey:
+                if e.key() != Qt.Key.Key_Shift.value:
+                    self.messageWaitsForKey = False
+                    self.returnToDash()
+            elif not e.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                if e.key() == Qt.Key.Key_R.value: # TODO move to component
+                    self.toggleRecording()
+                elif e.key() == Qt.Key.Key_Escape.value:
+                    self.exitDash()
+                elif e.key() == Qt.Key.Key_C.value:
+                    self.newSession()
+                elif e.key() == Qt.Key.Key_P.value:
+                    self.manualPitStop = True
+                    self.data.refueled = 0
                     logPrint("PIT STOP:", self.data.refueled)
-            elif e.key() == Qt.Key.Key_0.value:
-                self.data.brakeOffset = 0
-                logPrint("Brake offset", self.data.brakeOffset)
-            elif e.key() == Qt.Key.Key_Plus.value or e.key() == Qt.Key.Key_Equal.value:
-                self.data.lapOffset += 1
-            elif e.key() == Qt.Key.Key_Minus.value:
-                self.data.lapOffset -= 1
-            elif e.key() == Qt.Key.Key_Up.value:
-                self.data.brakeOffset -= 3
-                logPrint("Brake offset", self.data.brakeOffset)
-            elif e.key() == Qt.Key.Key_Down.value:
-                self.data.brakeOffset += 3
-                logPrint("Brake offset", self.data.brakeOffset)
-            elif e.key() == Qt.Key.Key_Left.value:
-                 cur = self.specWidgets[0].currentIndex()
-                 if cur == 0:
-                     self.specWidgets[0].setCurrentIndex(self.specWidgets[0].count()-1)
-                 else:
-                     self.specWidgets[0].setCurrentIndex(cur-1)
-            elif e.key() == Qt.Key.Key_Right.value:
-                 cur = self.specWidgets[0].currentIndex()
-                 if cur == self.specWidgets[0].count() - 1:
-                     self.specWidgets[0].setCurrentIndex(0)
-                 else:
-                     self.specWidgets[0].setCurrentIndex(cur+1)
-            elif e.key() in self.pageKeys:
-                k = self.pageKeys[e.key()]
-                if k[0].currentIndex() == k[1]:
-                    k[0].setCurrentIndex(0)
-                else:
-                    k[0].setCurrentIndex(k[1])
-            elif e.key() in self.data.componentKeys:
-                self.data.componentKeys[e.key()][0].callAction(self.data.componentKeys[e.key()][1])
-            logPrint(e.key(), self.pageKeys)
-        elif self.centralWidget() == self.data.masterWidget and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
-                self.flipPage(e.key() - Qt.Key.Key_1.value)
+                    if self.data.lapProgress > 0.5:
+                        self.data.refueled -= 1
+                        logPrint("PIT STOP:", self.data.refueled)
+                elif e.key() == Qt.Key.Key_0.value:
+                    self.data.brakeOffset = 0
+                    logPrint("Brake offset", self.data.brakeOffset)
+                elif e.key() == Qt.Key.Key_Plus.value or e.key() == Qt.Key.Key_Equal.value:
+                    self.data.lapOffset += 1
+                elif e.key() == Qt.Key.Key_Minus.value:
+                    self.data.lapOffset -= 1
+                elif e.key() == Qt.Key.Key_Up.value:
+                    self.data.brakeOffset -= 3
+                    logPrint("Brake offset", self.data.brakeOffset)
+                elif e.key() == Qt.Key.Key_Down.value:
+                    self.data.brakeOffset += 3
+                    logPrint("Brake offset", self.data.brakeOffset)
+                elif e.key() == Qt.Key.Key_Left.value:
+                     cur = self.specWidgets[0].currentIndex()
+                     if cur == 0:
+                         self.specWidgets[0].setCurrentIndex(self.specWidgets[0].count()-1)
+                     else:
+                         self.specWidgets[0].setCurrentIndex(cur-1)
+                elif e.key() == Qt.Key.Key_Right.value:
+                     cur = self.specWidgets[0].currentIndex()
+                     if cur == self.specWidgets[0].count() - 1:
+                         self.specWidgets[0].setCurrentIndex(0)
+                     else:
+                         self.specWidgets[0].setCurrentIndex(cur+1)
+                elif e.key() in self.pageKeys:
+                    k = self.pageKeys[e.key()]
+                    if k[0].currentIndex() == k[1]:
+                        k[0].setCurrentIndex(0)
+                    else:
+                        k[0].setCurrentIndex(k[1])
+                elif e.key() in self.data.componentKeys:
+                    self.data.componentKeys[e.key()][0].callAction(self.data.componentKeys[e.key()][1])
+                logPrint(e.key(), self.pageKeys)
+            elif e.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
+                    self.flipPage(e.key() - Qt.Key.Key_1.value)
 
     def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
         logPrint("showUiMsg")
