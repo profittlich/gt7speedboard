@@ -448,7 +448,10 @@ class MainWindow(ColorMainWidget):
         self.showUiMsg("Press ESC to return to the settings", 2)
 
         if self.cfg.developmentMode:
-            self.toggleRecording()
+            for c in self.components:
+                if c.__class__ == sb.components.recordingcontroller.RecordingController:
+                    c.callAction("toggleRecording")
+                    break
 
         self.data.trackDetector = TrackDetector()
         self.data.trackPreviouslyIdentified = "Unknown Track"
