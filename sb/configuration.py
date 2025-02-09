@@ -8,6 +8,42 @@ class Configuration:
     def __init__(self):
         pass
 
+    def saveConstants(self):
+        settings = QSettings()
+
+        settings.setValue("fontScale", self.fontScale)
+        settings.setValue("lapDecimals", self.lapDecimals)
+        settings.setValue("showOptimalLap", self.showOptimalLap)
+        settings.setValue("showBestLap", self.showBestLap)
+        settings.setValue("showMedianLap", self.showMedianLap)
+        settings.setValue("showLastLap", self.showLastLap)
+
+        settings.setValue("showRefALap", self.showRefALap)
+        settings.setValue("showRefBLap", self.showRefBLap)
+        settings.setValue("showRefCLap", self.showRefCLap)
+        settings.setValue("refAFile", self.refAFile)
+        settings.setValue("refBFile", self.refBFile)
+        settings.setValue("refCFile", self.refCFile)
+        
+        settings.setValue("recordingEnabled", self.recordingEnabled)
+        settings.setValue("messagesEnabled", self.messagesEnabled)
+
+        settings.setValue("storageLocation", self.storageLocation)
+
+        settings.setValue("speedcomp", self.speedcomp)
+        settings.setValue("linecomp", self.linecomp)
+        settings.setValue("timecomp", self.timecomp)
+        settings.setValue("loadMessagesFromFile", self.loadMessagesFromFile)
+        settings.setValue("messageFile", self.messageFile)
+
+        settings.setValue("brakepoints", self.brakepoints)
+        settings.setValue("throttlepoints", self.throttlepoints)
+        settings.setValue("countdownBrakepoint", self.countdownBrakepoint)
+        settings.setValue("bigCountdownTarget", self.bigCountdownBrakepoint)
+        settings.setValue("switchToBestLap", self.switchToBestLap)
+
+        settings.sync()
+
     def loadConstants(self):
         self.foregroundColor = QColor("#FFF")
         self.backgroundColor = QColor("#222")

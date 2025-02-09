@@ -49,214 +49,7 @@ import sb.components.mapopting
 import sb.components.savelaps
 import sb.components.recordingcontroller
 
-defaultLayout = [
-                    [ # Screen 1
-                        [ # Page 1
-                            {
-                                "component": "SaveLaps",
-                                "actions": { 
-                                    "Key_B":"saveBest",
-                                    "Key_M":"saveMedian",
-                                    "Key_L":"saveLast",
-                                    "Key_O":"saveOptimized",
-                                    "Key_A":"saveAll",
-                                }
-                            },
-                            {
-                                "component": "RecordingController",
-                                "actions": { 
-                                    "Key_R":"toggleRecording",
-                                }
-                            },
-                            { "component" : "LapHeader", "stretch" : 1},
-                            { "list" :
-                                [
-                                    { "list" :
-                                        [
-                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
-                                            { "component" : "TyreTemps", "stretch" : 1},
-                                        ], "stretch" : 1
-                                    },
-                                    { "component" : "FuelAndMessages", "stretch" : 1, "actions" : { "Key_Space" : "setCautionMarker", "Key_W" : "saveMessages" }},
-                                ], "stretch" : 100
-                            }
-                        ],
-                        # Pages 2..
-                        { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
-                        { "component" : "Help", "title":"Keyboard shortcuts", "shortcut":"Key_Question", "stretch" : 1},
-                        { "component" : "Map", "shortcut":"Key_V", "stretch" : 1},
-                    ],
-                ]
-
-multiScreenLayout = [
-                    [ # Screen 1
-                        [ # Page 1
-                            {
-                                "component": "SaveLaps",
-                                "actions": { 
-                                    "Key_B":"saveBest",
-                                    "Key_M":"saveMedian",
-                                    "Key_L":"saveLast",
-                                    "Key_O":"saveOptimized",
-                                    "Key_A":"saveAll",
-                                }
-                            },
-                            {
-                                "component": "RecordingController",
-                                "actions": { 
-                                    "Key_R":"toggleRecording",
-                                }
-                            },
-                            { "component" : "LapHeader", "stretch" : 1},
-                            { "list" :
-                                [
-                                    { "list" :
-                                        [
-                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
-                                            { "component" : "TyreTemps", "stretch" : 1},
-                                        ], "stretch" : 1
-                                    },
-                                    { "component" : "FuelAndMessages", "stretch" : 1, "actions" : { "Key_Space" : "setCautionMarker", "Key_W" : "saveMessages" }},
-                                ], "stretch" : 100
-                            }
-                        ],
-                        # Pages 2..
-                        { "title":"Keyboard shortcuts", "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
-                    ],
-                    [ # Screen 2
-                        { "component" : "Map", "stretch" : 1},
-                    ],
-                    [ # Screen 2
-                        { "component" : "Stats", "stretch" : 1, "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
-                    ]
-                ]
-
-#j = json.dumps(defaultLayout, indent = 4)
-#with open("defaultLayout.json", "w") as jf:
-    #jf.write(j)
-
-bigLayout = [
-    [
-        [
-            {
-                "component": "SaveLaps",
-                "actions": { 
-                    "Key_B":"saveBest",
-                    "Key_M":"saveMedian",
-                    "Key_L":"saveLast",
-                    "Key_O":"saveOptimized",
-                    "Key_A":"saveAll",
-                }
-            },
-            {
-                "component": "RecordingController",
-                "actions": { 
-                    "Key_R":"toggleRecording",
-                }
-            },
-            {
-                "component": "LapHeader",
-                "stretch": 1
-            },
-            {
-                "list": [
-                    {
-                        "list": [
-                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
-                            {
-                                "list": [
-                                    {
-                                        "component": "Map",
-                                        "stretch": 1
-                                    },
-                                    {
-                                        "component": "TyreTemps",
-                                        "stretch": 1
-                                    }
-                                ],
-                                "stretch": 1
-                            }
-                        ],
-                        "stretch": 1
-                    },
-                    {
-                        "list": [
-                            {
-                                "component": "Pedals",
-                                "stretch": 1
-                            },
-                            { "component" : "FuelAndMessages", "stretch" : 4, "actions" : { "Key_Space" : "setCautionMarker", "Key_W" : "saveMessages" }},
-                        ],
-                        "stretch": 1
-                    }
-                ],
-                "stretch": 100
-            }
-        ],
-        { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
-        {
-            "component": "Help",
-            "shortcut":"Key_Question", 
-            "stretch": 1
-        },
-        {
-            "component": "Map",
-            "shortcut":"Key_V", 
-            "stretch": 1
-        },
-    ]
-]
-
-circuitExperienceLayout = [
-                    [ # Screen 1
-                        [ # Page 1
-                            {
-                                "component": "SaveLaps",
-                                "actions": { 
-                                    "Key_B":"saveBest",
-                                    "Key_M":"saveMedian",
-                                    "Key_L":"saveLast",
-                                    "Key_O":"saveOptimized",
-                                    "Key_A":"saveAll",
-                                }
-                            },
-                            {
-                                "component": "RecordingController",
-                                "actions": { 
-                                    "Key_R":"toggleRecording",
-                                }
-                            },
-                            { "component" : "LapHeader", "stretch" : 1},
-                            { "list" :
-                                [
-                                    { "list" :
-                                        [
-                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
-                                            { "component" : "TyreTemps", "stretch" : 1},
-                                        ], "stretch" : 1
-                                    },
-                                    { "component" : "Map", "stretch" : 1},
-                                ], "stretch" : 100
-                            }
-                        ],
-                        # Pages 2..
-                        { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
-                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
-                    ],
-                ]
-
-brakeBoardLayout = [
-                    [ # Screen 1
-                        {
-                            "component": "RecordingController",
-                            "actions": { 
-                                "Key_R":"toggleRecording",
-                            }
-                        },
-                        { "component" : "BrakeBoard", "stretch" : 1, "actions" : { "Key_Tab" : "cycleModes", "Key_D" : "cycleDifficulty" }},
-                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
-                    ],
-                ]
+from sb.layouts import *
 
 class Screen(QStackedWidget):
     def __init__(self, keyRedirect):
@@ -609,6 +402,7 @@ class MainWindow(ColorMainWidget):
             QMessageBox.critical(self, "File not found", "Reference lap C not found. Please choose a file or disable the reference lap C.")
             return
 
+        
         # TODO move to Configuration
         settings = QSettings()
 
@@ -616,43 +410,14 @@ class MainWindow(ColorMainWidget):
         settings.setValue("optimizedSeed", self.startWindow.optimizedSeed.currentIndex())
         
         settings.setValue("ip", ip)
-        
 
-        settings.setValue("fontScale", self.cfg.fontScale)
-        settings.setValue("lapDecimals", self.cfg.lapDecimals)
-        settings.setValue("showOptimalLap", self.cfg.showOptimalLap)
-        settings.setValue("showBestLap", self.cfg.showBestLap)
-        settings.setValue("showMedianLap", self.cfg.showMedianLap)
-        settings.setValue("showLastLap", self.cfg.showLastLap)
+        self.cfg.saveConstants()
 
-        settings.setValue("showRefALap", self.cfg.showRefALap)
-        settings.setValue("showRefBLap", self.cfg.showRefBLap)
-        settings.setValue("showRefCLap", self.cfg.showRefCLap)
-        settings.setValue("refAFile", self.cfg.refAFile)
-        settings.setValue("refBFile", self.cfg.refBFile)
-        settings.setValue("refCFile", self.cfg.refCFile)
-        
-        settings.setValue("recordingEnabled", self.cfg.recordingEnabled)
-        settings.setValue("messagesEnabled", self.cfg.messagesEnabled)
         settings.setValue("saveSessionName", saveSessionName)
         if saveSessionName:
             settings.setValue("sessionName", self.cfg.sessionName)
         else:
             settings.setValue("sessionName", "")
-        settings.setValue("storageLocation", self.cfg.storageLocation)
-
-        settings.setValue("speedcomp", self.cfg.speedcomp)
-        settings.setValue("linecomp", self.cfg.linecomp)
-        settings.setValue("timecomp", self.cfg.timecomp)
-        settings.setValue("loadMessagesFromFile", self.cfg.loadMessagesFromFile)
-        settings.setValue("messageFile", self.cfg.messageFile)
-
-        settings.setValue("brakepoints", self.cfg.brakepoints)
-        settings.setValue("throttlepoints", self.cfg.throttlepoints)
-        settings.setValue("countdownBrakepoint", self.cfg.countdownBrakepoint)
-        settings.setValue("bigCountdownTarget", self.cfg.bigCountdownBrakepoint)
-        settings.setValue("switchToBestLap", self.cfg.switchToBestLap)
-
         settings.setValue("fuelMultiplier", self.startWindow.fuelMultiplier.value())
         settings.setValue("maxFuelConsumption", self.startWindow.maxFuelConsumption.value())
         settings.setValue("fuelWarning", self.startWindow.fuelWarning.value())
