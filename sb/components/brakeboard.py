@@ -260,7 +260,6 @@ class BrakeBoard(sb.component.Component):
                 self.prevBrakes.append(curPoint.brake)
         elif self.state == "braking":
             self.prevBrakes.append(curPoint.brake)
-            logPrint(curPoint.brake)
             if len(self.prevBrakes) > self.brakeHoldTime:
                 self.prevBrakes = self.prevBrakes[-self.brakeHoldTime:]
             if sum(self.prevBrakes) / len(self.prevBrakes) < 2:
@@ -289,8 +288,6 @@ class BrakeBoard(sb.component.Component):
                 self.deviation.setDistance(0)
                 self.deviation.update()
             else:
-                logPrint (self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:]))
-                logPrint (self.brakeTargetLevel , sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:]))
                 if (self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])) >= self.brakeLevelTolerance: # TODO constants
                     self.mainLabel.setText("TOO SOFT")
                 elif (self.brakeTargetLevel - sum(self.prevBrakes[-3:]) / len(self.prevBrakes[-3:])) <= -self.brakeLevelTolerance:
@@ -310,7 +307,7 @@ class BrakeBoard(sb.component.Component):
         elif self.mode == 1:
             self.brakeTiming(curPoint)
 
-    def title(self):
+    def defaultTitle(self):
         return "BrakeBoard"
 
 sb.component.componentLibrary['BrakeBoard'] = BrakeBoard

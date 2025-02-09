@@ -10,9 +10,19 @@ class Component:
     def __init__(self, cfg, data):
         self.cfg = cfg
         self.data = data
+        self.overrideTitle = None
+
+    def defaultTitle(self):
+        return None
 
     def title(self):
-        return None
+        if self.overrideTitle is None:
+            return self.defaultTitle()
+        else:
+            return self.overrideTitle
+
+    def setTitle(self, t):
+        self.overrideTitle = t
 
     @staticmethod
     def description():
@@ -50,7 +60,9 @@ class Component:
         widget = self.getWidget()
         if not widget is None:
             masterLayout.addWidget(widget, 1, 0, 1, 1)
-        return result
+            return result
+        else:
+            return None
 
 
     def addPoint(self, curPoint, curLap):

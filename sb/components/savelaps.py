@@ -18,6 +18,18 @@ class SaveLaps(sb.component.Component):
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
 
+    def defaultTitle(self):
+        return "Saving lap data"
+
+    def actions():
+        return {
+                "saveBest":"Save best lap",
+                "saveLast":"Save last lap",
+                "saveMedian":"Save median lap",
+                "saveOptimized":"Save optimized lap",
+                "saveAll":"Save all laps"
+               }
+    
     def getWidget(self):
         return None
 

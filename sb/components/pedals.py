@@ -28,7 +28,7 @@ class Pedals(sb.component.Component):
         self.pedalWidget.setDistance(curPoint.brake, curPoint.throttle)
         self.widget.update()
 
-    def title(self):
+    def defaultTitle(self):
         return "Pedals"
 
 sb.component.componentLibrary['Pedals'] = Pedals

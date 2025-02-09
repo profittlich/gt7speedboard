@@ -39,7 +39,7 @@ class Lap:
         else:
             self.time = self.following.last_lap
 
-    def findClosestPoint(self, p, startIdx, cfg, brakeOffset):
+    def findClosestPoint(self, p, startIdx, cfg):
         shortestDistance = 100000000
         result = None
         for p2 in range(startIdx, len(self.points)-10): #TODO why -10? Confusion at the finish line... Maybe do dynamic length
@@ -60,8 +60,8 @@ class Lap:
                     startIdx = p2-100
                     break
                 
-            return None, startIdx, None
-        return self.points[result], result, self.points[min(len(self.points)-1, max(0,result+brakeOffset))]
+            return None, startIdx
+        return self.points[result], result
 
     def findClosestPointNoLimit(self, p):
         shortestDistance = 100000000

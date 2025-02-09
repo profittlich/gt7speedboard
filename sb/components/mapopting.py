@@ -51,7 +51,7 @@ class OptimizingMap(sb.component.Component):
             color = self.colormap[curPoint.current_lap % len(self.colormap)]
             self.mapView.setPoints(self.previousPoint, curPoint, color)
 
-    def title(self):
+    def defaultTitle(self):
         return "O-ing Map"
 
     def handleAllPoints(self):

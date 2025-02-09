@@ -47,6 +47,7 @@ import sb.components.brakeboard
 import sb.components.mapopt
 import sb.components.mapopting
 import sb.components.savelaps
+import sb.components.recordingcontroller
 
 defaultLayout = [
                     [ # Screen 1
@@ -61,12 +62,18 @@ defaultLayout = [
                                     "Key_A":"saveAll",
                                 }
                             },
+                            {
+                                "component": "RecordingController",
+                                "actions": { 
+                                    "Key_R":"toggleRecording",
+                                }
+                            },
                             { "component" : "LapHeader", "stretch" : 1},
                             { "list" :
                                 [
                                     { "list" :
                                         [
-                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference" }},
+                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
                                             { "component" : "TyreTemps", "stretch" : 1},
                                         ], "stretch" : 1
                                     },
@@ -76,7 +83,7 @@ defaultLayout = [
                         ],
                         # Pages 2..
                         { "component" : "Stats", "stretch" : 1, "shortcut":"Key_S", "actions" : { "Key_T" : "saveRuns", "Key_D" : "setRunDescription" }},
-                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
+                        { "component" : "Help", "title":"Keyboard shortcuts", "shortcut":"Key_Question", "stretch" : 1},
                         { "component" : "Map", "shortcut":"Key_V", "stretch" : 1},
                     ],
                 ]
@@ -94,12 +101,18 @@ multiScreenLayout = [
                                     "Key_A":"saveAll",
                                 }
                             },
+                            {
+                                "component": "RecordingController",
+                                "actions": { 
+                                    "Key_R":"toggleRecording",
+                                }
+                            },
                             { "component" : "LapHeader", "stretch" : 1},
                             { "list" :
                                 [
                                     { "list" :
                                         [
-                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference" }},
+                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
                                             { "component" : "TyreTemps", "stretch" : 1},
                                         ], "stretch" : 1
                                     },
@@ -108,7 +121,7 @@ multiScreenLayout = [
                             }
                         ],
                         # Pages 2..
-                        { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
+                        { "title":"Keyboard shortcuts", "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
                     ],
                     [ # Screen 2
                         { "component" : "Map", "stretch" : 1},
@@ -136,6 +149,12 @@ bigLayout = [
                 }
             },
             {
+                "component": "RecordingController",
+                "actions": { 
+                    "Key_R":"toggleRecording",
+                }
+            },
+            {
                 "component": "LapHeader",
                 "stretch": 1
             },
@@ -143,7 +162,7 @@ bigLayout = [
                 "list": [
                     {
                         "list": [
-                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference" }},
+                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
                             {
                                 "list": [
                                     {
@@ -201,12 +220,18 @@ circuitExperienceLayout = [
                                     "Key_A":"saveAll",
                                 }
                             },
+                            {
+                                "component": "RecordingController",
+                                "actions": { 
+                                    "Key_R":"toggleRecording",
+                                }
+                            },
                             { "component" : "LapHeader", "stretch" : 1},
                             { "list" :
                                 [
                                     { "list" :
                                         [
-                                            { "component" : "Speed", "stretch" : 2},
+                                            { "component" : "Speed", "stretch" : 2, "actions" : { "Key_Tab" : "cycleFocusReference", "Key_Up" : "brakeOffsetUp", "Key_Down" : "brakeOffsetDown", "Key_0" : "resetBrakeOffset", }},
                                             { "component" : "TyreTemps", "stretch" : 1},
                                         ], "stretch" : 1
                                     },
@@ -222,6 +247,12 @@ circuitExperienceLayout = [
 
 brakeBoardLayout = [
                     [ # Screen 1
+                        {
+                            "component": "RecordingController",
+                            "actions": { 
+                                "Key_R":"toggleRecording",
+                            }
+                        },
                         { "component" : "BrakeBoard", "stretch" : 1, "actions" : { "Key_Tab" : "cycleModes", "Key_D" : "cycleDifficulty" }},
                         { "component" : "Help", "shortcut":"Key_Question", "stretch" : 1},
                     ],
@@ -237,6 +268,8 @@ class Screen(QStackedWidget):
 
 class RuntimeData:
     def __init__(self):
+        self.receiver = None
+
         self.curLap = None
         self.curLapInvalidated = None
         self.lastLap = None
@@ -251,7 +284,6 @@ class RuntimeData:
         self.optimizedLap = None
         self.curOptimizingLap = None
         
-        self.brakeOffset = None
         self.lapOffset = None
         
         self.closestIBest = None
@@ -262,14 +294,6 @@ class RuntimeData:
         self.closestIRefB = None
         self.closestIRefC = None
         
-        self.closestOffsetPointBest = None
-        self.closestOffsetPointLast = None
-        self.closestOffsetPointMedian = None
-        self.closestOffsetPointOptimized = None
-        self.closestOffsetPointRefA = None
-        self.closestOffsetPointRefB = None
-        self.closestOffsetPointRefC = None
-        
         self.closestPointBest = None
         self.closestPointLast = None
         self.closestPointMedian = None
@@ -278,6 +302,7 @@ class RuntimeData:
         self.closestPointRefB = None
         self.closestPointRefC = None
         
+        self.pageKeys = None
         self.componentKeys = None
         
         self.fuelFactor = None
@@ -321,7 +346,6 @@ class MainWindow(ColorMainWidget):
 
         self.setWindowTitle("SpeedBoard for GT7 (v7.5)")
         self.queue = queue.Queue()
-        self.receiver = None
 
         self.messageWaitsForKey = False
 
@@ -336,12 +360,15 @@ class MainWindow(ColorMainWidget):
 
     def createComponent(self, e):
         newComponent = sb.component.componentLibrary[e['component']](self.cfg, self.data)
+        if "title" in e:
+            newComponent.setTitle (e['title'])
+        title = newComponent.title()
         shortcuts = []
         self.components.append(newComponent)
         if 'shortcut' in e:
             if e['shortcut'] in Qt.Key.__dict__:
                 if not Qt.Key.__dict__[e['shortcut']] in self.usedShortcuts:
-                    shortcuts.append(Qt.Key.__dict__[e['shortcut']])
+                    shortcuts.append((Qt.Key.__dict__[e['shortcut']], e['shortcut'], title))
                     self.usedShortcuts.add(Qt.Key.__dict__[e['shortcut']])
                 else:
                     QMessageBox.critical(self, "Duplicate keyboard shortcut", "Duplicate keyboard shortcut in configuration.\n" + e['shortcut'] + " will not be used for page of component " + e['component'] + "!")
@@ -353,15 +380,13 @@ class MainWindow(ColorMainWidget):
                         self.usedShortcuts.add(Qt.Key.__dict__[k])
                     else:
                         QMessageBox.critical(self, "Duplicate keyboard shortcut", "Duplicate keyboard shortcut in configuration.\n" + k + " will not be used for component " + e['component'] + "!")
-        title = newComponent.title()
         widget = None
         if title is None:
             print("New component:", e['component'])
             widget = newComponent.getWidget()
         else:
             print("New component:", title)
-            widget = newComponent.getTitledWidget(newComponent.title())
-        logPrint(e['component'], widget)
+            widget = newComponent.getTitledWidget(title)
         return (widget, shortcuts)
 
     def makeDashEntry(self, e, horizontal = True):
@@ -410,6 +435,8 @@ class MainWindow(ColorMainWidget):
             shortcuts += s
             if not compWidget is None:
                 layout.addWidget (compWidget)
+        if layout.count () == 0:
+            return (None, shortcuts)
         return (page, shortcuts)
 
 
@@ -418,23 +445,23 @@ class MainWindow(ColorMainWidget):
         screen = Screen(self)
         for c in e:
             p, s = self.makeDashPage(c)
-            screen.addWidget(p)
+            if not p is None:
+                screen.addWidget(p)
             for i in s:
-                self.pageKeys[i] = (screen, screen.count()-1)
-        logPrint(self.pageKeys)
+                self.data.pageKeys[i[0]] = (screen, screen.count()-1, i[1], i[2])
         return screen
 
     def makeDashFromSpec(self, spec):
         screens = []
         for c in spec:
             screens.append(self.makeDashScreen(c))
-        logPrint(self.data.componentKeys)
         return screens
         
 
     def makeDashWidget(self):
         self.data = RuntimeData()
         self.components = []
+        self.data.pageKeys = {}
         self.data.componentKeys = {}
         self.data.threadpool = QThreadPool()
         self.data.isRecording = False
@@ -442,17 +469,13 @@ class MainWindow(ColorMainWidget):
         self.data.setColor = self.setColor
         self.data.showUiMsg = self.showUiMsg
 
-        self.pageKeys = {}
+        self.data.pageKeys = {}
         self.usedShortcuts = set()
-        self.usedShortcuts.add (Qt.Key.Key_R)
         self.usedShortcuts.add (Qt.Key.Key_Escape)
         self.usedShortcuts.add (Qt.Key.Key_C)
         self.usedShortcuts.add (Qt.Key.Key_P)
-        self.usedShortcuts.add (Qt.Key.Key_0)
         self.usedShortcuts.add (Qt.Key.Key_Equal)
         self.usedShortcuts.add (Qt.Key.Key_Minus)
-        self.usedShortcuts.add (Qt.Key.Key_Up)
-        self.usedShortcuts.add (Qt.Key.Key_Down)
         self.usedShortcuts.add (Qt.Key.Key_Left)
         self.usedShortcuts.add (Qt.Key.Key_Right)
 
@@ -639,7 +662,6 @@ class MainWindow(ColorMainWidget):
         self.makeDashWidget()
         self.setCentralWidget(self.data.masterWidget)
 
-        self.data.brakeOffset = 0
         self.data.lapOffset = 0
 
         self.data.refLaps = [ loadLap(self.cfg.refAFile), loadLap(self.cfg.refBFile), loadLap(self.cfg.refCFile) ]
@@ -650,10 +672,10 @@ class MainWindow(ColorMainWidget):
 
         self.messageWaitsForKey = False
 
-        self.receiver = tele.GT7TelemetryReceiver(ip)
+        self.data.receiver = tele.GT7TelemetryReceiver(ip)
 
-        self.receiver.setQueue(self.queue)
-        self.thread = threading.Thread(target=self.receiver.runTelemetryReceiver)
+        self.data.receiver.setQueue(self.queue)
+        self.thread = threading.Thread(target=self.data.receiver.runTelemetryReceiver)
         self.thread.start()
 
         if self.goFullscreen and self.selectedLayout != multiScreenLayout:
@@ -685,17 +707,17 @@ class MainWindow(ColorMainWidget):
         if not self.data.trackDetector is None:
             self.data.trackDetector.stopDetection()
 
-        if not self.receiver is None:
+        if not self.data.receiver is None:
             pal = self.palette()
             pal.setColor(self.backgroundRole(), self.cfg.brightBackgroundColor)
             self.setPalette(pal)
 
             self.timer.stop()
-            self.receiver.running = False
+            self.data.receiver.running = False
             self.thread.join()
             while not self.queue.empty():
                 self.queue.get_nowait()
-            self.receiver = None
+            self.data.receiver = None
         for c in self.components:
             c.stop()
 
@@ -705,7 +727,7 @@ class MainWindow(ColorMainWidget):
     def exitDash(self):
         if self.data.isRecording:
             self.data.isRecording = False
-            self.receiver.stopRecording()
+            self.data.receiver.stopRecording()
         self.stopDash()
         self.showNormal()
         self.startWindow = StartWindow(False)
@@ -760,13 +782,6 @@ class MainWindow(ColorMainWidget):
         self.data.closestPointRefB = None
         self.data.closestPointRefC = None
         self.data.closestPointOptimized = None
-        self.data.closestOffsetPointLast = None
-        self.data.closestOffsetPointBest = None
-        self.data.closestOffsetPointMedian = None
-        self.data.closestOffsetPointRefA = None
-        self.data.closestOffsetPointRefB = None
-        self.data.closestOffsetPointRefC = None
-        self.data.closestOffsetPointOptimized = None
         self.data.lapProgress = 0
 
     def purgeBadLapsCE(self): # TODO consider Circuit Experience component
@@ -798,7 +813,6 @@ class MainWindow(ColorMainWidget):
                     logPrint("PURGE lap", indexToTime (len(l.points)), d)
                 else:
                     temp.append(l)
-            logPrint("OUT")
             self.data.previousLaps = temp
 
     def cleanUpLapCE(self, lap):
@@ -873,17 +887,17 @@ class MainWindow(ColorMainWidget):
             self.trackPreviouslyDescribed = curTrack
 
     def determineLapProgress(self, curPoint):
-        self.data.closestPointRefA, self.data.closestIRefA, self.data.closestOffsetPointRefA = self.data.refLaps[0].findClosestPoint (curPoint, self.data.closestIRefA, self.cfg, self.data.brakeOffset)
-        self.data.closestPointRefB, self.data.closestIRefB, self.data.closestOffsetPointRefB = self.data.refLaps[1].findClosestPoint (curPoint, self.data.closestIRefB, self.cfg, self.data.brakeOffset)
-        self.data.closestPointRefC, self.data.closestIRefC, self.data.closestOffsetPointRefC = self.data.refLaps[2].findClosestPoint (curPoint, self.data.closestIRefC, self.cfg, self.data.brakeOffset)
-        self.data.closestPointOptimized, self.data.closestIOptimized, self.data.closestOffsetPointOptimized = self.data.optimizedLap.findClosestPoint (curPoint, self.data.closestIOptimized, self.cfg, self.data.brakeOffset)
+        self.data.closestPointRefA, self.data.closestIRefA = self.data.refLaps[0].findClosestPoint (curPoint, self.data.closestIRefA, self.cfg)
+        self.data.closestPointRefB, self.data.closestIRefB = self.data.refLaps[1].findClosestPoint (curPoint, self.data.closestIRefB, self.cfg)
+        self.data.closestPointRefC, self.data.closestIRefC = self.data.refLaps[2].findClosestPoint (curPoint, self.data.closestIRefC, self.cfg)
+        self.data.closestPointOptimized, self.data.closestIOptimized = self.data.optimizedLap.findClosestPoint (curPoint, self.data.closestIOptimized, self.cfg)
        
         if len(self.data.previousLaps) > 0:
-            self.data.closestPointLast, self.data.closestILast, self.data.closestOffsetPointLast = self.data.previousLaps[-1].findClosestPoint (curPoint, self.data.closestILast, self.cfg, self.data.brakeOffset)
+            self.data.closestPointLast, self.data.closestILast = self.data.previousLaps[-1].findClosestPoint (curPoint, self.data.closestILast, self.cfg)
 
             if self.data.bestLap >= 0 and self.data.previousLaps[self.data.bestLap].valid:
-                self.data.closestPointBest, self.data.closestIBest, self.data.closestOffsetPointBest = self.data.previousLaps[self.data.bestLap].findClosestPoint (curPoint, self.data.closestIBest, self.cfg, self.data.brakeOffset)
-                self.data.closestPointMedian, self.data.closestIMedian, self.data.closestOffsetPointMedian = self.data.previousLaps[self.data.medianLap].findClosestPoint (curPoint, self.data.closestIMedian, self.cfg, self.data.brakeOffset)
+                self.data.closestPointBest, self.data.closestIBest = self.data.previousLaps[self.data.bestLap].findClosestPoint (curPoint, self.data.closestIBest, self.cfg)
+                self.data.closestPointMedian, self.data.closestIMedian = self.data.previousLaps[self.data.medianLap].findClosestPoint (curPoint, self.data.closestIMedian, self.cfg)
 
         lpBest = -1
         lpA = -1
@@ -945,7 +959,6 @@ class MainWindow(ColorMainWidget):
             if nowBraking != self.curOptimizingBrake:
                 self.curOptimizingBrake = nowBraking
                 if nowBraking:
-                    #logPrint(nowBraking, len(self.data.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex)
                     lenOpt = self.data.closestIOptimized - self.curOptimizingIndex
                     lenLive = len(self.data.curLap.points) - self.curOptimizingLiveIndex
                     if lenOpt > lenLive or lenOpt == 0:
@@ -956,9 +969,6 @@ class MainWindow(ColorMainWidget):
                         self.data.curOptimizingLap.points += self.data.optimizedLap.points[self.curOptimizingIndex:self.data.closestIOptimized-1]
                     self.curOptimizingLiveIndex = len(self.data.curLap.points)-1
                     self.curOptimizingIndex = self.data.closestIOptimized-1
-                    if lenOpt > lenLive:
-                        logPrint("///////",len(self.data.curLap.points), len(self.data.curOptimizingLap.points), self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.data.optimizedLap.points))
-        #logPrint( len(self.data.curOptimizingLap.points), len(self.data.curLap.points))
 
     def updateOptimizedLap(self):
         lenOpt = self.data.closestIOptimized - self.curOptimizingIndex
@@ -1067,8 +1077,6 @@ class MainWindow(ColorMainWidget):
                     if showBestLapMessage and self.data.bestLap != newBestLap and self.data.previousLaps[newBestLap].valid:
                         self.showUiMsg("BEST LAP", 1)
                     ## Reset brake point offsets for new best lap
-                    if self.data.bestLap != newBestLap and self.cfg.bigCountdownBrakepoint == 1:
-                        self.data.brakeOffset = 0
                     self.data.bestLap = newBestLap
                     self.data.medianLap = self.findMedianLap()
 
@@ -1213,33 +1221,14 @@ class MainWindow(ColorMainWidget):
         event.accept()
 
 
-    def toggleRecording(self): # TODO: consider recording component
-        if self.cfg.recordingEnabled or self.cfg.developmentMode:
-            if self.data.isRecording:
-                self.data.isRecording = False
-                self.receiver.stopRecording()
-            else:
-                if not os.path.exists(self.cfg.storageLocation):
-                    self.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.cfg.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
-                    return
-                prefix = self.cfg.storageLocation + "/"
-                if len(self.cfg.sessionName) > 0:
-                    prefix += self.cfg.sessionName + "-"
-                self.receiver.startRecording(prefix, not self.cfg.developmentMode)
-                self.data.isRecording = True
-
     def keyPressEvent(self, e):
-        logPrint("A")
         if not self.data is None and self.centralWidget() == self.data.masterWidget:
-            logPrint("B")
             if self.messageWaitsForKey:
                 if e.key() != Qt.Key.Key_Shift.value:
                     self.messageWaitsForKey = False
                     self.returnToDash()
             elif not e.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                if e.key() == Qt.Key.Key_R.value: # TODO move to component
-                    self.toggleRecording()
-                elif e.key() == Qt.Key.Key_Escape.value:
+                if e.key() == Qt.Key.Key_Escape.value:
                     self.exitDash()
                 elif e.key() == Qt.Key.Key_C.value:
                     self.newSession()
@@ -1250,19 +1239,10 @@ class MainWindow(ColorMainWidget):
                     if self.data.lapProgress > 0.5:
                         self.data.refueled -= 1
                         logPrint("PIT STOP:", self.data.refueled)
-                elif e.key() == Qt.Key.Key_0.value:
-                    self.data.brakeOffset = 0
-                    logPrint("Brake offset", self.data.brakeOffset)
                 elif e.key() == Qt.Key.Key_Plus.value or e.key() == Qt.Key.Key_Equal.value:
                     self.data.lapOffset += 1
                 elif e.key() == Qt.Key.Key_Minus.value:
                     self.data.lapOffset -= 1
-                elif e.key() == Qt.Key.Key_Up.value:
-                    self.data.brakeOffset -= 3
-                    logPrint("Brake offset", self.data.brakeOffset)
-                elif e.key() == Qt.Key.Key_Down.value:
-                    self.data.brakeOffset += 3
-                    logPrint("Brake offset", self.data.brakeOffset)
                 elif e.key() == Qt.Key.Key_Left.value:
                      cur = self.specWidgets[0].currentIndex()
                      if cur == 0:
@@ -1275,15 +1255,14 @@ class MainWindow(ColorMainWidget):
                          self.specWidgets[0].setCurrentIndex(0)
                      else:
                          self.specWidgets[0].setCurrentIndex(cur+1)
-                elif e.key() in self.pageKeys:
-                    k = self.pageKeys[e.key()]
+                elif e.key() in self.data.pageKeys:
+                    k = self.data.pageKeys[e.key()]
                     if k[0].currentIndex() == k[1]:
                         k[0].setCurrentIndex(0)
                     else:
                         k[0].setCurrentIndex(k[1])
                 elif e.key() in self.data.componentKeys:
                     self.data.componentKeys[e.key()][0].callAction(self.data.componentKeys[e.key()][1])
-                logPrint(e.key(), self.pageKeys)
             elif e.modifiers() == Qt.KeyboardModifier.ControlModifier:
                 if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
                     self.flipPage(e.key() - Qt.Key.Key_1.value)

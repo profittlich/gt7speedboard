@@ -8,22 +8,10 @@ import requests
 import json
 
 shortcutText = "ESC \t return to configuration\n" \
-             + "? \t show keyboard shortcuts\n" \
-             + "B \t save best lap\n" \
-             + "L \t save last lap\n" \
-             + "M \t save median lap\n" \
-             + "O \t save optimized lap\n" \
-             + "A \t save all laps\n" \
              + "C \t clear lap data\n" \
-             + "S \t Show runs and statistics\n"  \
-             + "UP \t Show brake point notifications a bit later\n"  \
-             + "DOWN \t Show brake point notifications a bit earlier\n"  \
-             + "0 (zero)\t Reset brake point notification timing\n"  \
              + "P\t Reset laps since pit stop counter\n"  \
-             + "V\t View map\n"  \
              + "- \t Reduce number of laps by 1 (e.g. when being lapped)\n"  \
              + "+ \t Increase number of laps by 1\n"  \
-             + "R \t start/stop raw recording (not recommended)\n"
 
 class StartWindow(QWidget):
     def __init__(self, allowAutoUpdate):

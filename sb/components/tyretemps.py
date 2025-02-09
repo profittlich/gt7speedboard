@@ -88,7 +88,7 @@ class TyreTemps(sb.component.Component):
     def addPoint(self, curPoint, curLap):
         self.updateTyreTemps(curPoint)
 
-    def title(self):
+    def defaultTitle(self):
         return "Tyres"
 
 sb.component.componentLibrary['TyreTemps'] = TyreTemps

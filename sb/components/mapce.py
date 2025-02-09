@@ -55,7 +55,7 @@ class Map(sb.component.Component):
     def addPoint(self, curPoint, curLap):
         self.updateMap(curPoint)
 
-    def title(self):
+    def defaultTitle(self):
         return "Map"
 
     def newTrack(self, curPoint, track):

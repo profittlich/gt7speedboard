@@ -256,7 +256,7 @@ class Stats(sb.component.Component):
     def maybeNewTrack(self, curPoint, track):
         self.updateLiveStats(curPoint)
 
-    def title(self):
+    def defaultTitle(self):
         return "Statistics"
 
     def callAction(self, a):

@@ -15,11 +15,16 @@ class Speed(sb.component.Component):
     
     def actions():
         return {
-                "cycleFocusReference":"Cycle source for full screen colors"
+                "cycleFocusReference":"Cycle source for full screen colors",
+                "brakeOffsetUp": "Show brake point notifications a bit later",
+                "brakeOffsetDown": "Show brake point notifications a bit earlier",
+                "resetBrakeOffset":"Reset brake point notification timing"
                }
     
     def __init__(self, cfg, data):
         super().__init__(cfg, data)
+
+        self.brakeOffset = 0
 
         self.pedalBest = ColorLabel("")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -279,7 +284,10 @@ class Speed(sb.component.Component):
         best = SpeedData()
         best.closestIndex = self.data.closestIBest
         best.closestPoint = self.data.closestPointBest
-        best.closestOffsetPoint = self.data.closestOffsetPointBest
+        best.closestOffsetPoint = None
+        if not best.closestPoint is None:
+            temp = self.data.previousLaps[self.data.bestLap]
+            best.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,best.closestIndex+self.brakeOffset))]
         best.speedWidget = self.speedBest
         best.pedalWidget = self.pedalBest
         best.lineWidget = self.lineBest
@@ -289,7 +297,10 @@ class Speed(sb.component.Component):
         median = SpeedData()
         median.closestIndex = self.data.closestIMedian
         median.closestPoint = self.data.closestPointMedian
-        median.closestOffsetPoint = self.data.closestOffsetPointMedian
+        median.closestOffsetPoint = None
+        if not median.closestPoint is None:
+            temp = self.data.previousLaps[self.data.medianLap]
+            median.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,median.closestIndex+self.brakeOffset))]
         median.speedWidget = self.speedMedian
         median.pedalWidget = self.pedalMedian
         median.lineWidget = self.lineMedian
@@ -299,7 +310,10 @@ class Speed(sb.component.Component):
         last = SpeedData()
         last.closestIndex = self.data.closestILast
         last.closestPoint = self.data.closestPointLast
-        last.closestOffsetPoint = self.data.closestOffsetPointLast
+        last.closestOffsetPoint = None
+        if not last.closestPoint is None:
+            temp = self.data.previousLaps[-1]
+            last.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,last.closestIndex+self.brakeOffset))]
         last.speedWidget = self.speedLast
         last.pedalWidget = self.pedalLast
         last.lineWidget = self.lineLast
@@ -309,7 +323,10 @@ class Speed(sb.component.Component):
         refA = SpeedData()
         refA.closestIndex = self.data.closestIRefA
         refA.closestPoint = self.data.closestPointRefA
-        refA.closestOffsetPoint = self.data.closestOffsetPointRefA
+        refA.closestOffsetPoint = None
+        if not refA.closestPoint is None:
+            temp = self.data.refLaps[0]
+            refA.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,refA.closestIndex+self.brakeOffset))]
         refA.speedWidget = self.speedRefA
         refA.pedalWidget = self.pedalRefA
         refA.lineWidget = self.lineRefA
@@ -319,7 +336,10 @@ class Speed(sb.component.Component):
         refB = SpeedData()
         refB.closestIndex = self.data.closestIRefB
         refB.closestPoint = self.data.closestPointRefB
-        refB.closestOffsetPoint = self.data.closestOffsetPointRefB
+        refB.closestOffsetPoint = None
+        if not refB.closestPoint is None:
+            temp = self.data.refLaps[1]
+            refB.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,refB.closestIndex+self.brakeOffset))]
         refB.speedWidget = self.speedRefB
         refB.pedalWidget = self.pedalRefB
         refB.lineWidget = self.lineRefB
@@ -329,7 +349,10 @@ class Speed(sb.component.Component):
         refC = SpeedData()
         refC.closestIndex = self.data.closestIRefC
         refC.closestPoint = self.data.closestPointRefC
-        refC.closestOffsetPoint = self.data.closestOffsetPointRefC
+        refC.closestOffsetPoint = None
+        if not refC.closestPoint is None:
+            temp = self.data.refLaps[2]
+            refC.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,refC.closestIndex+self.brakeOffset))]
         refC.speedWidget = self.speedRefC
         refC.pedalWidget = self.pedalRefC
         refC.lineWidget = self.lineRefC
@@ -339,20 +362,23 @@ class Speed(sb.component.Component):
         opti = SpeedData()
         opti.closestIndex = self.data.closestIOptimized
         opti.closestPoint = self.data.closestPointOptimized
-        opti.closestOffsetPoint = self.data.closestOffsetPointOptimized
+        opti.closestOffsetPoint = None
+        if not opti.closestPoint is None:
+            temp = self.data.optimizedLap
+            opti.closestOffsetPoint = temp.points[min(len(temp.points)-1, max(0,opti.closestIndex+self.brakeOffset))]
         opti.speedWidget = self.speedOptimized
         opti.pedalWidget = self.pedalOptimized
         opti.lineWidget = self.lineOptimized
         opti.timeDiffWidget = self.timeDiffOptimized
         opti.id = 5
              
-        refA.nextBrake = self.data.refLaps[0].findNextBrake(refA.closestIndex, self.cfg, self.data.brakeOffset) # TODO refactor
-        refB.nextBrake = self.data.refLaps[1].findNextBrake(refB.closestIndex, self.cfg, self.data.brakeOffset)
-        refC.nextBrake = self.data.refLaps[2].findNextBrake(refC.closestIndex, self.cfg, self.data.brakeOffset)
-        opti.nextBrake = self.data.optimizedLap.findNextBrake(opti.closestIndex, self.cfg, self.data.brakeOffset)
+        refA.nextBrake = self.data.refLaps[0].findNextBrake(refA.closestIndex, self.cfg, self.brakeOffset) # TODO refactor
+        refB.nextBrake = self.data.refLaps[1].findNextBrake(refB.closestIndex, self.cfg, self.brakeOffset)
+        refC.nextBrake = self.data.refLaps[2].findNextBrake(refC.closestIndex, self.cfg, self.brakeOffset)
+        opti.nextBrake = self.data.optimizedLap.findNextBrake(opti.closestIndex, self.cfg, self.brakeOffset)
 
         if len(self.data.previousLaps) > 0 and self.data.previousLaps[self.data.bestLap].valid:
-            best.nextBrake = self.data.previousLaps[self.data.bestLap].findNextBrake(best.closestIndex, self.cfg, self.data.brakeOffset)
+            best.nextBrake = self.data.previousLaps[self.data.bestLap].findNextBrake(best.closestIndex, self.cfg, self.brakeOffset)
 
         self.data.setColor(self.cfg.brightBackgroundColor)
 
@@ -471,10 +497,10 @@ class Speed(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         self.updateSpeed(curPoint)
-        if self.data.brakeOffset != 0:
-            self.header.setText("[" + str(round(self.data.brakeOffset/-60, 2)) + "] SPEED")
+        if self.brakeOffset != 0:
+            self.header.setText("[" + str(round(self.brakeOffset/-60, 2)) + "] " + self.title().upper())
         else:
-            self.header.setText("SPEED")
+            self.header.setText(self.title().upper())
         self.header.update()
         self.markBigCountdownField()
 
@@ -624,11 +650,17 @@ class Speed(sb.component.Component):
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()
 
-    def title(self):
+    def defaultTitle(self):
         return "Speed"
 
     def callAction(self, a):
         if a == "cycleFocusReference":
             self.cycleBigCountdownBreakponts()
+        elif a == "brakeOffsetUp":
+            self.brakeOffset -= 3
+        elif a == "brakeOffsetDown":
+            self.brakeOffset += 3
+        elif a == "resetBrakeOffset":
+            self.brakeOffset = 0
 
 sb.component.componentLibrary['Speed'] = Speed
