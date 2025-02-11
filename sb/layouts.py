@@ -4,6 +4,7 @@ defaultLayout = [
                         [ # Page 1
                             {
                                 "component": "SaveLaps",
+                                "component": "LapOptimizer",
                                 "actions": { 
                                     "Key_B":"saveBest",
                                     "Key_M":"saveMedian",
@@ -43,6 +44,7 @@ multiScreenLayout = [
                         [ # Page 1
                             {
                                 "component": "SaveLaps",
+                                "component": "LapOptimizer",
                                 "actions": { 
                                     "Key_B":"saveBest",
                                     "Key_M":"saveMedian",
@@ -90,6 +92,7 @@ bigLayout = [
         [
             {
                 "component": "SaveLaps",
+		"component": "LapOptimizer",
                 "actions": { 
                     "Key_B":"saveBest",
                     "Key_M":"saveMedian",
@@ -162,6 +165,7 @@ circuitExperienceLayout = [
                         [ # Page 1
                             {
                                 "component": "SaveLaps",
+                                "component": "LapOptimizer",
                                 "actions": { 
                                     "Key_B":"saveBest",
                                     "Key_M":"saveMedian",

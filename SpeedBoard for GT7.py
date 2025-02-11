@@ -48,6 +48,7 @@ import sb.components.mapopt
 import sb.components.mapopting
 import sb.components.savelaps
 import sb.components.recordingcontroller
+import sb.components.lapoptimizer
 
 from sb.layouts import *
 
@@ -144,14 +145,12 @@ class MainWindow(ColorMainWidget):
 
         self.setCentralWidget(self.startWindow)
 
-        logPrint("new optimizing lap")
-
     def loadLayout(self, fn):
         with open(fn, "r") as f:
             txt = f.read()
             self.selectedLayout = json.loads(txt)
 
-    def createComponent(self, e):
+    def createComponent(self, e): # TODO: Consider putting screen creation into its own class
         newComponent = sb.component.componentLibrary[e['component']](self.cfg, self.data)
         if "title" in e:
             newComponent.setTitle (e['title'])
@@ -403,7 +402,7 @@ class MainWindow(ColorMainWidget):
             return
 
         
-        # TODO move to Configuration
+        # TODO maybe move to Configuration
         settings = QSettings()
 
         settings.setValue("mode", self.startWindow.mode.currentIndex())
@@ -492,7 +491,7 @@ class MainWindow(ColorMainWidget):
         for s in range (1, len(self.specWidgets)):
             self.specWidgets[s].close()
 
-    def exitDash(self):
+    def exitDash(self): # TODO stopDash vs exitDash
         if self.data.isRecording:
             self.data.isRecording = False
             self.data.receiver.stopRecording()
@@ -516,8 +515,6 @@ class MainWindow(ColorMainWidget):
         logPrint("PIT STOP:", self.data.refueled)
         self.manualPitStop = False
         
-        self.initOptimizedLap()
-
         self.cfg.bigCountdownBrakepoint = self.cfg.initialBigCountdownBrakepoint
 
         self.data.previousPoint = None
@@ -632,7 +629,7 @@ class MainWindow(ColorMainWidget):
         return 0
 
 
-    def handleTrackDetect(self, curPoint):
+    def handleTrackDetect(self, curPoint): # TODO consider track detect component
         self.data.trackDetector.addPoint(curPoint)
 
         curTrack = self.data.trackDetector.getTrack()
@@ -699,65 +696,6 @@ class MainWindow(ColorMainWidget):
         elif tp != -1:
             self.data.lapProgress = tp
 
-    def initOptimizedLap(self): # TODO: consider Lap Optimization component
-        if self.cfg.optimizedSeed == 0:
-            self.data.optimizedLap = Lap()
-        elif self.cfg.optimizedSeed == 1:
-            self.data.optimizedLap = copy.deepcopy(self.data.refLaps[0])
-        elif self.cfg.optimizedSeed == 2:
-            self.data.optimizedLap = copy.deepcopy(self.data.refLaps[1])
-        elif self.cfg.optimizedSeed == 3:
-            self.data.optimizedLap = copy.deepcopy(self.data.refLaps[2])
-        logPrint("discard", len(self.data.curOptimizingLap.points))
-        logPrint("new optimizing lap")
-        self.data.curOptimizingLap = Lap()
-        self.curOptimizingIndex = 0
-        self.curOptimizingLiveIndex = 0
-        self.curOptimizingBrake = False
-
-    def optimizeLap(self, curPoint):
-        if len(self.data.optimizedLap.points) == 0:
-            self.data.curOptimizingLap.points.append(copy.deepcopy(curPoint))
-            if len(self.data.curOptimizingLap.points) != len(self.data.curLap.points):
-                self.data.curOptimizingLap.points = copy.deepcopy(self.data.curLap.points)
-            self.curOptimizingLiveIndex = len(self.data.curLap.points)
-            self.curOptimizingIndex = self.data.closestIOptimized
-        else:
-            nowBraking = curPoint.brake > 50 or self.data.optimizedLap.points[self.data.closestIOptimized].brake > 50
-            if nowBraking != self.curOptimizingBrake:
-                self.curOptimizingBrake = nowBraking
-                if nowBraking:
-                    lenOpt = self.data.closestIOptimized - self.curOptimizingIndex
-                    lenLive = len(self.data.curLap.points) - self.curOptimizingLiveIndex
-                    if lenOpt > lenLive or lenOpt == 0:
-                        logPrint("Current segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.data.curOptimizingLap.points), len(self.data.curLap.points))
-                        self.data.curOptimizingLap.points += copy.deepcopy(self.data.curLap.points[self.curOptimizingLiveIndex:-1])
-                    else:
-                        logPrint("Previous segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
-                        self.data.curOptimizingLap.points += self.data.optimizedLap.points[self.curOptimizingIndex:self.data.closestIOptimized-1]
-                    self.curOptimizingLiveIndex = len(self.data.curLap.points)-1
-                    self.curOptimizingIndex = self.data.closestIOptimized-1
-
-    def updateOptimizedLap(self):
-        lenOpt = self.data.closestIOptimized - self.curOptimizingIndex
-        lenLive = len(self.data.curLap.points) - self.curOptimizingLiveIndex
-        if lenOpt > lenLive or lenOpt == 0:
-            logPrint("Current final segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
-            self.data.curOptimizingLap.points += copy.deepcopy(self.data.curLap.points[self.curOptimizingLiveIndex:])
-        else:
-            logPrint("Previous final segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
-            self.data.curOptimizingLap.points += copy.deepcopy(self.data.optimizedLap.points[self.curOptimizingIndex:])
-        self.data.optimizedLap = self.data.curOptimizingLap
-        if self.cfg.developmentMode:
-            saveThread = Worker(self.appendOptimizedLap, "Optimized lap saved.", 1.0, (self.data.optimizedLap, "optimized",))
-            self.data.threadpool.start(saveThread)
-        logPrint("Optimized lap:", len(self.data.optimizedLap.points), "points vs.", len(self.data.curLap.points))
-        logPrint("new optimizing lap")
-        self.data.curOptimizingLap = Lap()
-        self.curOptimizingLiveIndex = 0
-        self.curOptimizingIndex = 0
-        self.curOptimizingBrake = False
-
     def checkCircuitExperienceMode(self, curPoint):
         if self.cfg.circuitExperience and curPoint.current_lap > 1:
             logPrint("Not in Circuit Experience!")
@@ -768,7 +706,7 @@ class MainWindow(ColorMainWidget):
         if (
             self.data.lastLap != curPoint.current_lap
             or (self.cfg.circuitExperience and (curPoint.distance(self.data.previousPoint) > self.cfg.circuitExperienceJumpDistance or self.data.noThrottleCount >= self.cfg.psFPS * self.cfg.circuitExperienceNoThrottleTimeout))
-           ): # TODO Null error in circuit experience mode when doing laps: AttributeError: 'NoneType' object has no attribute 'position_x'
+           ):
 
             # Clean up circuit experience laps
             if self.cfg.circuitExperience:
@@ -814,9 +752,6 @@ class MainWindow(ColorMainWidget):
                         mst = msToTime(lastLapTime)
                         tdiff = float(it[4:]) - float(mst[mst.index(":")+1:])
                         logPrint("Append valid lap", msToTime(lastLapTime), indexToTime(len(cleanLap.points)), lastLapTime, len(self.data.previousLaps), tdiff)
-
-                        if not self.cfg.circuitExperience:
-                            self.updateOptimizedLap()
 
                         for c in self.components:
                             c.completedLap(curPoint, cleanLap, True)
@@ -960,9 +895,6 @@ class MainWindow(ColorMainWidget):
                 isNewLap = self.handleLapChanges(curPoint)
                 self.checkPitStop(curPoint)
  
-                if not self.cfg.circuitExperience:
-                    self.optimizeLap(curPoint)
-
                 self.handleTrackDetect(curPoint)
 
                 for c in self.components:
@@ -1060,39 +992,6 @@ class MainWindow(ColorMainWidget):
         logPrint("Flip to page", nr)
         self.specWidgets[0].setCurrentIndex(nr)
 
-    # TODO consider moving to Lap class
-    def appendOptimizedLap(self, index, name):
-        if not hasattr(self, 'dev_contLap'):
-            self.dev_contLap = 1
-        else:
-            self.dev_contLap += 1
-        for p in index.points:
-            p.current_lap = self.dev_contLap
-            p.recreatePackage()
-        self.appendLap(index, name)
-
-    # TODO consider moving to Lap class
-    def appendLap(self, index, name):
-        logPrint("append lap:", name)
-        if not os.path.exists(self.cfg.storageLocation):
-            return "Error: Storage location\n'" + self.cfg.storageLocation[self.storageLocation.rfind("/")+1:] + "'\ndoes not exist"
-        prefix = self.cfg.storageLocation + "/"
-        if len(self.cfg.sessionName) > 0:
-            prefix += self.cfg.sessionName + " - "
-        with open ( prefix + self.data.trackPreviouslyIdentified + " - lap - " + name + ".gt7laps", "ab") as f:
-            if isinstance(index, Lap):
-                lap = index
-            else:
-                lap = self.data.previousLaps[index]
-            if not lap.preceeding is None:
-                logPrint("Going from", lap.preceeding.current_lap)
-                f.write(lap.preceeding.raw)
-            logPrint("via", lap.points[0].current_lap)
-            for p in lap.points:
-                f.write(p.raw)
-            if not lap.following is None:
-                logPrint("to", lap.following.current_lap)
-                f.write(lap.following.raw)
 
 
 def excepthook(exc_type, exc_value, exc_tb):
