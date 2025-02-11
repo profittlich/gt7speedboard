@@ -12,8 +12,8 @@ class Help(sb.component.Component):
     def description():
         return "List of keyboard shortcuts"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.pageScroller = QScrollArea()
         self.widget = QLabel("KEYBOARD SHORTCUTS:\n\n" + shortcutText)

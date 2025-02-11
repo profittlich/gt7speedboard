@@ -11,8 +11,8 @@ class RecordingController(sb.component.Component):
     def description():
         return "Handle raw data recording"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
     def defaultTitle(self):
         return "Raw data"
@@ -33,7 +33,7 @@ class RecordingController(sb.component.Component):
                 self.data.receiver.stopRecording()
             else:
                 if not os.path.exists(self.cfg.storageLocation):
-                    self.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.cfg.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
+                    self.callbacks.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.cfg.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
                     return
                 prefix = self.cfg.storageLocation + "/"
                 if len(self.cfg.sessionName) > 0:

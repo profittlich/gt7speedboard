@@ -20,8 +20,8 @@ class FuelAndMessages(sb.component.Component):
                 "saveMessages":"Save warning markers to file"
                }
 
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.newMessage = None
         self.messages = []
@@ -230,7 +230,7 @@ class FuelAndMessages(sb.component.Component):
         elif a == "saveMessages":
             logPrint("store message positions")
             saveThread = Worker(self.saveMessages, "Messages saved.", 1.0, ())
-            saveThread.signals.finished.connect(self.data.showUiMsg)
+            saveThread.signals.finished.connect(self.callbacks.showUiMsg)
             self.data.threadpool.start(saveThread)
 
 sb.component.componentLibrary['FuelAndMessages'] = FuelAndMessages

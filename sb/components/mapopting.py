@@ -15,8 +15,8 @@ class OptimizingMap(sb.component.Component):
     def description():
         return "Map of previous racing lines"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
         self.colormap = [ 
              QColor ("#f00"),
              QColor ("#0f0"),

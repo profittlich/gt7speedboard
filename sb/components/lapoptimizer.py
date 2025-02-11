@@ -16,8 +16,8 @@ class LapOptimizer(sb.component.Component):
     def description():
         return "Generate synthetic laps with optimized brake points from previous laps"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
     def getWidget(self):
         return None

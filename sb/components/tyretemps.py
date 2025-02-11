@@ -11,8 +11,8 @@ class TyreTemps(sb.component.Component):
     def description():
         return "Tyre temperature display"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.tyreFR = ColorLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)

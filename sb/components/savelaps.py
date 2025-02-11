@@ -15,8 +15,8 @@ class SaveLaps(sb.component.Component):
     def description():
         return "Handle saving lap data to the data directory"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
     def defaultTitle(self):
         return "Saving lap data"
@@ -86,27 +86,27 @@ class SaveLaps(sb.component.Component):
         if a == "saveBest":
             if self.data.bestLap >= 0:
                 saveThread = Worker(self.saveLap, "Best lap saved.", 1.0, (self.data.bestLap, "best",))
-                saveThread.signals.finished.connect(self.data.showUiMsg)
+                saveThread.signals.finished.connect(self.callbacks.showUiMsg)
                 self.data.threadpool.start(saveThread)
         elif a == "saveLast":
             if len(self.data.previousLaps) > 0:
                 saveThread = Worker(self.saveLap, "Last lap saved.", 1.0, (-1, "last",))
-                saveThread.signals.finished.connect(self.data.showUiMsg)
+                saveThread.signals.finished.connect(self.callbacks.showUiMsg)
                 self.data.threadpool.start(saveThread)
         elif a == "saveMedian":
             if self.data.medianLap >= 0:
                 saveThread = Worker(self.saveLap, "Median lap saved.", 1.0, (self.data.medianLap, "median",))
-                saveThread.signals.finished.connect(self.data.showUiMsg)
+                saveThread.signals.finished.connect(self.callbacks.showUiMsg)
                 self.data.threadpool.start(saveThread)
         elif a == "saveOptimized":
             if len(self.data.optimizedLap.points) > 0:
                 saveThread = Worker(self.saveOptimizedLap, "Optimized lap saved.", 1.0, (self.data.optimizedLap, "optimized",))
-                saveThread.signals.finished.connect(self.data.showUiMsg)
+                saveThread.signals.finished.connect(self.callbacks.showUiMsg)
                 self.data.threadpool.start(saveThread)
         elif a == "saveAll":
             if len(self.data.previousLaps) > 0:
                 saveThread = Worker(self.saveAllLaps, "All laps saved.", 1.0, ("combined",))
-                saveThread.signals.finished.connect(self.data.showUiMsg)
+                saveThread.signals.finished.connect(self.callbacks.showUiMsg)
                 self.data.threadpool.start(saveThread)
 
 sb.component.componentLibrary['SaveLaps'] = SaveLaps

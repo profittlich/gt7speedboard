@@ -7,9 +7,10 @@ from sb.helpers import *
 componentLibrary = {}
 
 class Component:
-    def __init__(self, cfg, data):
+    def __init__(self, cfg, data, callbacks):
         self.cfg = cfg
         self.data = data
+        self.callbacks = callbacks
         self.overrideTitle = None
 
     def defaultTitle(self):

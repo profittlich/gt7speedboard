@@ -11,8 +11,8 @@ class Pedals(sb.component.Component):
     def description():
         return "Brake and throttle pedal display"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.widget = QWidget()
         layout = QHBoxLayout()

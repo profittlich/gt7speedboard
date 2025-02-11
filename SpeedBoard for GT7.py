@@ -91,6 +91,8 @@ class RuntimeData:
         self.masterWidget = None # TODO messy in speed
         self.isRecording = None
 
+class Callbacks:
+    def __init__(self):
         self.setColor = None
         self.showUiMsg = None
 
@@ -101,6 +103,9 @@ class MainWindow(ColorMainWidget):
         self.cfg.developmentMode = False
 
         self.data = None
+        self.callbacks = Callbacks()
+        self.callbacks.setColor = self.setColor
+        self.callbacks.showUiMsg = self.showUiMsg
 
         self.defaultPalette = self.palette()
         self.specWidgets = []
@@ -136,12 +141,10 @@ class MainWindow(ColorMainWidget):
         self.data.threadpool = QThreadPool()
         self.data.isRecording = False
         self.data.curOptimizingLap = Lap()
-        self.data.setColor = self.setColor
-        self.data.showUiMsg = self.showUiMsg
 
         self.data.pageKeys = {}
 
-        maker = sb.dash.DashMaker(self.cfg, self.data, self.components)
+        maker = sb.dash.DashMaker(self.cfg, self.data, self.callbacks, self.components)
         self.specWidgets = maker.makeDashFromSpec(self.selectedLayout)
 
         i = 1

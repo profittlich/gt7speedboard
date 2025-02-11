@@ -12,8 +12,8 @@ class LapHeader(sb.component.Component):
     def description():
         return "Remaining or driven laps display"
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.header = QLabel("? LAPS LEFT")
         font = self.header.font()

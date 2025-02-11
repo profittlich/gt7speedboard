@@ -21,8 +21,8 @@ class Speed(sb.component.Component):
                 "resetBrakeOffset":"Reset brake point notification timing"
                }
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.brakeOffset = 0
 
@@ -380,7 +380,7 @@ class Speed(sb.component.Component):
         if len(self.data.previousLaps) > 0 and self.data.previousLaps[self.data.bestLap].valid:
             best.nextBrake = self.data.previousLaps[self.data.bestLap].findNextBrake(best.closestIndex, self.cfg, self.brakeOffset)
 
-        self.data.setColor(self.cfg.brightBackgroundColor)
+        self.callbacks.setColor(self.cfg.brightBackgroundColor)
 
         self.updateOneSpeedEntry(last, curPoint)
         self.updateOneSpeedEntry(refA, curPoint)
@@ -460,7 +460,7 @@ class Speed(sb.component.Component):
             refLap.lineWidget.update()
 
             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                self.data.setColor(bgCol)
+                self.callbacks.setColor(bgCol)
 
             # TIME DIFF
             refLap.timeDiffWidget.setDiff(refLap.closestIndex - len(self.data.curLap.points))
@@ -470,7 +470,7 @@ class Speed(sb.component.Component):
             refLap.pedalWidget.setColor(self.cfg.backgroundColor)
             refLap.pedalWidget.setText("")
             if self.cfg.bigCountdownBrakepoint == refLap.id and self.data.masterWidget.currentIndex() == 0:
-                self.data.setColor(bgCol)
+                self.callbacks.setColor(bgCol)
             refLap.timeDiffWidget.setDiff(0)
             refLap.timeDiffWidget.update()
 
@@ -631,21 +631,21 @@ class Speed(sb.component.Component):
             if self.cfg.bigCountdownBrakepoint == 2 and (self.data.refLaps[0] is None or self.data.refLaps[0].time > curPoint.last_lap):
                 if not self.data.refLaps[0] is None:
                     logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[0].time))
-                    self.data.showUiMsg("BEAT REFERENCE LAP", 1)
+                    self.callbacks.showUiMsg("BEAT REFERENCE LAP", 1)
                 showBestLapMessage = False
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()
             elif self.cfg.bigCountdownBrakepoint == 3 and (self.data.refLaps[1] is None or self.data.refLaps[1].time > curPoint.last_lap):
                 if not self.data.refLaps[1] is None:
                     logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[1].time))
-                    self.data.showUiMsg("BEAT REFERENCE LAP", 1)
+                    self.callbacks.showUiMsg("BEAT REFERENCE LAP", 1)
                 showBestLapMessage = False
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()
             elif self.cfg.bigCountdownBrakepoint == 4 and (self.data.refLaps[2] is None or self.data.refLaps[2].time > curPoint.last_lap):
                 if not self.data.refLaps[2] is None:
                     logPrint("Switch to best lap", msToTime(curPoint.last_lap), msToTime(self.data.refLaps[2].time))
-                    self.data.showUiMsg("BEAT REFERENCE LAP", 1)
+                    self.callbacks.showUiMsg("BEAT REFERENCE LAP", 1)
                 showBestLapMessage = False
                 self.cfg.bigCountdownBrakepoint = 1
                 self.markBigCountdownField()

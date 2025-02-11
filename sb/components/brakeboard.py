@@ -19,8 +19,8 @@ class BrakeBoard(sb.component.Component):
                 "cycleDifficulty":"Cycle BrakeBoard difficulty"
                }
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.mainLabel = ColorLabel("\u2197 50%")
         self.mainLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)

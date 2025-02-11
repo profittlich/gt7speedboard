@@ -59,8 +59,8 @@ class Stats(sb.component.Component):
                 "setRunDescription":"Set a description for the current run"
                }
     
-    def __init__(self, cfg, data):
-        super().__init__(cfg, data)
+    def __init__(self, cfg, data, callbacks):
+        super().__init__(cfg, data, callbacks)
 
         self.statsPageScroller = QScrollArea()
         self.statsPage = QLabel(self.cfg.sessionName + "\nSession stats not available, yet")

@@ -27,9 +27,10 @@ class Screen(QStackedWidget):
 
 
 class DashMaker:
-    def __init__(self, cfg, data, components):
+    def __init__(self, cfg, data, callbacks, components):
         self.cfg = cfg
         self.data = data
+        self.callbacks = callbacks
         self.components = components
 
         self.usedShortcuts = set()
@@ -42,7 +43,7 @@ class DashMaker:
         self.usedShortcuts.add (Qt.Key.Key_Right)
 
     def createComponent(self, e): # TODO: Consider putting screen creation into its own class
-        newComponent = sb.component.componentLibrary[e['component']](self.cfg, self.data)
+        newComponent = sb.component.componentLibrary[e['component']](self.cfg, self.data, self.callbacks)
         if "title" in e:
             newComponent.setTitle (e['title'])
         title = newComponent.title()
