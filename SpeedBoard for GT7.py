@@ -130,7 +130,6 @@ class MainWindow(ColorMainWidget):
             self.selectedLayout = json.loads(txt)
 
     def makeDashWidget(self):
-        self.data = RuntimeData()
         self.components = []
         self.data.pageKeys = {}
         self.data.componentKeys = {}
@@ -143,10 +142,7 @@ class MainWindow(ColorMainWidget):
         self.data.pageKeys = {}
 
         maker = sb.dash.DashMaker(self.cfg, self.data, self.components)
-        if self.cfg.circuitExperience:
-            self.specWidgets = maker.makeDashFromSpec(circuitExperienceLayout)
-        else:
-            self.specWidgets = maker.makeDashFromSpec(self.selectedLayout)
+        self.specWidgets = maker.makeDashFromSpec(self.selectedLayout)
 
         i = 1
         for s in self.specWidgets:
@@ -185,18 +181,19 @@ class MainWindow(ColorMainWidget):
         self.lastPointTimeStamp = time.perf_counter()
         self.congestion = None
         self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == self.startWindow.circuitExperienceIndex
-        if not self.cfg.circuitExperience:
-            ci = self.startWindow.mode.currentIndex()
-            if ci == 0:
-                self.selectedLayout = defaultLayout
-            elif ci == 1:
-                self.selectedLayout = bigLayout
-            elif ci == 2:
-                self.selectedLayout = multiScreenLayout
-            #elif ci == 3:
-                #self.selectedLayout = circuitExperienceLayout
-            elif ci == 4:
-                self.selectedLayout = brakeBoardLayout
+
+        ci = self.startWindow.mode.currentIndex()
+        if ci == 0:
+            self.selectedLayout = defaultLayout
+        elif ci == 1:
+            self.selectedLayout = bigLayout
+        elif ci == 2:
+            self.selectedLayout = multiScreenLayout
+        elif ci == self.startWindow.circuitExperienceIndex:
+            logPrint("Circuit experience")
+            self.selectedLayout = circuitExperienceLayout
+        elif ci == 4:
+            self.selectedLayout = brakeBoardLayout
 
         if self.cfg.circuitExperience:
             msg = QMessageBox()
@@ -294,6 +291,8 @@ class MainWindow(ColorMainWidget):
         settings.setValue("fuelWarning", self.startWindow.fuelWarning.value())
 
         settings.sync()
+
+        self.data = RuntimeData()
 
         self.makeDashWidget()
         self.setCentralWidget(self.data.masterWidget)
@@ -437,12 +436,12 @@ class MainWindow(ColorMainWidget):
             for l in self.data.previousLaps:
                 logPrint ("Check lap", l.time)
                 d = longestLap.points[-1].distance(l.points[-1])
-                c = l.findClosestPointNoLimit(longestLap.points[-1])
+                c = l.findClosestPointNoLimit(longestLap.points[-1])[0]
                 d2 = -1
                 d3 = -1
                 if not c is None:
                     d2 = c.distance(longestLap.points[-1])
-                c3 = longestLap.findClosestPointNoLimit(l.points[-1])
+                c3 = longestLap.findClosestPointNoLimit(l.points[-1])[0]
                 if not c3 is None:
                     d3 = c3.distance(l.points[-1])
                 logPrint("End distance:", d)
