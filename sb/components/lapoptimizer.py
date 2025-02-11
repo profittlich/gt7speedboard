@@ -27,6 +27,7 @@ class LapOptimizer(sb.component.Component):
             self.optimizeLap(curPoint)
 
     def newSession(self):
+        logPrint("=== CALL ===")
         self.initOptimizedLap()
 
     def completedLap(self, curPoint, lastLap, isFullLap):
