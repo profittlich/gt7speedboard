@@ -8,6 +8,8 @@ import requests
 import json
 import glob
 from pathlib import Path
+import platform
+import sys
 
 shortcutText = "ESC \t return to configuration\n" \
              + "C \t clear lap data\n" \

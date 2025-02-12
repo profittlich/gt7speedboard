@@ -307,7 +307,7 @@ class MainWindow(ColorMainWidget):
         self.thread = threading.Thread(target=self.data.receiver.runTelemetryReceiver)
         self.thread.start()
 
-        if self.goFullscreen and self.selectedLayout != multiScreenLayout:
+        if self.goFullscreen and len(self.selectedLayout) == 1:
             self.showFullScreen()
         self.showUiMsg("Press ESC to return to the settings", 2)
 

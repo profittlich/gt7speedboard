@@ -5,7 +5,7 @@ a = Analysis(
     ['SpeedBoard for GT7.py'],
     pathex=[],
     binaries=[],
-    datas=[('cars.csv', '.'), ('makers.csv', '.'), ('tracks/', './tracks/')],
+    datas=[('cars.csv', '.'), ('makers.csv', '.'), ('tracks/', './tracks/'), ('layouts/', './layouts/')],
     hiddenimports=['_salsa20', 'wakepy._deprecated._darwin'],
     hookspath=[],
     hooksconfig={},
