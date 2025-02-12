@@ -185,8 +185,8 @@ class MainWindow(ColorMainWidget):
         self.congestion = None
         self.cfg.circuitExperience = "Circuit Experience" in self.startWindow.mode.currentText()
 
-        logPrint('layouts/' + self.startWindow.mode.currentText() + ".sblayout")
-        self.loadLayout('layouts/' + self.startWindow.mode.currentText() + ".sblayout")
+        logPrint(self.startWindow.layoutPath + self.startWindow.mode.currentText() + ".sblayout")
+        self.loadLayout(self.startWindow.layoutPath + "/" + self.startWindow.mode.currentText() + ".sblayout")
         logPrint(self.selectedLayout)
 
         if self.cfg.circuitExperience:

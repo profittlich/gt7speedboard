@@ -7,6 +7,7 @@ from sb.helpers import logPrint
 import requests
 import json
 import glob
+from pathlib import Path
 
 shortcutText = "ESC \t return to configuration\n" \
              + "C \t clear lap data\n" \
@@ -36,9 +37,14 @@ class StartWindow(QWidget):
         firstRow.setLayout(updateLayout)
 
         self.mode = QComboBox()
-        layoutFiles = glob.glob('layouts/*.sblayout')
+        testPath = Path("./layouts")
+        if testPath.is_dir():
+            self.layoutPath = "./layouts"
+        elif platform.system() == "Darwin":
+            self.layoutPath = sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/layouts"
+        layoutFiles = glob.glob(self.layoutPath + '/*.sblayout')
         for f in layoutFiles:
-            self.mode.addItem(f[8:-9])
+            self.mode.addItem(f[f.rfind("/")+1:-9])
         updateLayout.addWidget(self.mode,10)
         updateLayout.addWidget(self.cbCheckUpdatesStart)
         updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
