@@ -6,6 +6,7 @@ import copy
 from sb.helpers import logPrint
 import requests
 import json
+import glob
 
 shortcutText = "ESC \t return to configuration\n" \
              + "C \t clear lap data\n" \
@@ -35,12 +36,9 @@ class StartWindow(QWidget):
         firstRow.setLayout(updateLayout)
 
         self.mode = QComboBox()
-        self.mode.addItem("Laps (Default dashboard)")
-        self.mode.addItem("Laps (Dense dashboard)")
-        self.mode.addItem("Laps (Multi screen)")
-        self.mode.addItem("Circuit Experience (experimental)")
-        self.mode.addItem("BrakeBoard (experimental)")
-        self.circuitExperienceIndex = 3
+        layoutFiles = glob.glob('layouts/*.sblayout')
+        for f in layoutFiles:
+            self.mode.addItem(f[8:-9])
         updateLayout.addWidget(self.mode,10)
         updateLayout.addWidget(self.cbCheckUpdatesStart)
         updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
@@ -329,7 +327,7 @@ class StartWindow(QWidget):
 
     def updateForMode(self):
         logPrint("updateForMode")
-        if self.mode.currentIndex () == self.circuitExperienceIndex:
+        if "Circuit Experience" in self.mode.currentText():
             self.cbOptimal.setEnabled(False)
             self.optimizedSeed.setEnabled(False)
         else:

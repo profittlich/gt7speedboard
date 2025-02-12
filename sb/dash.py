@@ -27,7 +27,8 @@ class Screen(QStackedWidget):
 
 
 class DashMaker:
-    def __init__(self, cfg, data, callbacks, components):
+    def __init__(self, parent, cfg, data, callbacks, components):
+        self.parent = parent
         self.cfg = cfg
         self.data = data
         self.callbacks = callbacks
@@ -126,7 +127,7 @@ class DashMaker:
 
     def makeDashScreen(self, e):
         print("Screen")
-        screen = Screen(self)
+        screen = Screen(self.parent)
         for c in e:
             p, s = self.makeDashPage(c)
             if not p is None:

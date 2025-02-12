@@ -1,0 +1,23 @@
+[
+    [
+        {
+            "component": "RecordingController",
+            "actions": {
+                "Key_R": "toggleRecording"
+            }
+        },
+        {
+            "component": "BrakeBoard",
+            "stretch": 1,
+            "actions": {
+                "Key_Tab": "cycleModes",
+                "Key_D": "cycleDifficulty"
+            }
+        },
+        {
+            "component": "Help",
+            "shortcut": "Key_Question",
+            "stretch": 1
+        }
+    ]
+]

@@ -37,8 +37,6 @@ import sb.dash
 
 import sb.configuration
 
-from sb.layouts import *
-
 class RuntimeData:
     def __init__(self):
         self.receiver = None
@@ -102,7 +100,7 @@ class MainWindow(ColorMainWidget):
         self.cfg = sb.configuration.Configuration()
         self.cfg.developmentMode = False
 
-        self.data = None
+        self.data = RuntimeData()
         self.callbacks = Callbacks()
         self.callbacks.setColor = self.setColor
         self.callbacks.showUiMsg = self.showUiMsg
@@ -132,7 +130,9 @@ class MainWindow(ColorMainWidget):
     def loadLayout(self, fn):
         with open(fn, "r") as f:
             txt = f.read()
+            logPrint(txt)
             self.selectedLayout = json.loads(txt)
+            logPrint(self.selectedLayout)
 
     def makeDashWidget(self):
         self.components = []
@@ -144,7 +144,7 @@ class MainWindow(ColorMainWidget):
 
         self.data.pageKeys = {}
 
-        maker = sb.dash.DashMaker(self.cfg, self.data, self.callbacks, self.components)
+        maker = sb.dash.DashMaker(self, self.cfg, self.data, self.callbacks, self.components)
         self.specWidgets = maker.makeDashFromSpec(self.selectedLayout)
 
         i = 1
@@ -183,20 +183,11 @@ class MainWindow(ColorMainWidget):
     def startDash(self):
         self.lastPointTimeStamp = time.perf_counter()
         self.congestion = None
-        self.cfg.circuitExperience = self.startWindow.mode.currentIndex() == self.startWindow.circuitExperienceIndex
+        self.cfg.circuitExperience = "Circuit Experience" in self.startWindow.mode.currentText()
 
-        ci = self.startWindow.mode.currentIndex()
-        if ci == 0:
-            self.selectedLayout = defaultLayout
-        elif ci == 1:
-            self.selectedLayout = bigLayout
-        elif ci == 2:
-            self.selectedLayout = multiScreenLayout
-        elif ci == self.startWindow.circuitExperienceIndex:
-            logPrint("Circuit experience")
-            self.selectedLayout = circuitExperienceLayout
-        elif ci == 4:
-            self.selectedLayout = brakeBoardLayout
+        logPrint('layouts/' + self.startWindow.mode.currentText() + ".sblayout")
+        self.loadLayout('layouts/' + self.startWindow.mode.currentText() + ".sblayout")
+        logPrint(self.selectedLayout)
 
         if self.cfg.circuitExperience:
             msg = QMessageBox()

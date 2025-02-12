@@ -1,0 +1,83 @@
+[
+    [
+        [
+            {
+                "component": "LapOptimizer"
+            },
+            {
+                "component": "SaveLaps",
+                "actions": {
+                    "Key_B": "saveBest",
+                    "Key_M": "saveMedian",
+                    "Key_L": "saveLast",
+                    "Key_O": "saveOptimized",
+                    "Key_A": "saveAll"
+                }
+            },
+            {
+                "component": "RecordingController",
+                "actions": {
+                    "Key_R": "toggleRecording"
+                }
+            },
+            {
+                "component": "LapHeader",
+                "stretch": 1
+            },
+            {
+                "list": [
+                    {
+                        "list": [
+                            {
+                                "component": "Speed",
+                                "stretch": 2,
+                                "actions": {
+                                    "Key_Tab": "cycleFocusReference",
+                                    "Key_Up": "brakeOffsetUp",
+                                    "Key_Down": "brakeOffsetDown",
+                                    "Key_0": "resetBrakeOffset"
+                                }
+                            },
+                            {
+                                "component": "TyreTemps",
+                                "stretch": 1
+                            }
+                        ],
+                        "stretch": 1
+                    },
+                    {
+                        "component": "FuelAndMessages",
+                        "stretch": 1,
+                        "actions": {
+                            "Key_Space": "setCautionMarker",
+                            "Key_W": "saveMessages"
+                        }
+                    }
+                ],
+                "stretch": 100
+            }
+        ],
+        {
+            "title": "Keyboard shortcuts",
+            "component": "Help",
+            "shortcut": "Key_Question",
+            "stretch": 1
+        }
+    ],
+    [
+        {
+            "component": "Map",
+            "stretch": 1
+        }
+    ],
+    [
+        {
+            "component": "Stats",
+            "stretch": 1,
+            "actions": {
+                "Key_T": "saveRuns",
+                "Key_D": "setRunDescription"
+            }
+        }
+    ]
+]
