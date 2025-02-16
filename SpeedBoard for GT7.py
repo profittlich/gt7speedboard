@@ -185,8 +185,12 @@ class MainWindow(ColorMainWidget):
         self.congestion = None
         self.cfg.circuitExperience = "Circuit Experience" in self.startWindow.mode.currentText()
 
-        logPrint(self.startWindow.layoutPath + self.startWindow.mode.currentText() + ".sblayout")
-        self.loadLayout(self.startWindow.layoutPath + "/" + self.startWindow.mode.currentText() + ".sblayout")
+        if self.startWindow.mode.currentText().endswith(".sblayout"):
+            logPrint(self.startWindow.mode.currentText())
+            self.loadLayout(self.startWindow.mode.currentText())
+        else:
+            logPrint(self.startWindow.layoutPath + self.startWindow.mode.currentText() + ".sblayout")
+            self.loadLayout(self.startWindow.layoutPath + "/" + self.startWindow.mode.currentText() + ".sblayout")
         logPrint(self.selectedLayout)
 
         if self.cfg.circuitExperience:
@@ -269,6 +273,7 @@ class MainWindow(ColorMainWidget):
         settings = QSettings()
 
         settings.setValue("mode", self.startWindow.mode.currentIndex())
+        settings.setValue("modeFile", self.startWindow.mode.currentText())
         settings.setValue("optimizedSeed", self.startWindow.optimizedSeed.currentIndex())
         
         settings.setValue("ip", ip)
@@ -705,7 +710,7 @@ class MainWindow(ColorMainWidget):
                 for c in self.components:
                     c.leftCircuit()
             elif (curPoint.current_lap == self.data.previousPoint.current_lap or curPoint.current_lap-1 == self.data.previousPoint.current_lap) and curPoint.car_speed > 0.001:
-                # TODO difference to reaet to track: Standing time?
+                # TODO difference to reset to track: Standing time?
                 self.data.refueled = 0
                 logPrint("PIT STOP:", self.data.refueled)
                 if self.data.lapProgress > 0.5:

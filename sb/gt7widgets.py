@@ -47,6 +47,7 @@ class StartWindow(QWidget):
         layoutFiles = glob.glob(self.layoutPath + '/*.sblayout')
         for f in layoutFiles:
             self.mode.addItem(f[f.rfind("/")+1:-9])
+        self.mode.addItem("Load from file...")
         updateLayout.addWidget(self.mode,10)
         updateLayout.addWidget(self.cbCheckUpdatesStart)
         updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
@@ -252,6 +253,8 @@ class StartWindow(QWidget):
         logPrint("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
+        if self.mode.currentIndex() == self.mode.count() - 1:
+            self.mode.setItemText(self.mode.currentIndex(), settings.value("modeFile", "Load from file..."))
 
         checkUpdVal = settings.value("checkUpdatesAtStart")
         logPrint(checkUpdVal)
@@ -331,16 +334,27 @@ class StartWindow(QWidget):
         if allowAutoUpdate and self.cbCheckUpdatesStart.isChecked():
             self.checkUpdates(True)
 
-        self.updateForMode()
+        self.initMode()
 
-    def updateForMode(self):
-        logPrint("updateForMode")
+    def initMode(self):
         if "Circuit Experience" in self.mode.currentText():
             self.cbOptimal.setEnabled(False)
             self.optimizedSeed.setEnabled(False)
         else:
             self.cbOptimal.setEnabled(True)
             self.optimizedSeed.setEnabled(True)
+
+    def updateForMode(self):
+        logPrint("updateForMode")
+        self.initMode()
+        self.mode.setItemText(self.mode.count() - 1, "Load from file...")
+        if self.mode.currentIndex() == self.mode.count() -1:
+            chosen = QFileDialog.getOpenFileName(filter="SpeedBoard Layout (*.sblayout)")
+            if chosen[0] != "":
+                logPrint("None")
+                self.mode.setItemText(self.mode.count() - 1, chosen[0])
+            else:
+                self.mode.setCurrentIndex(0)
 
     def checkUpdates(self, quiet = False):
         try:
