@@ -188,9 +188,12 @@ class MainWindow(ColorMainWidget):
         if self.startWindow.mode.currentText().endswith(".sblayout"):
             logPrint(self.startWindow.mode.currentText())
             self.loadLayout(self.startWindow.mode.currentText())
-        else:
+        elif self.startWindow.mode.currentIndex() < self.startWindow.numInternalLayouts:
             logPrint(self.startWindow.layoutPath + self.startWindow.mode.currentText() + ".sblayout")
             self.loadLayout(self.startWindow.layoutPath + "/" + self.startWindow.mode.currentText() + ".sblayout")
+        else:
+            logPrint(self.startWindow.storageLocation + self.startWindow.mode.currentText() + ".sblayout")
+            self.loadLayout(self.startWindow.storageLocation + "/" + self.startWindow.mode.currentText() + ".sblayout")
         logPrint(self.selectedLayout)
 
         if self.cfg.circuitExperience:

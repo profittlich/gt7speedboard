@@ -39,15 +39,6 @@ class StartWindow(QWidget):
         firstRow.setLayout(updateLayout)
 
         self.mode = QComboBox()
-        testPath = Path("./layouts")
-        if testPath.is_dir():
-            self.layoutPath = "./layouts"
-        elif platform.system() == "Darwin":
-            self.layoutPath = sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/layouts"
-        layoutFiles = glob.glob(self.layoutPath + '/*.sblayout')
-        for f in layoutFiles:
-            self.mode.addItem(f[f.rfind("/")+1:-9])
-        self.mode.addItem("Load from file...")
         updateLayout.addWidget(self.mode,10)
         updateLayout.addWidget(self.cbCheckUpdatesStart)
         updateLayout.addWidget(pbCheckUpdates,1,Qt.AlignmentFlag.AlignRight)
@@ -252,10 +243,6 @@ class StartWindow(QWidget):
 
         logPrint("Load preferences")
         settings = QSettings()#"./gt7speedboard.ini", QSettings.Format.IniFormat)
-        self.mode.setCurrentIndex(int(settings.value("mode",0)))
-        if self.mode.currentIndex() == self.mode.count() - 1:
-            self.mode.setItemText(self.mode.currentIndex(), settings.value("modeFile", "Load from file..."))
-
         checkUpdVal = settings.value("checkUpdatesAtStart")
         logPrint(checkUpdVal)
         if checkUpdVal is None:
@@ -273,6 +260,27 @@ class StartWindow(QWidget):
         self.ip.setText(settings.value("ip", ""))
         self.storageLocation = settings.value("storageLocation", "")
         self.lStorageLocation.setText ("Storage location: " + self.storageLocation)
+
+        testPath = Path("./layouts")
+        if testPath.is_dir():
+            self.layoutPath = "./layouts"
+        elif platform.system() == "Darwin":
+            self.layoutPath = sys.argv[0][:sys.argv[0].rfind("/")] + "/../Resources/layouts"
+
+        layoutFiles = glob.glob(self.layoutPath + '/*.sblayout')
+        for f in layoutFiles:
+            self.mode.addItem(f[f.rfind("/")+1:-9])
+
+        self.numInternalLayouts = self.mode.count()
+
+        layoutFiles = glob.glob(self.storageLocation + '/*.sblayout')
+        for f in layoutFiles:
+            self.mode.addItem(f[f.rfind("/")+1:-9])
+
+        self.mode.addItem("Load from file...")
+        self.mode.setCurrentIndex(int(settings.value("mode",0)))
+        if self.mode.currentIndex() == self.mode.count() - 1:
+            self.mode.setItemText(self.mode.currentIndex(), settings.value("modeFile", "Load from file..."))
 
         self.fontScale.setValue(float(settings.value("fontScale",1)))
         self.lapDecimals.setChecked(settings.value("lapDecimals", True) in [ True, "true"])
