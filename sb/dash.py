@@ -2,11 +2,13 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
+from sb.helpers import logPrint
+
 import sb.components.tyretemps
 import sb.components.fuelandmessages
 import sb.components.lapheader
 import sb.components.mapce
-import sb.components.speed
+import sb.components.lapcompare
 import sb.components.stats
 import sb.components.help
 import sb.components.pedals
@@ -16,6 +18,10 @@ import sb.components.mapopting
 import sb.components.savelaps
 import sb.components.recordingcontroller
 import sb.components.lapoptimizer
+import sb.components.blank
+import sb.components.speed
+import sb.components.rpm
+import sb.components.gear
 
 class Screen(QStackedWidget):
     def __init__(self, keyRedirect):
@@ -47,6 +53,10 @@ class DashMaker:
         newComponent = sb.component.componentLibrary[e['component']](self.cfg, self.data, self.callbacks)
         if "title" in e:
             newComponent.setTitle (e['title'])
+        if "fontScale" in e:
+            logPrint("Scale font", e['fontScale'])
+            newComponent.setFontScale (float(e['fontScale']))
+
         title = newComponent.title()
         shortcuts = []
         self.components.append(newComponent)

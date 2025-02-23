@@ -62,6 +62,12 @@ class Stats(sb.component.Component):
     def __init__(self, cfg, data, callbacks):
         super().__init__(cfg, data, callbacks)
 
+        self.liveStats = ""
+        self.runStats = ""
+        self.assumedTrack = ""
+        self.newRunDescription = None
+
+    def getWidget(self):
         self.statsPageScroller = QScrollArea()
         self.statsPage = QLabel(self.cfg.sessionName + "\nSession stats not available, yet")
 
@@ -75,19 +81,13 @@ class Stats(sb.component.Component):
         self.statsPage.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.statsPage.setAutoFillBackground(True)
         font = self.statsPage.font()
-        font.setPointSize(self.cfg.fontSizeSmall)
+        font.setPointSize(self.fontSizeSmall())
         font.setBold(True)
         self.statsPage.setFont(font)
         self.statsPage.setTextFormat(Qt.TextFormat.RichText)
         pal = self.statsPage.palette()
         pal.setColor(self.statsPage.foregroundRole(), self.cfg.foregroundColor)
         self.statsPage.setPalette(pal)
-        self.liveStats = ""
-        self.runStats = ""
-        self.assumedTrack = ""
-        self.newRunDescription = None
-
-    def getWidget(self):
         return self.statsPageScroller
 
     def addPoint(self, curPoint, curLap):

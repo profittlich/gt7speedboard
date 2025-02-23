@@ -8,7 +8,7 @@ from sb.gt7widgets import *
 from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 
-class Speed(sb.component.Component):
+class RPM(sb.component.Component):
     def description():
         return "Current car speed"
     
@@ -26,6 +26,6 @@ class Speed(sb.component.Component):
         return self.widget
 
     def addPoint(self, curPoint, curLap):
-        self.widget.setText(str(round(curPoint.car_speed)) + " km/h")
+        self.widget.setText(str(round(curPoint.rpm)) + " rpm")
 
-sb.component.componentLibrary['Speed'] = Speed
+sb.component.componentLibrary['RPM'] = RPM

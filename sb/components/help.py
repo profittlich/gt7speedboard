@@ -15,17 +15,18 @@ class Help(sb.component.Component):
     def __init__(self, cfg, data, callbacks):
         super().__init__(cfg, data, callbacks)
 
+    def getWidget(self):
         self.pageScroller = QScrollArea()
         self.widget = QLabel("KEYBOARD SHORTCUTS:\n\n" + shortcutText)
         self.pageScroller.setWidget(self.widget)
         font = self.widget.font()
-        font.setPointSize(round(cfg.fontSizeVerySmall / 2))
+        font.setPointSize(round(self.fontSizeVerySmall() / 2))
         font.setBold(True)
         self.widget.setFont(font)
         self.widget.setAlignment(Qt.AlignmentFlag.AlignLeft)
         pal = self.widget.palette()
-        pal.setColor(self.widget.backgroundRole(), cfg.backgroundColor)
-        pal.setColor(self.widget.foregroundRole(), cfg.foregroundColor)
+        pal.setColor(self.widget.backgroundRole(), self.cfg.backgroundColor)
+        pal.setColor(self.widget.foregroundRole(), self.cfg.foregroundColor)
         self.widget.setMargin(15)
         self.widget.setPalette(pal)
 
@@ -33,7 +34,6 @@ class Help(sb.component.Component):
         self.pageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.pageScroller.setWidgetResizable(True)
 
-    def getWidget(self):
         return self.pageScroller
 
     def defaultTitle(self):

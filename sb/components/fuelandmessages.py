@@ -26,37 +26,42 @@ class FuelAndMessages(sb.component.Component):
         self.newMessage = None
         self.messages = []
 
+    def newSession(self):
+        self.newMessage = None
+        self.loadMessages(self.cfg.messageFile)
+
+    def getWidget(self):
         self.fuelWidget = QWidget()
 
         self.fuel = QLabel("?%")
         self.fuel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.fuel.setAutoFillBackground(True)
         font = self.fuel.font()
-        font.setPointSize(cfg.fontSizeNormal)
+        font.setPointSize(self.fontSizeNormal())
         font.setBold(True)
         self.fuel.setFont(font)
 
         self.fuelBar = FuelGauge()
 
-        self.fuelBar.setThreshold(cfg.fuelMultiplier * cfg.fuelWarning)
-        self.fuelBar.setMaxLevel(cfg.fuelMultiplier * cfg.maxFuelConsumption)
+        self.fuelBar.setThreshold(self.cfg.fuelMultiplier * self.cfg.fuelWarning)
+        self.fuelBar.setMaxLevel(self.cfg.fuelMultiplier * self.cfg.maxFuelConsumption)
 
         self.laps = QLabel("? LAPS LEFT")
         self.laps.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.laps.setAutoFillBackground(True)
         font = self.laps.font()
-        font.setPointSize(cfg.fontSizeNormal)
+        font.setPointSize(self.fontSizeNormal())
         font.setBold(True)
         self.laps.setFont(font)
         pal = self.laps.palette()
-        pal.setColor(self.laps.backgroundRole(), cfg.backgroundColor)
-        pal.setColor(self.laps.foregroundRole(), cfg.foregroundColor)
+        pal.setColor(self.laps.backgroundRole(), self.cfg.backgroundColor)
+        pal.setColor(self.laps.foregroundRole(), self.cfg.foregroundColor)
         self.laps.setPalette(pal)
 
 
         pal = self.fuel.palette()
-        pal.setColor(self.fuel.backgroundRole(), cfg.backgroundColor)
-        pal.setColor(self.fuel.foregroundRole(), cfg.foregroundColor)
+        pal.setColor(self.fuel.backgroundRole(), self.cfg.backgroundColor)
+        pal.setColor(self.fuel.foregroundRole(), self.cfg.foregroundColor)
         self.fuel.setPalette(pal)
         fuelLayout = QGridLayout()
         fuelLayout.setContentsMargins(11,11,11,11)
@@ -69,11 +74,6 @@ class FuelAndMessages(sb.component.Component):
         fuelLayout.addWidget(self.fuelBar, 0, 2, 1, 1)
         fuelLayout.addWidget(self.laps, 1, 0, 1, 3)
 
-    def newSession(self):
-        self.newMessage = None
-        self.loadMessages(self.cfg.messageFile)
-
-    def getWidget(self):
         return self.fuelWidget
 
     def updateFuelAndWarnings(self, curPoint, curLap):

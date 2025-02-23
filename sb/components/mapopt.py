@@ -29,6 +29,8 @@ class OptimalMap(sb.component.Component):
              QColor ("#ff7"),
              QColor ("#f7f"),
              QColor ("#7ff")]
+
+    def getWidget(self):
         self.widget = QWidget()
         layout = QHBoxLayout()
         self.widget.setLayout(layout) 
@@ -36,7 +38,6 @@ class OptimalMap(sb.component.Component):
         self.mapView = MapView()
         layout.addWidget(self.mapView)
 
-    def getWidget(self):
         return self.widget
 
     def updateMap(self, curPoint):

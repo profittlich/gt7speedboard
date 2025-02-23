@@ -31,12 +31,7 @@ class OptimizingMap(sb.component.Component):
              QColor ("#ff7"),
              QColor ("#f7f"),
              QColor ("#7ff")]
-        self.widget = QWidget()
-        layout = QHBoxLayout()
-        self.widget.setLayout(layout) 
 
-        self.mapView = MapView()
-        layout.addWidget(self.mapView)
         self.lastSize = 0
 
         self.thread = None
@@ -44,6 +39,12 @@ class OptimizingMap(sb.component.Component):
         self.requestUpdate = False
 
     def getWidget(self):
+        self.widget = QWidget()
+        layout = QHBoxLayout()
+        self.widget.setLayout(layout) 
+
+        self.mapView = MapView()
+        layout.addWidget(self.mapView)
         return self.widget
 
     def updateMap(self, curPoint):

@@ -12,6 +12,7 @@ class Component:
         self.data = data
         self.callbacks = callbacks
         self.overrideTitle = None
+        self.fontScale = 1
 
     def defaultTitle(self):
         return None
@@ -21,6 +22,22 @@ class Component:
             return self.defaultTitle()
         else:
             return self.overrideTitle
+
+    def setFontScale(self, s):
+        self.fontScale = s
+
+    def fontSizeLarge(self):
+        logPrint(self.fontScale)
+        return round(self.cfg.fontSizeLarge * self.fontScale)
+
+    def fontSizeNormal(self):
+        return round(self.cfg.fontSizeNormal * self.fontScale)
+
+    def fontSizeSmall(self):
+        return round(self.cfg.fontSizeSmall * self.fontScale)
+
+    def fontSizeVerySmall(self):
+        return round(self.cfg.fontSizeVerySmall * self.fontScale)
 
     def setTitle(self, t):
         self.overrideTitle = t

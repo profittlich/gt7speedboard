@@ -14,11 +14,12 @@ class TyreTemps(sb.component.Component):
     def __init__(self, cfg, data, callbacks):
         super().__init__(cfg, data, callbacks)
 
+    def getWidget(self):
         self.tyreFR = ColorLabel("?°C")
         self.tyreFR.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreFR.setAutoFillBackground(True)
         font = self.tyreFR.font()
-        font.setPointSize(self.cfg.fontSizeLarge)
+        font.setPointSize(self.fontSizeLarge())
         font.setBold(True)
         self.tyreFR.setFont(font)
         self.tyreFR.setColor(self.cfg.backgroundColor)
@@ -27,7 +28,7 @@ class TyreTemps(sb.component.Component):
         self.tyreFL.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreFL.setAutoFillBackground(True)
         font = self.tyreFL.font()
-        font.setPointSize(self.cfg.fontSizeLarge)
+        font.setPointSize(self.fontSizeLarge())
         font.setBold(True)
         self.tyreFL.setFont(font)
         self.tyreFL.setColor(self.cfg.backgroundColor)
@@ -36,7 +37,7 @@ class TyreTemps(sb.component.Component):
         self.tyreRR.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreRR.setAutoFillBackground(True)
         font = self.tyreRR.font()
-        font.setPointSize(self.cfg.fontSizeLarge)
+        font.setPointSize(self.fontSizeLarge())
         font.setBold(True)
         self.tyreRR.setFont(font)
         self.tyreRR.setColor(self.cfg.backgroundColor)
@@ -45,7 +46,7 @@ class TyreTemps(sb.component.Component):
         self.tyreRL.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tyreRL.setAutoFillBackground(True)
         font = self.tyreRL.font()
-        font.setPointSize(self.cfg.fontSizeLarge)
+        font.setPointSize(self.fontSizeLarge())
         font.setBold(True)
         self.tyreRL.setFont(font)
         self.tyreRL.setColor(self.cfg.backgroundColor)
@@ -58,7 +59,6 @@ class TyreTemps(sb.component.Component):
         tyreLayout.addWidget(self.tyreRL, 1, 0)
         tyreLayout.addWidget(self.tyreRR, 1, 1)
     
-    def getWidget(self):
         return self.tyreWidget
 
     def tyreTempQColor(self, temp):

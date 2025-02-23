@@ -29,7 +29,7 @@
                     {
                         "list": [
                             {
-                                "component": "Speed",
+                                "component": "LapCompare",
                                 "stretch": 2,
                                 "actions": {
                                     "Key_Tab": "cycleFocusReference",

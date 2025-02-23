@@ -14,6 +14,7 @@ class Pedals(sb.component.Component):
     def __init__(self, cfg, data, callbacks):
         super().__init__(cfg, data, callbacks)
 
+    def getWidget(self):
         self.widget = QWidget()
         layout = QHBoxLayout()
         self.widget.setLayout(layout) 
@@ -21,7 +22,6 @@ class Pedals(sb.component.Component):
         self.pedalWidget = PedalWidget()
         layout.addWidget(self.pedalWidget)
 
-    def getWidget(self):
         return self.widget
 
     def addPoint(self, curPoint, curLap):

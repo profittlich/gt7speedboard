@@ -22,11 +22,28 @@ class BrakeBoard(sb.component.Component):
     def __init__(self, cfg, data, callbacks):
         super().__init__(cfg, data, callbacks)
 
+        self.brakeTargetLevel = 50
+        self.brakeDownTime = None
+        self.brakeFromFull = False
+        self.prevBrakes = []
+
+        self.startTime = None
+        self.delayTime = 5
+
+        self.mode = 0 # brake target
+        self.state = "begin"
+        self.difficulty = 0
+
+        self.difficultyNames = { 0:"EASY", 1:"MEDIUM", 2:"HARD", 3:"SENNA" }
+
+        random.seed()
+    
+    def getWidget(self):
         self.mainLabel = ColorLabel("\u2197 50%")
         self.mainLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mainLabel.setAutoFillBackground(True)
         font = self.mainLabel.font()
-        font.setPointSize(self.cfg.fontSizeLarge * 4)
+        font.setPointSize(self.fontSizeLarge() * 4)
         font.setBold(True)
         self.mainLabel.setFont(font)
         self.mainLabel.setColor(self.cfg.backgroundColor)
@@ -35,7 +52,7 @@ class BrakeBoard(sb.component.Component):
         self.topLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.topLabel.setAutoFillBackground(True)
         font = self.topLabel.font()
-        font.setPointSize(self.cfg.fontSizeLarge)
+        font.setPointSize(self.fontSizeLarge())
         font.setBold(True)
         self.topLabel.setFont(font)
         self.topLabel.setColor(self.cfg.backgroundColor)
@@ -44,7 +61,7 @@ class BrakeBoard(sb.component.Component):
         self.bottomLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.bottomLabel.setAutoFillBackground(True)
         font = self.bottomLabel.font()
-        font.setPointSize(self.cfg.fontSizeSmall)
+        font.setPointSize(self.fontSizeSmall())
         font.setBold(True)
         self.bottomLabel.setFont(font)
         self.bottomLabel.setColor(self.cfg.backgroundColor)
@@ -63,25 +80,8 @@ class BrakeBoard(sb.component.Component):
         layout.addWidget(self.bottomLabel, 5, 0)
         layout.addWidget(self.deviation, 6, 0)
 
-        self.brakeTargetLevel = 50
-        self.brakeDownTime = None
-        self.brakeFromFull = False
-        self.prevBrakes = []
-
-        self.startTime = None
-        self.delayTime = 5
-
-        self.mode = 0 # brake target
-        self.state = "begin"
-        self.difficulty = 0
-
-        self.difficultyNames = { 0:"EASY", 1:"MEDIUM", 2:"HARD", 3:"SENNA" }
-
-        random.seed()
         self.updateDifficulty()
         self.updateMode()
-    
-    def getWidget(self):
         return self.mainWidget
 
     def cycleDifficulty(self):

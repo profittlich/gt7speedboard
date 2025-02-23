@@ -15,20 +15,20 @@ class LapHeader(sb.component.Component):
     def __init__(self, cfg, data, callbacks):
         super().__init__(cfg, data, callbacks)
 
-        self.header = QLabel("? LAPS LEFT")
-        font = self.header.font()
-        font.setPointSize(cfg.fontSizeNormal)
-        font.setBold(True)
-        self.header.setFont(font)
-        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pal = self.header.palette()
-        pal.setColor(self.header.backgroundRole(), cfg.backgroundColor)
-        pal.setColor(self.header.foregroundRole(), cfg.foregroundColor)
-        self.header.setPalette(pal)
         self.inPit = False
 
 
     def getWidget(self):
+        self.header = QLabel("? LAPS LEFT")
+        font = self.header.font()
+        font.setPointSize(self.fontSizeNormal())
+        font.setBold(True)
+        self.header.setFont(font)
+        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pal = self.header.palette()
+        pal.setColor(self.header.backgroundRole(), self.cfg.backgroundColor)
+        pal.setColor(self.header.foregroundRole(), self.cfg.foregroundColor)
+        self.header.setPalette(pal)
         return self.header
 
     def updateLaps(self, curPoint):
