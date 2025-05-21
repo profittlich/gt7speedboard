@@ -36,9 +36,11 @@ class RecordingController(sb.component.Component):
                     self.callbacks.showUiMsg("Error: Storage location\n'" + self.storageLocation[self.cfg.storageLocation.rfind("/")+1:] + "'\ndoes not exist", 2)
                     return
                 prefix = self.cfg.storageLocation + "/"
+                if self.cfg.developmentMode:
+                    prefix += "debug/"
                 if len(self.cfg.sessionName) > 0:
                     prefix += self.cfg.sessionName + "-"
-                self.data.receiver.startRecording(prefix, not self.cfg.developmentMode)
+                self.data.receiver.startRecording(prefix)#, not self.cfg.developmentMode)
                 self.data.isRecording = True
 
     def callAction(self, a):

@@ -70,6 +70,7 @@ class LapOptimizer(sb.component.Component):
                     if lenOpt > lenLive or lenOpt == 0:
                         logPrint("Current segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex, len(self.data.curOptimizingLap.points), len(self.data.curLap.points))
                         self.data.curOptimizingLap.points += copy.deepcopy(self.data.curLap.points[self.curOptimizingLiveIndex:-1])
+                        self.data.improvedOptimization = True
                     else:
                         logPrint("Previous segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
                         self.data.curOptimizingLap.points += self.data.optimizedLap.points[self.curOptimizingIndex:self.data.closestIOptimized-1]
@@ -85,13 +86,17 @@ class LapOptimizer(sb.component.Component):
         else:
             logPrint("Previous final segment was faster", lenOpt, lenLive, self.data.closestIOptimized, self.curOptimizingIndex, self.curOptimizingLiveIndex)
             self.data.curOptimizingLap.points += copy.deepcopy(self.data.optimizedLap.points[self.curOptimizingIndex:])
-        self.data.optimizedLap = self.data.curOptimizingLap
-        if self.cfg.developmentMode:
-            saveThread = Worker(self.appendOptimizedLap, "Optimized lap saved.", 1.0, (self.data.optimizedLap, "optimized",))
-            self.data.threadpool.start(saveThread)
-        logPrint("Optimized lap:", len(self.data.optimizedLap.points), "points vs.", len(self.data.curLap.points))
+        if len(self.data.curOptimizingLap.points) > 100 and self.data.curOptimizingLap.points[0].distance(self.data.curOptimizingLap.points[-1]) < 20.0 and not self.data.curLapInvalidated:
+            self.data.optimizedLap = self.data.curOptimizingLap
+            if self.cfg.developmentMode:
+                saveThread = Worker(self.appendOptimizedLap, "Optimized lap saved.", 1.0, (self.data.optimizedLap, "optimized",))
+                self.data.threadpool.start(saveThread)
+            logPrint("Optimized lap:", len(self.data.optimizedLap.points), "points vs.", len(self.data.curLap.points))
+        else:
+            logPrint("Discard current lap for optimization: Not a complete lap, pts:", len(self.data.curOptimizingLap.points), "dist:", self.data.curOptimizingLap.points[0].distance(self.data.curOptimizingLap.points[-1]))
         logPrint("new optimizing lap")
         self.data.curOptimizingLap = Lap()
+        self.data.improvedOptimization = False
         self.curOptimizingLiveIndex = 0
         self.curOptimizingIndex = 0
         self.curOptimizingBrake = False

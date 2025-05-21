@@ -183,7 +183,10 @@ class FuelAndMessages(sb.component.Component):
 
     def addPoint(self, curPoint, curLap):
         if self.cfg.messagesEnabled and not self.newMessage is None:
-            self.messages.append([self.data.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.data.curLap.points)-1)], self.newMessage])
+            if len(self.data.curLap.points) > 0:
+                self.messages.append([self.data.curLap.points[-min(int(self.cfg.psFPS*self.cfg.messageAdvanceTime),len(self.data.curLap.points)-1)], self.newMessage])
+            else:
+                self.messages.append([curPoint, self.newMessage])
             self.newMessage = None
 
         self.updateFuelAndWarnings(curPoint, curLap)

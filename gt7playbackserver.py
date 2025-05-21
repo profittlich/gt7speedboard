@@ -9,7 +9,7 @@ import struct
 import os
 from PyQt6.QtCore import Qt 
 from PyQt6.QtCore import *
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget, QLabel, QVBoxLayout, QGridLayout, QLineEdit, QComboBox, QCheckBox, QDoubleSpinBox, QFileDialog, QSpinBox, QProgressBar
 from sb.crypt import salsa20_dec, salsa20_enc
 
 class GT7Client:
@@ -32,6 +32,9 @@ class GT7PlaybackServer:
         self.simulateFrameDrops = False
         self.stopCallback = stopCallback
         self.clients = {}
+        self.playbackFrom = 0
+        self.playbackTo = 0
+        self.curIndex = 0
 
     def setFPS(self, b):
         self.oldPc = time.perf_counter()
@@ -51,6 +54,10 @@ class GT7PlaybackServer:
 
     def setSimulateFrameDrops(self, on):
         self.simulateFrameDrops = on
+
+    def setPlaybackRange(self, a, b):
+        self.playbackFrom = a
+        self.playbackTo = b
 
     def checkHeartBeat(self):
       try:
@@ -119,7 +126,7 @@ class GT7PlaybackServer:
         hbt = threading.Thread(target = self.checkHeartBeat)
         hbt.start()
 
-        curIndex = 0
+        self.curIndex = self.playbackFrom * 296
         self.oldPc = time.perf_counter()
         self.pcCounter = 0
         pktIdCounter = 0
@@ -131,17 +138,17 @@ class GT7PlaybackServer:
                     time.sleep(1/(100*self.fps))
                     pc = time.perf_counter()
 
-                magic = struct.unpack('i', self.allData[curIndex + 0x00:curIndex + 0x00 + 4])[0] # 0x47375330
+                magic = struct.unpack('i', self.allData[self.curIndex + 0x00:self.curIndex + 0x00 + 4])[0] # 0x47375330
            
                 if magic == 0x47375330:
-                    decr = bytearray(self.allData[curIndex:curIndex+296])
+                    decr = bytearray(self.allData[self.curIndex:self.curIndex+296])
                 else:
-                    decr = bytearray(salsa20_dec(self.allData[curIndex:curIndex+296]))
+                    decr = bytearray(salsa20_dec(self.allData[self.curIndex:self.curIndex+296]))
                 newPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
                 struct.pack_into('i', decr, 0x70, pktIdCounter)
                 newNewPktId = struct.unpack('i', decr[0x70:0x70+4])[0]
-                if (curIndex//296) % 600 == 0:
-                    print("Serve index", curIndex//296, "pkt", newPktId, "new pkt", newNewPktId)
+                if (self.curIndex//296) % 600 == 0:
+                    print("Serve index", self.curIndex//296, str(round(100*self.curIndex/len(self.allData))) + "%",  "pkt", newPktId, "new pkt", newNewPktId)
                 encr = salsa20_enc(decr, 296)
 
                 if not self.simulateFrameDrops or pktIdCounter % 8 == 0:
@@ -149,10 +156,10 @@ class GT7PlaybackServer:
                         self.s.sendto(encr, (self.clients[c].ip, self.clients[c].port))
 
 
-                curIndex += 296
-                if curIndex >= len(self.allData):
+                self.curIndex += 296
+                if self.curIndex >= 296 * self.playbackTo:
                     print("Loop")
-                    curIndex = 0
+                    self.curIndex = 296 * self.playbackFrom
                 pktIdCounter += 1
 
             except Exception as e:
@@ -184,6 +191,26 @@ class StartWindowPS(QWidget):
         self.sFps.setDecimals(1)
         self.sFps.setSuffix("x")
         layout.addWidget(self.sFps)
+
+        self.lLoop = QLabel("Playback range:")
+        layout.addWidget(self.lLoop)
+
+        self.sLoopA = QSpinBox()
+        self.sLoopA.setValue(1)
+        self.sLoopA.setMinimum(1)
+        self.sLoopA.setMaximum(1)
+        layout.addWidget(self.sLoopA)
+
+        self.sLoopB = QSpinBox()
+        self.sLoopB.setValue(1)
+        self.sLoopB.setMinimum(1)
+        self.sLoopB.setMaximum(1)
+        layout.addWidget(self.sLoopB)
+
+        self.progress = QProgressBar(self)
+        self.progress.setMinimum(0)
+        self.progress.setMaximum(1000)
+        layout.addWidget(self.progress)
         
         self.starter = QPushButton("Serve")
         layout.addWidget(self.starter)
@@ -204,10 +231,22 @@ class MainWindow(QMainWindow):
         self.startWidget.stopper.clicked.connect(self.stop)
         self.startWidget.bRec.clicked.connect(self.chooseRecording)
         self.startWidget.sFps.valueChanged.connect(self.updateRate)
+        self.startWidget.sLoopA.valueChanged.connect(self.stop)
+        self.startWidget.sLoopB.valueChanged.connect(self.stop)
 
         self.remoteStopSignal.connect(self.restartServer)
 
         self.setCentralWidget(self.startWidget)
+
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.updateDisplay)
+        self.timer.start()
+
+    def updateDisplay(self):
+        if self.server.running:
+            self.startWidget.progress.setValue(round(1000 * self.server.curIndex / (296 * self.startWidget.sLoopB.maximum())))
+
 
     def remoteStop(self):
         self.remoteStopSignal.emit()
@@ -237,6 +276,17 @@ class MainWindow(QMainWindow):
             self.startWidget.recFile = chosen[0]
             self.startWidget.lRec.setText("File: " + chosen[0][chosen[0].rfind("/")+1:])
             self.stop()
+            print("Load", self.startWidget.recFile)
+            f = open(self.startWidget.recFile, "rb")
+            allData = f.read()
+            f.close()
+            self.startWidget.sLoopA.setMinimum(1)
+            self.startWidget.sLoopA.setMaximum(len(allData)//296)
+            self.startWidget.sLoopA.setValue(1)
+            self.startWidget.sLoopB.setMinimum(1)
+            self.startWidget.sLoopB.setMaximum(len(allData)//296)
+            self.startWidget.sLoopB.setValue(len(allData)//296)
+
 
     def updateRate(self, rate):
         print("Set rate to", rate, "(" + str(59.94*rate) + " fps)")
@@ -246,6 +296,7 @@ class MainWindow(QMainWindow):
         if self.startWidget.recFile != "":
             self.server.setFPS(59.94 * self.startWidget.sFps.value())
             self.server.setFilename(self.startWidget.recFile)
+            self.server.setPlaybackRange(self.startWidget.sLoopA.value()-1, self.startWidget.sLoopB.value()-1)
             self.thread = threading.Thread(target=self.server.runPlaybackServer)
             self.thread.start()
             self.startWidget.stopper.show()

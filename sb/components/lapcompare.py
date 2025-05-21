@@ -147,6 +147,10 @@ class LapCompare(sb.component.Component):
         self.updateOneSpeedEntry(best, curPoint)
         self.updateOneSpeedEntry(median, curPoint)
         self.updateOneSpeedEntry(opti, curPoint)
+        if self.data.improvedOptimization:
+            self.speedOptimized.setText ("OPT*")
+        else:
+            self.speedOptimized.setText ("OPT")
 
     def cycleBigCountdownBreakponts(self):
         self.cfg.bigCountdownBrakepoint += 1

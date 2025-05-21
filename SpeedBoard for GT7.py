@@ -72,6 +72,8 @@ class RuntimeData:
         self.closestPointRefA = None
         self.closestPointRefB = None
         self.closestPointRefC = None
+
+        self.improvedOptimization = False
         
         self.pageKeys = None
         self.componentKeys = None
@@ -745,6 +747,8 @@ class MainWindow(ColorMainWidget):
 
             if diff > 10:
                 logPrint("Too many frame drops (" + str (diff) + ")! Data will be corrupted.")
+                while not self.queue.empty():
+                   self.queue.get()
                 self.data.trackDetector.reset()
             elif diff > 1:
                 logPrint("Frame drops propagated:", diff-1)
