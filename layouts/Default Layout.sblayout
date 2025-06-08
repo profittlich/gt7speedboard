@@ -76,6 +76,14 @@
             "component": "Map",
             "shortcut": "Key_V",
             "stretch": 1
+        },
+        {
+            "component": "BrakeBoard",
+            "stretch": 1,
+            "actions": {
+                "Key_K": "cycleModes",
+                "Key_J": "cycleDifficulty"
+            }
         }
     ]
 ]

@@ -302,10 +302,11 @@ class BrakeBoard(sb.component.Component):
 
 
     def addPoint(self, curPoint, curLap):
-        if self.mode == 0:
-            self.brakeTarget(curPoint)
-        elif self.mode == 1:
-            self.brakeTiming(curPoint)
+        if self.mainWidget.isVisible():
+            if self.mode == 0:
+                self.brakeTarget(curPoint)
+            elif self.mode == 1:
+                self.brakeTiming(curPoint)
 
     def defaultTitle(self):
         return "BrakeBoard"

@@ -822,17 +822,17 @@ class MainWindow(ColorMainWidget):
                 elif e.key() == Qt.Key.Key_Minus.value:
                     self.data.lapOffset -= 1
                 elif e.key() == Qt.Key.Key_Left.value:
-                     cur = self.specWidgets[0].currentIndex()
-                     if cur == 0:
-                         self.specWidgets[0].setCurrentIndex(self.specWidgets[0].count()-1)
-                     else:
-                         self.specWidgets[0].setCurrentIndex(cur-1)
+                    cur = self.specWidgets[0].currentIndex()
+                    if cur == 0:
+                        self.specWidgets[0].setCurrentIndex(self.specWidgets[0].count()-1)
+                    else:
+                        self.specWidgets[0].setCurrentIndex(cur-1)
                 elif e.key() == Qt.Key.Key_Right.value:
-                     cur = self.specWidgets[0].currentIndex()
-                     if cur == self.specWidgets[0].count() - 1:
-                         self.specWidgets[0].setCurrentIndex(0)
-                     else:
-                         self.specWidgets[0].setCurrentIndex(cur+1)
+                    cur = self.specWidgets[0].currentIndex()
+                    if cur == self.specWidgets[0].count() - 1:
+                        self.specWidgets[0].setCurrentIndex(0)
+                    else:
+                        self.specWidgets[0].setCurrentIndex(cur+1)
                 elif e.key() in self.data.pageKeys:
                     k = self.data.pageKeys[e.key()]
                     if k[0].currentIndex() == k[1]:
@@ -843,7 +843,7 @@ class MainWindow(ColorMainWidget):
                     self.data.componentKeys[e.key()][0].callAction(self.data.componentKeys[e.key()][1])
             elif e.modifiers() == Qt.KeyboardModifier.ControlModifier:
                 if e.key() >= Qt.Key.Key_1.value and e.key() <= Qt.Key.Key_9.value:
-                    self.flipPage(e.key() - Qt.Key.Key_1.value)
+                    self.specWidgets[0].setCurrentIndex (e.key() - Qt.Key.Key_1.value)
 
     def showUiMsg(self, msg, t, leftAlign=False, waitForKey=False):
         logPrint("showUiMsg")
@@ -864,12 +864,6 @@ class MainWindow(ColorMainWidget):
             self.returnTimer.setSingleShot(True)
             self.returnTimer.timeout.connect(self.returnToDash)
             self.returnTimer.start()
-
-
-    def flipPage(self, nr):
-        logPrint("Flip to page", nr)
-        self.specWidgets[0].setCurrentIndex(nr)
-
 
 
 def excepthook(exc_type, exc_value, exc_tb):
