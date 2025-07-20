@@ -17,6 +17,7 @@ class Help(sb.component.Component):
 
     def getWidget(self):
         self.pageScroller = QScrollArea()
+        self.pageScroller.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.widget = QLabel("KEYBOARD SHORTCUTS:\n\n" + shortcutText)
         self.pageScroller.setWidget(self.widget)
         font = self.widget.font()

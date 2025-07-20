@@ -69,9 +69,18 @@ class Stats(sb.component.Component):
 
     def getWidget(self):
         self.statsPageScroller = QScrollArea()
+        self.statsPageScroller.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.statsPage = QLabel(self.cfg.sessionName + "\nSession stats not available, yet")
+        self.lastLaps = QLabel("")
+        self.lastLapsText = ""
+        holder = QWidget()
+        holderLayout = QGridLayout(holder)
+        holderLayout.addWidget(self.statsPage, 0, 0)
+        holderLayout.addWidget(self.lastLaps, 0, 1)
+        holderLayout.setColumnStretch(0, 3)
+        holderLayout.setColumnStretch(1, 1)
 
-        self.statsPageScroller.setWidget(self.statsPage)
+        self.statsPageScroller.setWidget(holder)
         #self.statsPageScroller.setSizeAdjustPolicy(Qt.QAbstractScrollArea.AdjustToContents)
         self.statsPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.statsPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -88,6 +97,18 @@ class Stats(sb.component.Component):
         pal = self.statsPage.palette()
         pal.setColor(self.statsPage.foregroundRole(), self.cfg.foregroundColor)
         self.statsPage.setPalette(pal)
+
+        self.lastLaps.setMargin(15)
+        self.lastLaps.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.lastLaps.setAutoFillBackground(True)
+        font = self.lastLaps.font()
+        font.setPointSize(self.fontSizeSmall())
+        font.setBold(True)
+        self.lastLaps.setFont(font)
+        self.lastLaps.setTextFormat(Qt.TextFormat.RichText)
+        pal = self.lastLaps.palette()
+        pal.setColor(self.lastLaps.foregroundRole(), self.cfg.foregroundColor)
+        self.lastLaps.setPalette(pal)
         return self.statsPageScroller
 
     def addPoint(self, curPoint, curLap):
@@ -98,6 +119,12 @@ class Stats(sb.component.Component):
             self.updateRunStats()
         self.updateLiveStats(curPoint)
 
+    def updateLastLaps(self, curPoint):
+        self.lastLapsText = "<br>" + str(curPoint.current_lap - 1) + ": " + msToTime(curPoint.last_lap) + self.lastLapsText
+        llText = '<font size="3">LAST LAPS:</font><font size="1">'
+        llText += self.lastLapsText
+        llText += '</font>'
+        self.lastLaps.setText(llText)
 
     def updateStats(self):
         statTxt = '<font size="5">' + self.cfg.sessionName + '</font>' + self.liveStats + self.runStats
@@ -135,7 +162,7 @@ class Stats(sb.component.Component):
             lapsWith = " laps with "
             if len(i.lapTimes) == 1:
                 lapsWith = " lap with "
-            carStatTxt += '<tr><td style="border-color:white;border-style:solid;padding:10px;background-color:' + self.cfg.backgroundColor.name() + '"><font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + " - Best: " 
+            carStatTxt += '<tr><td style="border-color:white;border-style:solid;padding:10px;background-color:' + self.cfg.backgroundColor.name() + '"><font size="1">R' + str(sessionI) + ": " + str(len(i.lapTimes)) + lapsWith + idToCar(i.carId) + "<br>Best: " 
             if bst[0] == absoluteBest:
                 carStatTxt += '<font color="green">' + msToTime(bst[0]) + '</font>'
             else:
@@ -201,6 +228,16 @@ class Stats(sb.component.Component):
             logPrint("Re-using untouched Run")
             return
         self.sessionStats.append (Run(len(self.data.previousLaps)))
+        #sessionI = 0
+        #for i in self.sessionStats:
+            #if i.carId is None:
+                #continue
+            #sessionI += 1
+        #if sessionI > 0:
+            #logPrint("Run marker in last laps (" + str(sessionI) + ")")
+            #self.lastLapsText = "<br><br>R" + str(sessionI) + ":" + self.lastLapsText
+        #else:
+            #logPrint("No sessions, yet")
 
 
     def newSession(self):
@@ -232,7 +269,16 @@ class Stats(sb.component.Component):
             if len(self.sessionStats) == 0: # Started app during lap
                 logPrint("no stats --> init")
                 self.newRun()
-            self.sessionStats[-1].carId = curPoint.car_id
+            if self.sessionStats[-1].carId is None:
+                sessionI = 0
+                for i in self.sessionStats:
+                    if i.carId is None:
+                        continue
+                    sessionI += 1
+                if sessionI > 0:
+                    logPrint("Run marker in last laps (" + str(sessionI) + ")")
+                    self.lastLapsText = "<br><br>R" + str(sessionI) + ":" + self.lastLapsText
+                self.sessionStats[-1].carId = curPoint.car_id
             self.sessionStats[-1].addLapTime(lastLapTime, self.data.lastLap)
             pTop = self.data.previousLaps[-1].topSpeed()
             if self.sessionStats[-1].topSpeed < pTop:
@@ -241,6 +287,7 @@ class Stats(sb.component.Component):
             for i in self.sessionStats:
                 logPrint("Best:", msToTime(i.bestLap()[0]))
                 logPrint("Median:", msToTime(i.medianLap()[0]))
+            self.updateLastLaps(curPoint)
 
         self.updateRunStats()
         self.updateLiveStats(curPoint)
@@ -262,7 +309,7 @@ class Stats(sb.component.Component):
     def callAction(self, a):
         if a == "saveRuns":
             self.updateRunStats(saveRuns=True)
-            self.data.showUiMsg("Run table saved.", 2)
+            self.callbacks.showUiMsg("Run table saved.", 2)
         elif a == "setRunDescription":
             text, ok = QInputDialog().getText(self.statsPageScroller, "Set run description", "Description:")
             if ok:

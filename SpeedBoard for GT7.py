@@ -398,6 +398,8 @@ class MainWindow(ColorMainWidget):
         self.data.bestLap = -1
         self.data.medianLap = -1
 
+        self.resetCurrentLapData()
+
         if notifyComponents:
             for c in self.components:
                 c.newSession()

@@ -237,7 +237,7 @@ class LapCompare(sb.component.Component):
             refLap.timeDiffWidget.update()
 
     def getWidget(self):
-        self.pedalBest = ColorLabel("")
+        self.pedalBest = ColorLabel("", clickText="pedalBest")
         self.pedalBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pedalBest.setAutoFillBackground(True)
         font = self.pedalBest.font()
@@ -245,8 +245,9 @@ class LapCompare(sb.component.Component):
         font.setBold(True)
         self.pedalBest.setFont(font)
         self.pedalBest.setColor(self.cfg.backgroundColor)
+        #self.pedalBest.clicked.connect(self.selectBigCountdownBreakponts)
 
-        self.speedBest = ColorLabel("BEST")
+        self.speedBest = ColorLabel("BEST", clickText="speedBest")
         self.speedBest.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedBest.setAutoFillBackground(True)
         font = self.speedBest.font()
@@ -255,6 +256,7 @@ class LapCompare(sb.component.Component):
         self.speedBest.setFont(font)
         if self.cfg.speedcomp:
             self.speedBest.setColor(self.cfg.backgroundColor)
+        self.speedBest.clicked.connect(self.selectBigCountdownBreakponts)
 
         self.lineBest = LineDeviation()
         self.timeDiffBest = TimeDeviation()
@@ -290,7 +292,7 @@ class LapCompare(sb.component.Component):
         self.pedalRefA.setFont(font)
         self.pedalRefA.setColor(self.cfg.backgroundColor)
 
-        self.speedRefA = ColorLabel("REF A")
+        self.speedRefA = ColorLabel("REF A", clickText="speedRefA")
         self.speedRefA.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefA.setAutoFillBackground(True)
         font = self.speedRefA.font()
@@ -299,6 +301,7 @@ class LapCompare(sb.component.Component):
         self.speedRefA.setFont(font)
         if self.cfg.speedcomp:
             self.speedRefA.setColor(self.cfg.backgroundColor)
+        self.speedRefA.clicked.connect(self.selectBigCountdownBreakponts)
 
         self.lineRefA = LineDeviation()
         self.timeDiffRefA = TimeDeviation()
@@ -312,7 +315,7 @@ class LapCompare(sb.component.Component):
         self.pedalRefB.setFont(font)
         self.pedalRefB.setColor(self.cfg.backgroundColor)
 
-        self.speedRefB = ColorLabel("REF B")
+        self.speedRefB = ColorLabel("REF B", clickText="speedRefB")
         self.speedRefB.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefB.setAutoFillBackground(True)
         font = self.speedRefB.font()
@@ -321,6 +324,7 @@ class LapCompare(sb.component.Component):
         self.speedRefB.setFont(font)
         if self.cfg.speedcomp:
             self.speedRefB.setColor(self.cfg.backgroundColor)
+        self.speedRefB.clicked.connect(self.selectBigCountdownBreakponts)
 
         self.lineRefB = LineDeviation()
         self.timeDiffRefB = TimeDeviation()
@@ -334,7 +338,7 @@ class LapCompare(sb.component.Component):
         self.pedalRefC.setFont(font)
         self.pedalRefC.setColor(self.cfg.backgroundColor)
 
-        self.speedRefC = ColorLabel("REF C")
+        self.speedRefC = ColorLabel("REF C", clickText="speedRefC")
         self.speedRefC.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedRefC.setAutoFillBackground(True)
         font = self.speedRefC.font()
@@ -343,6 +347,7 @@ class LapCompare(sb.component.Component):
         self.speedRefC.setFont(font)
         if self.cfg.speedcomp:
             self.speedRefC.setColor(self.cfg.backgroundColor)
+        self.speedRefC.clicked.connect(self.selectBigCountdownBreakponts)
 
         self.lineRefC = LineDeviation()
         self.timeDiffRefC = TimeDeviation()
@@ -356,7 +361,7 @@ class LapCompare(sb.component.Component):
         self.pedalMedian.setFont(font)
         self.pedalMedian.setColor(self.cfg.backgroundColor)
 
-        self.speedMedian = ColorLabel("MEDIAN")
+        self.speedMedian = ColorLabel("MEDIAN", clickText="speedMedian")
         self.speedMedian.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedMedian.setAutoFillBackground(True)
         font = self.speedMedian.font()
@@ -378,7 +383,7 @@ class LapCompare(sb.component.Component):
         self.pedalOptimized.setFont(font)
         self.pedalOptimized.setColor(self.cfg.backgroundColor)
 
-        self.speedOptimized = ColorLabel("OPT")
+        self.speedOptimized = ColorLabel("OPT", clickText="speedOptimized")
         self.speedOptimized.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speedOptimized.setAutoFillBackground(True)
         font = self.speedOptimized.font()
@@ -387,6 +392,7 @@ class LapCompare(sb.component.Component):
         self.speedOptimized.setFont(font)
         if self.cfg.speedcomp:
             self.speedOptimized.setColor(self.cfg.backgroundColor)
+        self.speedOptimized.clicked.connect(self.selectBigCountdownBreakponts)
 
         self.lineOptimized = LineDeviation()
         self.timeDiffOptimized = TimeDeviation()
@@ -480,6 +486,18 @@ class LapCompare(sb.component.Component):
         self.markBigCountdownField()
 
         return self.speedWidget
+
+    def selectBigCountdownBreakponts(self, src):
+        if src == "speedBest":
+            self.cfg.bigCountdownBrakepoint = 1 
+        elif src == "speedRefA":
+            self.cfg.bigCountdownBrakepoint = 2 
+        elif src == "speedRefB":
+            self.cfg.bigCountdownBrakepoint = 3 
+        elif src == "speedRefC":
+            self.cfg.bigCountdownBrakepoint = 4 
+        elif src == "speedOptimized":
+            self.cfg.bigCountdownBrakepoint = 5 
 
     def speedDiffQColor(self, d):
         col = QColor()

@@ -93,7 +93,9 @@ class LapOptimizer(sb.component.Component):
                 self.data.threadpool.start(saveThread)
             logPrint("Optimized lap:", len(self.data.optimizedLap.points), "points vs.", len(self.data.curLap.points))
         else:
-            logPrint("Discard current lap for optimization: Not a complete lap, pts:", len(self.data.curOptimizingLap.points), "dist:", self.data.curOptimizingLap.points[0].distance(self.data.curOptimizingLap.points[-1]))
+            logPrint("Discard current lap for optimization: Not a complete lap, pts:", len(self.data.curOptimizingLap.points))
+            if len(self.data.curOptimizingLap.points) > 0:
+                logPrint("Discard current lap for optimization: Not a complete lap, dist:", self.data.curOptimizingLap.points[0].distance(self.data.curOptimizingLap.points[-1]))
         logPrint("new optimizing lap")
         self.data.curOptimizingLap = Lap()
         self.data.improvedOptimization = False

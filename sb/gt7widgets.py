@@ -462,6 +462,7 @@ class StartWindow(QWidget):
             self.cbCaution.setText("Use pre-loaded warning locations")
 
 
+
 class ColorMainWidget(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -486,26 +487,36 @@ class ColorMainWidget(QMainWindow):
         super().paintEvent(event)
 
 class ColorLabel(QLabel):
-    def __init__(self):
+    clicked = pyqtSignal(str)
+
+    def __init__(self, clickText = None):
         super().__init__()
         self.color = QColor("#00000000")
         self.qp = QPainter()
         pal = self.palette()
         pal.setColor(self.foregroundRole(), QColor("#fff"))
         self.setPalette(pal)
+        self.clickText = clickText
 
-    def __init__(self, t):
+    def __init__(self, t, clickText = None):
         super().__init__(t)
         self.color = QColor("#00000000")
         self.qp = QPainter()
         pal = self.palette()
         pal.setColor(self.foregroundRole(), QColor("#fff"))
         self.setPalette(pal)
+        self.clickText = clickText
 
     def setColor(self, c):
         if c != self.color:
             self.color = c
             self.update()
+
+    def mousePressEvent(self, event):
+        if self.clickText is None:
+            self.clicked.emit(self.text())
+        else:
+            self.clicked.emit(self.clickText)
 
     def paintEvent(self, event):
 

@@ -67,7 +67,7 @@ class GT7PlaybackServer:
         while self.running:
             try:
                 data, address = self.s.recvfrom(4096)
-                print("Received heartbeat from " + address[0] + " [" + str(address[1]) + "]")
+                print(datetime.datetime.now (), "Received heartbeat from " + address[0] + " [" + str(address[1]) + "]")
                 self.clients[address[0] + "--" + str(address[1])] = GT7Client(address[0], address[1])
                 noHeartBeat = 0
                 connected = True
@@ -78,15 +78,15 @@ class GT7PlaybackServer:
                         toBeDeleted.append(c)
                 for c in toBeDeleted:
                     del self.clients[c]
-                    print("Remove client", c, len(self.clients), "left")
+                    print(datetime.datetime.now (), "Remove client", c, len(self.clients), "left")
             except TimeoutError as e:
                 noHeartBeat += 1
             except Exception as e:
                 self.internalStop()
-                print('HB Exception: {}'.format(e))
+                print(datetime.datetime.now (), 'HB Exception: {}'.format(e))
                 print(traceback.format_exception(e))
             if noHeartBeat >= 12:
-                print("No heartbeat received.")
+                print(datetime.datetime.now (), "No heartbeat received.")
                 self.internalStop()
                 self.clients = {}
       except Exception as e:
