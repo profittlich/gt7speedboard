@@ -70,6 +70,9 @@ class Stats(sb.component.Component):
     def getWidget(self):
         self.statsPageScroller = QScrollArea()
         self.statsPageScroller.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.statsPageScroller.setFrameShape(QFrame.Shape.NoFrame)
+        self.statsPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.statsPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.statsPage = QLabel(self.cfg.sessionName + "\nSession stats not available, yet")
         self.lastLaps = QLabel("")
         self.lastLapsText = ""
@@ -82,8 +85,6 @@ class Stats(sb.component.Component):
 
         self.statsPageScroller.setWidget(holder)
         #self.statsPageScroller.setSizeAdjustPolicy(Qt.QAbstractScrollArea.AdjustToContents)
-        self.statsPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.statsPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.statsPageScroller.setWidgetResizable(True)
 
         self.statsPage.setMargin(15)

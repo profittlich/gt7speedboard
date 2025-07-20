@@ -171,8 +171,9 @@ class MainWindow(ColorMainWidget):
         self.uiMsg.setPalette(pal)
 
         uiMsgPageScroller.setWidget(self.uiMsg)
-        uiMsgPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        uiMsgPageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         uiMsgPageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        uiMsgPageScroller.setFrameShape(QFrame.Shape.NoFrame)
         uiMsgPageScroller.setWidgetResizable(True)
 
         self.data.masterWidget.addWidget(self.specWidgets[0])
@@ -372,12 +373,15 @@ class MainWindow(ColorMainWidget):
             self.data.receiver.stopRecording()
         self.stopDash()
         self.showNormal()
+        self.resize(0,0)
         self.startWindow = StartWindow(False)
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
         self.setPalette(self.defaultPalette)
         self.setCentralWidget(self.startWindow)
-        self.setColor(self.defaultPalette.color(self.backgroundRole()))
+        pal = self.palette()
+        pal.setColor(self.backgroundRole(), self.defaultPalette.color(self.backgroundRole()))
+        self.setPalette(pal)
 
     def newSession(self, notifyComponents = True):
 

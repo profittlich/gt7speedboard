@@ -18,6 +18,9 @@ class Help(sb.component.Component):
     def getWidget(self):
         self.pageScroller = QScrollArea()
         self.pageScroller.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.pageScroller.setFrameShape(QFrame.Shape.NoFrame)
+        self.pageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.pageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.widget = QLabel("KEYBOARD SHORTCUTS:\n\n" + shortcutText)
         self.pageScroller.setWidget(self.widget)
         font = self.widget.font()
@@ -31,8 +34,6 @@ class Help(sb.component.Component):
         self.widget.setMargin(15)
         self.widget.setPalette(pal)
 
-        self.pageScroller.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.pageScroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.pageScroller.setWidgetResizable(True)
 
         return self.pageScroller

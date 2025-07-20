@@ -269,13 +269,21 @@ class StartWindow(QWidget):
 
         layoutFiles = glob.glob(self.layoutPath + '/*.sblayout')
         for f in layoutFiles:
-            self.mode.addItem(f[f.rfind("/")+1:-9])
+            if platform.system() == "Windows":
+                self.mode.addItem(f[f.rfind("\\")+1:-9])
+            else:
+                self.mode.addItem(f[f.rfind("/")+1:-9])
 
         self.numInternalLayouts = self.mode.count()
 
         layoutFiles = glob.glob(self.storageLocation + '/*.sblayout')
         for f in layoutFiles:
-            self.mode.addItem(f[f.rfind("/")+1:-9])
+            if platform.system() == "Windows":
+                logPrint("Use windows paths", f)
+                self.mode.addItem(f[f.rfind("\\")+1:-9])
+            else:
+                logPrint("Use unix paths", f)
+                self.mode.addItem(f[f.rfind("/")+1:-9])
 
         self.mode.addItem("Load from file...")
         self.mode.setCurrentIndex(int(settings.value("mode",0)))
