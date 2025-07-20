@@ -20,7 +20,7 @@ shortcutText = "ESC \t return to configuration\n" \
 class StartWindow(QWidget):
     def __init__(self, allowAutoUpdate):
         super().__init__()
-        self.setWindowTitle("GT7 SpeedBoard 1.0")
+        self.setWindowTitle("GT7 SpeedBoard")
         modeLabel = QLabel("Mode:")
 
         self.cbCheckUpdatesStart = QCheckBox("Automatically check for updates")
