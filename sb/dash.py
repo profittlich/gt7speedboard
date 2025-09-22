@@ -22,6 +22,8 @@ import sb.components.blank
 import sb.components.speed
 import sb.components.rpm
 import sb.components.gear
+import sb.components.tyreslip
+import sb.components.corners
 
 class Screen(QStackedWidget):
     def __init__(self, keyRedirect):

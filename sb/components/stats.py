@@ -19,8 +19,8 @@ class Run:
         self.sessionStart = sessionStart
         self.description = ""
 
-    def addLapTime(self, t, l):
-        self.lapTimes.append((t, l))
+    def addLapTime(self, t, l, idx):
+        self.lapTimes.append((t, l, idx))
 
     def lastLap(self):
         return self.sessionStart + len(self.lapTimes)
@@ -131,6 +131,47 @@ class Stats(sb.component.Component):
         statTxt = '<font size="5">' + self.cfg.sessionName + '</font>' + self.liveStats + self.runStats
         self.statsPage.setText(statTxt)
 
+    def saveIndividualLaps(self, filename):
+        lapsCSV = "Run;Lap;Lap time (ms);Lap time;Valid lap;Top speed (km/h);Distance driven (m)\n"
+        for index, lap in enumerate(self.data.previousLaps):
+            session = 1
+            #print("CSV Lap", index)
+            for r in self.sessionStats:
+                if r.carId is None:
+                    continue
+                if index <= r.lastLap():
+                   break
+                else:
+                   session += 1
+            lapsCSV += str(session) + ";" + str(lap.points[0].current_lap) + ";" + str(lap.time) + ";" + msToTime(lap.time) + ";" + str(lap.valid) + ";" + str(round(lap.topSpeed())) + ";" + str(round(lap.length())) + "\n"
+
+        lapsCSV = "Run;Lap;Lap time (ms);Lap time;Valid lap;Top speed (km/h);Distance driven (m)\n"
+        session = 0
+        for r in self.sessionStats:
+            if r.carId is None:
+                continue
+            session += 1
+            for lap in self.data.previousLaps[r.startLap():r.lastLap()+1]:
+                #print("Lap in run", session, lap.points[0].current_lap, lap.valid, r.startLap(), r.lastLap(), r.bestLap())
+                if lap.valid:
+                    lapsCSV += str(session) + ";" + str(lap.points[0].current_lap) + ";" + str(lap.time) + ";" + msToTime(lap.time) + ";" + str(lap.valid) + ";" + str(round(lap.topSpeed())) + ";" + str(round(lap.length())) + "\n"
+
+        lapsCSV = "Run;Lap;Lap time (ms);Lap time;Valid lap;Top speed (km/h);Distance driven (m)\n"
+        session = 0
+        for r in self.sessionStats:
+            if r.carId is None:
+                continue
+            session += 1
+            for lt in r.lapTimes:
+                print(lt)
+                lap = self.data.previousLaps[lt[2]]
+                print("Lap in run", session, lap.points[0].current_lap, lap.valid, r.startLap(), r.lastLap(), r.bestLap())
+                if lap.valid:
+                    lapsCSV += str(session) + ";" + str(lap.points[0].current_lap) + ";" + str(lap.time) + ";" + msToTime(lap.time) + ";" + str(lap.valid) + ";" + str(round(lap.topSpeed())) + ";" + str(round(lap.length())) + "\n"
+
+        with open ( filename, "w") as f:
+            f.write(lapsCSV)
+
 
     def updateRunStats(self, saveRuns = False):
         carStatTxt = '<br><font size="3">RUNS:</font><table>'
@@ -190,6 +231,7 @@ class Stats(sb.component.Component):
                 prefix += self.cfg.sessionName + " - "
             with open ( prefix + self.data.trackPreviouslyIdentified + " - runs - " + self.sessionStart + ".csv", "w") as f:
                 f.write(carStatCSV)
+            self.saveIndividualLaps(prefix + self.data.trackPreviouslyIdentified + " - laps - " + self.sessionStart + ".csv")
         logPrint(self.runStats)
         self.runStats = carStatTxt
         self.updateStats()
@@ -280,7 +322,7 @@ class Stats(sb.component.Component):
                     logPrint("Run marker in last laps (" + str(sessionI) + ")")
                     self.lastLapsText = "<br><br>R" + str(sessionI) + ":" + self.lastLapsText
                 self.sessionStats[-1].carId = curPoint.car_id
-            self.sessionStats[-1].addLapTime(lastLapTime, self.data.lastLap)
+            self.sessionStats[-1].addLapTime(lastLapTime, self.data.lastLap, len(self.data.previousLaps)-1)
             pTop = self.data.previousLaps[-1].topSpeed()
             if self.sessionStats[-1].topSpeed < pTop:
                 self.sessionStats[-1].topSpeed = pTop
