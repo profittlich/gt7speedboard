@@ -8,6 +8,7 @@ from sb.gt7widgets import *
 from sb.gt7telepoint import Point
 from sb.helpers import logPrint
 from sb.helpers import Worker
+from sb.helpers import msToTime
 import os
 
 class FuelAndMessages(sb.component.Component):
@@ -131,6 +132,8 @@ class FuelAndMessages(sb.component.Component):
         if not messageShown:
             if self.data.fuelFactor > 0:
                 lapsFuel = curPoint.current_fuel / fuel_capacity / self.data.fuelFactor
+                timeFuel = msToTime(round((curPoint.current_fuel / fuel_capacity) / self.data.fuelTimeFactor, -3))
+                timeFuel = timeFuel[:-4]
                 remainingRefuels = ""
                 if curPoint.total_laps > 0:
                     fuelStints = (curPoint.total_laps + self.data.lapOffset - curPoint.current_lap + 1 - self.data.lapProgress - lapsFuel) * self.data.fuelFactor
@@ -138,7 +141,7 @@ class FuelAndMessages(sb.component.Component):
                     if fuelStints > 1:
                         plural = "S"
                     remainingRefuels = '<br><font size="1">' + str(int(math.ceil(fuelStints))) + " REFUEL" + plural + " NEEDED (" + str(round(100 * (fuelStints - math.floor(fuelStints)))) + "%)</font>"
-                self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>" + remainingRefuels)
+                self.laps.setText("<font size=4>" + str(round(lapsFuel, 2)) + " LAPS</font><br><font size=1>" + timeFuel + "</font><br><font color='#7f7f7f' size=1>FUEL REMAINING</font>" + remainingRefuels)
 
                 lapValue = 1
                 if self.cfg.lapDecimals and self.data.closestILast > 0:

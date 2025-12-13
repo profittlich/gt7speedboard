@@ -376,7 +376,7 @@ class StartWindow(QWidget):
         try:
             x = requests.get('https://api.github.com/repos/profittlich/gt7speedboard/releases/latest')
             j = json.loads(x.text)
-            if j['tag_name'] == "v8":
+            if j['tag_name'] == "v8-RC1":
                 if not quiet:
                     QMessageBox.information(self, "Check updates", "You have the latest version.")
             else:
@@ -417,7 +417,7 @@ class StartWindow(QWidget):
 
     def chooseReferenceLapA(self, on):
         if on:
-            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
+            chosen = QFileDialog.getOpenFileName(directory=self.storageLocation, filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
                 logPrint("None")
                 self.refAFile = ""
@@ -431,7 +431,7 @@ class StartWindow(QWidget):
 
     def chooseReferenceLapB(self, on):
         if on:
-            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
+            chosen = QFileDialog.getOpenFileName(directory=self.storageLocation, filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
                 logPrint("None")
                 self.refBFile = ""
@@ -445,7 +445,7 @@ class StartWindow(QWidget):
 
     def chooseReferenceLapC(self, on):
         if on:
-            chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
+            chosen = QFileDialog.getOpenFileName(directory=self.storageLocation, filter="GT7 Telemetry (*.gt7; *.gt7lap; *.gt7laps)")
             if chosen[0] == "":
                 logPrint("None")
                 self.refCFile = ""

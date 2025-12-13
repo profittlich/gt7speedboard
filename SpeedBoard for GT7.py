@@ -79,6 +79,7 @@ class RuntimeData:
         self.componentKeys = None
         
         self.fuelFactor = None
+        self.fuelTimeFactor = None
         self.refueled = None
         self.lapProgress = None
         self.noThrottleCount = None # TODO messy in mapce
@@ -122,7 +123,7 @@ class MainWindow(ColorMainWidget):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v8)")
+        self.setWindowTitle("SpeedBoard for GT7 (v8-RC1)")
         self.queue = queue.Queue()
 
         self.messageWaitsForKey = False
@@ -389,7 +390,9 @@ class MainWindow(ColorMainWidget):
         self.data.lastLap = -1
         self.lastFuel = -1
         self.lastFuelUsage = []
+        self.lastFuelTimes = []
         self.data.fuelFactor = 0
+        self.data.fuelTimeFactor = 0
         self.data.refueled = 0
         logPrint("PIT STOP:", self.data.refueled)
         self.manualPitStop = False
@@ -680,16 +683,20 @@ class MainWindow(ColorMainWidget):
                     if fuelDiff > 0 and self.data.previousLaps[-1].valid:
                         logPrint("Append fuel", fuelDiff)
                         self.lastFuelUsage.append(fuelDiff)
+                        self.lastFuelTimes.append(curPoint.last_lap)
                     if len(self.lastFuelUsage) > self.cfg.fuelStatisticsLaps:
                         self.lastFuelUsage = self.lastFuelUsage[1:]
+                        self.lastFuelTimes = self.lastFuelTimes[1:]
                     self.data.refueled += 1
                     logPrint("PIT STOP:", self.data.refueled)
                     self.lastFuel = curPoint.current_fuel/fuel_capacity
     
                     if len(self.lastFuelUsage) > 0:
                         self.data.fuelFactor = self.lastFuelUsage[0]
+                        self.data.fuelTimeFactor = self.lastFuelUsage[0] / self.lastFuelTimes[0]
                         for i in range(1, len(self.lastFuelUsage)):
                             self.data.fuelFactor = (1-self.cfg.fuelLastLapFactor) * self.data.fuelFactor + self.cfg.fuelLastLapFactor * self.lastFuelUsage[i]
+                            self.data.fuelTimeFactor = (1-self.cfg.fuelLastLapFactor) * self.data.fuelTimeFactor + self.cfg.fuelLastLapFactor * self.lastFuelUsage[i] / self.lastFuelTimes[i]
 
                 else:
                     logPrint("Ignore pre-lap")

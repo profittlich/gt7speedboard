@@ -78,6 +78,7 @@ class Lap:
         startI += brakeOffset
         for i in range(max(startI,0), min(int(math.ceil(startI + cfg.psFPS * 3)), len(self.points))):
             if self.points[i].brake > cfg.brakeMinimumLevel:
+                logPrint("Next brake:", max(i-startI,0), self.points[i].brake, " vs ", self.points[startI].brake, " === ", cfg.brakeMinimumLevel, brakeOffset, startI)
                 return max(i-startI,0)
         return None
 

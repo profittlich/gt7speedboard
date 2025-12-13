@@ -1,7 +1,7 @@
 import sys
 from sb.gt7telepoint import Point
-from sb.helpers import loadLap
-from sb.helpers import Lap
+from sb.laps import loadLap
+from sb.laps import Lap
 import copy
 
 def thinOut (fni, fno, step=50):
