@@ -376,7 +376,7 @@ class StartWindow(QWidget):
         try:
             x = requests.get('https://api.github.com/repos/profittlich/gt7speedboard/releases/latest')
             j = json.loads(x.text)
-            if j['tag_name'] == "v8-RC1":
+            if j['tag_name'] == "v9-RC2":
                 if not quiet:
                     QMessageBox.information(self, "Check updates", "You have the latest version.")
             else:
