@@ -348,6 +348,7 @@ class MainWindow(ColorMainWidget):
             self.data.masterWidget.setCurrentIndex(0)
 
     def stopDash(self):
+        self.setColor(QColor("#00000000"));
         if not self.data.trackDetector is None:
             self.data.trackDetector.stopDetection()
 
