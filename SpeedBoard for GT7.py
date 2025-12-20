@@ -123,7 +123,7 @@ class MainWindow(ColorMainWidget):
         self.startWindow.starter.clicked.connect(self.startDash)
         self.startWindow.ip.returnPressed.connect(self.startDash)
 
-        self.setWindowTitle("SpeedBoard for GT7 (v9-RC2)")
+        self.setWindowTitle("SpeedBoard for GT7 (v9)")
         self.queue = queue.Queue()
 
         self.messageWaitsForKey = False
