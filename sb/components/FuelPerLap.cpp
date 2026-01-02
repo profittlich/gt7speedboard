@@ -29,7 +29,11 @@ QString FuelPerLap::defaultTitle () const
 
 void FuelPerLap::newPoint(PTelemetryPoint p)
 {
-    if (state()->fuelData.fuelPerLap == -1)
+    if (state()->fuelData.infiniteFuel)
+    {
+        m_widget->setText ("0% PER LAP");
+    }
+    else if (state()->fuelData.fuelPerLap == -1)
     {
         m_widget->setText ("MEASURING");
     }

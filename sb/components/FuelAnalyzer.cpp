@@ -26,12 +26,21 @@ void FuelAnalyzer::newPoint(PTelemetryPoint p)
 
 void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
 {
-    if (isFullLap && !state()->currentLap->points().empty())
+    DBG_MSG << isFullLap << state()->previousLaps.back()->points().empty();
+    if (!state()->previousLaps.back()->points().empty())
     {
-        m_previousLapFuel.append(state()->currentLap->points()[0]->currentFuel() - m_curPoint->currentFuel());
+        auto lastConsumption = state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel();
+        state()->fuelData.infiniteFuel = lastConsumption < std::numeric_limits<float>::epsilon();
+    }
+
+    if (isFullLap && !state()->previousLaps.back()->points().empty())
+    {
+        DBG_MSG << "append lap";
+        m_previousLapFuel.append(state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel());
     }
     while (m_previousLapFuel.size() > g_globalConfiguration.fuelStatisticsLaps())
     {
+        DBG_MSG << "pop lap";
         m_previousLapFuel.pop_front();
     }
     DBG_MSG << ("check fuel " + QString::number(m_previousLapFuel.size()).toLatin1() + " laps");

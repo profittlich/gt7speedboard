@@ -122,7 +122,11 @@ void MainWidget::keyPressEvent(QKeyEvent *event)
 {
     if (m_inDash)
     {
-        if (event->key() == Qt::Key_Right)
+        if (event->key() == Qt::Key_Escape)
+        {
+            m_dash->widget->exitDash();
+        }
+        else if (event->key() == Qt::Key_Right)
         {
             size_t newIdx = m_controller->dash()->widget->currentIndex();
             size_t idxCount = m_controller->dash()->widget->count();

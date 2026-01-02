@@ -11,7 +11,10 @@
 class FuelData
 {
 public:
+    FuelData() : fuelPerLap(-1), infiniteFuel(false) {}
+
     float fuelPerLap;
+    bool infiniteFuel;
 
 };
 

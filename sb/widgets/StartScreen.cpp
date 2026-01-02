@@ -36,10 +36,12 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     layout->addWidget(lbLay);
 
     m_selectedLayout = new QComboBox(this);
+#if 0
 #ifdef Q_OS_IOS
     m_selectedLayout->addItem("Last used layout", QStandardPaths::standardLocations(QStandardPaths::StandardLocation::DocumentsLocation)[0] + "/Documents/Last Used.sblayout");
 #else
     m_selectedLayout->addItem("Last used layout", QStandardPaths::standardLocations(QStandardPaths::StandardLocation::AppDataLocation)[0] + "/Last Used.sblayout");
+#endif
 #endif
 
     QDir layoutFiles = QDir(":/assets/assets/");

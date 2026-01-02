@@ -1,8 +1,8 @@
-#include "sb/components/SpeedMessage.h"
+#include "sb/components/Message.h"
 
 #include "sb/components/ComponentFactory.h"
 
-SpeedMessage::SpeedMessage (const QJsonValue config) : Component(config)
+Message::Message (const QJsonValue config) : Component(config)
 {
     m_widget = new ColorLabel();
 
@@ -15,17 +15,17 @@ SpeedMessage::SpeedMessage (const QJsonValue config) : Component(config)
     m_widget->setText("0\nkm/h");
 }
 
-QWidget * SpeedMessage::getWidget() const
+QWidget * Message::getWidget() const
 {
     return m_widget;
 }
 
-QString SpeedMessage::defaultTitle () const
+QString Message::defaultTitle () const
 {
-    return "Speed Message";
+    return "Message";
 }
 
-void SpeedMessage::newPoint(PTelemetryPoint p)
+void Message::newPoint(PTelemetryPoint p)
 {
     if (m_countdown > 0)
     {
@@ -37,38 +37,38 @@ void SpeedMessage::newPoint(PTelemetryPoint p)
     }
 }
 
-void SpeedMessage::completedLap(PLap lastLap, bool isFullLap)
+void Message::completedLap(PLap lastLap, bool isFullLap)
 {
     DBG_MSG << ("New lap message on");
     m_widget->setText("NEW LAP");
     m_countdown = 180;
 }
 
-void SpeedMessage::newSession()
+void Message::newSession()
 {
     DBG_MSG << ("New session message on");
     m_widget->setText("NEW SESSION");
     m_countdown = 180;
 }
 
-bool SpeedMessage::raise()
+bool Message::raise()
 {
     return m_countdown > 0;
 }
 
-QString SpeedMessage::description ()
+QString Message::description ()
 {
     return "Simple speedometer message for testing";
 }
 
-QList<QString> SpeedMessage::actions ()
+QList<QString> Message::actions ()
 {
     return QList<QString>();
 }
 
-QString SpeedMessage::componentId ()
+QString Message::componentId ()
 {
-    return "SpeedMessage";
+    return "Message";
 }
 
-static ComponentFactory::RegisterComponent<SpeedMessage> reg;
+static ComponentFactory::RegisterComponent<Message> reg;

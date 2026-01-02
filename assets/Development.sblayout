@@ -78,7 +78,7 @@
                                             "stretch": 2
                                         },
                                         {
-                                            "component": "SpeedMessage",
+                                            "component": "Message",
                                             "raiseAllowed": true,
                                             "stretch": 1
                                         }

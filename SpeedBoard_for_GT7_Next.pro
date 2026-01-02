@@ -30,11 +30,11 @@ SOURCES += \
     sb/components/LapComparison.cpp \
     sb/components/LapDisplay.cpp \
     sb/components/Map.cpp \
+    sb/components/Message.cpp \
     sb/components/PresetSelector.cpp \
     sb/components/RPM.cpp \
     sb/components/SessionChangeDetector.cpp \
     sb/components/Speed.cpp \
-    sb/components/SpeedMessage.cpp \
     sb/components/Throttle.cpp \
     sb/components/TyreTemps.cpp \
     sb/receiver/GT7TelemetryReceiver.cpp \
@@ -76,11 +76,11 @@ HEADERS += \
     sb/components/LapComparison.h \
     sb/components/LapDisplay.h \
     sb/components/Map.h \
+    sb/components/Message.h \
     sb/components/PresetSelector.h \
     sb/components/RPM.h \
     sb/components/SessionChangeDetector.h \
     sb/components/Speed.h \
-    sb/components/SpeedMessage.h \
     sb/components/Throttle.h \
     sb/components/TyreTemps.h \
     sb/receiver/GT7TelemetryReceiver.h \
@@ -120,7 +120,6 @@ ios {
 }
 
 DISTFILES += \
-    assets/Default-iOS.sblayout \
     assets/SpeedBoard_Logo_black.png \
     assets/SpeedBoard_Logo_black_trans.png \
     assets/SpeedBoard_Logo_trans.png \

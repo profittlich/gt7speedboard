@@ -3,10 +3,10 @@
 #include "sb/components/Component.h"
 #include "sb/widgets/ColorLabel.h"
 
-class SpeedMessage : public Component
+class Message : public Component
 {
 public:
-    SpeedMessage (const QJsonValue config);
+    Message (const QJsonValue config);
 
     virtual QWidget * getWidget() const override;
     virtual QString defaultTitle () const override;

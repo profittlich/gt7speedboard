@@ -29,7 +29,11 @@ QString FuelRange::defaultTitle () const
 
 void FuelRange::newPoint(PTelemetryPoint p)
 {
-    if (state()->fuelData.fuelPerLap == -1)
+    if (state()->fuelData.infiniteFuel)
+    {
+        m_widget->setText ("INFINITE");
+    }
+    else if (state()->fuelData.fuelPerLap == -1)
     {
         m_widget->setText ("MEASURING");
     }

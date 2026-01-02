@@ -28,7 +28,7 @@
                                             "stretch" : 3
                                         },
                                         {
-                                            "component" : "SpeedMessage",
+                                            "component" : "Message",
                                             "stretch" : 1,
                                             "raiseAllowed" : true
                                         }
@@ -62,7 +62,7 @@
                                     "configuration": {
                                         "target": "last"
                                     },
-                                    "stretch": 1
+                                    "stretch": 3
                                 }
 			    ]
 			}
