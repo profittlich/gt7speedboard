@@ -1,0 +1,104 @@
+{
+    "version" : 2,
+    "pages" : [
+        {
+            "title" : "Page 2",
+            "shortcuts" : [ "Key_2" ],
+            "list" : [
+                {
+                    "list" : [
+                        {
+                            "list" : [
+                                {
+                                    "component" : "FuelPerLap",
+                                    "stretch" : 1,
+                                    "title" : "FUEL"
+                                },
+                                {
+                                    "component" : "FuelRange",
+                                    "stretch" : 1,
+                                    "showHeader" : false
+                                },
+                                {
+                                    "stack" : [
+                                        {
+                                            "component" : "TyreTemps",
+                                            "configuration" : { "target" : 76, "spread" : 20 },
+                                            "actions" : { "Key_A" : "targetUp", "Key_Z" : "targetDown" },
+                                            "stretch" : 3
+                                        },
+                                        {
+                                            "component" : "SpeedMessage",
+                                            "stretch" : 1,
+                                            "raiseAllowed" : true
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "list" : [
+                                {
+                                    "list" : [
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "best"
+                                             },
+                                             "fullScreenSignalAllowed": true
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "last"
+                                             },
+                                             "fullScreenSignalAllowed": false
+                                        }
+                                    ],
+                                    "stretch":2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title" : "Page 1",
+            "shortcuts" : [ "Key_1" ],
+            "list" : [
+                {
+                    "component" : "LapChangeDetector"
+                },
+                {
+                    "component" : "FuelAnalyzer"
+                },
+                {
+                    "component" : "SessionChangeDetector"
+                },
+                {
+                    "component": "ComparisonLapManager",
+                    "configuration": {
+                        "maxClosenessDistance": 20
+                    }
+                },
+                {
+                    "component" : "Gear",
+                    "stretch" : 2,
+                    "actions" : { "Key_S" : "foo", "Key_D" : "bar" }
+                },
+                {
+                    "component" : "Empty",
+                    "configuration" : { "text" : "NOTHING" },
+                    "stretch" : 2
+                },
+                {
+                    "component" : "Speed",
+                    "stretch" : 1,
+                    "fullScreenSignalAllowed" : false
+                }
+            ]
+
+        }
+    ]
+}

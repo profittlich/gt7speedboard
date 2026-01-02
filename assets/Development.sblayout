@@ -1,0 +1,158 @@
+{
+    "pages": [
+        {
+            "list": [
+                {
+                    "list": [
+                        {
+                            "list": [
+                                {
+                                    "component": "FuelPerLap",
+                                    "stretch": 1,
+                                    "title": "FUEL"
+                                },
+                                {
+                                    "component": "FuelLevel",
+                                    "showHeader": false,
+                                    "stretch": 1
+                                },
+                                {
+                                    "component": "FuelRange",
+                                    "showHeader": false,
+                                    "stretch": 1
+                                },
+                                {
+                                    "actions": {
+                                        "Key_A": "targetUp",
+                                        "Key_Z": "targetDown"
+                                    },
+                                    "component": "TyreTemps",
+                                    "configuration": {
+                                        "presets": {
+                                            "A": {
+                                                "spread": 20,
+                                                "target": 71
+                                            },
+                                            "B": {
+                                                "spread": 20,
+                                                "target": 72
+                                            },
+                                            "C": {
+                                                "spread": 20,
+                                                "target": 73
+                                            }
+                                        },
+                                        "spread": 20,
+                                        "target": 91
+                                    },
+                                    "stretch": 3
+                                }
+                            ]
+                        },
+                        {
+                            "list": [
+                                {
+                                    "component": "LapComparison",
+                                    "configuration": {
+                                        "target": "best"
+                                    },
+                                    "fullScreenSignalAllowed": true,
+                                    "stretch": 2
+                                },
+                                {
+                                    "component": "LapDisplay",
+                                    "stretch": 1
+                                },
+                                {
+                                    "stack": [
+                                        {
+                                            "actions": {
+                                                "Key_F": "nextPreset",
+                                                "Key_V": "previousPreset"
+                                            },
+                                            "component": "PresetSelector",
+                                            "configuration": {
+                                                "preset": "",
+                                                "presetList": "A;B;C"
+                                            },
+                                            "stretch": 2
+                                        },
+                                        {
+                                            "component": "SpeedMessage",
+                                            "raiseAllowed": true,
+                                            "stretch": 1
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "list": [
+                                {
+                                    "component": "Map",
+                                    "configuration": {
+                                        "target": "best"
+                                    },
+                                    "stretch": 4
+                                },
+                                {
+                                    "component": "Brake",
+                                    "stretch": 1
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "shortcuts": [
+                "Key_2"
+            ],
+            "title": "Page 2"
+        },
+        {
+            "list": [
+                {
+                    "component": "LapChangeDetector"
+                },
+                {
+                    "component": "FuelAnalyzer"
+                },
+                {
+                    "component": "SessionChangeDetector"
+                },
+                {
+                    "component": "ComparisonLapManager",
+                    "configuration": {
+                        "maxClosenessDistance": 20
+                    }
+                },
+                {
+                    "actions": {
+                        "Key_D": "bar",
+                        "Key_S": "foo"
+                    },
+                    "component": "Gear",
+                    "stretch": 2
+                },
+                {
+                    "component": "Empty",
+                    "configuration": {
+                        "color": "#fff",
+                        "text": "NOTHING"
+                    },
+                    "stretch": 2
+                },
+                {
+                    "component": "Speed",
+                    "fullScreenSignalAllowed": false,
+                    "stretch": 1
+                }
+            ],
+            "shortcuts": [
+                "Key_1"
+            ],
+            "title": "Page 1"
+        }
+    ],
+    "version": 2
+}
