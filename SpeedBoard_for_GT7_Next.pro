@@ -2,6 +2,11 @@ QT       += core gui network opengl openglwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+anroid {
+QT += androidextras core-private
+}
+
+
 CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -29,6 +34,7 @@ SOURCES += \
     sb/components/LapChangeDetector.cpp \
     sb/components/LapComparison.cpp \
     sb/components/LapDisplay.cpp \
+    sb/components/LapTimes.cpp \
     sb/components/Map.cpp \
     sb/components/Message.cpp \
     sb/components/PresetSelector.cpp \
@@ -43,9 +49,12 @@ SOURCES += \
     sb/system/DashBuilder.cpp \
     sb/system/Helpers.cpp \
     sb/system/KeyStrings.cpp \
+    sb/system/RawRecorder.cpp \
     sb/widgets/ButtonLabel.cpp \
     sb/widgets/ColorLabel.cpp \
+    sb/widgets/ErrorScreen.cpp \
     sb/widgets/GaugeLabel.cpp \
+    sb/widgets/ImageLabel.cpp \
     sb/widgets/SideButtonLabel.cpp \
     sb/widgets/StartScreen.cpp
 
@@ -75,6 +84,7 @@ HEADERS += \
     sb/components/LapChangeDetector.h \
     sb/components/LapComparison.h \
     sb/components/LapDisplay.h \
+    sb/components/LapTimes.h \
     sb/components/Map.h \
     sb/components/Message.h \
     sb/components/PresetSelector.h \
@@ -93,12 +103,15 @@ HEADERS += \
     sb/system/Helpers.h \
     sb/system/KeyStrings.h \
     sb/system/Laps.h \
+    sb/system/RawRecorder.h \
     sb/system/State.h \
     sb/trackdata/Track.h \
     sb/trackdata/TrackDetector.h \
     sb/widgets/ButtonLabel.h \
     sb/widgets/ColorLabel.h \
+    sb/widgets/ErrorScreen.h \
     sb/widgets/GaugeLabel.h \
+    sb/widgets/ImageLabel.hpp \
     sb/widgets/InteractiveWidget.h \
     sb/widgets/SideButtonLabel.h \
     sb/widgets/StartScreen.h
@@ -120,6 +133,7 @@ ios {
 }
 
 DISTFILES += \
+    assets/3_Columns.sblayout \
     assets/SpeedBoard_Logo_black.png \
     assets/SpeedBoard_Logo_black_trans.png \
     assets/SpeedBoard_Logo_trans.png \

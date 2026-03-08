@@ -14,6 +14,7 @@ public:
     virtual QString defaultTitle () const override;
 
     virtual void pointFinished(PTelemetryPoint p) override;
+    virtual void completedLap(PLap lastLap, bool isFullLap) override;
     virtual void presetSwitched() override;
     virtual QColor signalColor () override;
 
@@ -29,4 +30,5 @@ private:
     GaugeLabel * m_time;
     PComponentParameterString m_target;
     PComparisonLap m_targetLap;
+    bool m_prevFullScreenPermission;
 };

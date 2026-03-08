@@ -24,7 +24,7 @@ void Configuration::loadCars()
                 //DBG_MSG << "Maker: " << all;
                 all = f.readLine();
                 auto curCar = all.split(',');
-                DBG_MSG << curCar;
+                //DBG_MSG << curCar;
                 if (curCar.size() == 2)
                 {
                     m_carMakers[curCar[0].toLong()] = curCar[1].trimmed();
@@ -54,8 +54,8 @@ void Configuration::loadCars()
         }
     }
 
-    for (auto i : m_cars)
-    {
-        DBG_MSG << i;
-    }
+    //for (auto i : m_cars)
+   // {
+     //   DBG_MSG << i;
+    //}
 }

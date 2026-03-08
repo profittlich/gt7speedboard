@@ -1,17 +1,30 @@
 #include "MainWidget.h"
 
+#include "sb/system/Helpers.h"
+
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
 
 int main(int argc, char *argv[])
 {
-    qDebug("Application starting");
-    QApplication a(argc, argv);
+    qInstallMessageHandler(sbDebugMessageHandler);
 
+    QApplication a(argc, argv);
     a.setOrganizationName("pitstop.profittlich.com");
     a.setOrganizationDomain("pitstop.profittlich.com");
     a.setApplicationName("GT7 SpeedBoard");
+
+    QDir storeLoc = getStorageLocation();
+    QFile outFile (storeLoc.absolutePath() + "/Last Debug.txt");
+    if (outFile.open(QIODevice::WriteOnly))
+    {
+        outFile.write("New log file\n");
+        outFile.close();
+    }
+
+    DBG_MSG << "Application starting";
+    DBG_MSG << qVersion();
 
     QPalette pal = a.palette();
     pal.setColor(QPalette::Window, "#222");
@@ -26,7 +39,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    qDebug("Start up UI");
+    DBG_MSG << "Start up UI";
     g_globalConfiguration.init();
     MainWidget w;
     w.show();

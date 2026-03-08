@@ -6,7 +6,9 @@
 #include <sb/widgets/ColorLabel.h>
 #include <sb/receiver/GT7TelemetryReceiver.h>
 #include <sb/system/Controller.h>
+#include <sb/system/RawRecorder.h>
 #include <QVBoxLayout>
+#include <QStackedLayout>
 
 
 class MainWidget : public QWidget
@@ -23,13 +25,15 @@ public slots:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+    void resizeEvent(QResizeEvent * ev);
 
 private:
     PController m_controller;
     PTelemetryReceiver m_receiver;
+    PRawRecorder m_debugRecorder;
     PDash m_dash;
     QWidget * m_widget;
-    QVBoxLayout * m_layout;
+    QStackedLayout * m_layout;
     bool m_inDash;
 };
 #endif // MAINWIDGET_H

@@ -64,6 +64,8 @@ const size_t idxCarId = 0x124;
 
 TelemetryPointGT7::TelemetryPointGT7(const QByteArray & data)
 {
+    m_data = data;
+
     setSequenceNumber(*reinterpret_cast<const unsigned*> (&data.data()[idxSequenceNumber]));
 
     setPosition(Vector3D<float> (
@@ -77,6 +79,7 @@ TelemetryPointGT7::TelemetryPointGT7(const QByteArray & data)
     setRpm(*reinterpret_cast<const float*> (&data.data()[idxRpm]));
     setCurrentGear(data.data()[idxCurrentGear] & 0x0f);
     setCurrentLap(*reinterpret_cast<const int16_t*> (&data.data()[idxCurrentLap]));
+    setTotalLaps(*reinterpret_cast<const int16_t*> (&data.data()[idxTotalLaps]));
     setLastLapMs(*reinterpret_cast<const int32_t*> (&data.data()[idxLastLapTime]));
     setTyreTemperature(WheelData<float>(
         *reinterpret_cast<const float*> (&data.data()[idxTyreTemperatureFL]),
@@ -91,6 +94,11 @@ TelemetryPointGT7::TelemetryPointGT7(const QByteArray & data)
 
     setInRace(flags & 0x1);
     setIsPaused(flags & 0x2);
+}
+
+QByteArray TelemetryPointGT7::getData()
+{
+    return m_data;
 }
 
 QMap<QString, size_t> TelemetryPointGT7::getIntKeys()

@@ -8,5 +8,6 @@
         <file>assets/Development.sblayout</file>
         <file>assets/cars.csv</file>
         <file>assets/makers.csv</file>
+        <file>assets/3_Columns.sblayout</file>
     </qresource>
 </RCC>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sb/cardata/TelemetryPoint.h"
+#include "sb/system/Configuration.h"
 #include "sb/trackdata/Track.h"
 #include "sb/system/State.h"
 #include <QObject>
@@ -122,6 +123,7 @@ public:
     void setFloatParameter (ComponentParameter<float> & p, bool overwritePresets = false) {
         if (m_floatParameters.contains(p.name()))
         {
+            DBG_MSG << p.name();
             (*m_floatParameters[p.name()])() = p();
             if (overwritePresets)
             {
@@ -190,15 +192,17 @@ public:
     virtual void newPoint(PTelemetryPoint curPoint) { Q_UNUSED(curPoint) };
     virtual void pointFinished(PTelemetryPoint curPoint) { Q_UNUSED(curPoint) };
 
-    float baseFontSize () { return 10; }
+    float baseFontSize () { return 10 * g_globalConfiguration.fontScale(); }
 
     virtual void newSession() {};
     virtual void completedLap(PLap lastLap, bool isFullLap) { Q_UNUSED(lastLap) Q_UNUSED(isFullLap) }
     virtual void pitStop() {};
 
+    virtual void newCircuit() {}
     virtual void newTrack(PTrack track) { Q_UNUSED(track) }
     virtual void maybeNewTrack(PTrack track) { Q_UNUSED(track) }
     virtual void leftTrack() {};
+    virtual void leftCircuit() {};
 
     virtual void callAction(QString a) { Q_UNUSED(a) };
     virtual void shutdown() {};

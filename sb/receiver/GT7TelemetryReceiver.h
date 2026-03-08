@@ -32,7 +32,7 @@ private:
     QTimer m_heartBeatTimer;
     QUdpSocket * m_socket;
     bool m_isRunning;
-    unsigned m_lastSequenceNumber;
+    QList<uint32_t> m_lastSequenceNumbers;
 };
 
 typedef QSharedPointer<GT7TelemetryReceiver> PGT7TelemetryReceiver;

@@ -81,9 +81,17 @@ class DashWidget : public QStackedWidget
 
 public:
     DashWidget (QWidget * parent, PDash dash);
+    void setColor (const QColor & color);
+
+protected:
+    void paintEvent(QPaintEvent * ev);
 
 signals:
     void exitDash();
+
+private:
+    QPainter m_painter;
+    QColor m_color;
 };
 
 class DialogWidget : public QWidget
@@ -123,7 +131,7 @@ public:
 
         m_layout = new QGridLayout(this);
         m_layout->setRowStretch(0, 1);
-        m_layout->setRowStretch(1, 100);
+        m_layout->setSpacing(10);
 
         m_head = makeHead(cmp, parent->widget, backButton, title);
         if (!showHeader && !backButton)
@@ -136,11 +144,28 @@ public:
         }
 
 
-        m_layout->addWidget(m_head, 0, 0);
-        m_layout->addWidget(cmp->getWidget(), 1, 0);
+        if (showHeader)
+        {
+            m_layout->addWidget(m_head, 0, 0);
+            if (cmp->getWidget()->isEnabled())
+            {
+                DBG_MSG << "Add visible widget" << cmp->defaultTitle();
+                m_layout->setRowStretch(1, 100);
+                m_layout->addWidget(cmp->getWidget(), 1, 0);
+            }
+            else
+            {
+                DBG_MSG << "Do not add invisible widget" << cmp->defaultTitle();
+            }
+        }
+        else
+        {
+            m_layout->addWidget(cmp->getWidget(), 0, 0);
+        }
 
         setContentsMargins(0,0,0,0);
         m_layout->setContentsMargins(0,0,0,0);
+        //setStyleSheet("background-color:red;");
     }
 
 public slots:
@@ -204,7 +229,7 @@ protected:
         head->setText(m_headText);
         head->setAlignment(Qt::AlignCenter);
         QFont font = head->font();
-        font.setPointSizeF(cmp->baseFontSize() * 6 * g_globalConfiguration.fontScale());
+        font.setPointSizeF(cmp->baseFontSize() * 6);
         font.setBold(true);
         head->setFont(font);
         head->setStyleSheet("color:" + g_globalConfiguration.headerTextColor().name() + ";");

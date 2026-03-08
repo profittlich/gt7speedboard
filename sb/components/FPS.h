@@ -3,6 +3,7 @@
 #include "sb/components/Component.h"
 #include "sb/widgets/ColorLabel.h"
 #include <QtCore/qdatetime.h>
+#include <QElapsedTimer>
 
 class FPS : public Component
 {

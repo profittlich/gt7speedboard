@@ -6,9 +6,24 @@ DashWidget::DashWidget (QWidget * parent, PDash dash) : QStackedWidget(parent)
 {
     DialogWidget * dialog = new DialogWidget(this, dash);
     addWidget(dialog);
-    setContentsMargins(0,0,0,0);
+    m_color = g_globalConfiguration.dimColor();
 }
 
+void DashWidget::paintEvent(QPaintEvent * ev)
+{
+    m_painter.begin(this);
+    m_painter.setPen(m_color);
+    m_painter.setBrush(m_color);
+    m_painter.drawRect(0, 0, width(), height());
+    m_painter.end();
+
+    QStackedWidget::paintEvent(ev);
+}
+
+void DashWidget::setColor (const QColor & color)
+{
+    m_color = color;
+}
 
 QJsonValue DashBuilder::jVal(QJsonObject obj, QString key, QJsonValue def)
 {
@@ -45,6 +60,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         }
 
         newLayout->setContentsMargins(0,0,0,0);
+        newLayout->setSpacing(10);
 
         QList<PDashNode> cmpList;
 
@@ -126,6 +142,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
                 }
                 else if (config[i].isDouble())
                 {
+                    DBG_MSG << "Param" << i << config[i];
                     ComponentParameter<float> param (i, config[i].toDouble());
                     cmp->setFloatParameter(param);
                 }
@@ -190,6 +207,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         if (cmp->getWidget() != nullptr)
         {
             ComponentWidget * cw = new ComponentWidget(dash, cmp, firstComp, showHeader, title);
+
             connect(cmp.get(), &Component::setTitleSuffix, cw, &ComponentWidget::setSuffix);
             firstComp = false;
 
@@ -274,6 +292,7 @@ PDash DashBuilder::makeDash(QWidget * parent, QJsonDocument spec)
 
         QWidget * pageWidget = new QWidget();
 
+        pageWidget->setContentsMargins(20,20,20,20);
         result->widget->addWidget (pageWidget);
 
         QHBoxLayout * layout = new QHBoxLayout(result->widget->widget(result->widget->count()-1));
@@ -288,6 +307,7 @@ PDash DashBuilder::makeDash(QWidget * parent, QJsonDocument spec)
     //qDebug(pages.toJson());
 
     result->widget->setCurrentIndex(1);
+    //result->widget->setContentsMargins(14,14,14,14);
 
     return result;
 }

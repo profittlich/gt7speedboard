@@ -6,22 +6,22 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QFileDialog>
+#include "sb/widgets/ErrorScreen.h"
 #include "sb/widgets/StartScreen.h"
 #include "sb/receiver/GT7TelemetryReceiver.h"
 #include "sb/system/DashBuilder.h"
 #include "sb/system/Configuration.h"
 #include "sb/system/KeyStrings.h"
 
-
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), m_inDash(false)
 {
-    qDebug("Construct MainWidget");
+    DBG_MSG << "Construct MainWidget";
     m_widget = nullptr;
-    setStyleSheet("QLabel { background-color: " + g_globalConfiguration.dimColor().name() + "; color : white; }");
 
     this->setWindowTitle("SpeedBoard for GT7");
-    m_layout = new QVBoxLayout(this);
+    m_layout = new QStackedLayout(this);
+    setLayout(m_layout);
     setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + ";");
     showStartScreen();
     auto x = initQtKeys();
@@ -31,24 +31,21 @@ MainWidget::~MainWidget() {}
 
 void MainWidget::showStartScreen()
 {
+    setKeepScreenOn(false);
     if (m_widget != nullptr)
     {
         m_receiver.clear();
         m_controller.clear();
+        if (m_debugRecorder.get())
+        {
+            m_debugRecorder->stop();
+            m_debugRecorder.clear();
+        }
         m_widget->deleteLater();
 
-#ifdef Q_OS_IOS
-        QDir storeLoc (QStandardPaths::standardLocations(QStandardPaths::StandardLocation::DocumentsLocation)[0] + "/Documents");
-#else
-        QDir storeLoc (QStandardPaths::standardLocations(QStandardPaths::StandardLocation::AppDataLocation)[0]);
-#endif
-        if(!storeLoc.exists())
-        {
-            qDebug("Create data path");
-            storeLoc.mkpath(storeLoc.absolutePath());
-        }
+        QDir storeLoc = getStorageLocation();
         QFile outFile (storeLoc.absolutePath() + "/Last Used.sblayout");
-        qDebug() << "Out file: " << outFile.fileName();
+        DBG_MSG << "Out file: " << outFile.fileName();
         if (outFile.open(QIODevice::WriteOnly))
         {
             QTextStream stream( &outFile );
@@ -56,20 +53,25 @@ void MainWidget::showStartScreen()
             outFile.close();
         }
     }
+
     m_widget = new StartScreen(this);
+    //m_layout->setContentsMargins(0,0,0,0);
+
     m_layout->addWidget(m_widget);
+
     m_inDash = false;
 
     connect(dynamic_cast<StartScreen*> (m_widget), &StartScreen::startDash, this, &MainWidget::startDash);
-    setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + ";");
+    setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + "; color:white;");
 }
 
 void MainWidget::startDash ()
 {
+    setKeepScreenOn(true);
     QByteArray jsonData;
 
     QFile f(g_globalConfiguration.selectedLayout());
-    qDebug() << "Selected layout: " << f.fileName();
+    DBG_MSG << "Selected layout: " << f.fileName();
     if (!f.exists())
     {
         QFile f (":/assets/assets/Default.sblayout");
@@ -89,12 +91,23 @@ void MainWidget::startDash ()
     m_receiver = QSharedPointer<TelemetryReceiver> (new GT7TelemetryReceiver());
     m_controller = QSharedPointer<Controller> (new Controller());
 
+#ifdef QT_DEBUG
+    QDir storeLoc = getStorageLocation();
+
+    m_debugRecorder = PRawRecorder (new RawRecorder(storeLoc.absolutePath() + "/Last Recording.gt7"));
+    connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_debugRecorder.get(), &RawRecorder::newTelemetryPoint);
+    m_debugRecorder->start();
+#endif
+
     PDashBuilder dashbuilder = PDashBuilder(new DashBuilder());
     m_dash = dashbuilder->makeDash(this, jDoc);
 
     if (m_dash == nullptr)
     {
         qInfo("No valid dash");
+        ErrorScreen * err = new ErrorScreen (this, "Layout is broken", nullptr);
+        m_layout->insertWidget(0,err);
+        m_layout->setCurrentIndex(0);
         return;
     }
 
@@ -102,6 +115,11 @@ void MainWidget::startDash ()
     {
         m_widget->deleteLater();
     }
+    if (m_widget != nullptr)
+    {
+        m_layout->removeWidget(m_widget);
+    }
+
     m_widget = m_dash->widget;
     m_controller->setDash(m_dash);
 
@@ -114,7 +132,8 @@ void MainWidget::startDash ()
     connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_controller.get(), &Controller::newTelemetryPoint);
     m_receiver->start();
     m_layout->addWidget(m_widget);
-    setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + ";");
+    m_layout->setContentsMargins(0,0,0,0);
+    setStyleSheet("");//background-color: " + g_globalConfiguration.dimColor().name() + ";");
     m_inDash = true;
 }
 
@@ -122,9 +141,13 @@ void MainWidget::keyPressEvent(QKeyEvent *event)
 {
     if (m_inDash)
     {
-        if (event->key() == Qt::Key_Escape)
+        if (event->key() == Qt::Key_Escape || event->key() == Qt::Key_Back)
         {
             m_dash->widget->exitDash();
+        }
+        else if (event->key() == Qt::Key_C)
+        {
+            startDash();
         }
         else if (event->key() == Qt::Key_Right)
         {
@@ -163,4 +186,12 @@ void MainWidget::keyPressEvent(QKeyEvent *event)
     {
         QWidget::keyPressEvent(event);
     }
+}
+
+void MainWidget::resizeEvent(QResizeEvent * ev)
+{
+    //DBG_MSG << ev->oldSize().width() << "x" << ev->oldSize().height() << " -> " << ev->size().width() << "x" << ev->size().height();
+    //DBG_MSG << this->contentsMargins().top();
+    this->setContentsMargins(0,0,0,0);
+    //DBG_MSG << this->contentsMargins().top();
 }

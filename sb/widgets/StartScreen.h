@@ -1,9 +1,11 @@
 #pragma once
 
+#include "qscrollarea.h"
 #include <QWidget>
 #include <QLineEdit>
 #include <QLabel>
 #include <QComboBox>
+#include "ImageLabel.hpp"
 
 class StartScreen : public QWidget
 {
@@ -15,6 +17,7 @@ public:
 public slots:
     void startDashClicked();
     void selectLayout(unsigned idx);
+    void setFontSize(float size);
 
 signals:
     void startDash();
@@ -24,6 +27,6 @@ protected:
 
 private:
     QLineEdit * m_leIP;
-    QLabel * m_lbHead;
+    ImageLabel * m_lbHead;
     QComboBox * m_selectedLayout;
 };

@@ -8,6 +8,8 @@ class TelemetryPointGT7 : public TelemetryPoint
 public:
     TelemetryPointGT7(const QByteArray & data);
 
+    virtual QByteArray getData() override;
+
     virtual int getInt(size_t key) override;
 
     virtual QMap<QString, size_t> getIntKeys() override;
@@ -47,6 +49,8 @@ public:
     const uint32_t & unknown100() const { return m_unknown100; }
 
 private:
+    QByteArray m_data;
+
     /* PROPERTIES */
     int32_t m_carID;
 

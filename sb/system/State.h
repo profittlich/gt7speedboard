@@ -36,14 +36,44 @@ public:
         newLapIsClosedLoop(false),
         newSession(false),
         inPit(false),
-        onNewTrack(false),
-        maybeOnNewTrack(false),
-        presetChanged(false)
-    {}
+        //onNewTrack(false),
+        //maybeOnNewTrack(false),
+        presetChanged(false),
+        frameDrops(0),
+        cpuLoad(0),
+        avgFrameTime(16.7)
+    {
+        lastProcessingTimes.push_back(16.7 * 1000000);
+        lastProcessingTimes.push_back(16.7 * 1000000);
+        lastProcessingTimes.push_back(16.7 * 1000000);
+        lastProcessingTimes.push_back(16.7 * 1000000);
+        lastProcessingTimes.push_back(16.7 * 1000000);
+        lastProcessingTimes.push_back(16.7 * 1000000);
+
+        lastFpsTimes.push_back(16.7 * 1000000);
+        lastFpsTimes.push_back(16.7 * 1000000);
+        lastFpsTimes.push_back(16.7 * 1000000);
+        lastFpsTimes.push_back(16.7 * 1000000);
+        lastFpsTimes.push_back(16.7 * 1000000);
+        lastFpsTimes.push_back(16.7 * 1000000);
+    }
+
+    void addMessage(QString channel, QString message)
+    {
+        m_messageQueue[channel].push_back(message);
+    }
+
+    QList<QString> messages(QString channel)
+    {
+        if (m_messageQueue.contains(channel))
+        {
+            return m_messageQueue[channel];
+        }
+        return QList<QString> ();
+    }
 
     PLap currentLap;
     float lapProgress;
-    //bool currentLapValid;
 
     QList<PLap> previousLaps;
     QMap<QString, PComparisonLap> comparisonLaps;
@@ -53,17 +83,28 @@ public:
 
     FuelData fuelData;
 
-    unsigned lastProcessingTime;
+    QList<unsigned> lastProcessingTimes;
+    QList<unsigned> lastFpsTimes;
+    unsigned frameDrops;
+
+    float cpuLoad;
+    float avgFrameTime;
 
 protected:
+    void clearMessages()
+    {
+        m_messageQueue.clear();
+    }
+
     bool newLap;
     bool newLapIsClosedLoop; // TODO: redundant with Lap::m_valid?
     bool newSession;
     bool inPit;
-    bool onNewTrack;
-    bool maybeOnNewTrack;
+    //bool onNewTrack;
+    //bool maybeOnNewTrack;
     QString currentPreset;
     bool presetChanged;
+    QMap<QString, QList<QString>> m_messageQueue;
 };
 
 typedef QSharedPointer<State> PState;

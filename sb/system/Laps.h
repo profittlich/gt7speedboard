@@ -75,6 +75,7 @@ public:
 
     void invalidate ()
     {
+        DBG_MSG << "Invalidate lap";
         m_valid = false;
     }
 
@@ -95,7 +96,6 @@ class ComparisonLap
 {
 public:
     ComparisonLap () : lapTime(UINT_MAX), hasClosestPoint(false) {}
-    QString name;
     PLap lap;
     unsigned lapTime;
     size_t closestPoint;

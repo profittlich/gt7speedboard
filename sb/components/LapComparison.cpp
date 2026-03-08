@@ -21,7 +21,7 @@ LapComparison::LapComparison (const QJsonValue config) : Component(config), m_ta
     QFont font = m_speed->font();
     font.setPointSizeF(baseFontSize() * 5);
     m_speed->setFont(font);
-    m_speed->setStyleSheet("color : #fff;");
+    m_speed->setStyleSheet("color : #fff;font-weight:bold;");
 
     m_speed->setText((*m_target)().toUpper());
 
@@ -54,6 +54,18 @@ void LapComparison::presetSwitched()
 
 void LapComparison::pointFinished(PTelemetryPoint p)
 {
+    if (canFullScreenSignal() != m_prevFullScreenPermission)
+    {
+        m_prevFullScreenPermission = canFullScreenSignal();
+        if (canFullScreenSignal())
+        {
+            m_speed->setStyleSheet("color : #fff;font-weight:bold;text-decoration:underline;");
+        }
+        else
+        {
+            m_speed->setStyleSheet("color : #fff;font-weight:bold;");
+        }
+    }
     if (state()->comparisonLaps.contains((*m_target)()))
     {
         m_targetLap = state()->comparisonLaps[(*m_target)()];
@@ -106,6 +118,21 @@ void LapComparison::pointFinished(PTelemetryPoint p)
     m_time->update();
 }
 
+void LapComparison::completedLap(PLap, bool)
+{
+    if (state()->comparisonLaps.contains((*m_target)()))
+    {
+    if (state()->comparisonLaps[(*m_target)()]->lap->valid())
+    {
+        m_speed->setText((*m_target)().toUpper());
+    }
+    else
+    {
+        m_speed->setText("(" + (*m_target)().toUpper() + ")");
+    }
+    }
+}
+
 QColor LapComparison::signalColor()
 {
     if (m_targetLap.isNull() || !m_targetLap->hasClosestPoint)
@@ -132,7 +159,7 @@ QColor LapComparison::signalColor()
     }
     if (curPt->brake() > 2)
     {
-        return QColor (unsigned (curPt->brake() * 2.55) << 16);
+        return QColor (0xffff00 - (unsigned (curPt->brake() * 2.55) << 8));
     }
     return QColor();
 }

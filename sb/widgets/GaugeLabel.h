@@ -35,4 +35,9 @@ private:
     bool m_vertical;
     bool m_displayExcess;
     bool m_disabled;
+    bool m_stickyBars;
+    float m_stickyPos;
+    float m_stickyNeg;
+    unsigned m_countdownPos;
+    unsigned m_countdownNeg;
 };

@@ -1,5 +1,6 @@
 #include "sb/widgets/SideButtonLabel.h"
 #include "sb/system/Configuration.h"
+#include "sb/system/Helpers.h"
 #include <QFileDialog>
 
 const unsigned g_margin = 10;
@@ -29,12 +30,14 @@ void SideButtonLabel::paintEvent(QPaintEvent * ev)
     m_painter.setPen(g_globalConfiguration.backgroundColor());
     m_painter.setBrush(g_globalConfiguration.backgroundColor());
 
+    auto margin = height() * g_margin / 70.0;
+
     QPolygon poly(3);
-    poly.setPoint(0, QPoint(g_margin, height()/2));
-    poly.setPoint(1, QPoint(g_margin + height()/2, g_margin));
-    poly.setPoint(2, QPoint(g_margin + height()/2, height() - g_margin));
+    poly.setPoint(0, QPoint(margin, height()/2));
+    poly.setPoint(1, QPoint(margin + height()/2, margin));
+    poly.setPoint(2, QPoint(margin + height()/2, height() - margin));
     m_painter.drawPolygon(poly);
-    m_painter.drawRect(3*g_margin, height()/2-g_margin,     height()-2*g_margin, 2*g_margin);
+    m_painter.drawRect(3*margin, height()/2-margin,     height()-2*margin, 2*margin);
     m_painter.end();
 
     QLabel::paintEvent(ev);

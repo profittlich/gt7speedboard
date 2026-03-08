@@ -7,6 +7,8 @@
 #include <QSettings>
 #include <QColor>
 
+#include "sb/system/Helpers.h"
+
 class Configuration
 {
 public:
@@ -25,7 +27,11 @@ public:
         setDimColor(QColor("#333"));
         setHeaderTextColor(QColor("white"));
 
-        setFontScale(1);
+        m_platformFontScale = 1;
+#ifdef Q_OS_ANDROID
+        m_platformFontScale = 0.5;
+#endif
+        setFontScale(settings.value("fontScale", 1.0).toFloat());
         setFuelStatisticsLaps(5);
 
         m_maxPointDistanceForValidLap = 20.0;
@@ -34,6 +40,8 @@ public:
     }
 
     void loadCars();
+
+    float platformFontScale () { return m_platformFontScale; }
 
     QString carName(const unsigned carId) const
     {
@@ -45,9 +53,9 @@ public:
     }
 
     /* SETTERS */
-    void setFontScale(const float & v) { m_fontScale = v; }
+    void setFontScale(const float & v) { m_fontScale = m_platformFontScale * v; }
     //void setStorageLocation(const QString & v) { m_storageLocation = v; }
-    void setHostAddress(const QString & v) { qInfo("%s", v.toStdString().c_str()); m_hostAddress = v; }
+    void setHostAddress(const QString & v) { DBG_MSG << "PlayStation IP:" << v; m_hostAddress = v; }
     void setSelectedLayout(const QString & v) { m_selectedLayout = v; }
     void setBackgroundColor(const QColor & c) { m_backgroundColor = c; }
     void setHeaderTextColor(const QColor & c) { m_headerTextColor = c; }
@@ -71,6 +79,7 @@ public:
 
 private:
     /* PROPERTIES */
+    float m_platformFontScale;
     float m_fontScale;
     //QString m_storageLocation;
     QString m_hostAddress;

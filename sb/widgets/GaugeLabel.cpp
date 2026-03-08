@@ -3,7 +3,11 @@
 
 GaugeLabel::GaugeLabel(QWidget * parent, const float base, const float spread, bool twoWay, bool vertical, bool displayExcess) : QLabel(parent), m_base(base), m_spread(spread), m_twoWay(twoWay), m_vertical(vertical), m_displayExcess(displayExcess)
 {
-    setMinimumSize(10, 10);
+    m_countdownPos = 0;
+    m_countdownNeg = 0;
+    m_stickyBars = true;
+
+    setMinimumSize(10, 0);
     setValue(m_base);
     m_backgroundColor = g_globalConfiguration.backgroundColor();
 
@@ -23,6 +27,40 @@ void GaugeLabel::setValue (const float value)
 {
     m_disabled = false;
     m_value = value;
+
+    if (m_countdownPos > 0)
+    {
+        m_countdownPos--;
+    }
+    if (m_countdownPos == 0)
+    {
+        m_stickyPos = 0;
+    }
+
+    if (m_countdownNeg > 0)
+    {
+        m_countdownNeg--;
+    }
+    if (m_countdownNeg == 0)
+    {
+        m_stickyNeg = 0;
+    }
+
+    if (m_stickyBars)
+    {
+        if (m_value > m_stickyPos)
+        {
+            m_stickyPos = m_value;
+            m_countdownPos = 20;
+        }
+        if (m_value < m_stickyNeg)
+        {
+            m_stickyNeg = m_value;
+            m_countdownNeg = 20;
+        }
+    }
+
+    update();
 }
 
 void GaugeLabel::disable()
@@ -107,6 +145,24 @@ void GaugeLabel::paintEvent(QPaintEvent * ev)
             {
                 m_painter.setPen(QColor(255, 255, 255));
                 m_painter.drawLine(start * width(), 0, start * width(), height());
+            }
+
+            if (m_countdownNeg > 0)
+            {
+                QPen pen(QColor(255,0,0));
+                pen.setWidth(3);
+                m_painter.setPen(pen);
+                auto temp = (m_stickyNeg - m_base) / m_spread;
+                m_painter.drawLine(start * width() + temp * (1-start) * width(), 0, start * width() + temp * (1-start) * width(), height());
+            }
+
+            if (m_countdownPos > 0)
+            {
+                QPen pen(QColor(0,255,0));
+                pen.setWidth(3);
+                m_painter.setPen(pen);
+                auto temp = (m_stickyPos - m_base) / m_spread;
+                m_painter.drawLine(start * width() + temp * (1-start) * width(), 0, start * width() + temp * (1-start) * width(), height());
             }
         }
 

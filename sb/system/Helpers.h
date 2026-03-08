@@ -4,15 +4,25 @@
 #include <QColor>
 #include <QSharedPointer>
 #include <QtCore/qdebug.h>
+#include <QDir>
+
+#include<iostream>
+
 #include <qlogging.h>
 
 QString indexToTime(size_t idx);
 
 QString msToTime(unsigned ms);
 
-#define DBG_MSG qDebug () << __FILE__ << "::" << __LINE__ << ":"
+QDir getStorageLocation();
+void setKeepScreenOn(bool enable);
+
+#define DBG_MSG qDebug () << (QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
+
 
 const float c_FPS = 59.94;
+
+void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt);
 
 class ColorMapper
 {

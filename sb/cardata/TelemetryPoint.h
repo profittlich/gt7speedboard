@@ -14,6 +14,8 @@ public:
         return velocity().angle(p2.velocity());
     }
 
+    virtual QByteArray getData() = 0;
+
     virtual int getInt(size_t key);
     virtual float getFloat(size_t key);
     virtual bool getBool(size_t key);

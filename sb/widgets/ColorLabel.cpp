@@ -3,7 +3,9 @@
 
 ColorLabel::ColorLabel(QWidget * parent, QColor col) : QLabel(parent)
 {
-    setMinimumSize(10, 10);
+    //DBG_MSG << minimumHeight() << minimumHeight() << sizeHint();
+    setMinimumSize(10, 0);
+    //setSizePolicy (QSizePolicy::Preferred, QSizePolicy::Preferred);
     if (col.isValid())
     {
         setColor(col);

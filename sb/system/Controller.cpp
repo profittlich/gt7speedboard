@@ -1,4 +1,5 @@
 #include "sb/system/Controller.h"
+#include "sb/cardata/TelemetryPointGT7.h"
 #include "sb/system/Configuration.h"
 
 void Controller::setDash(PDash d)
@@ -18,21 +19,32 @@ PState Controller::state()
 
 void Controller::newTelemetryPoint(PTelemetryPoint p)
 {
+    static unsigned sCarId=0;
+    auto fpsTime = m_fpsTimer.nsecsElapsed();
+    m_fpsTimer.start();
+
     m_timer.start();
     if (p->sequenceNumber() != m_previousSequenceNumber + 1)
     {
         DBG_MSG << ("Controller: Start of new telemetry sequence, d=" + QString::number (p->sequenceNumber() - m_previousSequenceNumber).toLatin1());
+        m_state->currentLap->invalidate();
+        m_state->frameDrops++;
     }
     m_previousSequenceNumber = p->sequenceNumber();
+
+    PTelemetryPointGT7 gt7 = qSharedPointerCast<TelemetryPointGT7>(p);
+
+    if (!gt7.isNull() && gt7->carID() != sCarId)
+    {
+        sCarId = gt7->carID();
+        DBG_MSG << "New car ID: " << sCarId;
+
+    }
 
     if (p->isPaused() || !p->inRace())
     {
         return;
     }
-
-    //qInfo("Point");
-    // Reset TODO: optimize
-    QString newStyle = "background-color: " + g_globalConfiguration.dimColor().name() + ";";
 
     if (m_state->presetChanged)
     {
@@ -134,15 +146,24 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
         }
     }
 
+    QColor newColor;
+    m_dash->widget->setColor(g_globalConfiguration.dimColor());
     for (auto it : std::as_const(m_dash->components))
     {
         if (it->canFullScreenSignal())
         {
             QColor col = it->signalColor();
-            if (col.isValid())
+            if (col.isValid() && col != m_currentColor)
             {
-                newStyle = "background-color: " + col.name() + ";";
+                m_dash->widget->setColor(col);
+                newColor = col;
             }
+        }
+
+        if (newColor != m_currentColor)
+        {
+            m_dash->widget->update();
+            m_currentColor = newColor;
         }
 
         if (it->canRaise() && it->raise() && it->stacker() != nullptr)
@@ -151,14 +172,31 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
         }
     }
 
-    if (newStyle != m_currentStyle)
-    {
-        m_dash->widget->setStyleSheet(newStyle);
-        m_dash->widget->parentWidget()->setStyleSheet(newStyle);
-        m_currentStyle = newStyle;
-    }
+    m_state->clearMessages();
 
-    m_state->lastProcessingTime = m_timer.nsecsElapsed();
+    m_state->lastProcessingTimes.push_back (m_timer.nsecsElapsed());
+    m_state->lastProcessingTimes.pop_front();
+
+    unsigned summed = 0;
+    for (auto i : m_state->lastProcessingTimes)
+    {
+        summed += i;
+    }
+    unsigned avgTime = summed / state()->lastProcessingTimes.size();
+
+    m_state->lastFpsTimes.push_back (fpsTime);
+    m_state->lastFpsTimes.pop_front();
+
+    summed = 0;
+    for (auto i : m_state->lastFpsTimes)
+    {
+        summed += i;
+    }
+    unsigned avgFpsTime = float(summed) / state()->lastFpsTimes.size();
+
+
+    m_state->cpuLoad = (m_timer.nsecsElapsed()/1000)/1000.0/16.7;
+    m_state->avgFrameTime = (fpsTime/100000)/10.0;
 }
 
 

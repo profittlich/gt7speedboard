@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sb/components/Component.h"
+#include "sb/widgets/GaugeLabel.h"
 #include "sb/widgets/ColorLabel.h"
 #include <QtCore/qdatetime.h>
 
@@ -21,5 +22,8 @@ public:
 
 
 private:
-    ColorLabel * m_widget;
+    QWidget * m_widget;
+    GaugeLabel * m_widgetCpu;
+    GaugeLabel * m_widgetFps;
+    ColorLabel * m_widgetDrops;
 };

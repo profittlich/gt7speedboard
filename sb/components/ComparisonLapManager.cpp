@@ -120,7 +120,6 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         }
         auto lastCompLap = state()->comparisonLaps["last"];
         lastCompLap->lap = lastLap;
-        lastCompLap->name = "last";
         lastCompLap->lapTime = lastLap->lapTime();
 
         DBG_MSG << "Last lap: " << lastCompLap->lapTime << "ms";
@@ -138,13 +137,16 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         if (bestCompLap->lapTime > lastLap->lapTime())
         {
             bestCompLap->lap = lastLap;
-            bestCompLap->name = "best";
             bestCompLap->lapTime = lastLap->lapTime();
         }
         DBG_MSG << "Best lap: " << bestCompLap->lapTime << "ms";
     }
 
-
+    // PROGRESS
+    if (state()->comparisonLaps.contains(("best")))
+    {
+        state()->comparisonLaps["progress"] = state()->comparisonLaps["best"];
+    }
 
     // TODO update points again for new lap
     updateClosestPoints(m_cachedPt);

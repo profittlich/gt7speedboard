@@ -32,6 +32,9 @@ void GT7TelemetryReceiver::start()
     sendHeartBeat();
     m_heartBeatTimer.setInterval(3000);
     m_heartBeatTimer.start();
+
+    m_lastSequenceNumbers.clear();
+    m_lastSequenceNumbers.push_back(0);
 }
 
 void GT7TelemetryReceiver::stop()
@@ -87,22 +90,39 @@ void GT7TelemetryReceiver::readPendingDatagrams()
     while (m_socket->hasPendingDatagrams())
     {
         QNetworkDatagram datagram = m_socket->receiveDatagram();
+        if (!datagram.isValid())
+        {
+            DBG_MSG << "Invalid datagram received, expected " << (m_lastSequenceNumbers.back() + 1);
+        }
+
+        PTelemetryPointGT7 p;
         if (magicValid(datagram.data()))
         {
             DBG_MSG << ("Unencrypted datagram received.");
-            TelemetryPointGT7 p (datagram.data());
+            p = PTelemetryPointGT7 (new TelemetryPointGT7(datagram.data()));
         }
         else
         {
             QByteArray unencrypted = decrypt(datagram.data());
-            TelemetryPointGT7 p (unencrypted);
-            if (p.sequenceNumber() != m_lastSequenceNumber + 1)
-            {
-                DBG_MSG << ("Receiver: Start of new telemetry sequence, d=" + QString::number (p.sequenceNumber() - m_lastSequenceNumber).toLatin1());
-            }
-            m_lastSequenceNumber = p.sequenceNumber();
-            emit newTelemetryPoint(QSharedPointer<TelemetryPoint>(new TelemetryPointGT7 (unencrypted)));
+            p = PTelemetryPointGT7 (new TelemetryPointGT7(unencrypted));
         }
+
+        if (p->sequenceNumber() != m_lastSequenceNumbers.back() + 1)
+        {
+            if (m_lastSequenceNumbers.contains(p->sequenceNumber()))
+            {
+                DBG_MSG << "Double receive of telemetry package, sequence " << p->sequenceNumber();
+                continue;
+            }
+            DBG_MSG << ("Receiver: Start of new telemetry sequence, d=" + QString::number (int(p->sequenceNumber()) - int(m_lastSequenceNumbers.back())).toLatin1()) << p->sequenceNumber() << m_lastSequenceNumbers.back();
+            //DBG_MSG << (datagram.data() == s_prevDatagram.data());
+        }
+        m_lastSequenceNumbers.push_back (p->sequenceNumber());
+        while(m_lastSequenceNumbers.size() > 5)
+        {
+            m_lastSequenceNumbers.pop_front();
+        }
+        emit newTelemetryPoint(QSharedPointer<TelemetryPoint>(p));
     }
 }
 

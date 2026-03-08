@@ -12,7 +12,7 @@ Message::Message (const QJsonValue config) : Component(config)
     m_widget->setFont(font);
     m_widget->setStyleSheet("color : #fff;");
 
-    m_widget->setText("0\nkm/h");
+    m_widget->setText("-");
 }
 
 QWidget * Message::getWidget() const
@@ -27,28 +27,42 @@ QString Message::defaultTitle () const
 
 void Message::newPoint(PTelemetryPoint p)
 {
+    auto newMessages = state()->messages("main");
+    m_messageQueue.append(newMessages);
+
     if (m_countdown > 0)
     {
         m_countdown--;
     }
     else
     {
-        m_widget->setText("");
+        if (m_messageQueue.size() > 0)
+        {
+            m_widget->setText(m_messageQueue.front());
+            m_messageQueue.pop_front();
+            m_countdown = 100;
+        }
+        else
+        {
+            m_widget->setText("");
+        }
     }
 }
 
 void Message::completedLap(PLap lastLap, bool isFullLap)
 {
     DBG_MSG << ("New lap message on");
-    m_widget->setText("NEW LAP");
-    m_countdown = 180;
+    //m_widget->setText("NEW LAP");
+    //m_countdown = 180;
+    m_messageQueue.append("NEW LAP");
 }
 
 void Message::newSession()
 {
     DBG_MSG << ("New session message on");
-    m_widget->setText("NEW SESSION");
-    m_countdown = 180;
+    //m_widget->setText("NEW SESSION");
+    //m_countdown = 180;
+    m_messageQueue.append("NEW SESSION");
 }
 
 bool Message::raise()

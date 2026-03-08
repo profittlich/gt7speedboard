@@ -96,7 +96,7 @@
                                     "stretch": 4
                                 },
                                 {
-                                    "component": "Brake",
+                                    "component": "CPULoad",
                                     "stretch": 1
                                 }
                             ]
