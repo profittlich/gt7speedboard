@@ -3,6 +3,8 @@
 #include "sb/components/Component.h"
 #include "sb/widgets/ColorLabel.h"
 
+#include <QScrollArea>
+
 class LapTimes : public Component
 {
 public:
@@ -18,7 +20,11 @@ public:
     static QList<QString> actions ();
     static QString componentId ();
 
+protected:
+    void setupScroller(QScrollArea *area);
+
 
 private:
-    ColorLabel * m_widget;
+    QScrollArea * m_scroller;
+    QLabel * m_widget;
 };

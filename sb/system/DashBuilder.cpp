@@ -39,7 +39,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
     //DBG_MSG << ("Make dash tree");
     if (!cur.isObject())
     {
-        DBG_MSG << ("Not an object");
+        DBG_MSG << "Not an object" << cur.toJson();
         return nullptr;
     }
 
@@ -75,9 +75,16 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         {
             curLayout->addWidget(widget);
             curLayout->setStretch(curLayout->count()-1,jVal(curObj, "stretch", 1).toInt(1));
+
         }
 
         dashNode = PDashNode(new DashList(cmpList));
+
+        if (curObj.contains("stretch"))
+        {
+            DBG_MSG << "stretch found";
+            dashNode->addField("stretch", jVal(curObj, "stretch", 1));
+        }
 
         return widget;
     }

@@ -2,11 +2,19 @@
 
 #include "sb/components/ComponentFactory.h"
 
+#include <QScroller>
+#include <QtWidgets/qboxlayout.h>
+
 
 
 LapTimes::LapTimes (const QJsonValue config) : Component(config)
 {
-    m_widget = new ColorLabel();
+    m_scroller = new QScrollArea();
+    QVBoxLayout * layout = new QVBoxLayout(m_scroller);
+
+    m_widget = new QLabel();
+    layout->addWidget(m_widget);
+    //m_scroller->setWidget(m_widget);
 
     m_widget->setAlignment(Qt::AlignLeft);
     QFont font = m_widget->font();
@@ -14,12 +22,24 @@ LapTimes::LapTimes (const QJsonValue config) : Component(config)
     m_widget->setFont(font);
     m_widget->setStyleSheet("color : #fff; padding:10px;");
 
-    m_widget->setText("no times yet");
+    m_widget->setText("no times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\n");
+
+    //setupScroller(m_scroller);
+}
+
+void LapTimes::setupScroller(QScrollArea *area)
+{
+    QScroller::grabGesture(area->viewport(), QScroller::LeftMouseButtonGesture);
+    QVariant OvershootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::OvershootAlwaysOff);
+    QScrollerProperties ScrollerProperties = QScroller::scroller(area->viewport())->scrollerProperties();
+    ScrollerProperties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, OvershootPolicy);
+    ScrollerProperties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, OvershootPolicy);
+    QScroller::scroller(area->viewport())->setScrollerProperties(ScrollerProperties);
 }
 
 QWidget * LapTimes::getWidget() const
 {
-    return m_widget;
+    return m_scroller;
 }
 
 QString LapTimes::defaultTitle () const

@@ -25,6 +25,10 @@
                         {
                             "list" : [
                                 {
+                                   "component": "LapDisplay",
+                                   "stretch": 1
+                                },
+                                {
                                     "component" : "FuelPerLap",
                                     "stretch" : 1,
                                     "title" : "FUEL"
@@ -85,25 +89,6 @@
                                 {
                                     "component": "CPULoad",
                                     "stretch": 1
-                                }
-                            ]
-                        },
-                        {
-                            "list" : [
-                                 {
-                                    "component": "LapDisplay",
-                                    "stretch": 1
-                                },
-                                {
-                                    "component": "Map",
-                                    "configuration": {
-                                        "target": "best"
-                                    },
-                                    "stretch": 4
-                                },
-                                {
-                                    "component": "LapTimes",
-                                    "stretch": 2
                                 }
                             ]
                         }

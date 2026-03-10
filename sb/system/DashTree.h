@@ -9,6 +9,25 @@ class DashNode
 {
 public:
     virtual QJsonValue toJson() = 0;
+
+    void addField(QString key, QVariant value) {
+        DBG_MSG << key << value;
+        m_additionalFields[key] = value;
+    }
+
+    QMap<QString, QJsonValue> getFields() {
+        QMap<QString, QJsonValue> result;
+        for (auto i : m_additionalFields.keys())
+        {
+            DBG_MSG << i << m_additionalFields[i];
+            result[i] = m_additionalFields[i].toJsonValue();
+        }
+        return result;
+    }
+
+
+private:
+    QMap<QString, QVariant> m_additionalFields;
 };
 
 typedef QSharedPointer<DashNode> PDashNode;
@@ -90,6 +109,12 @@ public:
         for (auto i : m_list)
         {
             list.append(i->toJson());
+        }
+
+        auto additionalFields = getFields();
+        DBG_MSG << additionalFields.size() << "additional fields";
+        for (auto i : additionalFields.keys()) {
+            result.insert(i, additionalFields[i]);
         }
 
         result.insert("list", list);

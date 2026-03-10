@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include "sb/widgets/ErrorScreen.h"
+#include "sb/widgets/MenuScreen.h"
 #include "sb/widgets/StartScreen.h"
 #include "sb/receiver/GT7TelemetryReceiver.h"
 #include "sb/system/DashBuilder.h"
@@ -129,12 +130,21 @@ void MainWidget::startDash ()
     }
 
     connect(m_dash->widget, &DashWidget::exitDash, this, &MainWidget::showStartScreen);
+    connect(m_dash->widget, &DashWidget::showMenu, this, &MainWidget::showMenuScreen);
     connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_controller.get(), &Controller::newTelemetryPoint);
     m_receiver->start();
     m_layout->addWidget(m_widget);
     m_layout->setContentsMargins(0,0,0,0);
     setStyleSheet("");//background-color: " + g_globalConfiguration.dimColor().name() + ";");
     m_inDash = true;
+}
+
+void MainWidget::showMenuScreen ()
+{
+    MenuScreen * men = new MenuScreen (this, m_dash);
+    m_layout->insertWidget(0,men);
+    m_layout->setCurrentIndex(0);
+    //m_dash->widget->exitDash();
 }
 
 void MainWidget::keyPressEvent(QKeyEvent *event)

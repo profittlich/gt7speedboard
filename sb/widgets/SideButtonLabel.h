@@ -12,7 +12,8 @@ class SideButtonLabel : public ButtonLabel
     Q_OBJECT
 
 public:
-    SideButtonLabel(QWidget * parent = nullptr);
+    enum Type { Menu, Close, Back };
+    SideButtonLabel(QWidget * parent = nullptr, Type type = Menu);
 
 protected:
     void mousePressEvent(QMouseEvent * ev);
@@ -23,4 +24,5 @@ signals:
 
 private:
     QPainter m_painter;
+    Type m_type;
 };

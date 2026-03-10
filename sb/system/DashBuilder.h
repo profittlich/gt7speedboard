@@ -88,6 +88,7 @@ protected:
 
 signals:
     void exitDash();
+    void showMenu();
 
 private:
     QPainter m_painter;
@@ -208,7 +209,7 @@ protected:
         if (backButton)
         {
             SideButtonLabel * sbhead = new SideButtonLabel(dashWidget);
-            SideButtonLabel::connect(sbhead, &SideButtonLabel::buttonClicked, dashWidget, &DashWidget::exitDash);
+            SideButtonLabel::connect(sbhead, &SideButtonLabel::buttonClicked, dashWidget, &DashWidget::showMenu);
             SideButtonLabel::connect(sbhead, &SideButtonLabel::labelClicked, this, &ComponentWidget::selectComponent);
             head = sbhead;
         }
