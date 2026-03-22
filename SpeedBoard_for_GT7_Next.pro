@@ -49,9 +49,12 @@ SOURCES += \
     sb/system/DashBuilder.cpp \
     sb/system/Helpers.cpp \
     sb/system/KeyStrings.cpp \
+    sb/system/Laps.cpp \
     sb/system/RawRecorder.cpp \
+    sb/system/State.cpp \
     sb/widgets/ButtonLabel.cpp \
     sb/widgets/ColorLabel.cpp \
+    sb/widgets/DashWidget.cpp \
     sb/widgets/ErrorScreen.cpp \
     sb/widgets/GaugeLabel.cpp \
     sb/widgets/ImageLabel.cpp \
@@ -99,6 +102,7 @@ HEADERS += \
     sb/system/CarDatabase.h \
     sb/system/Configuration.h \
     sb/system/Controller.h \
+    sb/system/Dash.h \
     sb/system/DashBuilder.h \
     sb/system/DashTree.h \
     sb/system/Helpers.h \
@@ -110,6 +114,9 @@ HEADERS += \
     sb/trackdata/TrackDetector.h \
     sb/widgets/ButtonLabel.h \
     sb/widgets/ColorLabel.h \
+    sb/widgets/ComponentWidget.h \
+    sb/widgets/DashWidget.h \
+    sb/widgets/DialogWidget.h \
     sb/widgets/ErrorScreen.h \
     sb/widgets/GaugeLabel.h \
     sb/widgets/ImageLabel.hpp \
@@ -135,6 +142,10 @@ ios {
 }
 
 DISTFILES += \
+    android/AndroidManifest.xml \
+    android/build.gradle \
+    android/res/values/libs.xml \
+    android/res/xml/qtprovider_paths.xml \
     assets/3_Columns.sblayout \
     assets/SpeedBoard_Logo_black.png \
     assets/SpeedBoard_Logo_black_trans.png \
@@ -146,3 +157,8 @@ DISTFILES += \
 
 RESOURCES += \
     speedboard.qrc
+
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+    ANDROID_PACKAGE_SOURCE_DIR = \
+        $$PWD/android
+}

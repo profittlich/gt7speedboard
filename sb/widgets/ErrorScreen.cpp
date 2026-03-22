@@ -13,6 +13,7 @@
 #include <QDir>
 
 #include "sb/system/Configuration.h"
+#include "sb/widgets/DashWidget.h"
 
 ErrorScreen::ErrorScreen (QWidget * parent, QString message, PDash dash) : QWidget(parent)
 {

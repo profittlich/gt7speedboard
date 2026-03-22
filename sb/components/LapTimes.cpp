@@ -9,12 +9,7 @@
 
 LapTimes::LapTimes (const QJsonValue config) : Component(config)
 {
-    m_scroller = new QScrollArea();
-    QVBoxLayout * layout = new QVBoxLayout(m_scroller);
-
     m_widget = new QLabel();
-    layout->addWidget(m_widget);
-    //m_scroller->setWidget(m_widget);
 
     m_widget->setAlignment(Qt::AlignLeft);
     QFont font = m_widget->font();
@@ -22,9 +17,33 @@ LapTimes::LapTimes (const QJsonValue config) : Component(config)
     m_widget->setFont(font);
     m_widget->setStyleSheet("color : #fff; padding:10px;");
 
-    m_widget->setText("no times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\nno times yet\n");
+    m_widget->setText("no times yet");
 
-    //setupScroller(m_scroller);
+
+
+    m_scroller = new QScrollArea();
+    m_scroller->setWidgetResizable(true);
+    //m_scroller->setFixedHeight(200);
+    //m_scroller->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    //m_scroller->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    //QVBoxLayout * layout = new QVBoxLayout(m_scroller);
+
+
+
+    //scrollWidget->setLayout(layout);
+    //m_scroller->setWidget(scrollWidget);
+    m_scroller->setWidget(m_widget);
+    //layout->addWidget(m_widget);
+
+    //layout->setSizeConstraint(QLayout::SetFixedSize);
+
+
+
+    //m_widget->setEnabled(false);
+    //m_scroller->show();
+
+    setupScroller(m_scroller);
 }
 
 void LapTimes::setupScroller(QScrollArea *area)
@@ -39,6 +58,8 @@ void LapTimes::setupScroller(QScrollArea *area)
 
 QWidget * LapTimes::getWidget() const
 {
+    //QWidget * temp = new QWidget();
+    //temp->setEnabled(false);
     return m_scroller;
 }
 
@@ -52,7 +73,41 @@ void LapTimes::completedLap(PLap, bool)
     QString txt = "";
     for (auto i : state()->comparisonLaps.keys())
     {
-        txt += i + ": " + msToTime(state()->comparisonLaps[i]->lapTime) + " (" + QString::number(state()->comparisonLaps[i]->lapTime) + " ms)\n";
+        if (i == "best"
+         || i == "last"
+         || i == "median"
+         || i == "opt"
+         || i == "ref-a"
+         || i == "ref-b"
+         || i == "ref-c"
+        )
+        {
+            auto lapTime = state()->comparisonLaps[i]->lap->lapTime();
+            if (lapTime >= 0)
+            {
+                txt += i + ": " + msToTime(lapTime)  + "\n";
+            }
+            else
+            {
+                lapTime = state()->comparisonLaps[i]->lap->estimateLapTime();
+                txt += i + ": " + msToTime(lapTime)  + " (est.)\n";
+            }
+        }
+    }
+    txt += "\n";
+    size_t numLaps = state()->previousLaps.size();
+    for (size_t i = 0; i < numLaps; ++i)
+    {
+        PLap cur = state()->previousLaps[numLaps - i - 1];
+        if (cur->points()[0]->currentLap() >= 1)
+        {
+            txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(cur->lapTime());
+            if (!cur->valid())
+            {
+                txt += " <invalid>";
+            }
+            txt += "\n";
+        }
     }
     m_widget->setText(txt);
 }
@@ -75,3 +130,4 @@ QString LapTimes::componentId ()
 
 
 static ComponentFactory::RegisterComponent<LapTimes> reg;
+

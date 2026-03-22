@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-Map::Map (const QJsonValue json) : Component(json), m_target (new ComponentParameter<QString>("target","last", true))
+Map::Map (const QJsonValue json) : Component(json), m_target (new ComponentParameter<QString>("target","last", true)), m_firstPointReceived(false)
 {
     addComponentParameter(m_target);
     m_widget = new SBGLWidget(this);
@@ -37,6 +37,23 @@ QString Map::target()
 void Map::newPoint(PTelemetryPoint p)
 {
     m_widget->addPoint(p);
+    if (!m_firstPointReceived)
+    {
+        m_firstPointReceived = true;
+
+        if (state()->comparisonLaps.contains((*m_target)()) && (m_refLap.isNull() || state()->comparisonLaps[(*m_target)()]->lap != m_refLap))
+        {
+            DBG_MSG << "Set up ref lap" << m_refLap.isNull();
+            m_refLap = state()->comparisonLaps[(*m_target)()]->lap;
+            m_widget->updateRefLap(m_refLap);
+        }
+    }
+    if (!state()->comparisonLaps.contains((*m_target)()))
+    {
+        m_refLap.clear();
+        m_widget->clearRefLap();
+    }
+
     m_widget->update();
 }
 
@@ -50,15 +67,37 @@ void Map::completedLap(PLap lastLap, bool isFullLap)
     m_widget->nextLap();
 }
 
+void SBGLWidget::clearRefLap()
+{
+    m_verticesRef.clear();
+}
+
 void SBGLWidget::updateRefLap(PLap refLap)
 {
     m_verticesRef.clear();
     for (auto i : refLap->points())
     {
+        if (i->position().x() < m_minX)
+        {
+            m_minX = i->position().x();
+        }
+        if (i->position().x() > m_maxX)
+        {
+            m_maxX = i->position().x();
+        }
+        if (i->position().z() < m_minY)
+        {
+            m_minY = i->position().z();
+        }
+        if (i->position().z() > m_maxY)
+        {
+            m_maxY = i->position().z();
+        }
         m_verticesRef.append(i->position().x());
         m_verticesRef.append(i->position().y());
         m_verticesRef.append(i->position().z());
     }
+    DBG_MSG << "New ref lap size: " << m_verticesRef.size();
 }
 
 void SBGLWidget::addPoint(const PTelemetryPoint & p)
@@ -253,14 +292,10 @@ void SBGLWidget::paintGL()
         return;
     }
 
-    //qDebug() << m_maxY << " " << m_minY << "\n";
     auto dx = m_maxX - m_minX;
     auto cx = (m_maxX + m_minX)/2.0;
     auto dy = m_maxY - m_minY;
     auto cy = (m_maxY + m_minY)/2.0;
-
-    //qDebug() << dx << " " << cx << " " << m_maxX << " " << m_minX << "   " <<  "\n";
-
 
     float centerScale = 0;
     if (dx > dy)
@@ -301,23 +336,23 @@ void SBGLWidget::paintGL()
     f->glEnableVertexAttribArray(0);
     f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesPrev.size()/3);
 
+    if (m_verticesRef.size() >= 3)
+    {
+        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef.data());
+        f->glUniform3f(uLoc, 1.0, 0.0, 0.0);
+        f->glEnableVertexAttribArray(0);
+        f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef.size()/3);
+    }
+
     if (m_vertices.size() >= 3)
     {
-        if (m_verticesRef.size() >= 3)
-        {
-            f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef.data());
-            f->glUniform3f(uLoc, 1.0, 0.0, 0.0);
-            f->glEnableVertexAttribArray(0);
-            f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef.size()/3);
-        }
-
-
 
 
         f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_vertices.data());
         f->glUniform3f(uLoc, 1.0, 1.0, 1.0);
         f->glEnableVertexAttribArray(0);
         f->glDrawArrays(GL_LINE_STRIP, 0, m_vertices.size()/3);
+
 #ifndef Q_OS_IOS
 #ifndef Q_OS_ANDROID
         f->glEnable(GL_PROGRAM_POINT_SIZE);
@@ -329,12 +364,14 @@ void SBGLWidget::paintGL()
         f->glUniform3f(uLoc, 1.0, 1.0, 1.0);
         f->glEnableVertexAttribArray(0);
         f->glDrawArrays(GL_POINTS, 0, 1);
-
+    }
+    {
         if (m_parent->state()->comparisonLaps.contains(m_parent->target()))
         {
             auto compLap = m_parent->state()->comparisonLaps[m_parent->target()];
             if (compLap->hasClosestPoint)
             {
+
                 //auto startP = m_parent->state()->currentLap->findClosestPoint(compLap->lap->points()[0]).first;
                 auto startP = compLap->lap->findClosestPoint(m_parent->state()->currentLap->points()[0]).first;
                 //qDebug() << "Last start at = " << startP;
@@ -347,13 +384,12 @@ void SBGLWidget::paintGL()
                 lastPoints[1] = lp->position().y();
                 lastPoints[2] = lp->position().z();
 
+                /*
                 f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, lastPoints);
                 f->glUniform3f(uLoc, 0.3, 0.3, 1);
                 f->glEnableVertexAttribArray(0);
                 f->glDrawArrays(GL_POINTS, 0, 1);
-
-
-
+                */
 
                 if (idx >= 0 && idx < compLap->lap->points().size())
                 {

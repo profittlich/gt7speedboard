@@ -6,6 +6,7 @@
 
 class LapComparison : public Component
 {
+    Q_OBJECT
 public:
     LapComparison (const QJsonValue config);
 
@@ -17,10 +18,19 @@ public:
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
     virtual void presetSwitched() override;
     virtual QColor signalColor () override;
+    virtual void callAction(QString a) override;
 
     static QString description ();
     static QList<QString> actions ();
     static QString componentId ();
+
+public slots:
+    void goFullscreen();
+    void rotateTargets();
+
+protected:
+    PComponentParameterString currentTarget();
+    void updateLabel();
 
 
 private:
@@ -28,7 +38,12 @@ private:
     QWidget * m_widget;
     ColorLabel * m_speed;
     GaugeLabel * m_time;
+    PComponentParameterFloat m_currentTarget;
     PComponentParameterString m_target;
+    PComponentParameterString m_secondTarget;
+    PComponentParameterString m_thirdTarget;
     PComparisonLap m_targetLap;
     bool m_prevFullScreenPermission;
+
+    static QString s_fullScreenTarget;
 };

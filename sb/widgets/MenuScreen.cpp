@@ -11,13 +11,17 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QDir>
+#include <QFileDialog>
 
 #include "sb/system/Configuration.h"
+#include "sb/widgets/DashWidget.h"
+#include "sb/widgets/SideButtonLabel.h"
 
-MenuScreen::MenuScreen (MainWidget * parent, PDash dash) : QWidget(parent)
+MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget(parent)
 {
     setContentsMargins(5,5,5,5);
     m_dash = dash;
+    m_state = state;
     //setMinimumSize(500, 500);
     setStyleSheet("background-color: " + g_globalConfiguration.backgroundColor().name() + ";");
 
@@ -41,15 +45,28 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash) : QWidget(parent)
     pbReset->setFont(font);
     connect (pbReset, &QPushButton::clicked, this, &MenuScreen::resetClicked);
 
-    /*QPushButton * pbSave = new QPushButton(this);
-    pbSave->setText("SAVE DASH");
+
+    QPushButton * pbClearRefA = nullptr;
+    if (m_state->comparisonLaps.contains("ref-a"))
+    {
+        pbClearRefA = new QPushButton(this);
+        pbClearRefA->setText("CLEAR REF-A");
+        pbClearRefA->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+        font = pbClearRefA->font();
+        font.setPointSizeF(23);
+        font.setBold(true);
+        pbClearRefA->setFont(font);
+        connect (pbClearRefA, &QPushButton::clicked, this, &MenuScreen::clearRefAClicked);
+    }
+
+    QPushButton * pbSave = new QPushButton(this);
+    pbSave->setText("SAVE BEST AS REF-A");
     pbSave->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     font = pbSave->font();
     font.setPointSizeF(23);
     font.setBold(true);
     pbSave->setFont(font);
-    pbSave->setEnabled(false);
-    //connect (pbSave, &QPushButton::clicked, this, &MenuScreen::exitClicked);*/
+    connect (pbSave, &QPushButton::clicked, this, &MenuScreen::saveBestClicked);
 
     SideButtonLabel * pbClose = new SideButtonLabel(this, SideButtonLabel::Close);
     pbClose->setText("MENU");
@@ -63,11 +80,15 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash) : QWidget(parent)
 
     layout->addWidget(pbClose);
     layout->addWidget(pbReset);
-    //layout->addWidget(pbSave);
+    if (pbClearRefA != nullptr)
+    {
+        layout->addWidget(pbClearRefA);
+    }
+    layout->addWidget(pbSave);
 
 
     layout->addWidget(pbExit);
-    layout->insertStretch(3);
+    layout->insertStretch(layout->count()-1);
 }
 
 
@@ -97,5 +118,23 @@ void MenuScreen::resetClicked()
     DBG_MSG << "Reset data";
     MainWidget * main = dynamic_cast<MainWidget*> (this->parent());
     main->startDash();
+    deleteLater();
+}
+
+void MenuScreen::saveBestClicked()
+{
+    DBG_MSG << "Save lap";
+    m_state->saveComparisonLap("best", "ref-a");
+    m_state->loadComparisonLap("ref-a", "ref-a");
+    //QFileDialog::getOpenFileName();
+    deleteLater();
+}
+
+void MenuScreen::clearRefAClicked()
+{
+    if (m_state->comparisonLaps.contains("ref-a"))
+    {
+        m_state->comparisonLaps.remove("ref-a");
+    }
     deleteLater();
 }

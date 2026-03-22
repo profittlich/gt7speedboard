@@ -1,29 +1,9 @@
 #include "DashBuilder.h"
 
+#include "sb/widgets/DashWidget.h"
+#include "sb/widgets/ComponentWidget.h"
+#include "sb/components/ComponentFactory.h"
 
-
-DashWidget::DashWidget (QWidget * parent, PDash dash) : QStackedWidget(parent)
-{
-    DialogWidget * dialog = new DialogWidget(this, dash);
-    addWidget(dialog);
-    m_color = g_globalConfiguration.dimColor();
-}
-
-void DashWidget::paintEvent(QPaintEvent * ev)
-{
-    m_painter.begin(this);
-    m_painter.setPen(m_color);
-    m_painter.setBrush(m_color);
-    m_painter.drawRect(0, 0, width(), height());
-    m_painter.end();
-
-    QStackedWidget::paintEvent(ev);
-}
-
-void DashWidget::setColor (const QColor & color)
-{
-    m_color = color;
-}
 
 QJsonValue DashBuilder::jVal(QJsonObject obj, QString key, QJsonValue def)
 {
@@ -311,10 +291,7 @@ PDash DashBuilder::makeDash(QWidget * parent, QJsonDocument spec)
         pageIndex++;
     }
 
-    //qDebug(pages.toJson());
-
     result->widget->setCurrentIndex(1);
-    //result->widget->setContentsMargins(14,14,14,14);
 
     return result;
 }

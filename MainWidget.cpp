@@ -13,6 +13,7 @@
 #include "sb/system/DashBuilder.h"
 #include "sb/system/Configuration.h"
 #include "sb/system/KeyStrings.h"
+#include "sb/widgets/DashWidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), m_inDash(false)
@@ -132,6 +133,15 @@ void MainWidget::startDash ()
     connect(m_dash->widget, &DashWidget::exitDash, this, &MainWidget::showStartScreen);
     connect(m_dash->widget, &DashWidget::showMenu, this, &MainWidget::showMenuScreen);
     connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_controller.get(), &Controller::newTelemetryPoint);
+
+    DBG_MSG << "load reference laps";
+    m_controller->state()->loadComparisonLap("ref-a", getStorageLocation().absolutePath() + "/ref-a.gt7lap", true);
+    DBG_MSG << "step";
+    m_controller->state()->loadComparisonLap("ref-b", getStorageLocation().absolutePath() + "/ref-b.gt7lap", true);
+    DBG_MSG << "step";
+    m_controller->state()->loadComparisonLap("ref-c", getStorageLocation().absolutePath() + "/ref-c.gt7lap", true);
+    DBG_MSG << "loaded reference laps";
+
     m_receiver->start();
     m_layout->addWidget(m_widget);
     m_layout->setContentsMargins(0,0,0,0);
@@ -141,7 +151,7 @@ void MainWidget::startDash ()
 
 void MainWidget::showMenuScreen ()
 {
-    MenuScreen * men = new MenuScreen (this, m_dash);
+    MenuScreen * men = new MenuScreen (this, m_dash, m_controller->state());
     m_layout->insertWidget(0,men);
     m_layout->setCurrentIndex(0);
     //m_dash->widget->exitDash();

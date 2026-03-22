@@ -6,25 +6,50 @@
 #include "sb/cardata/TelemetryPoint.h"
 #include "sb/system/Helpers.h"
 
+
+class Lap;
+typedef QSharedPointer<Lap> PLap;
+
 class Lap
 {
 public:
     Lap () : m_valid(true) {}
 
-    QPair<size_t, float> findClosestPoint(PPoint p, size_t start = 0) const
+    QPair<size_t, float> findClosestPoint(PPoint p, size_t start = 0, float cancelRange=100.0) const
     {
-        size_t result = 0;
+        int result = 0;
         float resultDist = 1000000;
-        for (size_t i = 0; i <  m_points.size(); ++i)
+        bool inRange = false;
+        //DBG_MSG << "start search";
+        if (start > 60)
         {
-            float newDist = p->position().distanceTo(m_points[i]->position());
+            start -= 60;
+        }
+        for (int i = start; i < start + m_points.size(); ++i)
+        {
+            float newDist = p->position().distanceTo(m_points[i % m_points.size()]->position());
+            if (!inRange && newDist < cancelRange)
+            {
+                inRange = true;
+            }
+            else if (inRange && newDist > cancelRange * 1.1)
+            {
+                //DBG_MSG << "cancel search";
+                break;
+            }
             if (newDist < resultDist)
             {
                 resultDist = newDist;
-                result = i;
+                result = i % m_points.size();
+                while (result < 0)
+                {
+                    DBG_MSG << "adjust index";
+                    result += m_points.size();
+                }
             }
 
         }
+        //DBG_MSG << "end search" << result;
         return QPair<size_t, float> (result, resultDist);
     }
 
@@ -79,8 +104,20 @@ public:
         m_valid = false;
     }
 
-    static Lap loadLap(QString filename, size_t index = 0) {};
-    static QList<Lap> loadLaps(QString filename) {};
+    PTelemetryPoint loopedPoint(int index) const
+    {
+        while (index < 0)
+        {
+            index += m_points.size();
+        }
+        const size_t actualIndex = index % m_points.size();
+        return m_points[actualIndex];
+    }
+
+    bool saveLap(QString filename);
+
+    static PLap loadLap(QString filename, size_t index = 0);
+    static QList<PLap> loadLaps(QString filename);
 
 private:
     PTelemetryPoint m_preceedingPoint;
@@ -90,14 +127,13 @@ private:
 
 };
 
-typedef QSharedPointer<Lap> PLap;
 
 class ComparisonLap
 {
 public:
-    ComparisonLap () : lapTime(UINT_MAX), hasClosestPoint(false) {}
+    ComparisonLap () : /*lapTime(UINT_MAX),*/ hasClosestPoint(false) {}
     PLap lap;
-    unsigned lapTime;
+    //unsigned lapTime;
     size_t closestPoint;
     bool hasClosestPoint;
     size_t nextBrake;

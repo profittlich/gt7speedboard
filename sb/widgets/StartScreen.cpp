@@ -83,7 +83,7 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     layout->addWidget(lbFont);
 
     auto sbFont = new QSpinBox(this);
-    sbFont->setMinimum(10);
+    sbFont->setMinimum(25);
     sbFont->setMaximum(300);
     sbFont->setValue(g_globalConfiguration.fontScale()*100/g_globalConfiguration.platformFontScale());
     sbFont->setSuffix("%");

@@ -1,6 +1,7 @@
 #include "sb/system/Controller.h"
 #include "sb/cardata/TelemetryPointGT7.h"
 #include "sb/system/Configuration.h"
+#include "sb/widgets/DashWidget.h"
 
 void Controller::setDash(PDash d)
 {
@@ -97,11 +98,31 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
                 }
             }
         }
-        else if (m_state->newLap)
+
+        if (!withoutWidget)
         {
             m_state->newLap = false;
         }
 
+        // pit stop
+        if (m_state->inPit)
+        {
+            DBG_MSG << ("in pit");
+            for (auto it : std::as_const(m_dash->components))
+            {
+                if ((it->getWidget() == nullptr) == withoutWidget)
+                {
+                    it->pitStop();
+                }
+            }
+        }
+
+        if (!withoutWidget)
+        {
+            m_state->inPit = false;
+        }
+
+        // current lap
         if (withoutWidget)
         {
             m_state->currentLap->appendTelemetryPoint(p);

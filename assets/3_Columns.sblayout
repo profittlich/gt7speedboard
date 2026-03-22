@@ -66,6 +66,16 @@
                                         {
                                              "component":"LapComparison",
                                              "configuration": {
+                                                 "target": "ref-a",
+                                                 "secondTarget": "ref-b",
+                                                 "thirdTarget": "ref-c"
+                                             },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
                                                  "target": "best"
                                              },
                                              "fullScreenSignalAllowed": true,
@@ -74,9 +84,10 @@
                                         {
                                              "component":"LapComparison",
                                              "configuration": {
-                                                 "target": "last"
+                                                 "target": "last",
+                                                 "secondTarget": "median"
                                              },
-                                             "fullScreenSignalAllowed": false,
+                                             "fullScreenSignalAllowed": true,
                                              "showHeader" : false
                                         }
                                     ],
@@ -97,7 +108,7 @@
                                 {
                                     "component": "Map",
                                     "configuration": {
-                                        "target": "best"
+                                        "target": "ref-a"
                                     },
                                     "stretch": 4
                                 },

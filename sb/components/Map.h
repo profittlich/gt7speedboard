@@ -21,6 +21,7 @@ public:
     void addPoint(const PTelemetryPoint & p);
     void nextLap();
     void updateRefLap(PLap refLap);
+    void clearRefLap();
 
 protected:
     void initializeGL() override;
@@ -68,4 +69,5 @@ private:
     SBGLWidget * m_widget;
     PComponentParameterString m_target;
     PLap m_refLap;
+    bool m_firstPointReceived;
 };

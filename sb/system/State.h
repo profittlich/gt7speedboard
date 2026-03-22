@@ -72,6 +72,9 @@ public:
         return QList<QString> ();
     }
 
+    void saveComparisonLap(QString key, QString fnKey);
+    void loadComparisonLap(QString key, QString fnKey, bool absolutePath = false);
+
     PLap currentLap;
     float lapProgress;
 

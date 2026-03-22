@@ -71,7 +71,7 @@ void GaugeLabel::disable()
 
 void GaugeLabel::mousePressEvent(QMouseEvent * ev)
 {
-
+    emit clicked();
 }
 
 void GaugeLabel::paintEvent(QPaintEvent * ev)

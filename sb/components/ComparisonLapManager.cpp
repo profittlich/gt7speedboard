@@ -40,12 +40,12 @@ void ComparisonLapManager::updateClosestPoints (PTelemetryPoint p)
         if (!state()->comparisonLaps[curLap]->lap->points().empty())
         {
             auto compLap = state()->comparisonLaps[curLap];
-            auto closest = compLap->lap->findClosestPoint(p);
+            auto closest = compLap->lap->findClosestPoint(p, compLap->closestPoint);
             if (closest.second <= (*m_maxClosenessDistance)())
             {
                 compLap->hasClosestPoint = true;
                 compLap->closestPoint = closest.first;
-                //qDebug() << "closest: " << compLap->name << closest.first << closest.second;
+                //DBG_MSG << "closest: " <<  curLap << closest.first << closest.second;
             }
             else
             {
@@ -120,9 +120,9 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         }
         auto lastCompLap = state()->comparisonLaps["last"];
         lastCompLap->lap = lastLap;
-        lastCompLap->lapTime = lastLap->lapTime();
+        //lastCompLap->lapTime = lastLap->lapTime();
 
-        DBG_MSG << "Last lap: " << lastCompLap->lapTime << "ms";
+        DBG_MSG << "Last lap: " << lastCompLap->lap->lapTime() << "ms";
     }
 
     // BEST
@@ -134,12 +134,12 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
             state()->comparisonLaps["best"] = PComparisonLap(new ComparisonLap());
         }
         auto bestCompLap = state()->comparisonLaps["best"];
-        if (bestCompLap->lapTime > lastLap->lapTime())
+        if (bestCompLap->lap.isNull() || bestCompLap->lap->lapTime() > lastLap->lapTime())
         {
             bestCompLap->lap = lastLap;
-            bestCompLap->lapTime = lastLap->lapTime();
+            //bestCompLap->lapTime = lastLap->lapTime();
         }
-        DBG_MSG << "Best lap: " << bestCompLap->lapTime << "ms";
+        DBG_MSG << "Best lap: " << bestCompLap->lap->lapTime() << "ms";
     }
 
     // PROGRESS

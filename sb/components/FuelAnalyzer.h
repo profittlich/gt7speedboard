@@ -13,6 +13,7 @@ public:
 
     virtual void newPoint(PTelemetryPoint p);
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
+    virtual void pitStop() override;
 
     static QString description ();
     static QList<QString> actions ();
@@ -21,6 +22,6 @@ public:
 private:
     QList<float> m_previousLapFuel;
     PTelemetryPoint m_curPoint;
-
+    bool m_wasInPit;
 
 };

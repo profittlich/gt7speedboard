@@ -5,11 +5,14 @@
 
 #include <QVBoxLayout>
 
+QString LapComparison::s_fullScreenTarget;
 
-
-LapComparison::LapComparison (const QJsonValue config) : Component(config), m_target (new ComponentParameter<QString>("target","last", true))
+LapComparison::LapComparison (const QJsonValue config) : Component(config), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_target (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
 {
+    addComponentParameter(m_currentTarget);
     addComponentParameter(m_target);
+    addComponentParameter(m_secondTarget);
+    addComponentParameter(m_thirdTarget);
 
     m_colorMapper = new ColorMapperGreenRed(0, 10);
     m_widget = new QWidget();
@@ -23,13 +26,17 @@ LapComparison::LapComparison (const QJsonValue config) : Component(config), m_ta
     m_speed->setFont(font);
     m_speed->setStyleSheet("color : #fff;font-weight:bold;");
 
-    m_speed->setText((*m_target)().toUpper());
+    m_speed->setText((*currentTarget())().toUpper());
+
+    connect(m_speed, &ColorLabel::clicked, this, &LapComparison::goFullscreen);
 
     m_time->setAlignment(Qt::AlignCenter);
     font = m_time->font();
     font.setPointSizeF(baseFontSize() * 5);
     m_time->setFont(font);
     m_time->setStyleSheet("color : #7f7f7f;");
+
+    connect(m_time, &GaugeLabel::clicked, this, &LapComparison::rotateTargets);
 
     QVBoxLayout * layout = new QVBoxLayout(m_widget);
     layout->setContentsMargins(0,0,0,0);
@@ -42,6 +49,22 @@ QWidget * LapComparison::getWidget() const
     return m_widget;
 }
 
+PComponentParameterString LapComparison::currentTarget()
+{
+    if ((*m_currentTarget)() > 2.5)
+    {
+        return m_thirdTarget;
+    }
+    else if ((*m_currentTarget)() > 1.5)
+    {
+        return m_secondTarget;
+    }
+    else
+    {
+        return m_target;
+    }
+}
+
 QString LapComparison::defaultTitle () const
 {
     return "COMPARE";
@@ -49,24 +72,44 @@ QString LapComparison::defaultTitle () const
 
 void LapComparison::presetSwitched()
 {
-    m_speed->setText((*m_target)().toUpper());
+    m_speed->setText((*currentTarget())().toUpper());
+}
+
+void LapComparison::goFullscreen()
+{
+    DBG_MSG << "toggleFullscreen click";
+    callAction("toggleFullscreen");
+}
+
+
+void LapComparison::rotateTargets()
+{
+    DBG_MSG << "rotateTargets click";
+    callAction("rotateTargets");
 }
 
 void LapComparison::pointFinished(PTelemetryPoint p)
 {
-    if (canFullScreenSignal() != m_prevFullScreenPermission)
+    if (canFullScreenSignal() && s_fullScreenTarget == "")
     {
-        m_prevFullScreenPermission = canFullScreenSignal();
-        if (canFullScreenSignal())
+        s_fullScreenTarget = (*currentTarget())();
+        DBG_MSG << "Init global target" << s_fullScreenTarget;
+    }
+    if ((canFullScreenSignal() && s_fullScreenTarget == (*currentTarget())()) != m_prevFullScreenPermission)
+    {
+        m_prevFullScreenPermission = (canFullScreenSignal() && s_fullScreenTarget == (*currentTarget())());
+        if (s_fullScreenTarget == (*currentTarget())())
         {
+            DBG_MSG << "Underline" << (*currentTarget())();
             m_speed->setStyleSheet("color : #fff;font-weight:bold;text-decoration:underline;");
         }
         else
         {
+            DBG_MSG << "No underline" << (*currentTarget())();
             m_speed->setStyleSheet("color : #fff;font-weight:bold;");
         }
     }
-    if (state()->comparisonLaps.contains((*m_target)()))
+    if (state()->comparisonLaps.contains((*currentTarget())()))
     {
         m_targetLap = state()->comparisonLaps[(*m_target)()];
     }
@@ -77,7 +120,7 @@ void LapComparison::pointFinished(PTelemetryPoint p)
 
     if (!m_targetLap.isNull() && m_targetLap->hasClosestPoint)
     {
-        //qDebug() << "Closest: "<< state()->comparisonLaps[(*m_target)()]->closestPoint << "of" << state()->comparisonLaps[(*m_target)()]->lap->points().size();
+        //qDebug() << "Closest: "<< state()->comparisonLaps[(*m_target)()]->closestPoint << "of" << state()->comparisonLaps[(*currentTarget())()]->lap->points().size();
         auto compPt = m_targetLap->lap->points()[m_targetLap->closestPoint];
         //m_speed->setText (QString::number(round(p->carSpeed() - compPt->carSpeed())));
 
@@ -99,7 +142,7 @@ void LapComparison::pointFinished(PTelemetryPoint p)
 
         if (idx >= 0 && m_targetLap->lap->valid())
         {
-            //qDebug() << "DBG = " << idx << " " << state()->comparisonLaps[(*m_target)()]->closestPoint << " " << (int(state()->comparisonLaps[(*m_target)()]->closestPoint) - idx) * c_FPS / 1000.0;
+            //qDebug() << "DBG = " << idx << " " << state()->comparisonLaps[(*m_target)()]->closestPoint << " " << (int(state()->comparisonLaps[(*currentTarget())()]->closestPoint) - idx) * c_FPS / 1000.0;
 
             m_time->setValue((int(m_targetLap->closestPoint) - idx) / c_FPS);
         }
@@ -120,21 +163,36 @@ void LapComparison::pointFinished(PTelemetryPoint p)
 
 void LapComparison::completedLap(PLap, bool)
 {
-    if (state()->comparisonLaps.contains((*m_target)()))
+    updateLabel();
+}
+
+void LapComparison::updateLabel()
+{
+    DBG_MSG << (*currentTarget())();
+    if (state()->comparisonLaps.contains((*currentTarget())()))
     {
-    if (state()->comparisonLaps[(*m_target)()]->lap->valid())
-    {
-        m_speed->setText((*m_target)().toUpper());
+        if (state()->comparisonLaps[(*currentTarget())()]->lap->valid())
+        {
+            m_speed->setText((*currentTarget())().toUpper());
+        }
+        else
+        {
+            m_speed->setText("(" + (*currentTarget())().toUpper() + ")");
+        }
     }
     else
     {
-        m_speed->setText("(" + (*m_target)().toUpper() + ")");
-    }
+        m_speed->setText( (*currentTarget())().toUpper());
+        m_speed->setColor(g_globalConfiguration.backgroundColor());
     }
 }
 
 QColor LapComparison::signalColor()
 {
+    if (!m_prevFullScreenPermission)
+    {
+        return QColor();
+    }
     if (m_targetLap.isNull() || !m_targetLap->hasClosestPoint)
     {
         return QColor();
@@ -171,7 +229,61 @@ QString LapComparison::description ()
 
 QList<QString> LapComparison::actions ()
 {
-    return QList<QString>();
+    QList<QString> result;
+
+    result.append("toggleFullscreen");
+    result.append("rotateTargets");
+
+    return result;
+}
+
+void LapComparison::callAction(QString a)
+{
+    if (a == "toggleFullscreen")
+    {
+        if (s_fullScreenTarget == (*currentTarget())())
+        {
+            DBG_MSG << "No target" << m_prevFullScreenPermission;
+            s_fullScreenTarget = "<none>";
+        }
+        else
+        {
+            DBG_MSG << "Target" << (*currentTarget())() << m_prevFullScreenPermission;
+            s_fullScreenTarget = (*currentTarget())();
+        }
+    }
+    else if (a == "rotateTargets")
+    {
+        DBG_MSG << "rotateTargets";
+        (*m_currentTarget)() += 1.0;
+
+        if ((*m_currentTarget)() > 3.5)
+        {
+            (*m_currentTarget)() = 1.0;
+        }
+
+        if ((*currentTarget())() == "")
+        {
+            (*m_currentTarget)() += 1.0;
+            if ((*m_currentTarget)() > 3.5)
+            {
+                (*m_currentTarget)() = 1.0;
+            }
+        }
+
+        if ((*currentTarget())() == "")
+        {
+            (*m_currentTarget)() += 1.0;
+            if ((*m_currentTarget)() > 3.5)
+            {
+                (*m_currentTarget)() = 1.0;
+            }
+        }
+
+        updateLabel();
+
+        DBG_MSG << currentTarget()->name();
+    }
 }
 
 QString LapComparison::componentId ()

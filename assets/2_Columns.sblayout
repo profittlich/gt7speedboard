@@ -78,6 +78,14 @@
                                         {
                                              "component":"LapComparison",
                                              "configuration": {
+                                                 "target": "ref-a"
+                                             },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
                                                  "target": "last"
                                              },
                                              "fullScreenSignalAllowed": false,

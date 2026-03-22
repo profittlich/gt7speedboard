@@ -5,7 +5,7 @@
 
 
 
-FuelAnalyzer::FuelAnalyzer (const QJsonValue config) : Component(config)
+FuelAnalyzer::FuelAnalyzer (const QJsonValue config) : Component(config), m_wasInPit(false)
 {
 }
 
@@ -21,15 +21,27 @@ QString FuelAnalyzer::defaultTitle () const
 
 void FuelAnalyzer::newPoint(PTelemetryPoint p)
 {
+    if (!m_curPoint.isNull() && p->currentFuel() > m_curPoint->currentFuel())
+    {
+        DBG_MSG << "refuel detected";
+        m_wasInPit = true;
+    }
     m_curPoint = p;
 }
 
 void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
 {
+    if (m_wasInPit)
+    {
+        DBG_MSG << "Ignoring lap due to refueal";
+        m_wasInPit = false;
+        return;
+    }
+
     DBG_MSG << isFullLap << state()->previousLaps.back()->points().empty();
     if (!state()->previousLaps.back()->points().empty())
     {
-        auto lastConsumption = state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel();
+        auto lastConsumption = fabs(state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel());
         state()->fuelData.infiniteFuel = lastConsumption < std::numeric_limits<float>::epsilon();
     }
 
@@ -63,6 +75,11 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
     {
         state()->fuelData.fuelPerLap = -1;
     }
+}
+
+void FuelAnalyzer::pitStop()
+{
+    //m_wasInPit = true;
 }
 
 QString FuelAnalyzer::description ()

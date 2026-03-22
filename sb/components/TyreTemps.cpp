@@ -142,7 +142,6 @@ QString TyreTemps::componentId ()
 
 void TyreTemps::callAction(QString a)
 {
-    Qt::Key_2;
     if (a == "targetUp")
     {
         if ((*m_target)() < 150)
