@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DashTree.h"
+#include <QJsonDocument>
 
 class DashWidget;
 
@@ -31,7 +32,7 @@ class Dash : public QObject
     Q_OBJECT
 
 public:
-    QJsonValue toJson()
+    QJsonDocument toJson()
     {
         QJsonObject out;
         out.insert("version", 2);
@@ -44,7 +45,7 @@ public:
             pagesArray.append(i.toJson());
         }
         out.insert("pages", pagesArray);
-        return QJsonValue(out);
+        return QJsonDocument(out);
     }
 
     QJsonDocument json;

@@ -19,7 +19,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
     //DBG_MSG << ("Make dash tree");
     if (!cur.isObject())
     {
-        DBG_MSG << "Not an object" << cur.toJson();
+        DBG_MSG << "Not an object" << cur.type();
         return nullptr;
     }
 

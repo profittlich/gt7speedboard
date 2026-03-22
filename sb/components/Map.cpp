@@ -201,7 +201,7 @@ void SBGLWidget::initializeGL()
         if(infoLen > 1)
         {
             char* infoLog = (char*)malloc(sizeof(char) * infoLen);
-            glGetShaderInfoLog(m_vShader, infoLen, NULL, infoLog);
+            f->glGetShaderInfoLog(m_vShader, infoLen, NULL, infoLog);
             DBG_MSG << ("Error compiling shader:\n%s\n", infoLog);
             free(infoLog);
         }
@@ -236,7 +236,7 @@ void SBGLWidget::initializeGL()
         if(infoLen > 1)
         {
             char* infoLog = (char*)malloc(sizeof(char) * infoLen);
-            glGetShaderInfoLog(m_fShader, infoLen, NULL, infoLog);
+            f->glGetShaderInfoLog(m_fShader, infoLen, NULL, infoLog);
             qDebug("Error compiling shader:\n%s\n", infoLog);
             free(infoLog);
         }
@@ -248,13 +248,13 @@ void SBGLWidget::initializeGL()
     f->glAttachShader(m_programObject, m_vShader);
     f->glAttachShader(m_programObject, m_fShader);
 
-    glBindAttribLocation(m_programObject, 0, "vPosition");
+    f->glBindAttribLocation(m_programObject, 0, "vPosition");
     //glBindAttribLocation(m_programObject, 1, "uColor");
 
-    glLinkProgram(m_programObject);
+    f->glLinkProgram(m_programObject);
 
     GLint linked;
-    glGetProgramiv(m_programObject, GL_LINK_STATUS, &linked);
+    f->glGetProgramiv(m_programObject, GL_LINK_STATUS, &linked);
     if(!linked)
     {
         qDebug("Could not link program");
