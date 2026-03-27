@@ -17,9 +17,9 @@ QString msToTime(unsigned ms);
 QDir getStorageLocation();
 void setKeepScreenOn(bool enable);
 
-#define DBG_MSG qDebug () << (QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
+#define DBG_MSG qDebug () << (QTime::currentTime().toString("hh:mm:ss.zzz") + " " +  QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
 
-
+const QString  c_version = "vTP1";
 const float c_FPS = 59.94;
 
 void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt);

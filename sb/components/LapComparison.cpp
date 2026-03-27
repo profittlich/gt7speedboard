@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 
 QString LapComparison::s_fullScreenTarget;
+QList<LapComparison*> LapComparison::s_allLapComparisons;
 
 LapComparison::LapComparison (const QJsonValue config) : Component(config), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_target (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
 {
@@ -42,6 +43,13 @@ LapComparison::LapComparison (const QJsonValue config) : Component(config), m_cu
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(m_speed);
     layout->addWidget(m_time);
+
+    s_allLapComparisons.append(this);
+}
+
+LapComparison::~LapComparison()
+{
+    s_allLapComparisons.removeAll(this);
 }
 
 QWidget * LapComparison::getWidget() const
@@ -185,6 +193,22 @@ void LapComparison::updateLabel()
         m_speed->setText( (*currentTarget())().toUpper());
         m_speed->setColor(g_globalConfiguration.backgroundColor());
     }
+    if (s_fullScreenTarget == (*currentTarget())())
+    {
+        DBG_MSG << "Underline" << (*currentTarget())();
+        m_speed->setStyleSheet("color : #fff;font-weight:bold;text-decoration:underline;");
+        for (auto d : s_allLapComparisons)
+        {
+            if (d != this) {
+                d->m_speed->setStyleSheet("color : #fff;font-weight:bold;");
+            }
+        }
+    }
+    else
+    {
+        DBG_MSG << "No underline" << (*currentTarget())();
+        m_speed->setStyleSheet("color : #fff;font-weight:bold;");
+    }
 }
 
 QColor LapComparison::signalColor()
@@ -251,6 +275,7 @@ void LapComparison::callAction(QString a)
             DBG_MSG << "Target" << (*currentTarget())() << m_prevFullScreenPermission;
             s_fullScreenTarget = (*currentTarget())();
         }
+        updateLabel();
     }
     else if (a == "rotateTargets")
     {

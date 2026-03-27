@@ -29,7 +29,21 @@ MainWidget::MainWidget(QWidget *parent)
     auto x = initQtKeys();
 }
 
-MainWidget::~MainWidget() {}
+MainWidget::~MainWidget()
+{
+    if (!m_dash.isNull())
+    {
+        QDir storeLoc = getStorageLocation();
+        QFile outFile (storeLoc.absolutePath() + "/Last Used.sblayout");
+        DBG_MSG << "Out file: " << outFile.fileName();
+        if (outFile.open(QIODevice::WriteOnly))
+        {
+            QTextStream stream( &outFile );
+            stream << m_dash->toJson().toJson();
+            outFile.close();
+        }
+    }
+}
 
 void MainWidget::showStartScreen()
 {

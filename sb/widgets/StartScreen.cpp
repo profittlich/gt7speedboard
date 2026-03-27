@@ -107,6 +107,11 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     connect (pbStart, &QPushButton::clicked, this, &StartScreen::startDashClicked);
 
     layout->addWidget(pbStart);
+
+    QLabel * lbVersion = new QLabel(this);
+    lbVersion->setText("SpeedBoard for GT7 " + c_version);
+    lbVersion->setStyleSheet("color:#777");
+    layout->addWidget(lbVersion);
 }
 
 void StartScreen::selectLayout(unsigned idx)

@@ -83,6 +83,7 @@ void LapTimes::completedLap(PLap, bool)
         )
         {
             auto lapTime = state()->comparisonLaps[i]->lap->lapTime();
+
             if (lapTime >= 0)
             {
                 txt += i + ": " + msToTime(lapTime)  + "\n";
@@ -90,7 +91,15 @@ void LapTimes::completedLap(PLap, bool)
             else
             {
                 lapTime = state()->comparisonLaps[i]->lap->estimateLapTime();
-                txt += i + ": " + msToTime(lapTime)  + " (est.)\n";
+                DBG_MSG << "Got estimated lap time " << lapTime;
+                if (lapTime >= 0)
+                {
+                    txt += i + ": " + msToTime(lapTime)  + " (est.)\n";
+                }
+                else
+                {
+                    txt += i + ": N/A\n";
+                }
             }
         }
     }
@@ -101,7 +110,24 @@ void LapTimes::completedLap(PLap, bool)
         PLap cur = state()->previousLaps[numLaps - i - 1];
         if (cur->points()[0]->currentLap() >= 1)
         {
-            txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(cur->lapTime());
+            auto lapTime = cur->lapTime();
+            DBG_MSG << "Got lap time " << lapTime;
+            if (lapTime >= 0)
+            {
+                txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime);
+            }
+            else
+            {
+                lapTime = cur->estimateLapTime();
+                if (lapTime >= 0)
+                {
+                    txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime);
+                }
+                else
+                {
+                    txt += QString::number (cur->points()[0]->currentLap()) + ": N/A";
+                }
+            }
             if (!cur->valid())
             {
                 txt += " <invalid>";

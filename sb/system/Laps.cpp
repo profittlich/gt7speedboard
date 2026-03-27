@@ -58,7 +58,7 @@ QList<PLap> Lap::loadLaps(QString filename)
         QByteArray data;
         while((data = f.read(296)).size() == 296)
         {
-            DBG_MSG << "At:" << (curIndex / 296);
+            //DBG_MSG << "At:" << (curIndex / 296);
             auto curData = data;//.mid (curIndex, curIndex + 296);
             auto magic = curData.mid(0, 4);
             if (magic[0] == 0x30 && magic[1] == 0x53 && magic[2] == 0x37 && magic[3] == 0x47)

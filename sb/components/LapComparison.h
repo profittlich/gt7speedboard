@@ -9,6 +9,7 @@ class LapComparison : public Component
     Q_OBJECT
 public:
     LapComparison (const QJsonValue config);
+    ~LapComparison();
 
     virtual QWidget * getWidget() const override;
 
@@ -46,4 +47,5 @@ private:
     bool m_prevFullScreenPermission;
 
     static QString s_fullScreenTarget;
+    static QList<LapComparison*> s_allLapComparisons;
 };

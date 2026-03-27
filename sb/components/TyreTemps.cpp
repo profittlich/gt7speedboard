@@ -148,6 +148,8 @@ void TyreTemps::callAction(QString a)
         {
             (*m_target)()++;
             m_colorMapper = new ColorMapperBlueGreenRed((*m_target)(), (*m_spread)());
+            m_widget->update();
+            emit setTitleSuffix("[" + QString::number((*m_target)()) + " °C]");
         }
     }
     else if (a == "targetDown")
@@ -156,6 +158,8 @@ void TyreTemps::callAction(QString a)
         {
             (*m_target)()--;
             m_colorMapper = new ColorMapperBlueGreenRed((*m_target)(), (*m_spread)());
+            m_widget->update();
+            emit setTitleSuffix("[" + QString::number((*m_target)()) + " °C]");
         }
     }
 }

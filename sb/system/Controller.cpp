@@ -81,11 +81,18 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
                 previousLap = m_state->currentLap;
                 DBG_MSG << "Old lap length = " << previousLap->points().size();
                 m_state->previousLaps.append(previousLap);
-                previousLap->setSucceedingPoint(p);
+                if (p->currentLap() == previousLap->points()[0]->currentLap() + 1)
+                {
+                    DBG_MSG << "set succeeding point" << previousLap->points()[0]->currentLap() << "->" << p->currentLap() << p->lastLapMs();
+                    previousLap->setSucceedingPoint(p);
+                }
 
                 m_state->currentLap = PLap(new Lap());
-                if (previousLap->points().size() > 0)
+
+                if (p->currentLap() == previousLap->points()[0]->currentLap() + 1 && previousLap->points().size() > 0)
                 {
+                    DBG_MSG << "set preceeding point" << previousLap->points()[previousLap->points().size()-1]->currentLap() << "->" << p->currentLap() << previousLap->points()[previousLap->points().size()-1]->lastLapMs();
+
                     m_state->currentLap->setPreceedingPoint(previousLap->points()[previousLap->points().size()-1]);
                 }
             }

@@ -74,7 +74,11 @@ public:
 
     void appendTelemetryPoint(PTelemetryPoint p) { m_points.append(p); }
     const QList<PTelemetryPoint> & points() const { return m_points; }
-    void setSucceedingPoint (PTelemetryPoint p) { m_succeedingPoint = p; }
+    void setSucceedingPoint (PTelemetryPoint p)
+    {
+        DBG_MSG << "Set succeeding point" << p->lastLapMs();
+        m_succeedingPoint = p;
+    }
     void setPreceedingPoint (PTelemetryPoint p) { m_preceedingPoint = p; }
     const PTelemetryPoint & succeedingPoint() const { return m_succeedingPoint; }
     const PTelemetryPoint & preceedingPoint() const { return m_preceedingPoint; }
@@ -83,8 +87,10 @@ public:
     {
         if (m_succeedingPoint.isNull())
         {
+            DBG_MSG << "return NULL for" << points()[0]->currentLap();
             return -1;
         }
+        DBG_MSG << "Return " << m_succeedingPoint->lastLapMs() << "for" << points()[0]->currentLap();
         return m_succeedingPoint->lastLapMs();
     }
 
