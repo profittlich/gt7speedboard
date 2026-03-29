@@ -38,7 +38,11 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     m_selectedLayout = new QComboBox(this);
 
     QDir storeLoc = getStorageLocation();
-    m_selectedLayout->addItem("Last used layout", storeLoc.absolutePath() + "/Last Used.sblayout");
+    QFile llTest (storeLoc.absolutePath() + "/Last Used.sblayout");
+    if (llTest.exists())
+    {
+        m_selectedLayout->addItem("Last used layout", storeLoc.absolutePath() + "/Last Used.sblayout");
+    }
 
 
     auto fnt = m_selectedLayout->font();
@@ -85,7 +89,7 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     auto sbFont = new QSpinBox(this);
     sbFont->setMinimum(25);
     sbFont->setMaximum(300);
-    sbFont->setValue(g_globalConfiguration.fontScale()*100/g_globalConfiguration.platformFontScale());
+    sbFont->setValue(g_globalConfiguration.globalFontScale()*100);
     sbFont->setSuffix("%");
     fnt = sbFont->font();
     fnt.setPointSize(20);
@@ -136,7 +140,7 @@ void StartScreen::startDashClicked()
 {
     QSettings settings;
     settings.setValue("ip", m_leIP->text());
-    settings.setValue("fontScale", g_globalConfiguration.fontScale());
+    settings.setValue("fontScale", g_globalConfiguration.globalFontScale());
     settings.sync();
 
     g_globalConfiguration.setHostAddress(m_leIP->text());

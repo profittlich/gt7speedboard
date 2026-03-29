@@ -53,7 +53,7 @@ public:
     }
 
     /* SETTERS */
-    void setFontScale(const float & v) { m_fontScale = m_platformFontScale * v; }
+    void setFontScale(const float & v) { m_fontScale = v; }
     //void setStorageLocation(const QString & v) { m_storageLocation = v; }
     void setHostAddress(const QString & v) { DBG_MSG << "PlayStation IP:" << v; m_hostAddress = v; }
     void setSelectedLayout(const QString & v) { m_selectedLayout = v; }
@@ -64,7 +64,8 @@ public:
     void setFuelStatisticsLaps(const size_t & v) { m_fuelStatisticsLaps = v; }
 
     /* GETTERS */
-    const float & fontScale() const { return m_fontScale; }
+    const float fontScale() const { return m_fontScale * m_platformFontScale; }
+    const float & globalFontScale() const { return m_fontScale; }
     //const QString & storageLocation() const { return m_storageLocation; }
     const QString & hostAddress() const { return m_hostAddress; }
     const QString & selectedLayout() const { return m_selectedLayout; }

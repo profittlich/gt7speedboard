@@ -47,12 +47,10 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
 
     if (isFullLap && !state()->previousLaps.back()->points().empty())
     {
-        DBG_MSG << "append lap";
         m_previousLapFuel.append(state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel());
     }
     while (m_previousLapFuel.size() > g_globalConfiguration.fuelStatisticsLaps())
     {
-        DBG_MSG << "pop lap";
         m_previousLapFuel.pop_front();
     }
     DBG_MSG << ("check fuel " + QString::number(m_previousLapFuel.size()).toLatin1() + " laps");
@@ -65,15 +63,18 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
             DBG_MSG << ("Used fuel: " + QString::number(m_previousLapFuel[i]).toLatin1() + " " + QString::number(avgConsumption).toLatin1());
         }
         float fuelCapacity = m_curPoint->fuelCapacity();
-        if (m_curPoint->fuelCapacity() == 0)
+        if (m_curPoint->fuelCapacity() <= std::numeric_limits<float>::epsilon())
         {
+            DBG_MSG << "No fuel capacity available, set to 100";
             fuelCapacity = 100;
         }
         state()->fuelData.fuelPerLap = avgConsumption / fuelCapacity;
+        DBG_MSG << "Fuel per lap:" << state()->fuelData.fuelPerLap;
     }
     else
     {
         state()->fuelData.fuelPerLap = -1;
+        DBG_MSG << "Fuel per lap:" << state()->fuelData.fuelPerLap;
     }
 }
 
@@ -99,3 +100,4 @@ QString FuelAnalyzer::componentId ()
 
 
 static ComponentFactory::RegisterComponent<FuelAnalyzer> reg;
+

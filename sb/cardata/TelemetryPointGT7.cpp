@@ -87,6 +87,7 @@ TelemetryPointGT7::TelemetryPointGT7(const QByteArray & data)
         *reinterpret_cast<const float*> (&data.data()[idxTyreTemperatureRL]),
         *reinterpret_cast<const float*> (&data.data()[idxTyreTemperatureRR])));
     setCurrentFuel(*reinterpret_cast<const float*> (&data.data()[idxCurrentFuel]));
+    setFuelCapacity(*reinterpret_cast<const float*> (&data.data()[idxFuelCapacity]));
 
     setCarID(*reinterpret_cast<const int32_t*> (&data.data()[idxCarId]));
 
