@@ -59,14 +59,18 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
         connect (pbClearRefA, &QPushButton::clicked, this, &MenuScreen::clearRefAClicked);
     }
 
-    QPushButton * pbSave = new QPushButton(this);
-    pbSave->setText("SAVE BEST AS REF-A");
-    pbSave->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    font = pbSave->font();
-    font.setPointSizeF(23);
-    font.setBold(true);
-    pbSave->setFont(font);
-    connect (pbSave, &QPushButton::clicked, this, &MenuScreen::saveBestClicked);
+    QPushButton * pbSave = nullptr;
+    if (m_state->comparisonLaps.contains("best"))
+    {
+        pbSave = new QPushButton(this);
+        pbSave->setText("SAVE BEST AS REF-A");
+        pbSave->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+        font = pbSave->font();
+        font.setPointSizeF(23);
+        font.setBold(true);
+        pbSave->setFont(font);
+        connect (pbSave, &QPushButton::clicked, this, &MenuScreen::saveBestClicked);
+    }
 
     QPushButton * pbImport = new QPushButton(this);
     pbImport->setText("IMPORT REF-A");
@@ -77,14 +81,18 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     pbImport->setFont(font);
     connect (pbImport, &QPushButton::clicked, this, &MenuScreen::importRefAClicked);
 
-    QPushButton * pbExport = new QPushButton(this);
-    pbExport->setText("EXPORT REF-A");
-    pbExport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    font = pbExport->font();
-    font.setPointSizeF(23);
-    font.setBold(true);
-    pbExport->setFont(font);
-    connect (pbExport, &QPushButton::clicked, this, &MenuScreen::exportRefAClicked);
+    QPushButton * pbExport = nullptr;
+    if (m_state->comparisonLaps.contains("ref-a"))
+    {
+        pbExport = new QPushButton(this);
+        pbExport->setText("EXPORT REF-A");
+        pbExport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+        font = pbExport->font();
+        font.setPointSizeF(23);
+        font.setBold(true);
+        pbExport->setFont(font);
+        connect (pbExport, &QPushButton::clicked, this, &MenuScreen::exportRefAClicked);
+    }
 
     SideButtonLabel * pbClose = new SideButtonLabel(this, SideButtonLabel::Close);
     pbClose->setText("MENU");
@@ -102,13 +110,15 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     {
         layout->addWidget(pbClearRefA);
     }
-    layout->addWidget(pbSave);
+    if (pbSave != nullptr)
+    {
+        layout->addWidget(pbSave);
+    }
     layout->addWidget(pbImport);
-    if (pbClearRefA != nullptr)
+    if (pbExport != nullptr)
     {
         layout->addWidget(pbExport);
     }
-
 
     layout->addWidget(pbExit);
     layout->insertStretch(layout->count()-1);

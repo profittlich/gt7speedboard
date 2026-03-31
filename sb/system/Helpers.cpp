@@ -3,6 +3,10 @@
 #include <QColor>
 #include <QStandardPaths>
 
+#ifdef Q_OS_WINDOWS
+#include <windows.h>
+#endif
+
 #ifdef Q_OS_ANDROID
 #include <QGuiApplication>
 #include <QJniObject>
