@@ -72,7 +72,7 @@ public:
         return QList<QString> ();
     }
 
-    void saveComparisonLap(QString key, QString fnKey);
+    void saveComparisonLap(QString key, QString fnKey, bool absolutePath = false);
     void loadComparisonLap(QString key, QString fnKey, bool absolutePath = false);
 
     PLap currentLap;

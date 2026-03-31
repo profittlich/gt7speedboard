@@ -20,9 +20,9 @@ public:
     void startRecording() {}
     void stopRecording() {}
 
+    static QByteArray decrypt(const QByteArray & data);
 protected:
     bool magicValid(const QByteArray & data);
-    QByteArray decrypt(const QByteArray & data);
 
 protected slots:
     void readPendingDatagrams();

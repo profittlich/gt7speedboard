@@ -1,5 +1,7 @@
 #include "Laps.h"
 #include "sb/cardata/TelemetryPointGT7.h"
+#include <contrib/Salsa20-master/Source/Salsa20.h>
+#include "sb/receiver/GT7TelemetryReceiver.h"
 
 bool Lap::saveLap(QString filename)
 {
@@ -68,14 +70,21 @@ QList<PLap> Lap::loadLaps(QString filename)
             else
             {
                 //DBG_MSG << "encrypted telemetry package";
-                //TODO decrypt
+                curData = GT7TelemetryReceiver::decrypt(curData);
+            }
+
+            magic = curData.mid(0, 4);
+            if (!(magic[0] == 0x30 && magic[1] == 0x53 && magic[2] == 0x37 && magic[3] == 0x47))
+            {
+                DBG_MSG << "bad data";
+                return result;
             }
 
             PTelemetryPointGT7 p (new TelemetryPointGT7(curData));
 
             if (loader.isNull() || loader->points()[0]->currentLap() != p->currentLap())
             {
-                DBG_MSG << "new lap";
+                DBG_MSG << "new lap" << p->currentLap();
                 if (!loader.isNull())
                 {
                     DBG_MSG << "append lap";

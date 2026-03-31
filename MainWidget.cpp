@@ -139,15 +139,6 @@ void MainWidget::startDash ()
     m_widget = m_dash->widget;
     m_controller->setDash(m_dash);
 
-    for (auto i : m_dash->components)
-    {
-        i->setState (m_controller->state());
-    }
-
-    connect(m_dash->widget, &DashWidget::exitDash, this, &MainWidget::showStartScreen);
-    connect(m_dash->widget, &DashWidget::showMenu, this, &MainWidget::showMenuScreen);
-    connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_controller.get(), &Controller::newTelemetryPoint);
-
     DBG_MSG << "load reference laps";
     m_controller->state()->loadComparisonLap("ref-a", getStorageLocation().absolutePath() + "/ref-a.gt7lap", true);
     DBG_MSG << "step";
@@ -156,10 +147,23 @@ void MainWidget::startDash ()
     m_controller->state()->loadComparisonLap("ref-c", getStorageLocation().absolutePath() + "/ref-c.gt7lap", true);
     DBG_MSG << "loaded reference laps";
 
+    connect(m_dash->widget, &DashWidget::exitDash, this, &MainWidget::showStartScreen);
+    connect(m_dash->widget, &DashWidget::showMenu, this, &MainWidget::showMenuScreen);
+    connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_controller.get(), &Controller::newTelemetryPoint);
+
     m_receiver->start();
     m_layout->addWidget(m_widget);
     m_layout->setContentsMargins(0,0,0,0);
     setStyleSheet("");//background-color: " + g_globalConfiguration.dimColor().name() + ";");
+
+    for (auto i : m_dash->components)
+    {
+        i->setState (m_controller->state());
+        i->loaded();
+    }
+
+    m_widget->update();
+
     m_inDash = true;
 }
 

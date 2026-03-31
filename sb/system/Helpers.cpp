@@ -24,7 +24,7 @@ void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, c
     if (outFile.open(QIODevice::Append))
     {
         QTextStream stream( &outFile );
-        stream << QTime::currentTime().toString("HH:mm:ss.zzz: ") << txt << "\n";
+        stream << txt << "\n";
         outFile.close();
     }
 }

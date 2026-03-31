@@ -68,6 +68,24 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     pbSave->setFont(font);
     connect (pbSave, &QPushButton::clicked, this, &MenuScreen::saveBestClicked);
 
+    QPushButton * pbImport = new QPushButton(this);
+    pbImport->setText("IMPORT REF-A");
+    pbImport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+    font = pbImport->font();
+    font.setPointSizeF(23);
+    font.setBold(true);
+    pbImport->setFont(font);
+    connect (pbImport, &QPushButton::clicked, this, &MenuScreen::importRefAClicked);
+
+    QPushButton * pbExport = new QPushButton(this);
+    pbExport->setText("EXPORT REF-A");
+    pbExport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+    font = pbExport->font();
+    font.setPointSizeF(23);
+    font.setBold(true);
+    pbExport->setFont(font);
+    connect (pbExport, &QPushButton::clicked, this, &MenuScreen::exportRefAClicked);
+
     SideButtonLabel * pbClose = new SideButtonLabel(this, SideButtonLabel::Close);
     pbClose->setText("MENU");
     pbClose->setAlignment(Qt::AlignCenter);
@@ -85,6 +103,11 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
         layout->addWidget(pbClearRefA);
     }
     layout->addWidget(pbSave);
+    layout->addWidget(pbImport);
+    if (pbClearRefA != nullptr)
+    {
+        layout->addWidget(pbExport);
+    }
 
 
     layout->addWidget(pbExit);
@@ -135,6 +158,37 @@ void MenuScreen::clearRefAClicked()
     if (m_state->comparisonLaps.contains("ref-a"))
     {
         m_state->comparisonLaps.remove("ref-a");
+    }
+    deleteLater();
+}
+
+void MenuScreen::importRefAClicked()
+{
+    auto filePath = QFileDialog::getOpenFileName(this, "Load lap", QString(), "Laps (*.gt7lap)");
+    if(!filePath.isNull())
+    {
+        DBG_MSG << "Load" << filePath << "as ref-a";
+        m_state->loadComparisonLap("ref-a", filePath, true);
+        m_state->saveComparisonLap("ref-a", "ref-a");
+    }
+    else
+    {
+        DBG_MSG << "No file selected";
+    }
+    deleteLater();
+}
+
+void MenuScreen::exportRefAClicked()
+{
+    auto filePath = QFileDialog::getSaveFileName(this, "Save lap", QDate::currentDate().toString("yyyy-MM-dd") + " Reference Lap.gt7lap", "Laps (*.gt7lap)");
+    if(!filePath.isNull())
+    {
+        DBG_MSG << "Save" << filePath << "from ref-a";
+        m_state->saveComparisonLap("ref-a", filePath, true);
+    }
+    else
+    {
+        DBG_MSG << "No file selected";
     }
     deleteLater();
 }

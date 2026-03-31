@@ -52,6 +52,7 @@ class Map : public Component
 public:
     Map (const QJsonValue json);
 
+    virtual void loaded() override;
     virtual void newPoint(PTelemetryPoint p) override;
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
 

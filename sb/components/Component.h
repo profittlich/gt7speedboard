@@ -189,6 +189,8 @@ public:
     // static QString componentId ();
     //
 
+    virtual void loaded() {};
+
     virtual void newPoint(PTelemetryPoint curPoint) { Q_UNUSED(curPoint) };
     virtual void pointFinished(PTelemetryPoint curPoint) { Q_UNUSED(curPoint) };
 

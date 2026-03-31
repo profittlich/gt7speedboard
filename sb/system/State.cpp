@@ -1,7 +1,7 @@
 #include "State.h"
 
 
-void State::saveComparisonLap(QString key, QString fnKey)
+void State::saveComparisonLap(QString key, QString fnKey, bool absolutePath)
 {
     if (!comparisonLaps.contains(key))
     {
@@ -9,7 +9,16 @@ void State::saveComparisonLap(QString key, QString fnKey)
         return;
     }
 
-    QString fn = getStorageLocation().absolutePath() + "/" + fnKey + ".gt7lap";
+    QString fn;
+    if (absolutePath)
+    {
+        fn = fnKey;
+    }
+    else
+    {
+        fn = getStorageLocation().absolutePath() + "/" + fnKey + ".gt7lap";
+    }
+
     if (!comparisonLaps[key]->lap->saveLap(fn))
     {
         addMessage("main", "Could not save lap " + key);

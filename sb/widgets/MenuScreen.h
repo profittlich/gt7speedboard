@@ -21,6 +21,8 @@ public slots:
     void resetClicked();
     void saveBestClicked();
     void clearRefAClicked();
+    void importRefAClicked();
+    void exportRefAClicked();
 
 private:
     ButtonLabel * m_exit;

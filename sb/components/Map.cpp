@@ -34,6 +34,21 @@ QString Map::target()
     return (*m_target)();
 }
 
+void Map::loaded()
+{
+    if (state()->comparisonLaps.contains((*m_target)()) && (m_refLap.isNull() || state()->comparisonLaps[(*m_target)()]->lap != m_refLap))
+    {
+        DBG_MSG << "loaded";
+        m_refLap = state()->comparisonLaps[(*m_target)()]->lap;
+        m_widget->updateRefLap(m_refLap);
+        m_widget->update();
+    }
+    else
+    {
+        DBG_MSG << "loaded failed";
+    }
+}
+
 void Map::newPoint(PTelemetryPoint p)
 {
     m_widget->addPoint(p);
@@ -52,6 +67,12 @@ void Map::newPoint(PTelemetryPoint p)
     {
         m_refLap.clear();
         m_widget->clearRefLap();
+    }
+
+    if (state()->comparisonLaps.contains((*m_target)()) && (m_refLap.isNull() || state()->comparisonLaps[(*m_target)()]->lap != m_refLap))
+    {
+        m_refLap = state()->comparisonLaps[(*m_target)()]->lap;
+        m_widget->updateRefLap(m_refLap);
     }
 
     m_widget->update();
