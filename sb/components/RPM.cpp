@@ -38,9 +38,9 @@ QString RPM::description ()
     return "Simple RPM meter";
 }
 
-QList<QString> RPM::actions ()
+QMap<QString, Action> RPM::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString RPM::componentId ()

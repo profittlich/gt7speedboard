@@ -16,7 +16,7 @@ public:
     virtual void pitStop() override;
 
     static QString description ();
-    static QList<QString> actions ();
+    static QMap<QString, Action> actions ();
     static QString componentId ();
 
 private:

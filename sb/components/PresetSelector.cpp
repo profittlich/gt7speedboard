@@ -43,12 +43,12 @@ QString PresetSelector::description ()
     return "Change presets via key or touch";
 }
 
-QList<QString> PresetSelector::actions ()
+QMap<QString, Action> PresetSelector::actions ()
 {
-    QList<QString> result;
+    QMap<QString, Action> result;
 
-    result.append("next preset");
-    result.append("previous preset");
+    result["nextPreset"] = { 1, "next preset", "switch to the next parameter preset"};
+    result["prevPreset"] = { 2, "previous preset", "switch to the previous parameter preset"};
 
     return result;
 }
@@ -66,7 +66,7 @@ QString PresetSelector::componentId ()
 
 void PresetSelector::callAction(QString a)
 {
-    if (a == "next preset")
+    if (a == "nextPreset")
     {
         m_currentPreset++;
         if (m_currentPreset >= m_presetList.count())
@@ -77,7 +77,7 @@ void PresetSelector::callAction(QString a)
         state()->currentPreset = m_presetList[m_currentPreset];
         state()->presetChanged = true;
     }
-    else if (a == "previous preset")
+    else if (a == "prevPreset")
     {
         m_currentPreset--;
         if (m_currentPreset < 0)

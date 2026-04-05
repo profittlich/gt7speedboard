@@ -48,9 +48,9 @@ QString Speed::description ()
     return "Simple speedometer";
 }
 
-QList<QString> Speed::actions ()
+QMap<QString, Action> Speed::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString Speed::componentId ()

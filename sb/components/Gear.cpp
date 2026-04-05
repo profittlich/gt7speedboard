@@ -38,9 +38,9 @@ QString Gear::description ()
     return "Simple Gear meter";
 }
 
-QList<QString> Gear::actions ()
+QMap<QString, Action> Gear::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString Gear::componentId ()

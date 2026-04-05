@@ -86,14 +86,14 @@ void LapComparison::presetSwitched()
 void LapComparison::goFullscreen()
 {
     DBG_MSG << "toggleFullscreen click";
-    callAction("toggle fullscreen signal");
+    callAction("toggleFullscreen");
 }
 
 
 void LapComparison::rotateTargets()
 {
     DBG_MSG << "rotateTargets click";
-    callAction("next target");
+    callAction("nextTarget");
 }
 
 void LapComparison::pointFinished(PTelemetryPoint p)
@@ -252,19 +252,19 @@ QString LapComparison::description ()
     return "Compare current speed and time to another lap";
 }
 
-QList<QString> LapComparison::actions ()
+QMap<QString, Action> LapComparison::actions ()
 {
-    QList<QString> result;
+    QMap<QString, Action> result;
 
-    result.append("toggle fullscreen signal");
-    result.append("next target");
+    result["toggleFullscreen"] = { 1, "toggle fullscreen signal", "toggle wether the signalling of countdowns and positions should color the full screen"};
+    result["nextTarget"] = { 2, "next target", "switch to the next configured comparison target lap"};
 
     return result;
 }
 
 void LapComparison::callAction(QString a)
 {
-    if (a == "toggle fullscreen signal")
+    if (a == "toggleFullscreen")
     {
         if (s_fullScreenTarget == (*currentTarget())())
         {
@@ -278,7 +278,7 @@ void LapComparison::callAction(QString a)
         }
         updateLabel();
     }
-    else if (a == "next target")
+    else if (a == "nextTarget")
     {
         DBG_MSG << "next target";
         (*m_currentTarget)() += 1.0;

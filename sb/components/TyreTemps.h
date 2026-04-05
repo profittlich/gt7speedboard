@@ -17,7 +17,7 @@ public:
     virtual void newPoint(PTelemetryPoint p);
 
     static QString description ();
-    static QList<QString> actions ();
+    static QMap<QString, Action> actions ();
     static QString componentId ();
 
     //virtual QList<ComponentParameter<float>> getFloatParameters() override;

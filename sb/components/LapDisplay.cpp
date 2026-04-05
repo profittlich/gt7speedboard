@@ -45,9 +45,9 @@ QString LapDisplay::description ()
     return "Show the current lap";
 }
 
-QList<QString> LapDisplay::actions ()
+QMap<QString, Action> LapDisplay::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString LapDisplay::componentId ()

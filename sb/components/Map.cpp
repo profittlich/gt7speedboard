@@ -432,9 +432,9 @@ QString Map::description ()
     return "Show a map of the track and the current location";
 }
 
-QList<QString> Map::actions ()
+QMap<QString, Action> Map::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 static ComponentFactory::RegisterComponent<Map> reg;

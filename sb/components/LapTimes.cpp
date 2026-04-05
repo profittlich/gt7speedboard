@@ -124,9 +124,9 @@ QString LapTimes::description ()
     return "Show the lap lap times of comparison laps";
 }
 
-QList<QString> LapTimes::actions ()
+QMap<QString, Action> LapTimes::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString LapTimes::componentId ()

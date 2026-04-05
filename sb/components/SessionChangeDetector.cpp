@@ -34,9 +34,9 @@ QString SessionChangeDetector::description ()
     return "Detects session changes for other components";
 }
 
-QList<QString> SessionChangeDetector::actions ()
+QMap<QString, Action> SessionChangeDetector::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString SessionChangeDetector::componentId ()

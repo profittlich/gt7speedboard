@@ -83,9 +83,9 @@ QString CPULoad::description ()
     return "Show the CPU load of the telemetry stream processing";
 }
 
-QList<QString> CPULoad::actions ()
+QMap<QString, Action> CPULoad::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString CPULoad::componentId ()

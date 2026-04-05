@@ -100,13 +100,14 @@ signals:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override
     {
-        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+        QMouseEvent * mev = dynamic_cast<QMouseEvent*>(event);
+        if (event->type() == QEvent::MouseButtonPress && mev->button() == Qt::LeftButton  )
         {
             DBG_MSG << "Mouse press";
             m_longClickTimer.start();
             return true;
         }
-        else if (event->type() == QEvent::MouseButtonRelease)
+        else if (event->type() == QEvent::MouseButtonRelease && mev->button() == Qt::LeftButton)
         {
             DBG_MSG << m_longClickTimer.elapsed();
             if (m_longClickTimer.elapsed() > g_globalConfiguration.longClickTimeout())
@@ -117,6 +118,15 @@ protected:
             }
 
             return false;
+        }
+        else if (event->type() == QEvent::MouseButtonPress && mev->button() == Qt::RightButton)
+        {
+            emit longClick();
+            return true;
+        }
+        else if (event->type() == QEvent::MouseButtonRelease && mev->button() == Qt::RightButton)
+        {
+            return true;
         }
         return false;
     }

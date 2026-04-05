@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QEvent>
+#include "sb/system/Helpers.h"
 
 class InteractiveWidget : public QWidget
 {
@@ -28,12 +29,12 @@ protected:
         }*/
         if (event->type() == QEvent::MouseButtonPress)
         {
-            qDebug("Event filter: MouseButtonPress");
+            DBG_MSG << "Event filter: MouseButtonPress";
             emit interceptEvent(event);
         }
         if (event->type() == QEvent::MouseButtonRelease)
         {
-            qDebug("Event filter: MouseButtonRelease");
+            DBG_MSG << "Event filter: MouseButtonRelease";
             emit interceptEvent(event);
         }
         return QObject::eventFilter(obj, event);

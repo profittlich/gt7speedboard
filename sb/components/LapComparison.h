@@ -22,7 +22,7 @@ public:
     virtual void callAction(QString a) override;
 
     static QString description ();
-    static QList<QString> actions ();
+    static QMap<QString, Action> actions ();
     static QString componentId ();
 
 public slots:

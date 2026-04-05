@@ -16,6 +16,8 @@ FuelRange::FuelRange (const QJsonValue config) : Component(config), m_showTime(n
     m_widget->setStyleSheet("color : #fff;");
 
     m_widget->setText("MEASURING");
+
+    connect(m_widget, &ColorLabel::clicked, this, [this]() { this->callAction("toggle time left");});
 }
 
 QWidget * FuelRange::getWidget() const
@@ -41,7 +43,8 @@ void FuelRange::newPoint(PTelemetryPoint p)
     else
     {
         float range = p->currentFuel() / state()->fuelData.fuelPerLap;
-        m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS" + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): "")); // full range
+        m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS"
+                          + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): ""));
     }
 
 }
@@ -52,11 +55,11 @@ QString FuelRange::description ()
     return "Show range in laps with current fuel";
 }
 
-QList<QString> FuelRange::actions ()
+QMap<QString, Action> FuelRange::actions ()
 {
-    QList<QString> result;
+    QMap<QString, Action> result;
 
-    result.append("toggle time left");
+    result["toggle time left"] = { 1, "toggle time left", "toggle wether the remaining time with fuel should be displayed" };
 
     return result;
 }

@@ -48,9 +48,9 @@ QString Brake::description ()
     return "Show the current braking level";
 }
 
-QList<QString> Brake::actions ()
+QMap<QString, Action> Brake::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString Brake::componentId ()

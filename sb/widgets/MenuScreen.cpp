@@ -163,10 +163,14 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PComponent comp) : QScr
     layout->addWidget(pbClose);
     layout->addWidget(m_lbParam);
 
-    for (auto i : comp->getActions())
+    auto actions = comp->getActions();
+    auto actionKeys = actions.keys();
+    std::sort(actionKeys.begin(), actionKeys.end(), [actions](QString a, QString b) { return actions[a].order < actions[b].order; });
+
+    for (auto i : actionKeys)
     {
         QPushButton * curButton = new QPushButton(widget);
-        curButton->setText (i.toUpper());
+        curButton->setText (actions[i].label.toUpper());
         curButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = curButton->font();
         font.setPointSizeF(23);

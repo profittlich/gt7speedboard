@@ -191,10 +191,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
                 return nullptr;
             }
             auto defActions = cmp->getActions();
-            for (auto xxx : defActions)
-            {
-                DBG_MSG << "Action" << xxx;
-            }
+
             QJsonObject actList = curObj["actions"].toObject();
             for (const auto & a : actList.keys())
             {

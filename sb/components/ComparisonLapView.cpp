@@ -88,9 +88,9 @@ QString ComparisonLapView::description ()
     return "List comparison laps for debugging purposes";
 }
 
-QList<QString> ComparisonLapView::actions ()
+QMap<QString, Action> ComparisonLapView::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString ComparisonLapView::componentId ()

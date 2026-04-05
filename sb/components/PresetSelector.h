@@ -14,7 +14,7 @@ public:
     virtual QString defaultTitle () const;
 
     static QString description ();
-    static QList<QString> actions ();
+    static QMap<QString, Action> actions ();
     static QString componentId ();
 
     virtual void callAction(QString a) override;

@@ -15,7 +15,7 @@ public:
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
 
     static QString description ();
-    static QList<QString> actions ();
+    static QMap<QString, Action> actions ();
     static QString componentId ();
 
 protected:

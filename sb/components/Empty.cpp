@@ -66,9 +66,9 @@ QString Empty::componentId ()
     return "Empty";
 }
 
-QList<QString> Empty::actions ()
+QMap<QString, Action> Empty::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 static ComponentFactory::RegisterComponent<Empty> reg;

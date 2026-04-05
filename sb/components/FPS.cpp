@@ -45,9 +45,9 @@ QString FPS::description ()
     return "Show the FPS of the incoming telemetry stream";
 }
 
-QList<QString> FPS::actions ()
+QMap<QString, Action> FPS::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString FPS::componentId ()

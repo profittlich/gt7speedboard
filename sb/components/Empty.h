@@ -17,7 +17,7 @@ public:
     virtual void parameterChanged(const PComponentParameterFloat & p) override;
 
     static QString description ();
-    static QList<QString> actions ();
+    static QMap<QString, Action> actions ();
     static QString componentId ();
 
 private:

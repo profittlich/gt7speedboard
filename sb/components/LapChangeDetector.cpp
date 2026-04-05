@@ -47,9 +47,9 @@ QString LapChangeDetector::description ()
     return "Detects lap changes for other components";
 }
 
-QList<QString> LapChangeDetector::actions ()
+QMap<QString, Action> LapChangeDetector::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString LapChangeDetector::componentId ()

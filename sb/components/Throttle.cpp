@@ -48,9 +48,9 @@ QString Throttle::description ()
     return "Show the current throttle level";
 }
 
-QList<QString> Throttle::actions ()
+QMap<QString, Action> Throttle::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString Throttle::componentId ()

@@ -4,6 +4,7 @@
 #include "sb/system/Configuration.h"
 #include "sb/trackdata/Track.h"
 #include "sb/system/State.h"
+#include "sb/system/Action.h"
 #include <QObject>
 #include <QColor>
 #include <QWidget>
@@ -222,7 +223,7 @@ public:
     // Derived classes MUST IMPLEMENT these static functions:
     //
     // static QString description ();
-    // static QList<QString> actions ();
+    // static QMap<QString, Action> actions ();
     // static QString componentId ();
     //
 
@@ -282,7 +283,7 @@ public:
     virtual void parameterChanged(const PComponentParameterBoolean &) {}
     virtual void parameterChanged(const PComponentParameterString &) {}
 
-    const QList<QString> & getActions () const { return m_actions; }
+    const QMap<QString, Action> & getActions () const { return m_actions; }
     const QString & getDescription () const { return m_description; }
     const QString & getComponentId () const { return m_componentId; }
 
@@ -307,7 +308,7 @@ signals:
     void setTitleSuffix(QString);
 
 private:
-    void setActions (QList<QString> a) { m_actions = a; }
+    void setActions (QMap<QString, Action> a) { m_actions = a; }
     void setDescription (QString a) { m_description = a; }
     void setComponentId (QString a) { m_componentId = a; }
 
@@ -328,7 +329,7 @@ private:
 
     QString m_componentId;
     QString m_description;
-    QList<QString> m_actions;
+    QMap<QString, Action> m_actions;
 
 };
 

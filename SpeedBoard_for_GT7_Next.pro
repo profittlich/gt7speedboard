@@ -99,6 +99,7 @@ HEADERS += \
     sb/components/TyreTemps.h \
     sb/receiver/GT7TelemetryReceiver.h \
     sb/receiver/TelemetryReceiver.h \
+    sb/system/Action.h \
     sb/system/CarDatabase.h \
     sb/system/Configuration.h \
     sb/system/Controller.h \

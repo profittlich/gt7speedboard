@@ -97,9 +97,9 @@ QString FuelAnalyzer::description ()
     return "Analyze fuel consumption for other components";
 }
 
-QList<QString> FuelAnalyzer::actions ()
+QMap<QString, Action> FuelAnalyzer::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString FuelAnalyzer::componentId ()

@@ -50,9 +50,9 @@ QString FuelPerLap::description ()
     return "Show fuel consumption per lap";
 }
 
-QList<QString> FuelPerLap::actions ()
+QMap<QString, Action> FuelPerLap::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString FuelPerLap::componentId ()

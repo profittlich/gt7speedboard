@@ -41,9 +41,9 @@ QString CarName::description ()
     return "Show the model of the current car";
 }
 
-QList<QString> CarName::actions ()
+QMap<QString, Action> CarName::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString CarName::componentId ()

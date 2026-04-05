@@ -38,9 +38,9 @@ QString FuelLevel::description ()
     return "Show current fuel level";
 }
 
-QList<QString> FuelLevel::actions ()
+QMap<QString, Action> FuelLevel::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString FuelLevel::componentId ()

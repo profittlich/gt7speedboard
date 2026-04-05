@@ -75,9 +75,9 @@ QString Message::description ()
     return "Simple speedometer message for testing";
 }
 
-QList<QString> Message::actions ()
+QMap<QString, Action> Message::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString Message::componentId ()

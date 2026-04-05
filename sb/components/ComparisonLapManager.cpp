@@ -157,9 +157,9 @@ QString ComparisonLapManager::description ()
     return "Provide comparison laps for other components";
 }
 
-QList<QString> ComparisonLapManager::actions ()
+QMap<QString, Action> ComparisonLapManager::actions ()
 {
-    return QList<QString>();
+    return QMap<QString, Action>();
 }
 
 QString ComparisonLapManager::componentId ()
