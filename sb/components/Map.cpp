@@ -19,10 +19,6 @@ QString Map::defaultTitle () const
     return "Map";
 }
 
-QString Map::description ()
-{
-    return "Map widget with customizable text";
-}
 
 QString Map::componentId ()
 {
@@ -431,5 +427,14 @@ void SBGLWidget::paintGL()
     }
 }
 
+QString Map::description ()
+{
+    return "Show a map of the track and the current location";
+}
+
+QList<QString> Map::actions ()
+{
+    return QList<QString>();
+}
 
 static ComponentFactory::RegisterComponent<Map> reg;

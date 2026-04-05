@@ -69,7 +69,7 @@ void GaugeLabel::disable()
     m_value = 0.0;
 }
 
-void GaugeLabel::mousePressEvent(QMouseEvent * ev)
+void GaugeLabel::mouseReleaseEvent(QMouseEvent * ev)
 {
     emit clicked();
 }

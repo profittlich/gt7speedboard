@@ -23,6 +23,8 @@ public slots:
     void startDash();
     void showStartScreen();
     void showMenuScreen();
+    void showComponentMenu();
+    void correctSize();
 
 protected:
     void keyPressEvent(QKeyEvent *event);

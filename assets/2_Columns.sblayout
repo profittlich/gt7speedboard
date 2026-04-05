@@ -43,7 +43,7 @@
                                         {
                                             "component" : "TyreTemps",
                                             "configuration" : { "target" : 75, "spread" : 20 },
-                                            "actions" : { "Key_A" : "targetUp", "Key_Z" : "targetDown" },
+                                            "actions" : { "Key_A" : "target +", "Key_Z" : "target -" },
                                             "stretch" : 3
                                         },
                                         {

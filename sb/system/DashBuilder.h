@@ -29,7 +29,7 @@ public:
     PDash makeDash(QWidget * parent, QJsonDocument spec);
 
 protected:
-    QWidget * makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonValue cur, bool vertical, bool & firstComp, PDashNode & dashNode, QStackedWidget * stacker = nullptr);
+    QWidget * makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonValue cur, bool vertical, bool & firstComp, PDashNode & dashNode, QObject * menuTarget, QStackedWidget * stacker = nullptr);
     unsigned qtKey(QString k) { if (m_qtKeys.contains(k)) return m_qtKeys[k]; return 0; }
     static QJsonValue jVal(QJsonObject obj, QString key, QJsonValue def);
 

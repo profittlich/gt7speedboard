@@ -18,7 +18,10 @@ public:
     static QList<QString> actions ();
     static QString componentId ();
 
+    virtual void callAction(QString a) override;
+
 
 private:
     ColorLabel * m_widget;
+    PComponentParameterBoolean m_showTime;
 };

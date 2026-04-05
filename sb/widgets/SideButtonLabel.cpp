@@ -10,7 +10,7 @@ SideButtonLabel::SideButtonLabel(QWidget * parent, Type type) : ButtonLabel(pare
 {
 }
 
-void SideButtonLabel::mousePressEvent(QMouseEvent * ev)
+void SideButtonLabel::mouseReleaseEvent(QMouseEvent * ev)
 {
     if (ev->pos().x() < height() + g_margin)
     {

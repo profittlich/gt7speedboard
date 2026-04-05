@@ -19,29 +19,9 @@ LapTimes::LapTimes (const QJsonValue config) : Component(config)
 
     m_widget->setText("no times yet");
 
-
-
     m_scroller = new QScrollArea();
     m_scroller->setWidgetResizable(true);
-    //m_scroller->setFixedHeight(200);
-    //m_scroller->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    //m_scroller->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
-    //QVBoxLayout * layout = new QVBoxLayout(m_scroller);
-
-
-
-    //scrollWidget->setLayout(layout);
-    //m_scroller->setWidget(scrollWidget);
     m_scroller->setWidget(m_widget);
-    //layout->addWidget(m_widget);
-
-    //layout->setSizeConstraint(QLayout::SetFixedSize);
-
-
-
-    //m_widget->setEnabled(false);
-    //m_scroller->show();
 
     setupScroller(m_scroller);
 }

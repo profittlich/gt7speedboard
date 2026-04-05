@@ -12,12 +12,13 @@
 #include <QSpinBox>
 #include <QDir>
 #include <QFileDialog>
+#include <QScroller>
 
 #include "sb/system/Configuration.h"
 #include "sb/widgets/DashWidget.h"
 #include "sb/widgets/SideButtonLabel.h"
 
-MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget(parent)
+MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScrollArea(parent)
 {
     setContentsMargins(5,5,5,5);
     m_dash = dash;
@@ -25,9 +26,12 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     //setMinimumSize(500, 500);
     setStyleSheet("background-color: " + g_globalConfiguration.backgroundColor().name() + ";");
 
-    QVBoxLayout * layout = new QVBoxLayout(this);
+    QWidget * widget = new QWidget();
+    widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QPushButton * pbExit = new QPushButton(this);
+    QVBoxLayout * layout = new QVBoxLayout(widget);
+
+    QPushButton * pbExit = new QPushButton(widget);
     pbExit->setText("EXIT DASH");
     pbExit->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     auto font = pbExit->font();
@@ -36,7 +40,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     pbExit->setFont(font);
     connect (pbExit, &QPushButton::clicked, this, &MenuScreen::exitClicked);
 
-    QPushButton * pbReset = new QPushButton(this);
+    QPushButton * pbReset = new QPushButton(widget);
     pbReset->setText("RESET DATA");
     pbReset->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     font = pbReset->font();
@@ -49,7 +53,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     QPushButton * pbClearRefA = nullptr;
     if (m_state->comparisonLaps.contains("ref-a"))
     {
-        pbClearRefA = new QPushButton(this);
+        pbClearRefA = new QPushButton(widget);
         pbClearRefA->setText("CLEAR REF-A");
         pbClearRefA->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = pbClearRefA->font();
@@ -62,7 +66,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     QPushButton * pbSave = nullptr;
     if (m_state->comparisonLaps.contains("best"))
     {
-        pbSave = new QPushButton(this);
+        pbSave = new QPushButton(widget);
         pbSave->setText("SAVE BEST AS REF-A");
         pbSave->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = pbSave->font();
@@ -72,7 +76,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
         connect (pbSave, &QPushButton::clicked, this, &MenuScreen::saveBestClicked);
     }
 
-    QPushButton * pbImport = new QPushButton(this);
+    QPushButton * pbImport = new QPushButton(widget);
     pbImport->setText("IMPORT REF-A");
     pbImport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     font = pbImport->font();
@@ -84,7 +88,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
     QPushButton * pbExport = nullptr;
     if (m_state->comparisonLaps.contains("ref-a"))
     {
-        pbExport = new QPushButton(this);
+        pbExport = new QPushButton(widget);
         pbExport->setText("EXPORT REF-A");
         pbExport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = pbExport->font();
@@ -94,7 +98,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
         connect (pbExport, &QPushButton::clicked, this, &MenuScreen::exportRefAClicked);
     }
 
-    SideButtonLabel * pbClose = new SideButtonLabel(this, SideButtonLabel::Close);
+    SideButtonLabel * pbClose = new SideButtonLabel(widget, SideButtonLabel::Close);
     pbClose->setText("MENU");
     pbClose->setAlignment(Qt::AlignCenter);
     font = pbClose->font();
@@ -122,8 +126,102 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QWidget
 
     layout->addWidget(pbExit);
     layout->insertStretch(layout->count()-1);
+
+    setWidget(widget);
+    setupScroller(this);
 }
 
+MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PComponent comp) : QScrollArea(parent)
+{
+    setContentsMargins(5,5,5,5);
+    m_dash = dash;
+    m_component = comp;
+    //setMinimumSize(500, 500);
+    setStyleSheet("background-color: " + g_globalConfiguration.backgroundColor().name() + ";");
+
+    QWidget * widget = new QWidget();
+
+    QVBoxLayout * layout = new QVBoxLayout(widget);
+
+    m_lbParam = new QLabel(widget);
+    auto font = m_lbParam->font();
+    font.setPointSizeF(30);
+    font.setBold(true);
+    m_lbParam->setFont(font);
+    updateParams();
+
+    SideButtonLabel * pbClose = new SideButtonLabel(widget, SideButtonLabel::Close);
+    pbClose->setText(comp->title().toUpper());
+    pbClose->setAlignment(Qt::AlignCenter);
+    font = pbClose->font();
+    font.setPointSizeF(40);
+    font.setBold(true);
+    pbClose->setFont(font);
+    pbClose->setStyleSheet("color:" + g_globalConfiguration.headerTextColor().name() + ";");
+    connect (pbClose, &SideButtonLabel::buttonClicked, this, &MenuScreen::closeClicked);
+
+    layout->addWidget(pbClose);
+    layout->addWidget(m_lbParam);
+
+    for (auto i : comp->getActions())
+    {
+        QPushButton * curButton = new QPushButton(widget);
+        curButton->setText (i.toUpper());
+        curButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+        font = curButton->font();
+        font.setPointSizeF(23);
+        font.setBold(true);
+        curButton->setFont(font);
+        curButton->setProperty("componentAction", i);
+        connect(curButton, &QPushButton::clicked, this, &MenuScreen::actionClicked);
+        layout->addWidget(curButton);
+    }
+
+    layout->insertStretch(layout->count());
+    setWidget(widget);
+    setupScroller(this);
+}
+
+void MenuScreen::setupScroller(QScrollArea *area)
+{
+    setWidgetResizable(true);
+    QScroller::grabGesture(area->viewport(), QScroller::LeftMouseButtonGesture);
+    QVariant OvershootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::OvershootAlwaysOff);
+    QScrollerProperties ScrollerProperties = QScroller::scroller(area->viewport())->scrollerProperties();
+    ScrollerProperties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, OvershootPolicy);
+    ScrollerProperties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, OvershootPolicy);
+    QScroller::scroller(area->viewport())->setScrollerProperties(ScrollerProperties);
+}
+
+void MenuScreen::updateParams()
+{
+    m_lbParam->setText ("Parameters:\n");
+    auto boolLabels = m_component->getBooleanParameters();
+    for (auto i : boolLabels)
+    {
+        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + (i() ? "ON" : "OFF") + "\n");
+    }
+
+    auto strLabels = m_component->getStringParameters();
+    for (auto i : strLabels)
+    {
+        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + i() + "\n");
+    }
+
+    auto fltLabels = m_component->getFloatParameters();
+    for (auto i : fltLabels)
+    {
+        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + QString::number(i()) + "\n");
+    }
+}
+
+void MenuScreen::actionClicked()
+{
+    QString action = sender()->property("componentAction").toString();
+    DBG_MSG << "Action clicked:" << action;
+    m_component->callAction(action);
+    updateParams();
+}
 
 void MenuScreen::exitClicked()
 {
@@ -143,6 +241,7 @@ void MenuScreen::exitClicked()
 void MenuScreen::closeClicked()
 {
     DBG_MSG << "Close";
+    DBG_MSG << this->size() << this->widget()->size();
     deleteLater();
 }
 

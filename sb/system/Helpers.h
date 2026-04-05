@@ -13,11 +13,12 @@
 QString indexToTime(size_t idx);
 
 QString msToTime(unsigned ms);
+QString sToTime(unsigned s);
 
 QDir getStorageLocation();
 void setKeepScreenOn(bool enable);
 
-#define DBG_MSG qDebug () << (QTime::currentTime().toString("hh:mm:ss.zzz") + " " +  QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
+#define DBG_MSG qWarning () << (QTime::currentTime().toString("hh:mm:ss.zzz") + " " +  QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
 
 const QString c_version = "RED-PB-A";
 const float c_FPS = 59.94;

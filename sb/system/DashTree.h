@@ -44,6 +44,20 @@ public:
         QMap<QString, QJsonObject> presets;
 
         bool found = false;
+        for (auto i : m_component->getBooleanParameters())
+        {
+            found = true;
+            conf.insert(i.name(), i());
+            QMap<QString, bool> all = i.getAll();
+            for (auto j : all.keys())
+            {
+                if (!presets.contains(j))
+                {
+                    presets[j] = QJsonObject();
+                }
+                presets[j].insert(i.name(), all[j]);
+            }
+        }
         for (auto i : m_component->getFloatParameters())
         {
             found = true;

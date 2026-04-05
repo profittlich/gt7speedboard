@@ -64,6 +64,25 @@ QString msToTime(unsigned ms)
     return QString::number(tm) + ":" + tts + "." + ttms;
 }
 
+QString sToTime(unsigned s)
+{
+    if (s < 0)
+    {
+        return "no time";
+    }
+
+    int tm = int(s / 60);
+    int ts = int(s % 60);
+
+    QString tts = QString::number(ts);
+    if (tts.size() < 2)
+    {
+        tts = "0" + tts;
+    }
+
+    return QString::number(tm) + ":" + tts;
+}
+
 QDir getStorageLocation()
 {
 #ifdef Q_OS_IOS

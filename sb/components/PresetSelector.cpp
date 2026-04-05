@@ -47,8 +47,8 @@ QList<QString> PresetSelector::actions ()
 {
     QList<QString> result;
 
-    result.append("nextPreset");
-    result.append("previousPreset");
+    result.append("next preset");
+    result.append("previous preset");
 
     return result;
 }
@@ -66,7 +66,7 @@ QString PresetSelector::componentId ()
 
 void PresetSelector::callAction(QString a)
 {
-    if (a == "nextPreset")
+    if (a == "next preset")
     {
         m_currentPreset++;
         if (m_currentPreset >= m_presetList.count())
@@ -77,7 +77,7 @@ void PresetSelector::callAction(QString a)
         state()->currentPreset = m_presetList[m_currentPreset];
         state()->presetChanged = true;
     }
-    else if (a == "previousPreset")
+    else if (a == "previous preset")
     {
         m_currentPreset--;
         if (m_currentPreset < 0)

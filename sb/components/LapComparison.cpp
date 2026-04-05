@@ -86,14 +86,14 @@ void LapComparison::presetSwitched()
 void LapComparison::goFullscreen()
 {
     DBG_MSG << "toggleFullscreen click";
-    callAction("toggleFullscreen");
+    callAction("toggle fullscreen signal");
 }
 
 
 void LapComparison::rotateTargets()
 {
     DBG_MSG << "rotateTargets click";
-    callAction("rotateTargets");
+    callAction("next target");
 }
 
 void LapComparison::pointFinished(PTelemetryPoint p)
@@ -138,12 +138,13 @@ void LapComparison::pointFinished(PTelemetryPoint p)
         //auto startP = state()->currentLap->findClosestPoint(m_targetLap->lap->points()[0]).first;
         //int idx = state()->currentLap->points().size() - startP;
 
-        int startP = m_targetLap->lap->findClosestPoint(state()->currentLap->points()[0]).first;
+        //DBG_MSG << "findClosest";
+        int startP = 0;//m_targetLap->lap->findClosestPoint(state()->currentLap->points()[0]).first;
 
-        if (startP > m_targetLap->lap->points().size()/2)
-        {
-            startP -= m_targetLap->lap->points().size();
-        }
+        //if (startP > m_targetLap->lap->points().size()/2)
+        //{
+        //    startP -= m_targetLap->lap->points().size();
+        //}
 
         int idx = state()->currentLap->points().size() + startP;
         //DBG_MSG << (*m_target)() << "start p:" << startP << idx << m_targetLap->closestPoint << ((int(m_targetLap->closestPoint) - idx) / c_FPS);
@@ -211,7 +212,7 @@ void LapComparison::updateLabel()
     }
 }
 
-QColor LapComparison::signalColor()
+QColor LapComparison::signalColor() const
 {
     if (!m_prevFullScreenPermission)
     {
@@ -255,15 +256,15 @@ QList<QString> LapComparison::actions ()
 {
     QList<QString> result;
 
-    result.append("toggleFullscreen");
-    result.append("rotateTargets");
+    result.append("toggle fullscreen signal");
+    result.append("next target");
 
     return result;
 }
 
 void LapComparison::callAction(QString a)
 {
-    if (a == "toggleFullscreen")
+    if (a == "toggle fullscreen signal")
     {
         if (s_fullScreenTarget == (*currentTarget())())
         {
@@ -277,9 +278,9 @@ void LapComparison::callAction(QString a)
         }
         updateLabel();
     }
-    else if (a == "rotateTargets")
+    else if (a == "next target")
     {
-        DBG_MSG << "rotateTargets";
+        DBG_MSG << "next target";
         (*m_currentTarget)() += 1.0;
 
         if ((*m_currentTarget)() > 3.5)

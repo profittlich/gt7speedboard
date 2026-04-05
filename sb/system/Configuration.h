@@ -32,6 +32,7 @@ public:
         m_platformFontScale = 0.5;
 #endif
         setFontScale(settings.value("fontScale", 1.0).toFloat());
+        setLongClickTimeout(500);
         setFuelStatisticsLaps(5);
 
         m_maxPointDistanceForValidLap = 20.0;
@@ -54,6 +55,7 @@ public:
 
     /* SETTERS */
     void setFontScale(const float & v) { m_fontScale = v; }
+    void setLongClickTimeout(const unsigned v) { m_longClickTimeout = v; }
     //void setStorageLocation(const QString & v) { m_storageLocation = v; }
     void setHostAddress(const QString & v) { DBG_MSG << "PlayStation IP:" << v; m_hostAddress = v; }
     void setSelectedLayout(const QString & v) { m_selectedLayout = v; }
@@ -66,6 +68,7 @@ public:
     /* GETTERS */
     const float fontScale() const { return m_fontScale * m_platformFontScale; }
     const float & globalFontScale() const { return m_fontScale; }
+    const unsigned longClickTimeout() const { return m_longClickTimeout; }
     //const QString & storageLocation() const { return m_storageLocation; }
     const QString & hostAddress() const { return m_hostAddress; }
     const QString & selectedLayout() const { return m_selectedLayout; }
@@ -82,6 +85,7 @@ private:
     /* PROPERTIES */
     float m_platformFontScale;
     float m_fontScale;
+    unsigned m_longClickTimeout;
     //QString m_storageLocation;
     QString m_hostAddress;
     QColor m_backgroundColor;

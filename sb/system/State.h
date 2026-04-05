@@ -14,6 +14,7 @@ public:
     FuelData() : fuelPerLap(-1), infiniteFuel(false) {}
 
     float fuelPerLap;
+    float fuelTime;
     bool infiniteFuel;
 
 };

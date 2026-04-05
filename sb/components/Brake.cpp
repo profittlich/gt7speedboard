@@ -34,7 +34,7 @@ void Brake::newPoint(PTelemetryPoint p)
     }
 }
 
-QColor Brake::signalColor()
+QColor Brake::signalColor() const
 {
     if (m_curBrake >= 99)
     {

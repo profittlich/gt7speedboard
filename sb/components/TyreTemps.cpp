@@ -57,7 +57,7 @@ TyreTemps::TyreTemps (const QJsonValue conf) : Component(conf), m_target(new Com
 
 bool TyreTemps::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+    if (event->type() == QEvent::MouseButtonRelease || event->type() == QEvent::MouseButtonDblClick)
     {
         QMouseEvent * me = dynamic_cast<QMouseEvent*>(event);
         QWidget * w = dynamic_cast<QWidget*> (obj);
@@ -71,18 +71,14 @@ bool TyreTemps::eventFilter(QObject *obj, QEvent *event)
 
         if (y < m_widget->height() / 2)
         {
-            callAction("targetUp");
+            callAction("target +");
         }
         else
         {
-            callAction("targetDown");
+            callAction("target -");
         }
 
-        qDebug("Event filter: MouseButtonPress " + QString::number(y).toLatin1());
-    }
-    if (event->type() == QEvent::MouseButtonRelease)
-    {
-        qDebug("Event filter: MouseButtonRelease");
+        qDebug("Event filter: MouseButtonRelease " + QString::number(y).toLatin1());
     }
 
     return QObject::eventFilter(obj, event);
@@ -128,8 +124,8 @@ QList<QString> TyreTemps::actions ()
 {
     QList<QString> result;
 
-    result.append("targetUp");
-    result.append("targetDown");
+    result.append("target +");
+    result.append("target -");
 
     return result;
 }
@@ -142,7 +138,7 @@ QString TyreTemps::componentId ()
 
 void TyreTemps::callAction(QString a)
 {
-    if (a == "targetUp")
+    if (a == "target +")
     {
         if ((*m_target)() < 150)
         {
@@ -152,7 +148,7 @@ void TyreTemps::callAction(QString a)
             emit setTitleSuffix("[" + QString::number((*m_target)()) + " °C]");
         }
     }
-    else if (a == "targetDown")
+    else if (a == "target -")
     {
         if ((*m_target)() > 20)
         {

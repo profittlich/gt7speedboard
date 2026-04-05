@@ -15,43 +15,7 @@ class Lap
 public:
     Lap () : m_valid(true) {}
 
-    QPair<size_t, float> findClosestPoint(PPoint p, size_t start = 0, float cancelRange=100.0) const
-    {
-        int result = 0;
-        float resultDist = 1000000;
-        bool inRange = false;
-        //DBG_MSG << "start search";
-        if (start > 60)
-        {
-            start -= 60;
-        }
-        for (int i = start; i < start + m_points.size(); ++i)
-        {
-            float newDist = p->position().distanceTo(m_points[i % m_points.size()]->position());
-            if (!inRange && newDist < cancelRange)
-            {
-                inRange = true;
-            }
-            else if (inRange && newDist > cancelRange * 1.1)
-            {
-                //DBG_MSG << "cancel search";
-                break;
-            }
-            if (newDist < resultDist)
-            {
-                resultDist = newDist;
-                result = i % m_points.size();
-                while (result < 0)
-                {
-                    DBG_MSG << "adjust index";
-                    result += m_points.size();
-                }
-            }
-
-        }
-        //DBG_MSG << "end search" << result;
-        return QPair<size_t, float> (result, resultDist);
-    }
+    QPair<size_t, float> findClosestPoint(PPoint p, size_t start = 0, float cancelRange=100.0) const;
 
     float topSpeed() const
     {
@@ -72,7 +36,7 @@ public:
     size_t findNextThrottleLift () const { return 0; }
     size_t findNextShift () const { return 0; }
 
-    void appendTelemetryPoint(PTelemetryPoint p) { m_points.append(p); }
+    void appendTelemetryPoint(PTelemetryPoint p);
     const QList<PTelemetryPoint> & points() const { return m_points; }
     void setSucceedingPoint (PTelemetryPoint p)
     {
@@ -130,6 +94,7 @@ private:
     QList<PTelemetryPoint> m_points;
     PTelemetryPoint m_succeedingPoint;
     bool m_valid;
+    QMap<int, QSet<size_t>> m_quadPoints;
 
 };
 

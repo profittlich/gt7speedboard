@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QLabel>
+#include <QElapsedTimer>
 #include "sb/system/Dash.h"
 #include "sb/widgets/DashWidget.h"
 #include "sb/components/Component.h"
@@ -50,12 +51,15 @@ public:
         else
         {
             m_layout->addWidget(cmp->getWidget(), 0, 0);
+            //cmp->getWidget()->installEventFilter(this);
         }
 
         setContentsMargins(0,0,0,0);
         m_layout->setContentsMargins(0,0,0,0);
         //setStyleSheet("background-color:red;");
     }
+
+    PComponent component() { return m_component; }
 
 public slots:
     void setSuffix(QString sf)
@@ -90,7 +94,74 @@ public slots:
         m_head->setText(newCmp->title().toUpper());
     }
 
+signals:
+    void longClick();
+
 protected:
+    bool eventFilter(QObject *obj, QEvent *event) override
+    {
+        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+        {
+            DBG_MSG << "Mouse press";
+            m_longClickTimer.start();
+            return true;
+        }
+        else if (event->type() == QEvent::MouseButtonRelease)
+        {
+            DBG_MSG << m_longClickTimer.elapsed();
+            if (m_longClickTimer.elapsed() > g_globalConfiguration.longClickTimeout())
+            {
+                DBG_MSG << "Long click";
+                emit longClick();
+                return true;
+            }
+
+            return false;
+        }
+        return false;
+    }
+
+    void addEventFiltersRecursively(QObject * o)
+    {
+        if(o && o->isWidgetType())
+        {
+            o->installEventFilter(this);
+            const QObjectList& children = o->children();
+            for(QObjectList::const_iterator it = children.begin(); it != children.end(); ++it)
+            {
+                addEventFiltersRecursively(*it);
+            }
+        }
+    }
+
+    void removeEventFiltersRecursively(QObject * o)
+    {
+        if(o && o->isWidgetType())
+        {
+            o->removeEventFilter(this);
+            const QObjectList& children = o->children();
+            for(QObjectList::const_iterator it = children.begin(); it != children.end(); ++it)
+            {
+                removeEventFiltersRecursively(*it);
+            }
+        }
+    }
+
+    void childEvent(QChildEvent*ev) override
+    {
+        if (ev->child()->isWidgetType())
+        {
+            if (ev->type() == QEvent::ChildAdded)
+            {
+                addEventFiltersRecursively(ev->child());
+            }
+            else if (ev->type() == QEvent::ChildRemoved)
+            {
+                removeEventFiltersRecursively(ev->child());
+            }
+        }
+    }
+
     QLabel * makeHead(PComponent cmp, DashWidget * dashWidget, bool backButton = false, QString title="")
     {
         QLabel * head;
@@ -132,4 +203,5 @@ private:
     PComponent m_component;
     QGridLayout * m_layout;
     QString m_headText;
+    QElapsedTimer m_longClickTimer;
 };

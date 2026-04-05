@@ -3,6 +3,7 @@
 #include "sb/widgets/DashWidget.h"
 #include "sb/widgets/ComponentWidget.h"
 #include "sb/components/ComponentFactory.h"
+#include "MainWidget.h"
 
 
 QJsonValue DashBuilder::jVal(QJsonObject obj, QString key, QJsonValue def)
@@ -14,7 +15,7 @@ QJsonValue DashBuilder::jVal(QJsonObject obj, QString key, QJsonValue def)
     return obj[key];
 }
 
-QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonValue cur, bool vertical, bool & firstComp, PDashNode & dashNode, QStackedWidget * stacker)
+QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonValue cur, bool vertical, bool & firstComp, PDashNode & dashNode, QObject * menuTarget, QStackedWidget * stacker)
 {
     //DBG_MSG << ("Make dash tree");
     if (!cur.isObject())
@@ -47,7 +48,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         for (const QJsonValue & comp : curObj["list"].toArray())
         {
             PDashNode curNode;
-            makeDashTree(dash, newLayout, comp, !vertical, firstComp, curNode);
+            makeDashTree(dash, newLayout, comp, !vertical, firstComp, curNode, menuTarget);
             cmpList.append(curNode);
         }
 
@@ -77,7 +78,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         for (const QJsonValue & comp : curObj["stack"].toArray())
         {
             PDashNode curNode;
-            widget->addWidget(makeDashTree(dash, nullptr, comp, !vertical, firstComp, curNode, widget));
+            widget->addWidget(makeDashTree(dash, nullptr, comp, !vertical, firstComp, curNode, menuTarget, widget));
             cmpList.append(curNode);
         }
 
@@ -124,14 +125,23 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
             {
                 if (config[i].isString())
                 {
+                    DBG_MSG << "Set string" << i << config[i].toString();
                     ComponentParameter<QString> param (i, config[i].toString());
                     cmp->setStringParameter(param);
                 }
                 else if (config[i].isDouble())
                 {
+                    DBG_MSG << "Set number" << i << QString::number (config[i].toDouble());
                     DBG_MSG << "Param" << i << config[i];
                     ComponentParameter<float> param (i, config[i].toDouble());
                     cmp->setFloatParameter(param);
+                }
+                else if (config[i].isBool())
+                {
+                    DBG_MSG << "Set boolean" << i << QString::number (config[i].toDouble());
+                    DBG_MSG << "Param" << i << config[i];
+                    ComponentParameter<bool> param (i, config[i].toBool());
+                    cmp->setBooleanParameter(param);
                 }
             }
             if (config.contains("presets"))
@@ -159,8 +169,14 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
                             param.addPresetValue(i, curPreset[j].toDouble());
                             cmp->setFloatParameter(param, true);
                         }
+                        else if (curPreset[j].isBool())
+                        {
+                            ComponentParameter<bool> param = cmp->booleanParameter(j);
+                            DBG_MSG << ("Add preset " + i.toLatin1() + " " + j.toLatin1() + " " + QString::number(curPreset[j].toBool()).toLatin1());
+                            param.addPresetValue(i, curPreset[j].toBool());
+                            cmp->setBooleanParameter(param, true);
+                        }
                     }
-
                 }
 
             }
@@ -174,9 +190,18 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
                 DBG_MSG << ("Malformed action list: " + curObj["component"].toString().toLatin1());
                 return nullptr;
             }
+            auto defActions = cmp->getActions();
+            for (auto xxx : defActions)
+            {
+                DBG_MSG << "Action" << xxx;
+            }
             QJsonObject actList = curObj["actions"].toObject();
             for (const auto & a : actList.keys())
             {
+                if (!defActions.contains(actList[a].toString()))
+                {
+                    DBG_MSG << "Unknown action for" << cmp->getComponentId() << ":" << actList[a].toString();
+                }
                 unsigned keyCode = qtKey(a);
                 if (dash->pageShortcuts.contains(keyCode) || dash->actions.contains(keyCode))
                 {
@@ -193,7 +218,18 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
 
         if (cmp->getWidget() != nullptr)
         {
+            DBG_MSG << "Build widget";
             ComponentWidget * cw = new ComponentWidget(dash, cmp, firstComp, showHeader, title);
+            MainWidget * mw = dynamic_cast<MainWidget*> (menuTarget);
+            if (mw)
+            {
+                DBG_MSG << "Connect component menu";
+                connect (cw, &ComponentWidget::longClick, mw, &MainWidget::showComponentMenu);
+            }
+            else
+            {
+                DBG_MSG << "Invalid target for component menu";
+            }
 
             connect(cmp.get(), &Component::setTitleSuffix, cw, &ComponentWidget::setSuffix);
             firstComp = false;
@@ -285,7 +321,7 @@ PDash DashBuilder::makeDash(QWidget * parent, QJsonDocument spec)
         QHBoxLayout * layout = new QHBoxLayout(result->widget->widget(result->widget->count()-1));
         layout->setContentsMargins(0,0,0,0);
         bool firstComp = true;
-        makeDashTree(result, layout, page, true, firstComp, curPage.dashNode);
+        makeDashTree(result, layout, page, true, firstComp, curPage.dashNode, parent);
         result->pages.append(curPage);
 
         pageIndex++;

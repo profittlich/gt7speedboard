@@ -18,7 +18,7 @@ public:
     virtual void pointFinished(PTelemetryPoint p) override;
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
     virtual void presetSwitched() override;
-    virtual QColor signalColor () override;
+    virtual QColor signalColor () const override;
     virtual void callAction(QString a) override;
 
     static QString description ();

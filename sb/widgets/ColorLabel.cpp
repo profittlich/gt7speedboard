@@ -22,7 +22,7 @@ void ColorLabel::setColor(const QColor & col)
 }
 
 
-void ColorLabel::mousePressEvent(QMouseEvent * ev)
+void ColorLabel::mouseReleaseEvent(QMouseEvent * ev)
 {
     emit clicked();
 }

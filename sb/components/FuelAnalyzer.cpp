@@ -48,10 +48,12 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
     if (isFullLap && !state()->previousLaps.back()->points().empty())
     {
         m_previousLapFuel.append(state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel());
+        m_previousLapTimes.append(m_curPoint->lastLapMs());
     }
     while (m_previousLapFuel.size() > g_globalConfiguration.fuelStatisticsLaps())
     {
         m_previousLapFuel.pop_front();
+        m_previousLapTimes.pop_front();
     }
     DBG_MSG << ("check fuel " + QString::number(m_previousLapFuel.size()).toLatin1() + " laps");
     if (!m_previousLapFuel.empty())
@@ -62,6 +64,12 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
             avgConsumption += m_previousLapFuel[i] * 1.0/(m_previousLapFuel.size());
             DBG_MSG << ("Used fuel: " + QString::number(m_previousLapFuel[i]).toLatin1() + " " + QString::number(avgConsumption).toLatin1());
         }
+        float avgLapTime = 0;
+        for (size_t i = 0; i < m_previousLapTimes.size(); ++i)
+        {
+            avgLapTime += m_previousLapTimes[i] * 1.0/(m_previousLapTimes.size());
+            DBG_MSG << ("Fuel time: " + QString::number(m_previousLapTimes[i]).toLatin1() + " " + QString::number(avgLapTime).toLatin1());
+        }
         float fuelCapacity = m_curPoint->fuelCapacity();
         if (m_curPoint->fuelCapacity() <= std::numeric_limits<float>::epsilon())
         {
@@ -69,6 +77,7 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
             fuelCapacity = 100;
         }
         state()->fuelData.fuelPerLap = avgConsumption / fuelCapacity;
+        state()->fuelData.fuelTime = avgLapTime / state()->fuelData.fuelPerLap;
         DBG_MSG << "Fuel per lap:" << state()->fuelData.fuelPerLap;
     }
     else

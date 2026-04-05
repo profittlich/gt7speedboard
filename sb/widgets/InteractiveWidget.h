@@ -40,7 +40,7 @@ protected:
     }
 
 
-    void mousePressEvent(QMouseEvent *event)
+    void mouseReleaseEvent(QMouseEvent *event)
     {
         qDebug("Mouse press");
     }

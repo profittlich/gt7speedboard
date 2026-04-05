@@ -84,10 +84,13 @@ private:
 
 typedef QSharedPointer<ComponentParameter<float>> PComponentParameterFloat;
 typedef QSharedPointer<ComponentParameter<QString>> PComponentParameterString;
+typedef QSharedPointer<ComponentParameter<bool>> PComponentParameterBoolean;
 
 class Component : public QObject
 {
     Q_OBJECT
+
+    friend class ComponentFactory;
 
 public:
     Component (const QJsonValue json) : m_permissionsSet(false), m_json(json), m_stacker(nullptr) {}
@@ -112,7 +115,7 @@ public:
     QList<ComponentParameter<float>> getFloatParameters()
     {
         QList<ComponentParameter<float>> result = QList<ComponentParameter<float>>();
-        for (auto i : m_floatParameters)
+        for (auto i : m_floatParametersOrdered)
         {
             result.append(*i);
         }
@@ -142,10 +145,44 @@ public:
         return ComponentParameter<float>("", 0, false);
     }
 
+
+    QList<ComponentParameter<bool>> getBooleanParameters()
+    {
+        QList<ComponentParameter<bool>> result = QList<ComponentParameter<bool>>();
+        for (auto i : m_booleanParametersOrdered)
+        {
+            result.append(*i);
+        }
+
+        return result;
+    }
+
+    void setBooleanParameter (ComponentParameter<bool> & p, bool overwritePresets = false) {
+        if (m_booleanParameters.contains(p.name()))
+        {
+            DBG_MSG << p.name();
+            (*m_booleanParameters[p.name()])() = p();
+            if (overwritePresets)
+            {
+                (*m_booleanParameters[p.name()]).overwritePresets(p.getAll());
+            }
+            parameterChanged(m_booleanParameters[p.name()]);
+        }
+    }
+
+    ComponentParameter<bool> booleanParameter(const QString & key)
+    {
+        if (m_booleanParameters.contains(key))
+        {
+            return *m_booleanParameters[key];
+        }
+        return ComponentParameter<bool>("", false, false);
+    }
+
     QList<ComponentParameter<QString>> getStringParameters()
     {
         QList<ComponentParameter<QString>> result = QList<ComponentParameter<QString>>();
-        for (auto i : m_stringParameters)
+        for (auto i : m_stringParametersOrdered)
         {
             result.append(*i);
         }
@@ -209,16 +246,16 @@ public:
     virtual void callAction(QString a) { Q_UNUSED(a) };
     virtual void shutdown() {};
 
-    virtual QColor signalColor() { return QColor(); }
-    bool canFullScreenSignal () { return m_canFullScreenSignal; }
+    virtual QColor signalColor() const { return QColor(); }
+    bool canFullScreenSignal () const { return m_canFullScreenSignal; }
     virtual bool raise() { return false; }
-    bool canRaise () { return m_canRaise; }
+    bool canRaise () const { return m_canRaise; }
     virtual bool gotoPage() { return false; }
-    bool canGotoPage () { return m_canGotoPage; }
+    bool canGotoPage () const { return m_canGotoPage; }
 
     void setStacker (QStackedWidget * w, size_t idx) { m_stacker = w; m_stackIndex = idx; }
     QStackedWidget * stacker() { return m_stacker; }
-    size_t stackIndex() { return m_stackIndex; }
+    size_t stackIndex() const { return m_stackIndex; }
 
     void switchToPreset(QString preset)
     {
@@ -232,27 +269,48 @@ public:
             i->switchToPreset(preset);
             parameterChanged(i);
         }
+        for (auto i : m_booleanParameters)
+        {
+            i->switchToPreset(preset);
+            parameterChanged(i);
+        }
         presetSwitched();
     }
 
     virtual void presetSwitched() {}
     virtual void parameterChanged(const PComponentParameterFloat &) {}
+    virtual void parameterChanged(const PComponentParameterBoolean &) {}
     virtual void parameterChanged(const PComponentParameterString &) {}
+
+    const QList<QString> & getActions () const { return m_actions; }
+    const QString & getDescription () const { return m_description; }
+    const QString & getComponentId () const { return m_componentId; }
 
 protected:
     void addComponentParameter (const PComponentParameterFloat & p)
     {
         m_floatParameters[p->name()] = p;
+        m_floatParametersOrdered.append(p);
+    }
+    void addComponentParameter (const PComponentParameterBoolean & p)
+    {
+        m_booleanParameters[p->name()] = p;
+        m_booleanParametersOrdered.append(p);
     }
     void addComponentParameter (const PComponentParameterString & p)
     {
         m_stringParameters[p->name()] = p;
+        m_stringParametersOrdered.append(p);
     }
 
 signals:
     void setTitleSuffix(QString);
 
 private:
+    void setActions (QList<QString> a) { m_actions = a; }
+    void setDescription (QString a) { m_description = a; }
+    void setComponentId (QString a) { m_componentId = a; }
+
     bool m_permissionsSet;
     bool m_canRaise;
     bool m_canGotoPage;
@@ -262,7 +320,16 @@ private:
     size_t m_stackIndex;
     PState m_state;
     QMap<QString, PComponentParameterFloat> m_floatParameters;
+    QList<PComponentParameterFloat> m_floatParametersOrdered;
+    QMap<QString, PComponentParameterBoolean> m_booleanParameters;
+    QList<PComponentParameterBoolean> m_booleanParametersOrdered;
     QMap<QString, PComponentParameterString> m_stringParameters;
+    QList<PComponentParameterString> m_stringParametersOrdered;
+
+    QString m_componentId;
+    QString m_description;
+    QList<QString> m_actions;
+
 };
 
 typedef QSharedPointer<Component> PComponent;

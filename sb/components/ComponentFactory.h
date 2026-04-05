@@ -15,7 +15,6 @@ public:
     {
     public:
         virtual PComponent create(const QJsonValue config) = 0;
-        virtual QString description() = 0;
     };
 
     typedef QSharedPointer<ComponentBaseConstructor> PComponentBaseConstructor;
@@ -24,8 +23,14 @@ public:
     class ComponentConstructor : public ComponentBaseConstructor
     {
     public:
-        PComponent create(const QJsonValue config) { return PComponent(new T(config)); }
-        virtual QString description() { return T::description(); }
+        PComponent create(const QJsonValue config)
+        {
+            auto cmp = PComponent(new T(config));
+            cmp->setComponentId(T::componentId());
+            cmp->setDescription(T::description());
+            cmp->setActions(T::actions());
+            return cmp;
+        }
     };
 
     template <typename T>

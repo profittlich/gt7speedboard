@@ -10,7 +10,7 @@ ButtonLabel::ButtonLabel(QWidget * parent) : QLabel(parent)
     setMinimumSize(10, 0);
 }
 
-void ButtonLabel::mousePressEvent(QMouseEvent * ev)
+void ButtonLabel::mouseReleaseEvent(QMouseEvent * ev)
 {
     qInfo("Label clicked");
     emit labelClicked();

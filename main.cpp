@@ -8,7 +8,9 @@
 
 int main(int argc, char *argv[])
 {
+#ifndef Q_OS_ANDROID
     qInstallMessageHandler(sbDebugMessageHandler);
+#endif
 
     QApplication a(argc, argv);
     a.setOrganizationName("pitstop.profittlich.com");
@@ -43,5 +45,6 @@ int main(int argc, char *argv[])
     g_globalConfiguration.init();
     MainWidget w;
     w.show();
+
     return a.exec();
 }

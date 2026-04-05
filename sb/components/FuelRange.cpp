@@ -4,8 +4,9 @@
 
 
 
-FuelRange::FuelRange (const QJsonValue config) : Component(config)
+FuelRange::FuelRange (const QJsonValue config) : Component(config), m_showTime(new ComponentParameter<bool>("Show remaining time", false, true))
 {
+    addComponentParameter(m_showTime);
     m_widget = new ColorLabel();
 
     m_widget->setAlignment(Qt::AlignCenter);
@@ -31,16 +32,16 @@ void FuelRange::newPoint(PTelemetryPoint p)
 {
     if (state()->fuelData.infiniteFuel)
     {
-        m_widget->setText ("INFINITE");
+        m_widget->setText (QString("INFINITE"));
     }
     else if (state()->fuelData.fuelPerLap == -1)
     {
-        m_widget->setText ("MEASURING");
+        m_widget->setText (QString("MEASURING"));
     }
     else
     {
         float range = p->currentFuel() / state()->fuelData.fuelPerLap;
-        m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS"); // full range
+        m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS" + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): "")); // full range
     }
 
 }
@@ -53,7 +54,11 @@ QString FuelRange::description ()
 
 QList<QString> FuelRange::actions ()
 {
-    return QList<QString>();
+    QList<QString> result;
+
+    result.append("toggle time left");
+
+    return result;
 }
 
 QString FuelRange::componentId ()
@@ -61,5 +66,12 @@ QString FuelRange::componentId ()
     return "FuelRange";
 }
 
+void FuelRange::callAction(QString a)
+{
+    if (a == "toggle time left")
+    {
+        (*m_showTime)() = !(*m_showTime)();
+    }
+}
 
 static ComponentFactory::RegisterComponent<FuelRange> reg;

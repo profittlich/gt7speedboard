@@ -13,7 +13,7 @@ public:
     ButtonLabel(QWidget * parent = nullptr);
 
 protected:
-    void mousePressEvent(QMouseEvent * ev);
+    void mouseReleaseEvent(QMouseEvent * ev);
 
 signals:
     void labelClicked();

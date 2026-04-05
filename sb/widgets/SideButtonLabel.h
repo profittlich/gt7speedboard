@@ -16,7 +16,7 @@ public:
     SideButtonLabel(QWidget * parent = nullptr, Type type = Menu);
 
 protected:
-    void mousePressEvent(QMouseEvent * ev);
+    void mouseReleaseEvent(QMouseEvent * ev);
     void paintEvent(QPaintEvent * ev);
 
 signals:

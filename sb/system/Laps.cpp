@@ -3,6 +3,8 @@
 #include <contrib/Salsa20-master/Source/Salsa20.h>
 #include "sb/receiver/GT7TelemetryReceiver.h"
 
+static const float c_quadSize = 10.0;
+
 bool Lap::saveLap(QString filename)
 {
     DBG_MSG << "Save to " << filename;
@@ -134,4 +136,100 @@ QList<PLap> Lap::loadLaps(QString filename)
     }
 
     return result;
+}
+
+QPair<size_t, float> Lap::findClosestPoint(PPoint p, size_t start, float cancelRange) const
+{
+#if 0
+    int resultNew = 0;
+    int xQuad = p->position().x()/c_quadSize;
+    int yQuad = p->position().y()/c_quadSize;
+    //DBG_MSG << "Search" << xQuad << yQuad;
+
+    int qIdx = 100000 * xQuad + yQuad;
+
+    float resultNewDist = 1000000;
+
+        if (m_quadPoints.contains(qIdx))
+        {
+            float resultNewDist = 1000000;
+
+            for (auto i : m_quadPoints[qIdx])
+            {
+                float newDist = p->position().distanceTo(m_points[i % m_points.size()]->position());
+                if (newDist < resultNewDist)
+                {
+                    resultNewDist = newDist;
+                    resultNew = i % m_points.size();
+                }
+            }
+            for (int i = -15; i < 15; ++i)
+            {
+                if ((resultNew+i) < 0) continue;
+                float newDist = p->position().distanceTo(m_points[(resultNew + i) % m_points.size()]->position());
+                if (newDist < resultNewDist)
+                {
+                    resultNewDist = newDist;
+                    resultNew = (resultNew + i) % m_points.size();
+                }
+
+            }
+        }
+#endif
+
+
+
+
+    int result = 0;
+    float resultDist = 1000000;
+    bool inRange = false;
+    //DBG_MSG << "start search";
+    if (start > 60)
+    {
+        start -= 60;
+    }
+    for (int i = start; i < start + m_points.size(); ++i)
+    {
+        float newDist = p->position().distanceTo(m_points[i % m_points.size()]->position());
+        if (!inRange && newDist < cancelRange)
+        {
+            inRange = true;
+        }
+        else if (inRange && newDist > cancelRange * 1.1)
+        {
+            break;
+        }
+        if (newDist < resultDist)
+        {
+            resultDist = newDist;
+            result = i % m_points.size();
+            while (result < 0)
+            {
+                DBG_MSG << "adjust index";
+                result += m_points.size();
+            }
+        }
+
+    }
+#if 0
+    if (resultNew != result)
+    {
+        DBG_MSG << "Not equal:" << resultNew << result << (result - resultNew);
+    }
+#endif
+    return QPair<size_t, float> (result, resultDist);
+}
+
+void Lap::appendTelemetryPoint(PTelemetryPoint p)
+{
+    m_points.append(p);
+    int xQuad = p->position().x()/c_quadSize;
+    int yQuad = p->position().y()/c_quadSize;
+    int qIdx = 100000 * xQuad + yQuad;
+    if (!m_quadPoints.contains(qIdx))
+    {
+        m_quadPoints[qIdx] = QSet<size_t>();
+    }
+    m_quadPoints[qIdx].insert(m_points.size()-1);
+    //DBG_MSG << "Add" << xQuad << yQuad << m_quadPoints.size() << m_quadPoints[qIdx].size();
 }

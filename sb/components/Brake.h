@@ -12,7 +12,7 @@ public:
     virtual QString defaultTitle () const override;
     virtual void newPoint(PTelemetryPoint p) override;
 
-    virtual QColor signalColor() override;
+    virtual QColor signalColor() const override;
 
     static QString description ();
     static QList<QString> actions ();

@@ -34,7 +34,7 @@ void Throttle::newPoint(PTelemetryPoint p)
     }
 }
 
-QColor Throttle::signalColor()
+QColor Throttle::signalColor() const
 {
     if (m_curThrottle >= 99)
     {

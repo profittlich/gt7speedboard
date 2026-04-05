@@ -14,6 +14,7 @@
 #include "sb/system/Configuration.h"
 #include "sb/system/KeyStrings.h"
 #include "sb/widgets/DashWidget.h"
+#include "sb/widgets/ComponentWidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), m_inDash(false)
@@ -27,6 +28,9 @@ MainWidget::MainWidget(QWidget *parent)
     setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + ";");
     showStartScreen();
     auto x = initQtKeys();
+#ifdef Q_OS_ANDROID
+    connect(m_layout, &QStackedLayout::widgetRemoved, this, &MainWidget::correctSize);
+#endif
 }
 
 MainWidget::~MainWidget()
@@ -79,6 +83,7 @@ void MainWidget::showStartScreen()
 
     connect(dynamic_cast<StartScreen*> (m_widget), &StartScreen::startDash, this, &MainWidget::startDash);
     setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + "; color:white;");
+    DBG_MSG << this->height();
 }
 
 void MainWidget::startDash ()
@@ -165,6 +170,7 @@ void MainWidget::startDash ()
     m_widget->update();
 
     m_inDash = true;
+    DBG_MSG << this->height();
 }
 
 void MainWidget::showMenuScreen ()
@@ -173,15 +179,40 @@ void MainWidget::showMenuScreen ()
     m_layout->insertWidget(0,men);
     m_layout->setCurrentIndex(0);
     //m_dash->widget->exitDash();
+    DBG_MSG << this->height();
+}
+
+void MainWidget::showComponentMenu ()
+{
+    DBG_MSG << "Show component menu";
+    ComponentWidget * cmp = dynamic_cast<ComponentWidget*> (sender());
+    MenuScreen * men = new MenuScreen (this, m_dash, cmp->component());
+    m_layout->insertWidget(0,men);
+    m_layout->setCurrentIndex(0);
+    DBG_MSG << this->height();
+}
+
+void MainWidget::correctSize()
+{
+    QScreen *screen = qApp->primaryScreen();
+    this->resize(screen->size());
 }
 
 void MainWidget::keyPressEvent(QKeyEvent *event)
 {
+    DBG_MSG << this->height() << this->sizeHint() << this->sizePolicy() << this->minimumSizeHint();
+
     if (m_inDash)
     {
         if (event->key() == Qt::Key_Escape || event->key() == Qt::Key_Back)
         {
             m_dash->widget->exitDash();
+        }
+        else if (event->key() == Qt::Key_W)
+        {
+            QScreen *screen = qApp->primaryScreen();
+            this->resize(screen->size());
+
         }
         else if (event->key() == Qt::Key_C)
         {

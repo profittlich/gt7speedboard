@@ -22,7 +22,7 @@ public:
 
     //virtual QList<ComponentParameter<float>> getFloatParameters() override;
     //virtual ComponentParameter<float> floatParameter(const QString & key) override;
-    //virtual void setFloatParameter (ComponentParameter<float> &) override;
+    //virtual void loatParameter (ComponentParameter<float> &) override;
 
     virtual void callAction(QString a) override;
 

@@ -15,7 +15,7 @@ public:
     void setColor(const QColor & col);
 
 protected:
-    void mousePressEvent(QMouseEvent * ev);
+    void mouseReleaseEvent(QMouseEvent * ev);
     void paintEvent(QPaintEvent * ev);
 
 signals:

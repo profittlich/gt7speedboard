@@ -17,7 +17,7 @@ public:
     void disable();
 
 protected:
-    void mousePressEvent(QMouseEvent * ev);
+    void mouseReleaseEvent(QMouseEvent * ev);
     void paintEvent(QPaintEvent * ev);
 
 signals:

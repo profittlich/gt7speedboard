@@ -34,7 +34,7 @@ void Speed::newPoint(PTelemetryPoint p)
     }
 }
 
-QColor Speed::signalColor()
+QColor Speed::signalColor() const
 {
     if (m_curSpeed >= 200)
     {
