@@ -35,11 +35,20 @@ typedef QSharedPointer<DashNode> PDashNode;
 class DashComponent : public DashNode
 {
 public:
-    DashComponent(const PComponent & cmp, const QJsonValue json) : m_component(cmp), m_json(json) {}
+    DashComponent(const PComponent & cmp) : m_component(cmp) {}
 
     QJsonValue toJson()
     {
-        QJsonObject result = m_json.toObject();
+        QJsonObject result;// = m_json.toObject();
+
+        result.insert("component", m_component->getComponentId());
+
+        auto additionalFields = getFields();
+        DBG_MSG << additionalFields.size() << "additional fields";
+        for (auto i : additionalFields.keys()) {
+            result.insert(i, additionalFields[i]);
+        }
+
         QJsonObject conf;
         QMap<QString, QJsonObject> presets;
 
@@ -105,8 +114,6 @@ public:
 
 private:
     PComponent m_component;
-    QJsonValue m_json;
-
 };
 
 class DashList : public DashNode

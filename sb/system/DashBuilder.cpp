@@ -213,10 +213,11 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
             }
         }
 
+        ComponentWidget * cw = nullptr;
         if (cmp->getWidget() != nullptr)
         {
             DBG_MSG << "Build widget";
-            ComponentWidget * cw = new ComponentWidget(dash, cmp, firstComp, showHeader, title);
+            cw = new ComponentWidget(dash, cmp, firstComp, showHeader, title);
             MainWidget * mw = dynamic_cast<MainWidget*> (menuTarget);
             if (mw)
             {
@@ -240,17 +241,38 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
             {
                 cmp->setStacker(stacker, stacker->count());
             }
-            dash->components.append(cmp);
-            dashNode = PDashNode(new DashComponent(cmp, cur));
+        }
 
-            return cw;
-        }
-        else
+        dash->components.append(cmp);
+        dashNode = PDashNode(new DashComponent(cmp));
+
+        if (curObj.contains("title"))
         {
-            dash->components.append(cmp);
-            dashNode = PDashNode(new DashComponent(cmp, cur));
-            return nullptr;
+            DBG_MSG << "JSON title";
+            dashNode->addField("title", jVal(curObj, "title", 1));
         }
+        if (curObj.contains("stretch"))
+        {
+            DBG_MSG << "JSON stretch";
+            dashNode->addField("stretch", jVal(curObj, "stretch", 1));
+        }
+        if (curObj.contains("showHeader"))
+        {
+            DBG_MSG << "JSON showHeader";
+            dashNode->addField("showHeader", jVal(curObj, "showHeader", 1));
+        }
+        if (curObj.contains("raiseAllowed"))
+        {
+            DBG_MSG << "JSON raiseAllowed";
+            dashNode->addField("raiseAllowed", jVal(curObj, "raiseAllowed", 1));
+        }
+        if (curObj.contains("fullScreenSignalAllowed"))
+        {
+            DBG_MSG << "JSON fullScreenSignalAllowed";
+            dashNode->addField("fullScreenSignalAllowed", jVal(curObj, "fullScreenSignalAllowed", 1));
+        }
+
+        return cw;
     }
     else
     {
