@@ -4,7 +4,7 @@
 
 
 
-FuelPerLap::FuelPerLap (const QJsonValue config) : Component(config)
+FuelPerLap::FuelPerLap () : Component()
 {
     m_widget = new ColorLabel();
 

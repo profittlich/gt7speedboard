@@ -6,7 +6,7 @@
 class Speed : public Component
 {
 public:
-    Speed (const QJsonValue config);
+    Speed ();
 
     virtual QWidget * getWidget() const override;
     virtual QString defaultTitle () const override;

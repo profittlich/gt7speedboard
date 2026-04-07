@@ -8,7 +8,7 @@ class LapComparison : public Component
 {
     Q_OBJECT
 public:
-    LapComparison (const QJsonValue config);
+    LapComparison ();
     ~LapComparison();
 
     virtual QWidget * getWidget() const override;

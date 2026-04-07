@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-Empty::Empty (const QJsonValue json) : Component(json), m_text(new ComponentParameter<QString> ("text", "Empty", false)), m_color(new ComponentParameter<QString> ("color", "#fff", false)), m_hideWidget (new ComponentParameter<float> ("hideWidget", 0, false))
+Empty::Empty () : Component(), m_text(new ComponentParameter<QString> ("text", "Empty", false)), m_color(new ComponentParameter<QString> ("color", "#fff", false)), m_hideWidget (new ComponentParameter<float> ("hideWidget", 0, false))
 {
     addComponentParameter(m_text);
     addComponentParameter(m_color);

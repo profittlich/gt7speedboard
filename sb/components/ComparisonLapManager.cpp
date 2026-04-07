@@ -6,7 +6,7 @@
 
 
 
-ComparisonLapManager::ComparisonLapManager (const QJsonValue config) : Component(config), m_maxClosenessDistance(new ComponentParameter<float>("maxClosenessDistance", 20, false))
+ComparisonLapManager::ComparisonLapManager () : Component(), m_maxClosenessDistance(new ComponentParameter<float>("maxClosenessDistance", 20, false))
 {
     addComponentParameter(m_maxClosenessDistance);
 }

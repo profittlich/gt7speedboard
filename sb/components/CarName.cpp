@@ -6,7 +6,7 @@
 
 
 
-CarName::CarName (const QJsonValue config) : Component(config)
+CarName::CarName () : Component()
 {
     m_widget = new ColorLabel();
 

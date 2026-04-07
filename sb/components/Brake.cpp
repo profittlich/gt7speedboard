@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-Brake::Brake (const QJsonValue config) : Component(config)
+Brake::Brake () : Component()
 {
     m_widget = new ColorLabel();
 

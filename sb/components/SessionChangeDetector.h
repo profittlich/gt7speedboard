@@ -5,7 +5,7 @@
 class SessionChangeDetector : public Component
 {
 public:
-    SessionChangeDetector (const QJsonValue config);
+    SessionChangeDetector ();
 
     virtual QWidget * getWidget() const;
 

@@ -4,7 +4,7 @@
 
 
 
-RPM::RPM (const QJsonValue config) : Component(config)
+RPM::RPM () : Component()
 {
     m_widget = new ColorLabel();
 

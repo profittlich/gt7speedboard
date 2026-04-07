@@ -8,7 +8,7 @@
 class LapTimes : public Component
 {
 public:
-    LapTimes (const QJsonValue config);
+    LapTimes ();
 
     virtual QWidget * getWidget() const override;
 

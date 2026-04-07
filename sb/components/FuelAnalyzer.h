@@ -5,7 +5,7 @@
 class FuelAnalyzer : public Component
 {
 public:
-    FuelAnalyzer (const QJsonValue config);
+    FuelAnalyzer ();
 
     virtual QWidget * getWidget() const;
 

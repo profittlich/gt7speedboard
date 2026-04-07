@@ -6,7 +6,7 @@
 class CarName : public Component
 {
 public:
-    CarName (const QJsonValue config);
+    CarName ();
 
     virtual QWidget * getWidget() const;
 

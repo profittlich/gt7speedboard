@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-Throttle::Throttle (const QJsonValue config) : Component(config)
+Throttle::Throttle () : Component()
 {
     m_widget = new ColorLabel();
 

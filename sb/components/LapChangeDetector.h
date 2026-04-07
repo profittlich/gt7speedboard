@@ -5,7 +5,7 @@
 class LapChangeDetector : public Component
 {
 public:
-    LapChangeDetector (const QJsonValue config);
+    LapChangeDetector ();
 
     virtual QWidget * getWidget() const;
 

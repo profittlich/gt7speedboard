@@ -50,7 +50,7 @@ private:
 class Map : public Component
 {
 public:
-    Map (const QJsonValue json);
+    Map ();
 
     virtual void loaded() override;
     virtual void newPoint(PTelemetryPoint p) override;

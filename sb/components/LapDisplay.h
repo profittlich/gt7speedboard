@@ -6,7 +6,7 @@
 class LapDisplay : public Component
 {
 public:
-    LapDisplay (const QJsonValue config);
+    LapDisplay ();
 
     virtual QWidget * getWidget() const;
 

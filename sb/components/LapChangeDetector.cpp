@@ -4,7 +4,7 @@
 
 
 
-LapChangeDetector::LapChangeDetector (const QJsonValue config) : Component(config), m_currentLap(-1)
+LapChangeDetector::LapChangeDetector () : Component(), m_currentLap(-1)
 {
     m_validLapEndpointDistance = 20;
 }

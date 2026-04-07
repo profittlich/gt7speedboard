@@ -7,7 +7,7 @@
 class Empty : public Component
 {
 public:
-    Empty (const QJsonValue json);
+    Empty ();
 
     virtual QWidget * getWidget() const override;
 

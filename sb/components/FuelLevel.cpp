@@ -4,7 +4,7 @@
 
 
 
-FuelLevel::FuelLevel (const QJsonValue config) : Component(config)
+FuelLevel::FuelLevel () : Component()
 {
     m_widget = new ColorLabel();
 

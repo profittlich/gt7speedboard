@@ -4,7 +4,7 @@
 
 
 
-FuelRange::FuelRange (const QJsonValue config) : Component(config), m_showTime(new ComponentParameter<bool>("Show remaining time", false, true))
+FuelRange::FuelRange () : Component(), m_showTime(new ComponentParameter<bool>("Show remaining time", false, true))
 {
     addComponentParameter(m_showTime);
     m_widget = new ColorLabel();

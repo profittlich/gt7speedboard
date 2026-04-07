@@ -109,7 +109,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
             title = curObj["title"].toString("");
         }
 
-        PComponent cmp = ComponentFactory::createComponent(curObj["component"].toString(), cur);
+        PComponent cmp = ComponentFactory::createComponent(curObj["component"].toString());
         if (cmp.isNull())
         {
             DBG_MSG << ("Unknown component " + curObj["component"].toString().toLatin1());

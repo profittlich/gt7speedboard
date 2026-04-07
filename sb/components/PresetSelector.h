@@ -7,7 +7,7 @@
 class PresetSelector : public Component
 {
 public:
-    PresetSelector (const QJsonValue config);
+    PresetSelector ();
 
     virtual QWidget * getWidget() const;
 

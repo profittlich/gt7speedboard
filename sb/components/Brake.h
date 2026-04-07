@@ -6,7 +6,7 @@
 class Brake : public Component
 {
 public:
-    Brake (const QJsonValue config);
+    Brake ();
 
     virtual QWidget * getWidget() const override;
     virtual QString defaultTitle () const override;

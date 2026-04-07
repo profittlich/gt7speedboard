@@ -2,7 +2,7 @@
 
 #include "sb/components/ComponentFactory.h"
 
-FPS::FPS (const QJsonValue config) : Component(config)
+FPS::FPS () : Component()
 {
     m_widget = new ColorLabel();
 

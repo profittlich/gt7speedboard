@@ -8,7 +8,7 @@
 class CPULoad : public Component
 {
 public:
-    CPULoad (const QJsonValue config);
+    CPULoad ();
 
     virtual QWidget * getWidget() const override;
 

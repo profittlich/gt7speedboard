@@ -4,7 +4,7 @@
 
 
 
-LapDisplay::LapDisplay (const QJsonValue config) : Component(config)
+LapDisplay::LapDisplay () : Component()
 {
     m_widget = new ColorLabel();
 

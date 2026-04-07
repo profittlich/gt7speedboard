@@ -7,7 +7,7 @@
 
 
 
-LapTimes::LapTimes (const QJsonValue config) : Component(config)
+LapTimes::LapTimes () : Component()
 {
     m_widget = new QLabel();
 

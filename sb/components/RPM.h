@@ -6,7 +6,7 @@
 class RPM : public Component
 {
 public:
-    RPM (const QJsonValue config);
+    RPM ();
 
     virtual QWidget * getWidget() const;
 

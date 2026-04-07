@@ -7,7 +7,7 @@
 class ComparisonLapView : public Component
 {
 public:
-    ComparisonLapView (const QJsonValue config);
+    ComparisonLapView ();
 
     virtual QWidget * getWidget() const override;
     virtual QString defaultTitle () const override;

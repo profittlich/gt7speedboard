@@ -3,9 +3,8 @@
 #include "sb/components/ComponentFactory.h"
 
 #include<QGridLayout>
-#include <QJsonObject>
 
-PresetSelector::PresetSelector (const QJsonValue conf) : Component(conf), m_preset(new ComponentParameter<QString> ("preset", "", false)), m_presetListParameter (new ComponentParameter<QString> ("presetList", "SOFT;MEDIUM;HARD;INTER;WET", false)), m_currentPreset(-1)
+PresetSelector::PresetSelector () : Component(), m_preset(new ComponentParameter<QString> ("preset", "", false)), m_presetListParameter (new ComponentParameter<QString> ("presetList", "SOFT;MEDIUM;HARD;INTER;WET", false)), m_currentPreset(-1)
 {
     addComponentParameter(m_preset);
     addComponentParameter(m_presetListParameter);

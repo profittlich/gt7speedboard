@@ -4,7 +4,7 @@
 
 
 
-SessionChangeDetector::SessionChangeDetector (const QJsonValue config) : Component(config), m_currentLap(-1)
+SessionChangeDetector::SessionChangeDetector () : Component(), m_currentLap(-1)
 {
 }
 

@@ -4,7 +4,7 @@
 
 
 
-Gear::Gear (const QJsonValue config) : Component(config)
+Gear::Gear () : Component()
 {
     m_widget = new ColorLabel();
 

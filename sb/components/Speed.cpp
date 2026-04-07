@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-Speed::Speed (const QJsonValue config) : Component(config)
+Speed::Speed () : Component()
 {
     m_widget = new ColorLabel();
 

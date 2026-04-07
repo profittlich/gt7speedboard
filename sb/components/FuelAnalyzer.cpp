@@ -5,7 +5,7 @@
 
 
 
-FuelAnalyzer::FuelAnalyzer (const QJsonValue config) : Component(config), m_wasInPit(false)
+FuelAnalyzer::FuelAnalyzer () : Component(), m_wasInPit(false)
 {
 }
 

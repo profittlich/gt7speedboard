@@ -3,9 +3,8 @@
 #include "sb/components/ComponentFactory.h"
 
 #include<QGridLayout>
-#include <QJsonObject>
 
-TyreTemps::TyreTemps (const QJsonValue conf) : Component(conf), m_target(new ComponentParameter<float>("target", 70, true)), m_spread(new ComponentParameter<float>("spread", 20, true))
+TyreTemps::TyreTemps () : Component(), m_target(new ComponentParameter<float>("target", 70, true)), m_spread(new ComponentParameter<float>("spread", 20, true))
 {
     addComponentParameter(m_target);
     addComponentParameter(m_spread);

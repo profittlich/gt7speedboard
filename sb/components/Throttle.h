@@ -6,7 +6,7 @@
 class Throttle : public Component
 {
 public:
-    Throttle (const QJsonValue config);
+    Throttle ();
 
     virtual QWidget * getWidget() const override;
     virtual QString defaultTitle () const override;

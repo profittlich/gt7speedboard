@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-Map::Map (const QJsonValue json) : Component(json), m_target (new ComponentParameter<QString>("target","last", true)), m_firstPointReceived(false)
+Map::Map () : Component(), m_target (new ComponentParameter<QString>("target","last", true)), m_firstPointReceived(false)
 {
     addComponentParameter(m_target);
     m_widget = new SBGLWidget(this);

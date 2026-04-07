@@ -8,7 +8,7 @@
 class FPS : public Component
 {
 public:
-    FPS (const QJsonValue config);
+    FPS ();
 
     virtual QWidget * getWidget() const override;
 

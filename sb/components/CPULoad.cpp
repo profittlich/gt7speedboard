@@ -4,7 +4,7 @@
 #include "sb/system/Configuration.h"
 #include <QtWidgets/qboxlayout.h>
 
-CPULoad::CPULoad (const QJsonValue config) : Component(config)
+CPULoad::CPULoad () : Component()
 {
     m_widget = new QWidget();
     QVBoxLayout * layout = new QVBoxLayout(m_widget);

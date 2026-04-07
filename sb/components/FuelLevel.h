@@ -6,7 +6,7 @@
 class FuelLevel : public Component
 {
 public:
-    FuelLevel (const QJsonValue config);
+    FuelLevel ();
 
     virtual QWidget * getWidget() const;
 

@@ -8,7 +8,7 @@
 QString LapComparison::s_fullScreenTarget;
 QList<LapComparison*> LapComparison::s_allLapComparisons;
 
-LapComparison::LapComparison (const QJsonValue config) : Component(config), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_target (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
+LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_target (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
 {
     addComponentParameter(m_currentTarget);
     addComponentParameter(m_target);

@@ -14,7 +14,7 @@ public:
     class ComponentBaseConstructor
     {
     public:
-        virtual PComponent create(const QJsonValue config) = 0;
+        virtual PComponent create() = 0;
     };
 
     typedef QSharedPointer<ComponentBaseConstructor> PComponentBaseConstructor;
@@ -23,9 +23,9 @@ public:
     class ComponentConstructor : public ComponentBaseConstructor
     {
     public:
-        PComponent create(const QJsonValue config)
+        PComponent create()
         {
-            auto cmp = PComponent(new T(config));
+            auto cmp = PComponent(new T());
             cmp->setComponentId(T::componentId());
             cmp->setDescription(T::description());
             cmp->setActions(T::actions());
@@ -51,7 +51,7 @@ public:
         //qDebug("done.");
     }
 
-    static PComponent createComponent(QString id, const QJsonValue config);
+    static PComponent createComponent(QString id);
 
     static QStringList listComponents()
     {

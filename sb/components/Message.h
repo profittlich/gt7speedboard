@@ -6,7 +6,7 @@
 class Message : public Component
 {
 public:
-    Message (const QJsonValue config);
+    Message ();
 
     virtual QWidget * getWidget() const override;
     virtual QString defaultTitle () const override;

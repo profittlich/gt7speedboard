@@ -9,8 +9,6 @@
 #include <QColor>
 #include <QWidget>
 #include <QStackedWidget>
-#include <QJsonValue>
-#include <QJsonObject>
 
 template <typename T>
 class ComponentParameter
@@ -94,7 +92,7 @@ class Component : public QObject
     friend class ComponentFactory;
 
 public:
-    Component (const QJsonValue json) : m_permissionsSet(false), m_json(json), m_stacker(nullptr) {}
+    Component () : m_permissionsSet(false), m_stacker(nullptr) {}
 
     virtual ~Component()
     {
@@ -213,8 +211,6 @@ public:
         return ComponentParameter<QString>("", "", false);
     }
 
-    const QJsonValue initialJson() { return m_json; }
-
     virtual QWidget * getWidget() const { return nullptr; }
 
     virtual QString title () const { return defaultTitle(); }
@@ -316,7 +312,7 @@ private:
     bool m_canRaise;
     bool m_canGotoPage;
     bool m_canFullScreenSignal;
-    QJsonValue m_json;
+
     QStackedWidget * m_stacker;
     size_t m_stackIndex;
     PState m_state;

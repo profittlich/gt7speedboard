@@ -3,7 +3,7 @@
 #include "sb/components/ComponentFactory.h"
 #include "sb/system/Configuration.h"
 
-ComparisonLapView::ComparisonLapView (const QJsonValue config) : Component(config)
+ComparisonLapView::ComparisonLapView () : Component()
 {
     m_scrollWidget = new QScrollArea();
     m_widget = new ColorLabel(m_scrollWidget);

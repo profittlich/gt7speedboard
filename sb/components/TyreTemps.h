@@ -8,7 +8,7 @@
 class TyreTemps : public Component
 {
 public:
-    TyreTemps (const QJsonValue config);
+    TyreTemps ();
 
     virtual QWidget * getWidget() const;
 

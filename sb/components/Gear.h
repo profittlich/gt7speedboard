@@ -6,7 +6,7 @@
 class Gear : public Component
 {
 public:
-    Gear (const QJsonValue config);
+    Gear ();
 
     virtual QWidget * getWidget() const;
 

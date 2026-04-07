@@ -2,7 +2,7 @@
 
 #include "sb/components/ComponentFactory.h"
 
-Message::Message (const QJsonValue config) : Component(config)
+Message::Message () : Component()
 {
     m_widget = new ColorLabel();
 

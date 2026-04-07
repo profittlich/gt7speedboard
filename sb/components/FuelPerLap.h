@@ -6,7 +6,7 @@
 class FuelPerLap : public Component
 {
 public:
-    FuelPerLap (const QJsonValue config);
+    FuelPerLap ();
 
     virtual QWidget * getWidget() const;
 

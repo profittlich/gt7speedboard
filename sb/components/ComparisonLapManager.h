@@ -5,7 +5,7 @@
 class ComparisonLapManager : public Component
 {
 public:
-    ComparisonLapManager (const QJsonValue config);
+    ComparisonLapManager ();
 
     virtual QWidget * getWidget() const;
 

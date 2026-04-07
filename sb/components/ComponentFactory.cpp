@@ -2,11 +2,11 @@
 
 QMap<QString, ComponentFactory::PComponentBaseConstructor> ComponentFactory::s_constructors;
 
-PComponent ComponentFactory::createComponent(QString id, const QJsonValue config)
+PComponent ComponentFactory::createComponent(QString id)
 {
     if (s_constructors.contains(id))
     {
-        return s_constructors[id]->create(config);
+        return s_constructors[id]->create();
     }
 
     return PComponent();
