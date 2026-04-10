@@ -21,6 +21,11 @@ public:
         return QJsonValue(result);
     }
 
+    bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target)
+    {
+        return dashNode->replaceComponent(oldComponent, newComponent, target);
+    }
+
     PDashNode dashNode;
     QString title;
     QList<QString> shortcuts;
@@ -46,6 +51,24 @@ public:
         }
         out.insert("pages", pagesArray);
         return QJsonDocument(out);
+    }
+
+    void replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target)
+    {
+        bool success = false;
+        for (auto i : pages)
+        {
+            success |= i.replaceComponent(oldComponent, newComponent, target);
+        }
+        if (success)
+        {
+            components.removeAll(oldComponent);
+            components.append(newComponent);
+        }
+        else
+        {
+            DBG_MSG << "Could not replace component";
+        }
     }
 
     QJsonDocument json;

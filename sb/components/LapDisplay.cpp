@@ -56,4 +56,4 @@ QString LapDisplay::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<LapDisplay> reg;
+static ComponentFactory::RegisterComponent<LapDisplay> reg(true);

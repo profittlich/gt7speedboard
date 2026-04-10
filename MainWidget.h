@@ -13,6 +13,8 @@
 
 class MainWidget : public QWidget
 {
+    friend class MenuScreen, class ComponentContextMenuScreen;
+
     Q_OBJECT
 
 public:

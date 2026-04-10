@@ -89,4 +89,4 @@ void PresetSelector::callAction(QString a)
     }
 }
 
-static ComponentFactory::RegisterComponent<PresetSelector> reg;
+static ComponentFactory::RegisterComponent<PresetSelector> reg(true);

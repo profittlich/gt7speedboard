@@ -77,4 +77,4 @@ void FuelRange::callAction(QString a)
     }
 }
 
-static ComponentFactory::RegisterComponent<FuelRange> reg;
+static ComponentFactory::RegisterComponent<FuelRange> reg(true);

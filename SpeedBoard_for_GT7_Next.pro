@@ -47,6 +47,7 @@ SOURCES += \
     sb/system/Configuration.cpp \
     sb/system/Controller.cpp \
     sb/system/DashBuilder.cpp \
+    sb/system/DashTree.cpp \
     sb/system/Helpers.cpp \
     sb/system/KeyStrings.cpp \
     sb/system/Laps.cpp \

@@ -45,4 +45,4 @@ QString SessionChangeDetector::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<SessionChangeDetector> reg;
+static ComponentFactory::RegisterComponent<SessionChangeDetector> reg(false);

@@ -5,10 +5,13 @@
 #include <QJsonArray>
 #include "sb/components/Component.h"
 
+
 class DashNode
 {
 public:
     virtual QJsonValue toJson() = 0;
+
+    virtual bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) = 0;
 
     void addField(QString key, QVariant value) {
         DBG_MSG << key << value;
@@ -32,94 +35,36 @@ private:
 
 typedef QSharedPointer<DashNode> PDashNode;
 
+class ComponentWidget;
+
 class DashComponent : public DashNode
 {
 public:
-    DashComponent(const PComponent & cmp) : m_component(cmp) {}
+    DashComponent(const PComponent & cmp, ComponentWidget * widget) : m_component(cmp), m_widget(widget) {}
 
-    QJsonValue toJson()
-    {
-        QJsonObject result;// = m_json.toObject();
+    QJsonValue toJson() override;
+    bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) override;
 
-        result.insert("component", m_component->getComponentId());
-
-        auto additionalFields = getFields();
-        DBG_MSG << additionalFields.size() << "additional fields";
-        for (auto i : additionalFields.keys()) {
-            result.insert(i, additionalFields[i]);
-        }
-
-        QJsonObject conf;
-        QMap<QString, QJsonObject> presets;
-
-        bool found = false;
-        for (auto i : m_component->getBooleanParameters())
-        {
-            found = true;
-            conf.insert(i.name(), i());
-            QMap<QString, bool> all = i.getAll();
-            for (auto j : all.keys())
-            {
-                if (!presets.contains(j))
-                {
-                    presets[j] = QJsonObject();
-                }
-                presets[j].insert(i.name(), all[j]);
-            }
-        }
-        for (auto i : m_component->getFloatParameters())
-        {
-            found = true;
-            conf.insert(i.name(), i());
-            QMap<QString, float> all = i.getAll();
-            for (auto j : all.keys())
-            {
-                if (!presets.contains(j))
-                {
-                    presets[j] = QJsonObject();
-                }
-                presets[j].insert(i.name(), all[j]);
-            }
-        }
-        for (auto i : m_component->getStringParameters())
-        {
-            found = true;
-            conf.insert(i.name(), i());
-            QMap<QString, QString> all = i.getAll();
-            for (auto j : all.keys())
-            {
-                if (!presets.contains(j))
-                {
-                    presets[j] = QJsonObject();
-                }
-                presets[j].insert(i.name(), all[j]);
-            }
-        }
-
-        if (found)
-        {
-            if (!presets.empty())
-            {
-                QJsonObject preVal;
-                for (auto j : presets.keys())
-                {
-                    preVal.insert(j, presets[j]);
-                }
-                conf.insert("presets", preVal);
-            }
-            result.insert("configuration", conf);
-        }
-        return QJsonValue(result);
-    }
 
 private:
     PComponent m_component;
+    ComponentWidget * m_widget;
 };
 
 class DashList : public DashNode
 {
 public:
     DashList(const QList<PDashNode> & lst) : m_list(lst) {}
+
+    bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) override
+    {
+        bool result = false;
+        for (auto i : m_list)
+        {
+            result |= i->replaceComponent(oldComponent, newComponent, target);
+        }
+        return result;
+    }
 
     QJsonValue toJson()
     {
@@ -152,6 +97,16 @@ class DashStack : public DashNode
 {
 public:
     DashStack(const QList<PDashNode> & stck) : m_stack(stck) {}
+
+    bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) override
+    {
+        bool result = false;
+        for (auto i : m_stack)
+        {
+            result |= i->replaceComponent(oldComponent, newComponent, target);
+        }
+        return result;
+    }
 
     QJsonValue toJson()
     {

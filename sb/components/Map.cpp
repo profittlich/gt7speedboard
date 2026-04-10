@@ -437,4 +437,4 @@ QMap<QString, Action> Map::actions ()
     return QMap<QString, Action>();
 }
 
-static ComponentFactory::RegisterComponent<Map> reg;
+static ComponentFactory::RegisterComponent<Map> reg(true);

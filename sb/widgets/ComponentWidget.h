@@ -14,7 +14,7 @@ class ComponentWidget : public QWidget
     Q_OBJECT
 
 public:
-    ComponentWidget (PDash parent, PComponent cmp, bool backButton = false, bool showHeader = true, QString title = "") : QWidget(parent->widget)
+    ComponentWidget (PDash parent, PComponent cmp, bool backButton = false, bool showHeader = true, QString title = "") : QWidget(parent->widget), m_backButton(backButton), m_showHeader(showHeader), m_title(title)
     {
         m_dash = parent;
         m_component = cmp;
@@ -60,6 +60,17 @@ public:
     }
 
     PComponent component() { return m_component; }
+    PDash dash() { return m_dash; }
+    QString title() { return m_title; }
+    bool backButton () { return m_backButton; }
+    bool showHeader() { return m_showHeader; }
+
+    void setLayout(QLayout * l) { m_ownLayout = l; }
+    QLayout * layout() { return m_ownLayout; }
+
+    void setStack(QStackedWidget * s) { m_ownStack = s; }
+    QStackedWidget * stack() { return m_ownStack; }
+
 
 public slots:
     void setSuffix(QString sf)
@@ -214,4 +225,9 @@ private:
     QGridLayout * m_layout;
     QString m_headText;
     QElapsedTimer m_longClickTimer;
+    QLayout * m_ownLayout;
+    QStackedWidget * m_ownStack;
+    bool m_backButton;
+    bool m_showHeader;
+    QString m_title;
 };

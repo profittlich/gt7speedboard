@@ -58,4 +58,4 @@ QString Brake::componentId ()
     return "Brake";
 }
 
-static ComponentFactory::RegisterComponent<Brake> reg;
+static ComponentFactory::RegisterComponent<Brake> reg(true);

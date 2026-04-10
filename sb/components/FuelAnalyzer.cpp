@@ -108,5 +108,5 @@ QString FuelAnalyzer::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<FuelAnalyzer> reg;
+static ComponentFactory::RegisterComponent<FuelAnalyzer> reg(false);
 

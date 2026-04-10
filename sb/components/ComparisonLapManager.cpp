@@ -168,4 +168,4 @@ QString ComparisonLapManager::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<ComparisonLapManager> reg;
+static ComponentFactory::RegisterComponent<ComparisonLapManager> reg(false);

@@ -165,4 +165,4 @@ void TyreTemps::presetSwitched()
 }
 
 
-static ComponentFactory::RegisterComponent<TyreTemps> reg;
+static ComponentFactory::RegisterComponent<TyreTemps> reg(true);

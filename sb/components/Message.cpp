@@ -85,4 +85,4 @@ QString Message::componentId ()
     return "Message";
 }
 
-static ComponentFactory::RegisterComponent<Message> reg;
+static ComponentFactory::RegisterComponent<Message> reg(true);

@@ -49,4 +49,4 @@ QString RPM::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<RPM> reg;
+static ComponentFactory::RegisterComponent<RPM> reg(true);

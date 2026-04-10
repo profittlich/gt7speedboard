@@ -237,6 +237,8 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
                 curLayout->addWidget(cw);
                 curLayout->setStretch(curLayout->count()-1,jVal(curObj, "stretch", 1).toInt(1));
             }
+            cw->setLayout(curLayout);
+            cw->setStack(stacker);
             if (stacker != nullptr)
             {
                 cmp->setStacker(stacker, stacker->count());
@@ -244,7 +246,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         }
 
         dash->components.append(cmp);
-        dashNode = PDashNode(new DashComponent(cmp));
+        dashNode = PDashNode(new DashComponent(cmp, cw));
 
         if (curObj.contains("title"))
         {

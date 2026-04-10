@@ -175,7 +175,7 @@ void MainWidget::startDash ()
 
 void MainWidget::showMenuScreen ()
 {
-    MenuScreen * men = new MenuScreen (this, m_dash, m_controller->state());
+    MenuScreen * men = new MainMenuScreen (this, m_dash, m_controller->state());
     m_layout->insertWidget(0,men);
     m_layout->setCurrentIndex(0);
     //m_dash->widget->exitDash();
@@ -186,7 +186,7 @@ void MainWidget::showComponentMenu ()
 {
     DBG_MSG << "Show component menu";
     ComponentWidget * cmp = dynamic_cast<ComponentWidget*> (sender());
-    MenuScreen * men = new MenuScreen (this, m_dash, cmp->component());
+    MenuScreen * men = new ComponentContextMenuScreen (this, m_dash, m_controller->state(), cmp->component());
     m_layout->insertWidget(0,men);
     m_layout->setCurrentIndex(0);
     DBG_MSG << this->height();

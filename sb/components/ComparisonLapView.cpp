@@ -98,4 +98,4 @@ QString ComparisonLapView::componentId ()
     return "ComparisonLapView";
 }
 
-static ComponentFactory::RegisterComponent<ComparisonLapView> reg;
+static ComponentFactory::RegisterComponent<ComparisonLapView> reg(true);

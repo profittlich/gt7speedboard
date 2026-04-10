@@ -61,4 +61,4 @@ QString FuelPerLap::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<FuelPerLap> reg;
+static ComponentFactory::RegisterComponent<FuelPerLap> reg(true);

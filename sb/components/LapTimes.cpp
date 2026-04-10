@@ -135,5 +135,5 @@ QString LapTimes::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<LapTimes> reg;
+static ComponentFactory::RegisterComponent<LapTimes> reg(true);
 

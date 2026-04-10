@@ -49,4 +49,4 @@ QString FuelLevel::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<FuelLevel> reg;
+static ComponentFactory::RegisterComponent<FuelLevel> reg(true);

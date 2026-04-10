@@ -71,4 +71,4 @@ QMap<QString, Action> Empty::actions ()
     return QMap<QString, Action>();
 }
 
-static ComponentFactory::RegisterComponent<Empty> reg;
+static ComponentFactory::RegisterComponent<Empty> reg(true);

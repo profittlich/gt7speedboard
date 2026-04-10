@@ -93,4 +93,4 @@ QString CPULoad::componentId ()
     return "CPULoad";
 }
 
-static ComponentFactory::RegisterComponent<CPULoad> reg;
+static ComponentFactory::RegisterComponent<CPULoad> reg(true);

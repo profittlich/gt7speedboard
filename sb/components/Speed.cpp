@@ -58,4 +58,4 @@ QString Speed::componentId ()
     return "Speed";
 }
 
-static ComponentFactory::RegisterComponent<Speed> reg;
+static ComponentFactory::RegisterComponent<Speed> reg(true);

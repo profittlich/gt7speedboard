@@ -58,4 +58,4 @@ QString Throttle::componentId ()
     return "Throttle";
 }
 
-static ComponentFactory::RegisterComponent<Throttle> reg;
+static ComponentFactory::RegisterComponent<Throttle> reg(true);

@@ -49,4 +49,4 @@ QString Gear::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<Gear> reg;
+static ComponentFactory::RegisterComponent<Gear> reg(true);

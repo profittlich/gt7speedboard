@@ -58,4 +58,4 @@ QString LapChangeDetector::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<LapChangeDetector> reg;
+static ComponentFactory::RegisterComponent<LapChangeDetector> reg(false);

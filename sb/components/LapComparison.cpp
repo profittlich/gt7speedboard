@@ -178,6 +178,7 @@ void LapComparison::completedLap(PLap, bool)
 void LapComparison::updateLabel()
 {
     DBG_MSG << (*currentTarget())();
+    DBG_MSG << state().get();
     if (state()->comparisonLaps.contains((*currentTarget())()))
     {
         if (state()->comparisonLaps[(*currentTarget())()]->lap->valid())
@@ -318,4 +319,4 @@ QString LapComparison::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<LapComparison> reg;
+static ComponentFactory::RegisterComponent<LapComparison> reg(true);

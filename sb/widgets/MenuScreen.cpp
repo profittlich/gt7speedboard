@@ -16,152 +16,150 @@
 
 #include "sb/system/Configuration.h"
 #include "sb/widgets/DashWidget.h"
-#include "sb/widgets/SideButtonLabel.h"
+#include "sb/widgets/ComponentWidget.h"
+#include "sb/components/ComponentFactory.h"
 
-MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScrollArea(parent)
+// Abstract menu
+MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScrollArea(parent), m_dash(dash), m_state(state)
 {
     setContentsMargins(5,5,5,5);
-    m_dash = dash;
-    m_state = state;
-    //setMinimumSize(500, 500);
     setStyleSheet("background-color: " + g_globalConfiguration.backgroundColor().name() + ";");
 
     QWidget * widget = new QWidget();
     widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QVBoxLayout * layout = new QVBoxLayout(widget);
+    m_layout = new QVBoxLayout(widget);
 
-    QPushButton * pbExit = new QPushButton(widget);
+    m_pbClose = new SideButtonLabel(widget, SideButtonLabel::Close);
+    m_pbClose->setText("MENU");
+    m_pbClose->setAlignment(Qt::AlignCenter);
+    auto font = m_pbClose->font();
+    font.setPointSizeF(60);
+    font.setBold(true);
+    m_pbClose->setFont(font);
+    m_pbClose->setStyleSheet("color:" + g_globalConfiguration.headerTextColor().name() + ";");
+    connect (m_pbClose, &SideButtonLabel::buttonClicked, this, &MenuScreen::closeClicked);
+
+    layout()->addWidget(m_pbClose);
+
+    setWidget(widget);
+    setupScroller(this);
+}
+
+// Main menu
+MainMenuScreen::MainMenuScreen (MainWidget * parent, PDash dash, PState pstate) : MenuScreen(parent, dash, pstate)
+{
+    QPushButton * pbExit = new QPushButton(widget());
     pbExit->setText("EXIT DASH");
     pbExit->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     auto font = pbExit->font();
     font.setPointSizeF(23);
     font.setBold(true);
     pbExit->setFont(font);
-    connect (pbExit, &QPushButton::clicked, this, &MenuScreen::exitClicked);
+    connect (pbExit, &QPushButton::clicked, this, &MainMenuScreen::exitClicked);
 
-    QPushButton * pbReset = new QPushButton(widget);
+    QPushButton * pbReset = new QPushButton(widget());
     pbReset->setText("RESET DATA");
     pbReset->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     font = pbReset->font();
     font.setPointSizeF(23);
     font.setBold(true);
     pbReset->setFont(font);
-    connect (pbReset, &QPushButton::clicked, this, &MenuScreen::resetClicked);
+    connect (pbReset, &QPushButton::clicked, this, &MainMenuScreen::resetClicked);
 
 
     QPushButton * pbClearRefA = nullptr;
-    if (m_state->comparisonLaps.contains("ref-a"))
+    if (state()->comparisonLaps.contains("ref-a"))
     {
-        pbClearRefA = new QPushButton(widget);
+        pbClearRefA = new QPushButton(widget());
         pbClearRefA->setText("CLEAR REF-A");
         pbClearRefA->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = pbClearRefA->font();
         font.setPointSizeF(23);
         font.setBold(true);
         pbClearRefA->setFont(font);
-        connect (pbClearRefA, &QPushButton::clicked, this, &MenuScreen::clearRefAClicked);
+        connect (pbClearRefA, &QPushButton::clicked, this, &MainMenuScreen::clearRefAClicked);
     }
 
     QPushButton * pbSave = nullptr;
-    if (m_state->comparisonLaps.contains("best"))
+    if (state()->comparisonLaps.contains("best"))
     {
-        pbSave = new QPushButton(widget);
+        pbSave = new QPushButton(widget());
         pbSave->setText("SAVE BEST AS REF-A");
         pbSave->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = pbSave->font();
         font.setPointSizeF(23);
         font.setBold(true);
         pbSave->setFont(font);
-        connect (pbSave, &QPushButton::clicked, this, &MenuScreen::saveBestClicked);
+        connect (pbSave, &QPushButton::clicked, this, &MainMenuScreen::saveBestClicked);
     }
 
-    QPushButton * pbImport = new QPushButton(widget);
+    QPushButton * pbImport = new QPushButton(widget());
     pbImport->setText("IMPORT REF-A");
     pbImport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
     font = pbImport->font();
     font.setPointSizeF(23);
     font.setBold(true);
     pbImport->setFont(font);
-    connect (pbImport, &QPushButton::clicked, this, &MenuScreen::importRefAClicked);
+    connect (pbImport, &QPushButton::clicked, this, &MainMenuScreen::importRefAClicked);
 
     QPushButton * pbExport = nullptr;
-    if (m_state->comparisonLaps.contains("ref-a"))
+    if (state()->comparisonLaps.contains("ref-a"))
     {
-        pbExport = new QPushButton(widget);
+        pbExport = new QPushButton(widget());
         pbExport->setText("EXPORT REF-A");
         pbExport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = pbExport->font();
         font.setPointSizeF(23);
         font.setBold(true);
         pbExport->setFont(font);
-        connect (pbExport, &QPushButton::clicked, this, &MenuScreen::exportRefAClicked);
+        connect (pbExport, &QPushButton::clicked, this, &MainMenuScreen::exportRefAClicked);
     }
 
-    SideButtonLabel * pbClose = new SideButtonLabel(widget, SideButtonLabel::Close);
-    pbClose->setText("MENU");
-    pbClose->setAlignment(Qt::AlignCenter);
-    font = pbClose->font();
-    font.setPointSizeF(60);
-    font.setBold(true);
-    pbClose->setFont(font);
-    pbClose->setStyleSheet("color:" + g_globalConfiguration.headerTextColor().name() + ";");
-    connect (pbClose, &SideButtonLabel::buttonClicked, this, &MenuScreen::closeClicked);
-
-    layout->addWidget(pbClose);
-    layout->addWidget(pbReset);
+    layout()->addWidget(pbReset);
     if (pbClearRefA != nullptr)
     {
-        layout->addWidget(pbClearRefA);
+        layout()->addWidget(pbClearRefA);
     }
     if (pbSave != nullptr)
     {
-        layout->addWidget(pbSave);
+        layout()->addWidget(pbSave);
     }
-    layout->addWidget(pbImport);
+    layout()->addWidget(pbImport);
     if (pbExport != nullptr)
     {
-        layout->addWidget(pbExport);
+        layout()->addWidget(pbExport);
     }
 
-    layout->addWidget(pbExit);
-    layout->insertStretch(layout->count()-1);
-
-    setWidget(widget);
-    setupScroller(this);
+    layout()->addWidget(pbExit);
+    layout()->insertStretch(layout()->count()-1);
 }
 
-MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PComponent comp) : QScrollArea(parent)
+// Component context menu
+ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDash dash, PState state, PComponent comp) : MenuScreen(parent, dash, state)
 {
-    setContentsMargins(5,5,5,5);
-    m_dash = dash;
     m_component = comp;
-    //setMinimumSize(500, 500);
-    setStyleSheet("background-color: " + g_globalConfiguration.backgroundColor().name() + ";");
 
-    QWidget * widget = new QWidget();
+    setTitle(comp->title());
 
-    QVBoxLayout * layout = new QVBoxLayout(widget);
-
-    m_lbParam = new QLabel(widget);
+    m_lbParam = new QLabel(widget());
     auto font = m_lbParam->font();
     font.setPointSizeF(30);
     font.setBold(true);
     m_lbParam->setFont(font);
     updateParams();
 
-    SideButtonLabel * pbClose = new SideButtonLabel(widget, SideButtonLabel::Close);
-    pbClose->setText(comp->title().toUpper());
-    pbClose->setAlignment(Qt::AlignCenter);
-    font = pbClose->font();
-    font.setPointSizeF(40);
+    QPushButton * replaceButton = new QPushButton(widget());
+    replaceButton->setText ("REPLACE");
+    replaceButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+    font = replaceButton->font();
+    font.setPointSizeF(23);
     font.setBold(true);
-    pbClose->setFont(font);
-    pbClose->setStyleSheet("color:" + g_globalConfiguration.headerTextColor().name() + ";");
-    connect (pbClose, &SideButtonLabel::buttonClicked, this, &MenuScreen::closeClicked);
+    replaceButton->setFont(font);
+    connect(replaceButton, &QPushButton::clicked, this, &ComponentContextMenuScreen::replaceClicked);
 
-    layout->addWidget(pbClose);
-    layout->addWidget(m_lbParam);
+    layout()->addWidget(replaceButton);
+    layout()->addWidget(m_lbParam);
 
     auto actions = comp->getActions();
     auto actionKeys = actions.keys();
@@ -169,7 +167,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PComponent comp) : QScr
 
     for (auto i : actionKeys)
     {
-        QPushButton * curButton = new QPushButton(widget);
+        QPushButton * curButton = new QPushButton(widget());
         curButton->setText (actions[i].label.toUpper());
         curButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
         font = curButton->font();
@@ -177,13 +175,43 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PComponent comp) : QScr
         font.setBold(true);
         curButton->setFont(font);
         curButton->setProperty("componentAction", i);
-        connect(curButton, &QPushButton::clicked, this, &MenuScreen::actionClicked);
-        layout->addWidget(curButton);
+        connect(curButton, &QPushButton::clicked, this, &ComponentContextMenuScreen::actionClicked);
+        layout()->addWidget(curButton);
     }
 
-    layout->insertStretch(layout->count());
-    setWidget(widget);
-    setupScroller(this);
+    layout()->insertStretch(layout()->count());
+}
+
+// Component replace/select menu
+ComponentSelectionMenuScreen::ComponentSelectionMenuScreen (MainWidget * parent, PDash dash, PState state, PComponent comp) : MenuScreen(parent, dash, state)
+{
+    m_component = comp;
+
+    setTitle("REPLACE");
+
+    auto comps = ComponentFactory::listComponents();
+    for (auto i : comps)
+    {
+        if (!ComponentFactory::componentHasWidget(i))
+        {
+            continue;
+        }
+        QPushButton * curButton = new QPushButton(widget());
+        curButton->setText (i);
+        curButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+        auto font = curButton->font();
+        font.setPointSizeF(23);
+        font.setBold(true);
+        curButton->setFont(font);
+        curButton->setProperty("componentKey", i);
+        connect(curButton, &QPushButton::clicked, this, &ComponentSelectionMenuScreen::componentClicked);
+        layout()->addWidget(curButton);
+    }
+}
+
+void MenuScreen::setTitle (QString t)
+{
+    m_pbClose->setText(t);
 }
 
 void MenuScreen::setupScroller(QScrollArea *area)
@@ -197,7 +225,7 @@ void MenuScreen::setupScroller(QScrollArea *area)
     QScroller::scroller(area->viewport())->setScrollerProperties(ScrollerProperties);
 }
 
-void MenuScreen::updateParams()
+void ComponentContextMenuScreen::updateParams()
 {
     m_lbParam->setText ("Parameters:\n");
     auto boolLabels = m_component->getBooleanParameters();
@@ -219,7 +247,7 @@ void MenuScreen::updateParams()
     }
 }
 
-void MenuScreen::actionClicked()
+void ComponentContextMenuScreen::actionClicked()
 {
     QString action = sender()->property("componentAction").toString();
     DBG_MSG << "Action clicked:" << action;
@@ -227,12 +255,40 @@ void MenuScreen::actionClicked()
     updateParams();
 }
 
-void MenuScreen::exitClicked()
+void ComponentContextMenuScreen::replaceClicked()
+{
+    DBG_MSG << "Replace component";
+    MainWidget * mw = dynamic_cast<MainWidget*> (parent());
+    MenuScreen * men = new ComponentSelectionMenuScreen (mw, dash(), state(), m_component);
+    mw->m_layout->insertWidget(0,men);
+    mw->m_layout->setCurrentIndex(0);
+
+    deleteLater();
+}
+
+void ComponentSelectionMenuScreen::componentClicked()
+{
+    MainWidget * mw = dynamic_cast<MainWidget*> (parent());
+    QString key = sender()->property("componentKey").toString();
+    PComponent newComponent = ComponentFactory::createComponent(key);
+    if (newComponent.isNull())
+    {
+        DBG_MSG << "Unknown component";
+    }
+    else
+    {
+        dash()->replaceComponent(m_component, newComponent, mw);
+        newComponent->setState(state());
+    }
+    deleteLater();
+}
+
+void MainMenuScreen::exitClicked()
 {
     DBG_MSG << "Exit";
-    if (!m_dash.isNull())
+    if (!dash().isNull())
     {
-        m_dash->widget->exitDash();
+        dash()->widget->exitDash();
         deleteLater();
     }
     else
@@ -245,11 +301,11 @@ void MenuScreen::exitClicked()
 void MenuScreen::closeClicked()
 {
     DBG_MSG << "Close";
-    DBG_MSG << this->size() << this->widget()->size();
+    //DBG_MSG << this->size() << this->widget()->size();
     deleteLater();
 }
 
-void MenuScreen::resetClicked()
+void MainMenuScreen::resetClicked()
 {
     DBG_MSG << "Reset data";
     MainWidget * main = dynamic_cast<MainWidget*> (this->parent());
@@ -257,32 +313,32 @@ void MenuScreen::resetClicked()
     deleteLater();
 }
 
-void MenuScreen::saveBestClicked()
+void MainMenuScreen::saveBestClicked()
 {
     DBG_MSG << "Save lap";
-    m_state->saveComparisonLap("best", "ref-a");
-    m_state->loadComparisonLap("ref-a", "ref-a");
+    state()->saveComparisonLap("best", "ref-a");
+    state()->loadComparisonLap("ref-a", "ref-a");
     //QFileDialog::getOpenFileName();
     deleteLater();
 }
 
-void MenuScreen::clearRefAClicked()
+void MainMenuScreen::clearRefAClicked()
 {
-    if (m_state->comparisonLaps.contains("ref-a"))
+    if (state()->comparisonLaps.contains("ref-a"))
     {
-        m_state->comparisonLaps.remove("ref-a");
+        state()->comparisonLaps.remove("ref-a");
     }
     deleteLater();
 }
 
-void MenuScreen::importRefAClicked()
+void MainMenuScreen::importRefAClicked()
 {
     auto filePath = QFileDialog::getOpenFileName(this, "Load lap", QString(), "Laps (*.gt7lap)");
     if(!filePath.isNull())
     {
         DBG_MSG << "Load" << filePath << "as ref-a";
-        m_state->loadComparisonLap("ref-a", filePath, true);
-        m_state->saveComparisonLap("ref-a", "ref-a");
+        state()->loadComparisonLap("ref-a", filePath, true);
+        state()->saveComparisonLap("ref-a", "ref-a");
     }
     else
     {
@@ -291,13 +347,13 @@ void MenuScreen::importRefAClicked()
     deleteLater();
 }
 
-void MenuScreen::exportRefAClicked()
+void MainMenuScreen::exportRefAClicked()
 {
     auto filePath = QFileDialog::getSaveFileName(this, "Save lap", QDate::currentDate().toString("yyyy-MM-dd") + " Reference Lap.gt7lap", "Laps (*.gt7lap)");
     if(!filePath.isNull())
     {
         DBG_MSG << "Save" << filePath << "from ref-a";
-        m_state->saveComparisonLap("ref-a", filePath, true);
+        state()->saveComparisonLap("ref-a", filePath, true);
     }
     else
     {

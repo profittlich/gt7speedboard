@@ -52,4 +52,4 @@ QString CarName::componentId ()
 }
 
 
-static ComponentFactory::RegisterComponent<CarName> reg;
+static ComponentFactory::RegisterComponent<CarName> reg(true);

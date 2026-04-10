@@ -55,4 +55,4 @@ QString FPS::componentId ()
     return "FPS";
 }
 
-static ComponentFactory::RegisterComponent<FPS> reg;
+static ComponentFactory::RegisterComponent<FPS> reg(true);
