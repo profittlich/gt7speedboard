@@ -7,7 +7,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include "sb/widgets/ErrorScreen.h"
-#include "sb/widgets/MenuScreen.h"
+#include "sb/widgets/MainMenuScreen.h"
+#include "sb/widgets/ComponentMenuScreen.h"
 #include "sb/widgets/StartScreen.h"
 #include "sb/receiver/GT7TelemetryReceiver.h"
 #include "sb/system/DashBuilder.h"

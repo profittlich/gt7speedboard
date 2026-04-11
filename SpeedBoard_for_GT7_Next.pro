@@ -55,10 +55,12 @@ SOURCES += \
     sb/system/State.cpp \
     sb/widgets/ButtonLabel.cpp \
     sb/widgets/ColorLabel.cpp \
+    sb/widgets/ComponentMenuScrreen.cpp \
     sb/widgets/DashWidget.cpp \
     sb/widgets/ErrorScreen.cpp \
     sb/widgets/GaugeLabel.cpp \
     sb/widgets/ImageLabel.cpp \
+    sb/widgets/MainMenuScreen.cpp \
     sb/widgets/MenuScreen.cpp \
     sb/widgets/SideButtonLabel.cpp \
     sb/widgets/StartScreen.cpp
@@ -116,6 +118,7 @@ HEADERS += \
     sb/trackdata/TrackDetector.h \
     sb/widgets/ButtonLabel.h \
     sb/widgets/ColorLabel.h \
+    sb/widgets/ComponentMenuScreen.h \
     sb/widgets/ComponentWidget.h \
     sb/widgets/DashWidget.h \
     sb/widgets/DialogWidget.h \
@@ -123,6 +126,7 @@ HEADERS += \
     sb/widgets/GaugeLabel.h \
     sb/widgets/ImageLabel.hpp \
     sb/widgets/InteractiveWidget.h \
+    sb/widgets/MainMenuScreen.h \
     sb/widgets/MenuScreen.h \
     sb/widgets/SideButtonLabel.h \
     sb/widgets/StartScreen.h
