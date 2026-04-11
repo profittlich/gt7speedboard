@@ -28,6 +28,23 @@ protected:
     PState state() { return m_state; }
     void setTitle (QString t);
 
+    template<typename PointerToMemberFunction>
+    QPushButton* addButton(QString label, QObject * target, PointerToMemberFunction clicked)
+    {
+        QPushButton * button = new QPushButton(widget());
+        button->setText(label);
+        button->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+        auto font = button->font();
+        font.setPointSizeF(23);
+        font.setBold(true);
+        button->setFont(font);
+        connect (button, &QPushButton::clicked, target, clicked);
+
+        layout()->addWidget(button);
+
+        return button;
+    }
+
 private:
     PDash m_dash;
     PState m_state;

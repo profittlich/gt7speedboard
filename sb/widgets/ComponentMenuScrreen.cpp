@@ -15,16 +15,8 @@ ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDa
     m_lbParam->setFont(font);
     updateParams();
 
-    QPushButton * replaceButton = new QPushButton(widget());
-    replaceButton->setText ("REPLACE");
-    replaceButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    font = replaceButton->font();
-    font.setPointSizeF(23);
-    font.setBold(true);
-    replaceButton->setFont(font);
-    connect(replaceButton, &QPushButton::clicked, this, &ComponentContextMenuScreen::replaceClicked);
+    addButton("REPLACE", this, &ComponentContextMenuScreen::replaceClicked);
 
-    layout()->addWidget(replaceButton);
     layout()->addWidget(m_lbParam);
 
     auto actions = comp->getActions();
@@ -33,16 +25,8 @@ ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDa
 
     for (auto i : actionKeys)
     {
-        QPushButton * curButton = new QPushButton(widget());
-        curButton->setText (actions[i].label.toUpper());
-        curButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-        font = curButton->font();
-        font.setPointSizeF(23);
-        font.setBold(true);
-        curButton->setFont(font);
+        QPushButton * curButton = addButton (actions[i].label.toUpper(), this, &ComponentContextMenuScreen::actionClicked);
         curButton->setProperty("componentAction", i);
-        connect(curButton, &QPushButton::clicked, this, &ComponentContextMenuScreen::actionClicked);
-        layout()->addWidget(curButton);
     }
 
     layout()->insertStretch(layout()->count());
@@ -62,16 +46,9 @@ ComponentSelectionMenuScreen::ComponentSelectionMenuScreen (MainWidget * parent,
         {
             continue;
         }
-        QPushButton * curButton = new QPushButton(widget());
-        curButton->setText (i);
-        curButton->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-        auto font = curButton->font();
-        font.setPointSizeF(23);
-        font.setBold(true);
-        curButton->setFont(font);
+        QPushButton * curButton = addButton(i, this, &ComponentSelectionMenuScreen::componentClicked);
         curButton->setProperty("componentKey", i);
-        connect(curButton, &QPushButton::clicked, this, &ComponentSelectionMenuScreen::componentClicked);
-        layout()->addWidget(curButton);
+
     }
 }
 

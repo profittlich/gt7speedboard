@@ -2,92 +2,62 @@
 #include "sb/widgets/DashWidget.h"
 #include <QFileDialog>
 
+/*
+ *  Menu structure
+ *
+ *  next page
+ *  prev page
+ *  RESET DATA
+ *  laps
+ *      REF-A
+ *          CLEAR REF-A
+ *          SAVE BEST AS REF-A
+ *          save opt as ref-a
+ *          IMPORT REF-A
+ *          EXPORT REF-A
+ *      ref-b
+ *      ref-c
+ *      best
+ *          export best lap
+ *      opt
+ *          export opt lap
+ *      last
+ *          export last lap
+ *      all
+ *          export all laps
+ *  layout
+ *      save layout
+ *      save layout as
+ *      export layout
+ *      import layout
+ *  EXIT DASH
+ *
+ */
+
 // Main menu
 MainMenuScreen::MainMenuScreen (MainWidget * parent, PDash dash, PState pstate) : MenuScreen(parent, dash, pstate)
 {
-    QPushButton * pbExit = new QPushButton(widget());
-    pbExit->setText("EXIT DASH");
-    pbExit->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    auto font = pbExit->font();
-    font.setPointSizeF(23);
-    font.setBold(true);
-    pbExit->setFont(font);
-    connect (pbExit, &QPushButton::clicked, this, &MainMenuScreen::exitClicked);
+    addButton ("RESET DATA", this, &MainMenuScreen::resetClicked);
 
-    QPushButton * pbReset = new QPushButton(widget());
-    pbReset->setText("RESET DATA");
-    pbReset->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    font = pbReset->font();
-    font.setPointSizeF(23);
-    font.setBold(true);
-    pbReset->setFont(font);
-    connect (pbReset, &QPushButton::clicked, this, &MainMenuScreen::resetClicked);
-
-
-    QPushButton * pbClearRefA = nullptr;
     if (state()->comparisonLaps.contains("ref-a"))
     {
-        pbClearRefA = new QPushButton(widget());
-        pbClearRefA->setText("CLEAR REF-A");
-        pbClearRefA->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-        font = pbClearRefA->font();
-        font.setPointSizeF(23);
-        font.setBold(true);
-        pbClearRefA->setFont(font);
-        connect (pbClearRefA, &QPushButton::clicked, this, &MainMenuScreen::clearRefAClicked);
+        addButton("CLEAR REF-A", this, &MainMenuScreen::clearRefAClicked);
     }
 
-    QPushButton * pbSave = nullptr;
     if (state()->comparisonLaps.contains("best"))
     {
-        pbSave = new QPushButton(widget());
-        pbSave->setText("SAVE BEST AS REF-A");
-        pbSave->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-        font = pbSave->font();
-        font.setPointSizeF(23);
-        font.setBold(true);
-        pbSave->setFont(font);
-        connect (pbSave, &QPushButton::clicked, this, &MainMenuScreen::saveBestClicked);
+        addButton("SAVE BEST AS REF-A", this, &MainMenuScreen::saveBestClicked);
     }
 
-    QPushButton * pbImport = new QPushButton(widget());
-    pbImport->setText("IMPORT REF-A");
-    pbImport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    font = pbImport->font();
-    font.setPointSizeF(23);
-    font.setBold(true);
-    pbImport->setFont(font);
-    connect (pbImport, &QPushButton::clicked, this, &MainMenuScreen::importRefAClicked);
+    addButton("IMPORT REF-A", this, &MainMenuScreen::importRefAClicked);
 
-    QPushButton * pbExport = nullptr;
     if (state()->comparisonLaps.contains("ref-a"))
     {
-        pbExport = new QPushButton(widget());
-        pbExport->setText("EXPORT REF-A");
-        pbExport->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-        font = pbExport->font();
-        font.setPointSizeF(23);
-        font.setBold(true);
-        pbExport->setFont(font);
-        connect (pbExport, &QPushButton::clicked, this, &MainMenuScreen::exportRefAClicked);
+        addButton("EXPORT REF-A", this, &MainMenuScreen::exportRefAClicked);
     }
 
-    layout()->addWidget(pbReset);
-    if (pbClearRefA != nullptr)
-    {
-        layout()->addWidget(pbClearRefA);
-    }
-    if (pbSave != nullptr)
-    {
-        layout()->addWidget(pbSave);
-    }
-    layout()->addWidget(pbImport);
-    if (pbExport != nullptr)
-    {
-        layout()->addWidget(pbExport);
-    }
+    addButton ("EXIT DASH", this, &MainMenuScreen::exitClicked);
 
-    layout()->addWidget(pbExit);
     layout()->insertStretch(layout()->count()-1);
 }
 
