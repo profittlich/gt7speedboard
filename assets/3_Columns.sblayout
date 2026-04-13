@@ -70,6 +70,7 @@
                                                  "secondTarget": "ref-b",
                                                  "thirdTarget": "ref-c"
                                              },
+                                             "actions" : { "Key_S" : "incOffset", "Key_X" : "decOffset" },
                                              "fullScreenSignalAllowed": true,
                                              "showHeader" : false
                                         },

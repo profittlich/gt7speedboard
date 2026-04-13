@@ -39,11 +39,15 @@ private:
     QWidget * m_widget;
     ColorLabel * m_speed;
     GaugeLabel * m_time;
+    ColorLabel * m_offset;
     PComponentParameterFloat m_currentTarget;
     PComponentParameterString m_target;
     PComponentParameterString m_secondTarget;
     PComponentParameterString m_thirdTarget;
+    static PComponentParameterFloat s_offset;
     PComparisonLap m_targetLap;
+
+    mutable unsigned m_countdown;
     bool m_prevFullScreenPermission;
 
     static QString s_fullScreenTarget;

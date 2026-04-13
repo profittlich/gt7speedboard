@@ -7,18 +7,28 @@
 
 QString LapComparison::s_fullScreenTarget;
 QList<LapComparison*> LapComparison::s_allLapComparisons;
+PComponentParameterFloat LapComparison::s_offset;
 
 LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_target (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
 {
+    if (s_offset.isNull())
+    {
+        s_offset = PComponentParameterFloat( new ComponentParameter<float> ("offset", 0, true));
+    }
+
     addComponentParameter(m_currentTarget);
     addComponentParameter(m_target);
     addComponentParameter(m_secondTarget);
     addComponentParameter(m_thirdTarget);
+    addComponentParameter(s_offset);
+
+    m_countdown = INT_MAX;
 
     m_colorMapper = new ColorMapperGreenRed(0, 10);
     m_widget = new QWidget();
 
     m_speed = new ColorLabel(m_widget);
+    m_offset = new ColorLabel(m_widget);
     m_time = new GaugeLabel(m_widget, 0, 1, true, true, true);
 
     m_speed->setAlignment(Qt::AlignCenter);
@@ -31,6 +41,12 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
 
     connect(m_speed, &ColorLabel::clicked, this, &LapComparison::goFullscreen);
 
+    m_offset->setAlignment(Qt::AlignCenter);
+    font = m_offset->font();
+    font.setPointSizeF(baseFontSize() * 2);
+    m_offset->setFont(font);
+    m_offset->setStyleSheet("color : #fff;font-weight:bold;");
+
     m_time->setAlignment(Qt::AlignCenter);
     font = m_time->font();
     font.setPointSizeF(baseFontSize() * 5);
@@ -42,7 +58,11 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     QVBoxLayout * layout = new QVBoxLayout(m_widget);
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(m_speed);
+    layout->addWidget(m_offset);
     layout->addWidget(m_time);
+    layout->setStretch(0, 6);
+    layout->setStretch(1, 1);
+    layout->setStretch(2, 6);
 
     s_allLapComparisons.append(this);
 }
@@ -168,6 +188,14 @@ void LapComparison::pointFinished(PTelemetryPoint p)
         m_time->disable();
     }
     m_time->update();
+    if ((*s_offset)() == 0)
+    {
+        m_offset->setText("");
+    }
+    else
+    {
+        m_offset->setText(QString((*s_offset)() > 0 ? "+" : "") + QString::number(round((*s_offset)() * 1000.0 / c_FPS)) + " ms");
+    }
 }
 
 void LapComparison::completedLap(PLap, bool)
@@ -223,28 +251,60 @@ QColor LapComparison::signalColor() const
     {
         return QColor();
     }
-    size_t nextBrakeIn = m_targetLap->nextBrake - m_targetLap->closestPoint;
-    auto curPt = m_targetLap->lap->points()[m_targetLap->closestPoint];
-    if (nextBrakeIn > 15 && nextBrakeIn <= 30)
+    int curPtIdx = m_targetLap->closestPoint + (*s_offset)();
+    if (curPtIdx < 0)
     {
-        return QColor (0xffffff);
+        curPtIdx += m_targetLap->lap->points().size();
     }
-    if (nextBrakeIn > 45 && nextBrakeIn <= 60)
+    else if (curPtIdx >= m_targetLap->lap->points().size())
     {
-        return QColor (0xffffff);
+        curPtIdx -= m_targetLap->lap->points().size();
     }
-    if (nextBrakeIn > 90 && nextBrakeIn <= 120)
-    {
-        return QColor (0x7f7fff);
-    }
-    if (nextBrakeIn > 150 && nextBrakeIn <= 180)
-    {
-        return QColor (0x0000ff);
-    }
+
+    auto curPt = m_targetLap->lap->points()[curPtIdx];
+
     if (curPt->brake() > 2)
     {
         return QColor (0xffff00 - (unsigned (curPt->brake() * 2.55) << 8));
     }
+
+    size_t nextBrakeIn = m_targetLap->nextBrake - (*s_offset)() - m_targetLap->closestPoint;
+
+    if (m_targetLap->nextBrake != INT_MAX && m_countdown == INT_MAX)
+    {
+        m_countdown = nextBrakeIn;
+    }
+    else if (m_countdown != INT_MAX)
+    {
+        m_countdown--;
+    }
+    else
+    {
+        m_countdown = INT_MAX;
+        return QColor();
+    }
+    if (m_countdown == 0)
+    {
+        m_countdown = INT_MAX;
+    }
+
+    if (m_countdown > 15 && m_countdown <= 30)
+    {
+        return QColor (0xffffff);
+    }
+    if (m_countdown > 45 && m_countdown <= 60)
+    {
+        return QColor (0xffffff);
+    }
+    if (m_countdown > 90 && m_countdown <= 120)
+    {
+        return QColor (0x7f7fff);
+    }
+    if (m_countdown > 150 && m_countdown <= 180)
+    {
+        return QColor (0x0000ff);
+    }
+
     return QColor();
 }
 
@@ -259,6 +319,8 @@ QMap<QString, Action> LapComparison::actions ()
 
     result["toggleFullscreen"] = { 1, "toggle fullscreen signal", "toggle wether the signalling of countdowns and positions should color the full screen"};
     result["nextTarget"] = { 2, "next target", "switch to the next configured comparison target lap"};
+    result["incOffset"] = { 3, "offset +", "increase the offser for brake point timing"};
+    result["decOffset"] = { 4, "offset -", "decrease the offser for brake point timing"};
 
     return result;
 }
@@ -310,6 +372,14 @@ void LapComparison::callAction(QString a)
         updateLabel();
 
         DBG_MSG << currentTarget()->name();
+    }
+    else if (a == "incOffset")
+    {
+        (*s_offset)() += 1;
+    }
+    else if (a == "decOffset")
+    {
+        (*s_offset)() -= 1;
     }
 }
 

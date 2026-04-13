@@ -273,6 +273,11 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
             DBG_MSG << "JSON fullScreenSignalAllowed";
             dashNode->addField("fullScreenSignalAllowed", jVal(curObj, "fullScreenSignalAllowed", 1));
         }
+        if (curObj.contains("actions"))
+        {
+            DBG_MSG << "JSON actions";
+            dashNode->addField("actions", jVal(curObj, "actions", 1));
+        }
 
         return cw;
     }

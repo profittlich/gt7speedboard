@@ -64,16 +64,13 @@ void ComparisonLapManager::updateNextCriticalPoints()
         if (compLap->hasClosestPoint)
         {
             size_t end = compLap->closestPoint + 5 * 60; // TODO: make configurable
-            if (end > compLap->lap->points().size())
-            {
-                end = compLap->lap->points().size();
-            }
+
             if (compLap->lap->points()[compLap->closestPoint]->brake() < 2) // TODO: make configurable
             {
                 size_t i;
                 for (i = compLap->closestPoint + 1; i < end; ++i)
                 {
-                    if (compLap->lap->points()[i]->brake() >= 2) // TODO: make configurable
+                    if (compLap->lap->points()[i % compLap->lap->points().size()]->brake() >= 2) // TODO: make configurable
                     {
                         compLap->nextBrake  = i;
                         break;
