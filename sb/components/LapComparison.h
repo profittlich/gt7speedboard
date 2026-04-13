@@ -41,7 +41,7 @@ private:
     GaugeLabel * m_time;
     ColorLabel * m_offset;
     PComponentParameterFloat m_currentTarget;
-    PComponentParameterString m_target;
+    PComponentParameterString m_firstTarget;
     PComponentParameterString m_secondTarget;
     PComponentParameterString m_thirdTarget;
     static PComponentParameterFloat s_offset;

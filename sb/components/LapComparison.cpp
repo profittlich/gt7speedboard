@@ -9,7 +9,7 @@ QString LapComparison::s_fullScreenTarget;
 QList<LapComparison*> LapComparison::s_allLapComparisons;
 PComponentParameterFloat LapComparison::s_offset;
 
-LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_target (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
+LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_firstTarget (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
 {
     if (s_offset.isNull())
     {
@@ -17,7 +17,7 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     }
 
     addComponentParameter(m_currentTarget);
-    addComponentParameter(m_target);
+    addComponentParameter(m_firstTarget);
     addComponentParameter(m_secondTarget);
     addComponentParameter(m_thirdTarget);
     addComponentParameter(s_offset);
@@ -89,7 +89,7 @@ PComponentParameterString LapComparison::currentTarget()
     }
     else
     {
-        return m_target;
+        return m_firstTarget;
     }
 }
 
@@ -139,7 +139,7 @@ void LapComparison::pointFinished(PTelemetryPoint p)
     }
     if (state()->comparisonLaps.contains((*currentTarget())()))
     {
-        m_targetLap = state()->comparisonLaps[(*m_target)()];
+        m_targetLap = state()->comparisonLaps[(*currentTarget())()];
     }
     else
     {
@@ -148,9 +148,7 @@ void LapComparison::pointFinished(PTelemetryPoint p)
 
     if (!m_targetLap.isNull() && m_targetLap->hasClosestPoint)
     {
-        //qDebug() << "Closest: "<< state()->comparisonLaps[(*m_target)()]->closestPoint << "of" << state()->comparisonLaps[(*currentTarget())()]->lap->points().size();
         auto compPt = m_targetLap->lap->points()[m_targetLap->closestPoint];
-        //m_speed->setText (QString::number(round(p->carSpeed() - compPt->carSpeed())));
 
         m_speed->setColor(m_colorMapper->getColor(compPt->carSpeed() - p->carSpeed()));
         m_speed->update();
@@ -167,12 +165,9 @@ void LapComparison::pointFinished(PTelemetryPoint p)
         //}
 
         int idx = state()->currentLap->points().size() + startP;
-        //DBG_MSG << (*m_target)() << "start p:" << startP << idx << m_targetLap->closestPoint << ((int(m_targetLap->closestPoint) - idx) / c_FPS);
 
         if (idx >= 0 && m_targetLap->lap->valid())
         {
-            //qDebug() << "DBG = " << idx << " " << state()->comparisonLaps[(*m_target)()]->closestPoint << " " << (int(state()->comparisonLaps[(*currentTarget())()]->closestPoint) - idx) * c_FPS / 1000.0;
-
             m_time->setValue((int(m_targetLap->closestPoint) - idx) / c_FPS);
         }
         else

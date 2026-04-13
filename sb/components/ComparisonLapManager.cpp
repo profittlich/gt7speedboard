@@ -134,9 +134,27 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         if (bestCompLap->lap.isNull() || bestCompLap->lap->lapTime() > lastLap->lapTime())
         {
             bestCompLap->lap = lastLap;
-            //bestCompLap->lapTime = lastLap->lapTime();
         }
         DBG_MSG << "Best lap: " << bestCompLap->lap->lapTime() << "ms";
+    }
+
+    // MEDIAN
+    if (lastLap->valid())
+    {
+        if (!state()->comparisonLaps.contains(("median")))
+        {
+            DBG_MSG << "Create median lap data structure";
+            state()->comparisonLaps["median"] = PComparisonLap(new ComparisonLap());
+        }
+
+        auto sortedLaps = state()->previousLaps;
+        erase_if(sortedLaps, [](PLap p) { return !p->valid();});
+
+        std::sort (sortedLaps.begin(), sortedLaps.end(), [](PLap a, PLap b){ return a->lapTime() < b->lapTime();});
+
+        auto medianCompLap = state()->comparisonLaps["median"];
+        medianCompLap->lap = sortedLaps[sortedLaps.size() / 2];
+        DBG_MSG << "Median lap: " << medianCompLap->lap->lapTime() << "ms";
     }
 
     // PROGRESS
