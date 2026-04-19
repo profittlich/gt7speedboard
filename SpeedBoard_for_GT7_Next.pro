@@ -147,6 +147,8 @@ ios {
     QMAKE_BUNDLE_DATA += app_launch_screen
 }
 
+QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+
 DISTFILES += \
     android/AndroidManifest.xml \
     android/build.gradle \
