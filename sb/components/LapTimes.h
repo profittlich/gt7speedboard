@@ -16,12 +16,15 @@ public:
 
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
 
+    virtual void callAction(QString a) override;
+
     static QString description ();
     static QMap<QString, Action> actions ();
     static QString componentId ();
 
 protected:
     void setupScroller(QScrollArea *area);
+    void exportCSV();
 
 
 private:

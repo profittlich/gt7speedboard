@@ -4,6 +4,7 @@
 
 #include <QScroller>
 #include <QtWidgets/qboxlayout.h>
+#include <QFileDialog>
 
 
 
@@ -126,7 +127,58 @@ QString LapTimes::description ()
 
 QMap<QString, Action> LapTimes::actions ()
 {
-    return QMap<QString, Action>();
+    QMap<QString, Action> result;
+
+    result["exportCSV"] = { 1, "export CSV", "export listed lap times to a CSV file"};
+
+    return result;
+}
+
+void LapTimes::callAction(QString a)
+{
+    if (a == "exportCSV")
+    {
+        exportCSV();
+    }
+}
+
+void LapTimes::exportCSV()
+{
+    auto filePath = QFileDialog::getSaveFileName(nullptr, "Save lap times", QDate::currentDate().toString("yyyy-MM-dd") + " lap times.csv", "CSV (*.csv)");
+    if(!filePath.isNull())
+    {
+        DBG_MSG << "Save lap times to" << filePath;
+        QFile f(filePath);
+        f.open(QFile::WriteOnly);
+        if (f.isOpen())
+        {
+            f.write("Index\tLap\tms\tTime\tValid\n");
+            DBG_MSG << "write data";
+            size_t numLaps = state()->previousLaps.size();
+            for (size_t i = 0; i < numLaps; ++i)
+            {
+                PLap cur = state()->previousLaps[i];
+                f.write(QString(
+                    QString::number(i) + "\t" +
+                    QString::number(cur->points()[0]->currentLap()) + "\t" +
+                    QString::number(cur->lapTime()) + "\t" +
+                    msToTime(cur->lapTime()) + "\t" +
+                    (cur->valid() ? "1" : "0") + "\n"
+                    ).toStdString().c_str());
+            }
+
+            f.close();
+        }
+        else
+        {
+            DBG_MSG << "Could not open" << filePath;
+        }
+
+    }
+    else
+    {
+        DBG_MSG << "No file selected";
+    }
 }
 
 QString LapTimes::componentId ()
