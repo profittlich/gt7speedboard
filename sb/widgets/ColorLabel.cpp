@@ -6,19 +6,19 @@ ColorLabel::ColorLabel(QWidget * parent, QColor col) : QLabel(parent)
     //DBG_MSG << minimumHeight() << minimumHeight() << sizeHint();
     setMinimumSize(10, 0);
     //setSizePolicy (QSizePolicy::Preferred, QSizePolicy::Preferred);
-    if (col.isValid())
-    {
-        setColor(col);
-    }
-    else
-    {
-        setColor(g_globalConfiguration.backgroundColor());
-    }
+    setColor(col);
 }
 
 void ColorLabel::setColor(const QColor & col)
 {
-    m_color = col;
+    if (!col.isValid())
+    {
+        m_color = g_globalConfiguration.backgroundColor();
+    }
+    else
+    {
+        m_color = col;
+    }
 }
 
 

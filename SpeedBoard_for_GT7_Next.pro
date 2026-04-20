@@ -34,10 +34,12 @@ SOURCES += \
     sb/components/LapChangeDetector.cpp \
     sb/components/LapComparison.cpp \
     sb/components/LapDisplay.cpp \
+    sb/components/LapProgress.cpp \
     sb/components/LapTimes.cpp \
     sb/components/Map.cpp \
     sb/components/Message.cpp \
     sb/components/PresetSelector.cpp \
+    sb/components/ProgressManager.cpp \
     sb/components/RPM.cpp \
     sb/components/SessionChangeDetector.cpp \
     sb/components/Speed.cpp \
@@ -91,10 +93,12 @@ HEADERS += \
     sb/components/LapChangeDetector.h \
     sb/components/LapComparison.h \
     sb/components/LapDisplay.h \
+    sb/components/LapProgress.h \
     sb/components/LapTimes.h \
     sb/components/Map.h \
     sb/components/Message.h \
     sb/components/PresetSelector.h \
+    sb/components/ProgressManager.h \
     sb/components/RPM.h \
     sb/components/SessionChangeDetector.h \
     sb/components/Speed.h \

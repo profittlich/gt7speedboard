@@ -31,11 +31,25 @@ void LapDisplay::newPoint(PTelemetryPoint p)
 {
     if (p->totalLaps() == 0)
     {
-        m_widget->setText (QString::number(p->currentLap()));
+        if (state()->lapProgress > -0.5)
+        {
+            m_widget->setText (QString::number(round(100 * (p->currentLap() + state()->lapProgress))/100.0));
+        }
+        else
+        {
+            m_widget->setText (QString::number(p->currentLap()));
+        }
     }
     else
     {
-        m_widget->setText (QString::number(p->currentLap()) + " of " + QString::number(p->totalLaps()) + "(" + QString::number(p->totalLaps() - p->currentLap()) + " left)");
+        if (state()->lapProgress > -0.5)
+        {
+            m_widget->setText (QString::number(round(100 * (p->currentLap() + state()->lapProgress))/100.0) + " of " + QString::number(p->totalLaps()) + "\n(" + QString::number(p->totalLaps() - round(100 * (p->currentLap() + state()->lapProgress))/100.0) + " left)");
+        }
+        else
+        {
+            m_widget->setText (QString::number(p->currentLap()) + " of " + QString::number(p->totalLaps()) + "\n(" + QString::number(p->totalLaps() - p->currentLap()) + " left)");
+        }
     }
 }
 

@@ -45,6 +45,16 @@ void FuelRange::newPoint(PTelemetryPoint p)
         float range = p->currentFuel() / state()->fuelData.fuelPerLap;
         m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS"
                           + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): ""));
+        if (range <= 100)
+        {
+            m_widget->setColor(QColor(255, 255, 0));
+            m_widget->setStyleSheet("color : #000;"); // TODO don't set stylesheet every frame
+        }
+        else
+        {
+            m_widget->setColor(QColor());
+            m_widget->setStyleSheet("color : #fff;");
+        }
     }
 
 }

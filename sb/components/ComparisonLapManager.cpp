@@ -157,12 +157,6 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         DBG_MSG << "Median lap: " << medianCompLap->lap->lapTime() << "ms";
     }
 
-    // PROGRESS
-    if (state()->comparisonLaps.contains(("best")))
-    {
-        state()->comparisonLaps["progress"] = state()->comparisonLaps["best"];
-    }
-
     // TODO update points again for new lap
     updateClosestPoints(m_cachedPt);
 }

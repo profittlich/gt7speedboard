@@ -31,7 +31,7 @@ class State
 public:
     State () :
         currentLap(new Lap()),
-        lapProgress(0),
+        lapProgress(-1),
         //currentLapValid(true),
         newLap(false),
         newLapIsClosedLoop(false),
