@@ -13,6 +13,7 @@ public:
     ColorLabel(QWidget * parent = nullptr, QColor col = QColor());
 
     void setColor(const QColor & col);
+    void setTextColor(const QColor & col);
 
 protected:
     void mouseReleaseEvent(QMouseEvent * ev);

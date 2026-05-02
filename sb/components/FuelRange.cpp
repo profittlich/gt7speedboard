@@ -13,7 +13,9 @@ FuelRange::FuelRange () : Component(), m_showTime(new ComponentParameter<bool>("
     QFont font = m_widget->font();
     font.setPointSizeF(baseFontSize() * 5);
     m_widget->setFont(font);
-    m_widget->setStyleSheet("color : #fff;");
+
+    //m_widget->setStyleSheet("color : #fff;");
+    m_widget->setTextColor(Qt::white);
 
     m_widget->setText("MEASURING");
 
@@ -43,18 +45,48 @@ void FuelRange::newPoint(PTelemetryPoint p)
     else
     {
         float range = p->currentFuel() / state()->fuelData.fuelPerLap;
-        m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS"
-                          + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): ""));
-        if (range <= 100)
+        if (state()->lapProgress >= 0 && range <= 100*(1-state()->lapProgress))
         {
-            m_widget->setColor(QColor(255, 255, 0));
-            m_widget->setStyleSheet("color : #000;"); // TODO don't set stylesheet every frame
+            auto now = QTime::currentTime();
+            if ((now.msec() / 125) % 2)
+            {
+                m_widget->setColor(QColor(255, 255, 0));
+                m_widget->setTextColor(Qt::black);
+            }
+            else
+            {
+                m_widget->setColor(QColor(255, 0, 0));
+                m_widget->setTextColor(Qt::black);
+            }
+        }
+        else if (range <= 100)
+        {
+            auto now = QTime::currentTime();
+            if (now.msec() < 500)
+            {
+                m_widget->setColor(QColor(255, 255, 0));
+                m_widget->setTextColor(Qt::black);
+            }
+            else
+            {
+                m_widget->setColor(QColor(255, 0, 0));
+                m_widget->setTextColor(Qt::black);
+            }
+        }
+        else if (range <= 200)
+        {
+            m_widget->setColor(QColor(255, 192, 0));
+            m_widget->setTextColor(Qt::black);
         }
         else
         {
             m_widget->setColor(QColor());
-            m_widget->setStyleSheet("color : #fff;");
+            m_widget->setTextColor(Qt::white);
         }
+        m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS"
+                          + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): ""));
+        m_widget->update();
+
     }
 
 }

@@ -21,6 +21,14 @@ void ColorLabel::setColor(const QColor & col)
     }
 }
 
+void ColorLabel::setTextColor(const QColor & col)
+{
+    QPalette pal = palette();
+    pal.setColor(foregroundRole(), col);
+    setPalette(pal);
+}
+
+
 
 void ColorLabel::mouseReleaseEvent(QMouseEvent * ev)
 {
