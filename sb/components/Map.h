@@ -66,6 +66,9 @@ public:
 
     QString target();
 
+protected:
+    bool targetLapUsable() const;
+
 private:
     SBGLWidget * m_widget;
     PComponentParameterString m_target;

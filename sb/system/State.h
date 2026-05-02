@@ -44,6 +44,8 @@ public:
         cpuLoad(0),
         avgFrameTime(16.7)
     {
+        currentLap->setTrackDetector(PTrackDetector(new TrackDetector()));
+
         lastProcessingTimes.push_back(16.7 * 1000000);
         lastProcessingTimes.push_back(16.7 * 1000000);
         lastProcessingTimes.push_back(16.7 * 1000000);

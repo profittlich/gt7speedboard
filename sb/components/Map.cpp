@@ -45,6 +45,14 @@ void Map::loaded()
     }
 }
 
+bool Map::targetLapUsable() const
+{
+    return state()->comparisonLaps.contains((*m_target)()) &&
+           (!state()->comparisonLaps[(*m_target)()]->lap->trackDetector()->trackFound() ||
+            !state()->currentLap->trackDetector()->trackFound() ||
+            state()->comparisonLaps[(*m_target)()]->lap->trackDetector()->detectedTrack().get() == state()->currentLap->trackDetector()->detectedTrack().get());
+}
+
 void Map::newPoint(PTelemetryPoint p)
 {
     m_widget->addPoint(p);
@@ -59,13 +67,13 @@ void Map::newPoint(PTelemetryPoint p)
             m_widget->updateRefLap(m_refLap);
         }
     }
-    if (!state()->comparisonLaps.contains((*m_target)()))
+    if (!targetLapUsable())
     {
         m_refLap.clear();
         m_widget->clearRefLap();
     }
 
-    if (state()->comparisonLaps.contains((*m_target)()) && (m_refLap.isNull() || state()->comparisonLaps[(*m_target)()]->lap != m_refLap))
+    if (targetLapUsable() && (m_refLap.isNull() || state()->comparisonLaps[(*m_target)()]->lap != m_refLap))
     {
         m_refLap = state()->comparisonLaps[(*m_target)()]->lap;
         m_widget->updateRefLap(m_refLap);

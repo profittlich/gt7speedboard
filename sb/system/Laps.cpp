@@ -35,9 +35,9 @@ bool Lap::saveLap(QString filename)
     return false;
 }
 
-PLap Lap::loadLap(QString filename, size_t index)
+PLap Lap::loadLap(QString filename, bool detectTrack, size_t index)
 {
-    auto all = Lap::loadLaps(filename);
+    auto all = Lap::loadLaps(filename, detectTrack);
     if (all.size() < index+1)
     {
         return PLap();
@@ -45,7 +45,7 @@ PLap Lap::loadLap(QString filename, size_t index)
     return all[index];
 }
 
-QList<PLap> Lap::loadLaps(QString filename)
+QList<PLap> Lap::loadLaps(QString filename, bool detectTrack)
 {
     QList<PLap> result;
 
@@ -89,10 +89,14 @@ QList<PLap> Lap::loadLaps(QString filename)
                 DBG_MSG << "new lap" << p->currentLap();
                 if (!loader.isNull())
                 {
-                    DBG_MSG << "append lap";
+                    DBG_MSG << "append lap" << loader->trackName();
                     result.append(loader);
                 }
                 loader = PLap(new Lap());
+                if (detectTrack)
+                {
+                    loader->setTrackDetector(PTrackDetector(new TrackDetector()));
+                }
                 DBG_MSG << "new lap done";
             }
 
@@ -105,7 +109,7 @@ QList<PLap> Lap::loadLaps(QString filename)
 
         if (!loader.isNull())
         {
-            DBG_MSG << "append final lap";
+            DBG_MSG << "append final lap" << loader->trackName();
             result.append(loader);
         }
 
@@ -222,14 +226,18 @@ QPair<size_t, float> Lap::findClosestPoint(PPoint p, size_t start, float cancelR
 
 void Lap::appendTelemetryPoint(PTelemetryPoint p)
 {
+    if (!m_trackDetector.isNull())
+    {
+        m_trackDetector->addPoint(p);
+    }
     m_points.append(p);
-    int xQuad = p->position().x()/c_quadSize;
+    /*int xQuad = p->position().x()/c_quadSize;
     int yQuad = p->position().y()/c_quadSize;
     int qIdx = 100000 * xQuad + yQuad;
     if (!m_quadPoints.contains(qIdx))
     {
         m_quadPoints[qIdx] = QSet<size_t>();
     }
-    m_quadPoints[qIdx].insert(m_points.size()-1);
+    m_quadPoints[qIdx].insert(m_points.size()-1);*/
     //DBG_MSG << "Add" << xQuad << yQuad << m_quadPoints.size() << m_quadPoints[qIdx].size();
 }

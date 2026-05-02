@@ -53,9 +53,15 @@ void Configuration::loadCars()
             f.close();
         }
     }
+}
 
-    //for (auto i : m_cars)
-   // {
-     //   DBG_MSG << i;
-    //}
+void Configuration::loadTracks()
+{
+    DBG_MSG << "loadTracks";
+    QDir layoutFiles = QDir(":/assets/assets/tracks");
+    auto files = layoutFiles.entryList({"*.gt7track"});
+    for (const auto &i : std::as_const(files))
+    {
+        m_tracks.append(PTrack(new Track(i)));
+    }
 }

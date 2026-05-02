@@ -22,8 +22,6 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     addComponentParameter(m_thirdTarget);
     addComponentParameter(s_offset);
 
-    m_countdown = INT_MAX;
-
     m_colorMapper = new ColorMapperGreenRed(0, 10);
     m_widget = new QWidget();
 
@@ -263,39 +261,21 @@ QColor LapComparison::signalColor() const
         return QColor (0xffff00 - (unsigned (curPt->brake() * 2.55) << 8));
     }
 
-    size_t nextBrakeIn = m_targetLap->nextBrake - (*s_offset)() - m_targetLap->closestPoint;
+    int nextBrakeIn = m_targetLap->nextBrake - (*s_offset)() - m_targetLap->closestPoint;
 
-    if (m_targetLap->nextBrake != INT_MAX && m_countdown == INT_MAX)
-    {
-        m_countdown = nextBrakeIn;
-    }
-    else if (m_countdown != INT_MAX)
-    {
-        m_countdown--;
-    }
-    else
-    {
-        m_countdown = INT_MAX;
-        return QColor();
-    }
-    if (m_countdown == 0)
-    {
-        m_countdown = INT_MAX;
-    }
-
-    if (m_countdown > 15 && m_countdown <= 30)
+    if (nextBrakeIn > 15 && nextBrakeIn <= 30)
     {
         return QColor (0xffffff);
     }
-    if (m_countdown > 45 && m_countdown <= 60)
+    if (nextBrakeIn > 45 && nextBrakeIn <= 60)
     {
         return QColor (0xffffff);
     }
-    if (m_countdown > 90 && m_countdown <= 120)
+    if (nextBrakeIn > 90 && nextBrakeIn <= 120)
     {
         return QColor (0x7f7fff);
     }
-    if (m_countdown > 150 && m_countdown <= 180)
+    if (nextBrakeIn > 150 && nextBrakeIn <= 180)
     {
         return QColor (0x0000ff);
     }

@@ -5,6 +5,7 @@
 #include "sb/cardata/Point.h"
 #include "sb/cardata/TelemetryPoint.h"
 #include "sb/system/Helpers.h"
+#include "sb/trackdata/TrackDetector.h"
 
 
 class Lap;
@@ -30,11 +31,11 @@ public:
         return result;
     }
 
-    size_t findNextBrake () const { return 0; }
-    size_t findNextThrottle () const { return 0; }
-    size_t findNextBrakeLift () const { return 0; }
-    size_t findNextThrottleLift () const { return 0; }
-    size_t findNextShift () const { return 0; }
+    //size_t findNextBrake () const { return 0; }
+    //size_t findNextThrottle () const { return 0; }
+    //size_t findNextBrakeLift () const { return 0; }
+    //size_t findNextThrottleLift () const { return 0; }
+    //size_t findNextShift () const { return 0; }
 
     void appendTelemetryPoint(PTelemetryPoint p);
     const QList<PTelemetryPoint> & points() const { return m_points; }
@@ -46,6 +47,21 @@ public:
     void setPreceedingPoint (PTelemetryPoint p) { m_preceedingPoint = p; }
     const PTelemetryPoint & succeedingPoint() const { return m_succeedingPoint; }
     const PTelemetryPoint & preceedingPoint() const { return m_preceedingPoint; }
+
+    void setTrackDetector(PTrackDetector td) { m_trackDetector = td; }
+    PTrackDetector trackDetector() { return m_trackDetector; }
+    QString trackName(bool withLocation = false)
+    {
+        if (m_trackDetector.isNull() || !m_trackDetector->trackFound())
+        {
+            if (withLocation)
+            {
+                return m_trackDetector->location();
+            }
+            return QString();
+        }
+        return m_trackDetector->detectedTrack()->name();
+    }
 
     int lapTime() const
     {
@@ -86,15 +102,16 @@ public:
 
     bool saveLap(QString filename);
 
-    static PLap loadLap(QString filename, size_t index = 0);
-    static QList<PLap> loadLaps(QString filename);
+    static PLap loadLap(QString filename, bool detectTrack = true, size_t index = 0);
+    static QList<PLap> loadLaps(QString filename, bool detectTrack = true);
 
 private:
     PTelemetryPoint m_preceedingPoint;
     QList<PTelemetryPoint> m_points;
     PTelemetryPoint m_succeedingPoint;
     bool m_valid;
-    QMap<int, QSet<size_t>> m_quadPoints;
+    PTrackDetector m_trackDetector;
+    //QMap<int, QSet<size_t>> m_quadPoints;
 
 };
 

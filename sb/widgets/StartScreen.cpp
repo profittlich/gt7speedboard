@@ -80,6 +80,7 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     fnt.setPointSize(20);
     m_leIP->setFont(fnt);
     m_leIP->setMinimumHeight(30);
+    m_leIP->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
     layout->addWidget(m_leIP);
 
     QLabel * lbFont = new QLabel(this);
@@ -96,6 +97,7 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     sbFont->setFont(fnt);
     sbFont->setMinimumHeight(30);
     layout->addWidget(sbFont);
+    sbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
     //sbFont->setStyleSheet("background-color:#0000;");
     connect(sbFont, &QSpinBox::valueChanged, this, &StartScreen::setFontSize);
 

@@ -103,7 +103,7 @@ void MainMenuScreen::clearRefAClicked()
 
 void MainMenuScreen::importRefAClicked()
 {
-    auto filePath = QFileDialog::getOpenFileName(this, "Load lap", QString(), "Laps (*.gt7lap)");
+    auto filePath = QFileDialog::getOpenFileName(this, "Load lap", QString(), "Laps (*.gt7lap, *.gt7track)");
     if(!filePath.isNull())
     {
         DBG_MSG << "Load" << filePath << "as ref-a";

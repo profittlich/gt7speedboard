@@ -88,6 +88,8 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
                 }
 
                 m_state->currentLap = PLap(new Lap());
+                //m_state->currentLap->setTrackDetector(PTrackDetector(new TrackDetector()));
+                m_state->currentLap->setTrackDetector(previousLap->trackDetector()->copy());
 
                 if (p->currentLap() == previousLap->points()[0]->currentLap() + 1 && previousLap->points().size() > 0)
                 {

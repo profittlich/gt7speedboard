@@ -44,6 +44,7 @@ SOURCES += \
     sb/components/SessionChangeDetector.cpp \
     sb/components/Speed.cpp \
     sb/components/Throttle.cpp \
+    sb/components/TrackName.cpp \
     sb/components/TyreTemps.cpp \
     sb/receiver/GT7TelemetryReceiver.cpp \
     sb/system/Configuration.cpp \
@@ -55,6 +56,8 @@ SOURCES += \
     sb/system/Laps.cpp \
     sb/system/RawRecorder.cpp \
     sb/system/State.cpp \
+    sb/trackdata/Track.cpp \
+    sb/trackdata/TrackDetector.cpp \
     sb/widgets/ButtonLabel.cpp \
     sb/widgets/ColorLabel.cpp \
     sb/widgets/ComponentMenuScrreen.cpp \
@@ -103,6 +106,7 @@ HEADERS += \
     sb/components/SessionChangeDetector.h \
     sb/components/Speed.h \
     sb/components/Throttle.h \
+    sb/components/TrackName.h \
     sb/components/TyreTemps.h \
     sb/receiver/GT7TelemetryReceiver.h \
     sb/receiver/TelemetryReceiver.h \

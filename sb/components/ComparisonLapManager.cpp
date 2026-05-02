@@ -72,6 +72,7 @@ void ComparisonLapManager::updateNextCriticalPoints()
                 {
                     if (compLap->lap->points()[i % compLap->lap->points().size()]->brake() >= 2) // TODO: make configurable
                     {
+                        DBG_MSG << "next:" << compLap->nextBrake << compLap->closestPoint;
                         compLap->nextBrake  = i;
                         break;
                     }
@@ -87,6 +88,7 @@ void ComparisonLapManager::updateNextCriticalPoints()
             }
             else
             {
+                DBG_MSG << "braking";
                 compLap->nextBrake = INT_MAX;
             }
         }

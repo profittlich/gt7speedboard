@@ -8,6 +8,7 @@
 #include <QColor>
 
 #include "sb/system/Helpers.h"
+#include "sb/trackdata/Track.h"
 
 class Configuration
 {
@@ -38,9 +39,11 @@ public:
         m_maxPointDistanceForValidLap = 20.0;
 
         loadCars();
+        loadTracks();
     }
 
     void loadCars();
+    void loadTracks();
 
     float platformFontScale () { return m_platformFontScale; }
 
@@ -52,6 +55,8 @@ public:
         }
         return "Unknown car: " + QString::number(carId);
     }
+
+    QList<PTrack> allTracks () { return m_tracks; }
 
     /* SETTERS */
     void setFontScale(const float & v) { m_fontScale = v; }
@@ -96,6 +101,7 @@ private:
     QString m_selectedLayout;
     QMap<unsigned, QString> m_carMakers;
     QMap<unsigned, QString> m_cars;
+    QList<PTrack> m_tracks;
 };
 
 typedef QSharedPointer<Configuration> PConfiguration;

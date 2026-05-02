@@ -9,5 +9,87 @@
         <file>assets/cars.csv</file>
         <file>assets/makers.csv</file>
         <file>assets/3_Columns.sblayout</file>
+        <file>assets/tracks/24 Heures du Mans Racing Circuit - Full Course.gt7track</file>
+        <file>assets/tracks/24 Heures du Mans Racing Circuit - No Chicane.gt7track</file>
+        <file>assets/tracks/Alsace - Test Course.gt7track</file>
+        <file>assets/tracks/Alsace - Village.gt7track</file>
+        <file>assets/tracks/Autodrome Lago Maggiore - Centre.gt7track</file>
+        <file>assets/tracks/Autodrome Lago Maggiore - East End.gt7track</file>
+        <file>assets/tracks/Autodrome Lago Maggiore - East.gt7track</file>
+        <file>assets/tracks/Autodrome Lago Maggiore - Full Course.gt7track</file>
+        <file>assets/tracks/Autodrome Lago Maggiore - West End.gt7track</file>
+        <file>assets/tracks/Autodrome Lago Maggiore - West.gt7track</file>
+        <file>assets/tracks/Autodromo de Interlagos - Full Course.gt7track</file>
+        <file>assets/tracks/Autodromo Nazionale Monza - Full Course.gt7track</file>
+        <file>assets/tracks/Autodromo Nazionale Monza - No Chicane.gt7track</file>
+        <file>assets/tracks/Autopolis International Racing Course - Full Course.gt7track</file>
+        <file>assets/tracks/Autopolis International Racing Course - Shortcut Course.gt7track</file>
+        <file>assets/tracks/Blue Moon Bay Speedway - Full Course.gt7track</file>
+        <file>assets/tracks/Blue Moon Bay Speedway - Infield A.gt7track</file>
+        <file>assets/tracks/Blue Moon Bay Speedway - Infield B.gt7track</file>
+        <file>assets/tracks/Brands Hatch - Grand Prix Circuit.gt7track</file>
+        <file>assets/tracks/Brands Hatch - Indy Circuit.gt7track</file>
+        <file>assets/tracks/Broad Bean Raceway - Full Course.gt7track</file>
+        <file>assets/tracks/Circuit de Barcelona-Catalunya - Grand Prix Layout.gt7track</file>
+        <file>assets/tracks/Circuit de Barcelona-Catalunya - National Layout.gt7track</file>
+        <file>assets/tracks/Circuit de Barcelona-Catalunya - No Chicane.gt7track</file>
+        <file>assets/tracks/Circuit de Barcelona-Catalunya - Rallycross Layout.gt7track</file>
+        <file>assets/tracks/Circuit de Sainte-Croix - Layout A.gt7track</file>
+        <file>assets/tracks/Circuit de Sainte-Croix - Layout B.gt7track</file>
+        <file>assets/tracks/Circuit de Sainte-Croix - Layout C.gt7track</file>
+        <file>assets/tracks/Circuit de Spa-Francorchamps - Full Course.gt7track</file>
+        <file>assets/tracks/Circuit Gilles-Villeneuve - Full Course.gt7track</file>
+        <file>assets/tracks/Colorado Springs - Lake.gt7track</file>
+        <file>assets/tracks/Daytona International Speedway - Road Course!WIDTH-120.gt7track</file>
+        <file>assets/tracks/Daytona International Speedway - Tri-Oval!WIDTH-120.gt7track</file>
+        <file>assets/tracks/Deep Forest Raceway - Full Course.gt7track</file>
+        <file>assets/tracks/Dragon Trail - Gardens.gt7track</file>
+        <file>assets/tracks/Dragon Trail - Seaside.gt7track</file>
+        <file>assets/tracks/Eiger Nordwand - Full Course.gt7track</file>
+        <file>assets/tracks/Fishermans Ranch - Full Course.gt7track</file>
+        <file>assets/tracks/Fuji International Speedway - Full Course.gt7track</file>
+        <file>assets/tracks/Fuji International Speedway - Short Course.gt7track</file>
+        <file>assets/tracks/Goodwood Motor Circuit - Full Course.gt7track</file>
+        <file>assets/tracks/Grand Valley - Highway 1.gt7track</file>
+        <file>assets/tracks/Grand Valley - South.gt7track</file>
+        <file>assets/tracks/High Speed Ring - Full Course.gt7track</file>
+        <file>assets/tracks/Kyoto Driving Park - Miyabi.gt7track</file>
+        <file>assets/tracks/Kyoto Driving Park - Yamagiwa and Miyabi.gt7track</file>
+        <file>assets/tracks/Kyoto Driving Park - Yamagiwa.gt7track</file>
+        <file>assets/tracks/Lake Louise - Long Track.gt7track</file>
+        <file>assets/tracks/Lake Louise - Short Track.gt7track</file>
+        <file>assets/tracks/Lake Louise - Tri-Oval.gt7track</file>
+        <file>assets/tracks/Michelin Raceway Road Atlanta - Full Course.gt7track</file>
+        <file>assets/tracks/Mount Panorama Circuit - Full Course.gt7track</file>
+        <file>assets/tracks/Northern Isle Speedway - Full Course.gt7track</file>
+        <file>assets/tracks/Nürburgring - 24h.gt7track</file>
+        <file>assets/tracks/Nürburgring - Endurance.gt7track</file>
+        <file>assets/tracks/Nürburgring - Grand Prix.gt7track</file>
+        <file>assets/tracks/Nürburgring - Nordschleife.gt7track</file>
+        <file>assets/tracks/Nürburgring - Sprint.gt7track</file>
+        <file>assets/tracks/Red Bull Ring - Full Course.gt7track</file>
+        <file>assets/tracks/Red Bull Ring - Short Track.gt7track</file>
+        <file>assets/tracks/Sardegna Road Track - Layout A.gt7track</file>
+        <file>assets/tracks/Sardegna Road Track - Layout B.gt7track</file>
+        <file>assets/tracks/Sardegna Road Track - Layout C.gt7track</file>
+        <file>assets/tracks/Sardegna Windmills - Full Course.gt7track</file>
+        <file>assets/tracks/Special Stage Route X - Full Course.gt7track</file>
+        <file>assets/tracks/Suzuka Circuit - East Course.gt7track</file>
+        <file>assets/tracks/Suzuka Circuit - Full Course.gt7track</file>
+        <file>assets/tracks/Tokyo Expressway - Central Clockwise.gt7track</file>
+        <file>assets/tracks/Tokyo Expressway - Central Counterclockwise.gt7track</file>
+        <file>assets/tracks/Tokyo Expressway - East Clockwise.gt7track</file>
+        <file>assets/tracks/Tokyo Expressway - East Counterclockwise.gt7track</file>
+        <file>assets/tracks/Tokyo Expressway - South Clockwise.gt7track</file>
+        <file>assets/tracks/Tokyo Expressway - South Counterclockwise.gt7track</file>
+        <file>assets/tracks/Trial Mountain - Full Course.gt7track</file>
+        <file>assets/tracks/Tsukuba Circuit - Full Course.gt7track</file>
+        <file>assets/tracks/Watkins Glen - Long Course.gt7track</file>
+        <file>assets/tracks/Watkins Glen - Short Course!PIT-18-92-35!WIDTH-64.gt7track</file>
+        <file>assets/tracks/WeatherTech Raceway Laguna Seca - Full Course.gt7track</file>
+        <file>assets/tracks/Willow Springs International Raceway - Big Willow.gt7track</file>
+        <file>assets/tracks/Willow Springs International Raceway - Horse Thief Mile.gt7track</file>
+        <file>assets/tracks/Willow Springs International Raceway - Streets of Willow Springs.gt7track</file>
+        <file>assets/tracks/Yas Marina Circuit - Full Course.gt7track</file>
     </qresource>
 </RCC>

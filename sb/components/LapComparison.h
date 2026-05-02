@@ -47,7 +47,6 @@ private:
     static PComponentParameterFloat s_offset;
     PComparisonLap m_targetLap;
 
-    mutable unsigned m_countdown;
     bool m_prevFullScreenPermission;
 
     static QString s_fullScreenTarget;

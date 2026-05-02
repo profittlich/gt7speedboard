@@ -110,6 +110,7 @@ public:
 
     void setState(PState s) { m_state = s; }
     PState state() { return m_state; }
+    const PState state() const { return m_state; }
 
     QList<ComponentParameter<float>> getFloatParameters()
     {
