@@ -1,0 +1,108 @@
+{
+    "version" : 2,
+    "pages" : [
+        {
+            "title" : "Page 1",
+            "shortcuts" : [ "Key_1" ],
+            "list" : [
+                {
+                    "component" : "LapChangeDetector"
+                },
+                {
+                    "component" : "FuelAnalyzer"
+                },
+                {
+                    "component" : "SessionChangeDetector"
+                },
+                {
+                    "component": "ComparisonLapManager",
+                    "configuration": {
+                        "maxClosenessDistance": 20
+                    }
+                },
+                {
+                    "list" : [
+                        {
+                            "list" : [
+                                {
+                                   "component": "LapDisplay",
+                                   "stretch": 1
+                                },
+                                {
+                                    "component" : "FuelPerLap",
+                                    "stretch" : 1,
+                                    "title" : "FUEL"
+                                },
+                                {
+                                    "component" : "FuelRange",
+                                    "stretch" : 1,
+                                    "showHeader" : false
+                                },
+                                {
+                                    "stack" : [
+                                        {
+                                            "component" : "TyreTemps",
+                                            "configuration" : { "target" : 75, "spread" : 20 },
+                                            "actions" : { "Key_A" : "targetUp", "Key_Z" : "targetDown" },
+                                            "stretch" : 3
+                                        },
+                                        {
+                                            "component" : "Message",
+                                            "stretch" : 1,
+                                            "raiseAllowed" : true
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "list" : [
+                                {
+                                     "component":"Empty",
+                                     "title":"SPEED",
+                                     "configuration": {
+                                         "hideWidget" : 1
+                                     },
+                                     "stretch" : 0
+                                },
+                                {
+                                    "list" : [
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "best"
+                                             },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "ref-a"
+                                             },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "last"
+                                             },
+                                             "fullScreenSignalAllowed": false,
+                                             "showHeader" : false
+                                        }
+                                    ],
+                                    "stretch":5
+                                },
+                                {
+                                    "component": "CPULoad",
+                                    "stretch": 1
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

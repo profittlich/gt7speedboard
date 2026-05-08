@@ -1,0 +1,130 @@
+{
+    "version" : 2,
+    "pages" : [
+        {
+            "title" : "Page 1",
+            "shortcuts" : [ "Key_1" ],
+            "list" : [
+                {
+                    "component" : "LapChangeDetector"
+                },
+                {
+                    "component" : "FuelAnalyzer"
+                },
+                {
+                    "component" : "SessionChangeDetector"
+                },
+                {
+                    "component": "ComparisonLapManager",
+                    "configuration": {
+                        "maxClosenessDistance": 20
+                    }
+                },
+                {
+                    "component" : "ProgressManager"
+                },
+                {
+                    "list" : [
+                        {
+                            "list" : [
+                                {
+                                    "component" : "FuelPerLap",
+                                    "stretch" : 1,
+                                    "title" : "FUEL"
+                                },
+                                {
+                                    "component" : "FuelRange",
+                                    "stretch" : 1,
+                                    "showHeader" : false
+                                },
+                                {
+                                    "stack" : [
+                                        {
+                                            "component" : "TyreTemps",
+                                            "configuration" : { "target" : 75, "spread" : 20 },
+                                            "actions" : { "Key_A" : "targetUp", "Key_Z" : "targetDown" },
+                                            "stretch" : 3
+                                        },
+                                        {
+                                            "component" : "Message",
+                                            "stretch" : 1,
+                                            "raiseAllowed" : true
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "list" : [
+                                {
+                                     "component":"Empty",
+                                     "title":"SPEED",
+                                     "configuration": {
+                                         "hideWidget" : 1
+                                     },
+                                     "stretch" : 0
+                                },
+                                {
+                                    "list" : [
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "ref-a",
+                                                 "secondTarget": "ref-b",
+                                                 "thirdTarget": "ref-c"
+                                             },
+                                             "actions" : { "Key_S" : "incOffset", "Key_X" : "decOffset" },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "best"
+                                             },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        },
+                                        {
+                                             "component":"LapComparison",
+                                             "configuration": {
+                                                 "target": "last",
+                                                 "secondTarget": "median"
+                                             },
+                                             "fullScreenSignalAllowed": true,
+                                             "showHeader" : false
+                                        }
+                                    ],
+                                    "stretch":5
+                                },
+                                {
+                                    "component": "CPULoad",
+                                    "stretch": 1
+                                }
+                            ]
+                        },
+                        {
+                            "list" : [
+                                 {
+                                    "component": "LapDisplay",
+                                    "stretch": 1
+                                },
+                                {
+                                    "component": "Map",
+                                    "configuration": {
+                                        "target": "ref-a"
+                                    },
+                                    "stretch": 4
+                                },
+                                {
+                                    "component": "LapTimes",
+                                    "stretch": 2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
