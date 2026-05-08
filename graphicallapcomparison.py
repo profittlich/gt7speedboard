@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import *
 
 from sb.gt7telepoint import Point
 from sb.helpers import indexToTime, msToTime
-from sb.laps import Lap, PositionPoint, loadLaps
+from sb.laps import Lap, PositionPoint, loadLaps, loadBoundary
 
 import sb.gt7telemetryreceiver as tele
 from sb.mapview2 import MapView2
@@ -47,7 +47,7 @@ class StartWindowVLC(QWidget):
         layout.addWidget(self.starter)
 
     def chooseReferenceLapA(self):
-        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps)")
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps; *.gt7boundary)")
         if chosen[0] == "":
             print("None")
         else:
@@ -60,6 +60,8 @@ class StartWindowVLC(QWidget):
         self.lRefA.setText("Violet lap: " + chosen[chosen.rfind("/")+1:])
         if self.refAFile == self.refBFile:
             self.aLaps = self.bLaps
+        elif ".gt7boundary" in chosen:
+            self.aLaps = [ loadBoundary(self.refAFile) ]
         else:
             self.aLaps = loadLaps(self.refAFile)
         self.idxRefA.clear()
@@ -71,7 +73,7 @@ class StartWindowVLC(QWidget):
                 self.idxRefA.addItem(str(l.points[0].current_lap) + ": " + str(msToTime(l.time)))
 
     def chooseReferenceLapB(self):
-        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps)")
+        chosen = QFileDialog.getOpenFileName(filter="GT7 Telemetry (*.gt7; *.gt7track; *.gt7lap; *.gt7laps; *.gt7boundary)")
         if chosen[0] == "":
             print("None")
         else:
@@ -84,6 +86,8 @@ class StartWindowVLC(QWidget):
         self.lRefB.setText("Blue lap: " + chosen[chosen.rfind("/")+1:])
         if self.refAFile == self.refBFile:
             self.bLaps = self.aLaps
+        elif ".gt7boundary" in chosen:
+            self.bLaps = [ loadBoundary(self.refBFile) ]
         else:
             self.bLaps = loadLaps(self.refBFile)
         self.idxRefB.clear()

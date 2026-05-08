@@ -144,3 +144,36 @@ def loadLaps(fn):
             result[i].valid = False
         
     return result
+
+def loadBoundary(fn):
+    result = Lap()
+    if len(fn)>0:
+        logPrint("Load boundary:", fn)
+        with open(fn, "rb") as f:
+            allData = f.read()
+            curIndex = 0
+            while curIndex < len(allData):
+                data = allData[curIndex:curIndex + 296]
+                curIndex += 2 * 296
+                magic = struct.unpack('i', data[0x00:0x00 + 4])[0] # 0x47375330
+                if magic == 0x47375330:
+                    ddata = data
+                else:
+                    ddata = salsa20_dec(data)
+                curPoint = Point(ddata, data)
+                curPoint.current_lap = 1
+                result.points.append(curPoint)
+            curIndex = len(allData) - 296
+            while curIndex >= 0:
+                data = allData[curIndex:curIndex + 296]
+                curIndex -= 2 * 296
+                magic = struct.unpack('i', data[0x00:0x00 + 4])[0] # 0x47375330
+                if magic == 0x47375330:
+                    ddata = data
+                else:
+                    ddata = salsa20_dec(data)
+                curPoint = Point(ddata, data)
+                curPoint.current_lap = 1
+                result.points.append(curPoint)
+    return result
+    
