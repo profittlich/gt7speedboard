@@ -12,9 +12,13 @@ public:
 public slots:
     void exitClicked();
     void resetClicked();
-    void saveBestClicked();
-    void clearRefAClicked();
-    void importRefAClicked();
-    void exportRefAClicked();
+    void lapsClicked();
+    void prevPageClicked();
+    void nextPageClicked();
 
+protected:
+    void addPageFlipper();
+
+private:
+    QLabel * m_curPage;
 };

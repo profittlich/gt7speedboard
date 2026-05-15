@@ -41,7 +41,6 @@ public:
     const QList<PTelemetryPoint> & points() const { return m_points; }
     void setSucceedingPoint (PTelemetryPoint p)
     {
-        DBG_MSG << "Set succeeding point" << p->lastLapMs();
         m_succeedingPoint = p;
     }
     void setPreceedingPoint (PTelemetryPoint p) { m_preceedingPoint = p; }
@@ -54,13 +53,18 @@ public:
     {
         if (m_trackDetector.isNull() || !m_trackDetector->trackFound())
         {
-            if (withLocation)
+            if (withLocation && !m_trackDetector.isNull())
             {
                 return m_trackDetector->location();
             }
             return QString();
         }
-        return m_trackDetector->detectedTrack()->name();
+        auto curName = m_trackDetector->detectedTrack()->name();
+        if (m_trackDetector->isReversed())
+        {
+            return curName + " - Reverse";
+        }
+        return curName;
     }
 
     int lapTime() const
@@ -70,7 +74,6 @@ public:
             DBG_MSG << "return NULL for" << points()[0]->currentLap();
             return -1;
         }
-        DBG_MSG << "Return " << m_succeedingPoint->lastLapMs() << "for" << points()[0]->currentLap();
         return m_succeedingPoint->lastLapMs();
     }
 

@@ -1,12 +1,13 @@
 #include "MainMenuScreen.h"
 #include "sb/widgets/DashWidget.h"
+#include "LapsMenuScreen.h"
 #include <QFileDialog>
 
 /*
  *  Menu structure
  *
- *  next page
- *  prev page
+ *  NEXT PAGE
+ *  PREV PAGE
  *  RESET DATA
  *  laps
  *      REF-A
@@ -37,25 +38,9 @@
 // Main menu
 MainMenuScreen::MainMenuScreen (MainWidget * parent, PDash dash, PState pstate) : MenuScreen(parent, dash, pstate)
 {
+    addPageFlipper();
     addButton ("RESET DATA", this, &MainMenuScreen::resetClicked);
-
-    if (state()->comparisonLaps.contains("ref-a"))
-    {
-        addButton("CLEAR REF-A", this, &MainMenuScreen::clearRefAClicked);
-    }
-
-    if (state()->comparisonLaps.contains("best"))
-    {
-        addButton("SAVE BEST AS REF-A", this, &MainMenuScreen::saveBestClicked);
-    }
-
-    addButton("IMPORT REF-A", this, &MainMenuScreen::importRefAClicked);
-
-    if (state()->comparisonLaps.contains("ref-a"))
-    {
-        addButton("EXPORT REF-A", this, &MainMenuScreen::exportRefAClicked);
-    }
-
+    addButton ("LAPS", this, &MainMenuScreen::lapsClicked);
     addButton ("EXIT DASH", this, &MainMenuScreen::exitClicked);
 
     layout()->insertStretch(layout()->count()-1);
@@ -83,51 +68,83 @@ void MainMenuScreen::resetClicked()
     deleteLater();
 }
 
-void MainMenuScreen::saveBestClicked()
+void MainMenuScreen::lapsClicked()
 {
-    DBG_MSG << "Save lap";
-    state()->saveComparisonLap("best", "ref-a");
-    state()->loadComparisonLap("ref-a", "ref-a");
-    //QFileDialog::getOpenFileName();
+    DBG_MSG << "Replace component";
+    MainWidget * mw = dynamic_cast<MainWidget*> (parent());
+    MenuScreen * men = new LapsMenuScreen (mw, dash(), state());
+    mw->m_layout->insertWidget(0,men);
+    mw->m_layout->setCurrentIndex(0);
+
     deleteLater();
 }
 
-void MainMenuScreen::clearRefAClicked()
+void MainMenuScreen::prevPageClicked()
 {
-    if (state()->comparisonLaps.contains("ref-a"))
+    size_t pages = dash()->pages.size();
+    size_t curPage = dash()->widget->currentIndex();
+    curPage--;
+    if (curPage == 0)
     {
-        state()->comparisonLaps.remove("ref-a");
+        curPage = pages;
     }
+    dash()->widget->setCurrentIndex(curPage);
+    m_curPage->setText(QString::number(curPage) + " / " + QString::number(pages));
     deleteLater();
 }
 
-void MainMenuScreen::importRefAClicked()
+void MainMenuScreen::nextPageClicked()
 {
-    auto filePath = QFileDialog::getOpenFileName(this, "Load lap", QString(), "Laps (*.gt7lap, *.gt7track)");
-    if(!filePath.isNull())
+    size_t pages = dash()->pages.size();
+    size_t curPage = dash()->widget->currentIndex();
+    curPage++;
+    if (curPage > pages)
     {
-        DBG_MSG << "Load" << filePath << "as ref-a";
-        state()->loadComparisonLap("ref-a", filePath, true);
-        state()->saveComparisonLap("ref-a", "ref-a");
+        curPage = 1;
     }
-    else
-    {
-        DBG_MSG << "No file selected";
-    }
+    dash()->widget->setCurrentIndex(curPage);
+    m_curPage->setText(QString::number(curPage) + " / " + QString::number(pages));
     deleteLater();
 }
 
-void MainMenuScreen::exportRefAClicked()
+void MainMenuScreen::addPageFlipper()
 {
-    auto filePath = QFileDialog::getSaveFileName(this, "Save lap", QDate::currentDate().toString("yyyy-MM-dd") + " Reference Lap.gt7lap", "Laps (*.gt7lap)");
-    if(!filePath.isNull())
-    {
-        DBG_MSG << "Save" << filePath << "from ref-a";
-        state()->saveComparisonLap("ref-a", filePath, true);
-    }
-    else
-    {
-        DBG_MSG << "No file selected";
-    }
-    deleteLater();
+    QWidget * flipper = new QWidget(widget());
+    QHBoxLayout * flipLayout = new QHBoxLayout(flipper);
+    flipLayout->setContentsMargins(0,0,0,0);
+
+    QPushButton * prev = new QPushButton(flipper);
+    prev->setText("|<");
+    prev->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+    auto font = prev->font();
+    font.setPointSizeF(23);
+    font.setBold(true);
+    prev->setFont(font);
+    connect (prev, &QPushButton::clicked, this, &MainMenuScreen::prevPageClicked);
+    flipLayout->addWidget(prev);
+
+    m_curPage = new QLabel(flipper);
+    size_t pages = dash()->pages.size();
+    size_t curPage = dash()->widget->currentIndex();
+    m_curPage->setText(QString::number(curPage) + " / " + QString::number(pages));
+    m_curPage->setStyleSheet ("height: 100px;     border-style: none;  color:white;");
+    m_curPage->setAlignment(Qt::AlignCenter);
+    font = m_curPage->font();
+    font.setPointSizeF(23);
+    font.setBold(true);
+    m_curPage->setFont(font);
+    flipLayout->addWidget(m_curPage);
+
+    QPushButton * next = new QPushButton(flipper);
+    next->setText(">|");
+    next->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
+    font = next->font();
+    font.setPointSizeF(23);
+    font.setBold(true);
+    next->setFont(font);
+    connect (next, &QPushButton::clicked, this, &MainMenuScreen::nextPageClicked);
+    flipLayout->addWidget(next);
+
+
+    layout()->addWidget(flipper);
 }

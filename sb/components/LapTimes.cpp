@@ -54,14 +54,7 @@ void LapTimes::completedLap(PLap, bool)
     QString txt = "";
     for (auto i : state()->comparisonLaps.keys())
     {
-        if (i == "best"
-         || i == "last"
-         || i == "median"
-         || i == "opt"
-         || i == "ref-a"
-         || i == "ref-b"
-         || i == "ref-c"
-        )
+        if (!state()->invisibleComparisonLaps.contains(i))
         {
             auto lapTime = state()->comparisonLaps[i]->lap->lapTime();
 
@@ -92,7 +85,6 @@ void LapTimes::completedLap(PLap, bool)
         if (cur->points()[0]->currentLap() >= 1)
         {
             auto lapTime = cur->lapTime();
-            DBG_MSG << "Got lap time " << lapTime;
             if (lapTime >= 0)
             {
                 txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime);

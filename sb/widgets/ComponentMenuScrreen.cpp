@@ -6,13 +6,15 @@ ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDa
 {
     m_component = comp;
 
-    setTitle(comp->title());
+    setTitle(comp->title().toUpper());
 
     m_lbParam = new QLabel(widget());
     auto font = m_lbParam->font();
     font.setPointSizeF(30);
     font.setBold(true);
     m_lbParam->setFont(font);
+    m_lbParam->setStyleSheet ("height: 100px;     border-style: none;  color:white;");
+
     updateParams();
 
     addButton("REPLACE", this, &ComponentContextMenuScreen::replaceClicked);

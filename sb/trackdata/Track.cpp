@@ -41,24 +41,34 @@ Track::Track(const QString & fn)
     DBG_MSG << "Loaded" << m_name;
 }
 
-bool Track::isOnTrack(PPoint p)
+bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose)
 {
-    for (size_t i = 0; i < m_points.size(); ++i)
+    float minDist = 1000000000.0;
+    for (size_t j = 0; j < m_points.size(); ++j)
     {
+        size_t i = (j + offset) % m_points.size();
+        auto dist = p->position().distanceTo(m_points[i]->position());
+        minDist = std::min(minDist, dist);
         if (((m_pitEntry > m_pitExit and (i < m_pitExit or i > m_pitEntry)) or (m_pitEntry < m_pitExit and i < m_pitExit and i > m_pitEntry)))
         {
-            if (p->position().distanceTo(m_points[i]->position()) < m_pitTolerance)
+            if (dist <= m_pitTolerance)
             {
+                index = i;
                 return true;
             }
         }
         else
         {
-            if (p->position().distanceTo(m_points[i]->position()) < m_tolerance)
+            if (dist <= m_tolerance)
             {
+                index = i;
                 return true;
             }
         }
+    }
+    if (verbose)
+    {
+        DBG_MSG << "Not on track" << m_name << ", dist=" << minDist << "tolerance" << m_tolerance;
     }
     return false;
 }

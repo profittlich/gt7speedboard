@@ -21,6 +21,8 @@ public slots:
     void closeClicked();
 
 protected:
+    void stackMenu(MenuScreen * menu);
+
     void setupScroller(QScrollArea *area);
     QVBoxLayout * layout() { return m_layout; }
     QWidget * widget () { return m_widget; }

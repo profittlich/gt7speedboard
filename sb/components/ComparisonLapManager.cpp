@@ -27,6 +27,24 @@ void ComparisonLapManager::newPoint(PTelemetryPoint p)
     {
         DBG_MSG << "Current lap invalid";
         state()->currentLap->invalidate();
+#ifdef QT_DEBUG
+        if (!state()->currentLap->trackName().isNull())
+        {
+            QFile f;
+            f.setFileName(getStorageLocation().absolutePath() + "/" + state()->currentLap->trackName() + "-jumps.gt7boundary");
+            f.open(QIODeviceBase::Append);
+            if (f.isOpen())
+            {
+                f.write(state()->currentLap->points().back()->getData());
+                f.write(p->getData());
+            }
+            else
+            {
+                DBG_MSG << "Could not open jump file";
+            }
+
+        }
+#endif
     }
     updateClosestPoints(p);
     updateNextCriticalPoints();
@@ -72,7 +90,7 @@ void ComparisonLapManager::updateNextCriticalPoints()
                 {
                     if (compLap->lap->points()[i % compLap->lap->points().size()]->brake() >= 2) // TODO: make configurable
                     {
-                        DBG_MSG << "next:" << compLap->nextBrake << compLap->closestPoint;
+                        //DBG_MSG << "next:" << compLap->nextBrake << compLap->closestPoint;
                         compLap->nextBrake  = i;
                         break;
                     }
@@ -88,7 +106,7 @@ void ComparisonLapManager::updateNextCriticalPoints()
             }
             else
             {
-                DBG_MSG << "braking";
+                //DBG_MSG << "braking";
                 compLap->nextBrake = INT_MAX;
             }
         }

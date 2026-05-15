@@ -83,6 +83,7 @@ public:
 
     QList<PLap> previousLaps;
     QMap<QString, PComparisonLap> comparisonLaps;
+    QSet<QString> invisibleComparisonLaps;
 
     PTrack assumedTrack;
     PTrack identifiedTrack;

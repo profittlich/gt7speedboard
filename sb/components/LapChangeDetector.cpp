@@ -37,6 +37,24 @@ void LapChangeDetector::newPoint(PTelemetryPoint p)
             const float endpointDistance = p->position().distanceTo(state()->currentLap->points()[0]->position());
             state()->newLapIsClosedLoop =  endpointDistance < m_validLapEndpointDistance;
             DBG_MSG << ("New lap " + QString::number(p->currentLap()).toLatin1() + ": " + QString::number(endpointDistance).toLatin1() + " m endpoint distane, " + QString::number(state()->currentLap->points().size()).toLatin1() + " points");
+#ifdef QT_DEBUG
+            if (!state()->currentLap->trackName().isNull() && p->position().distanceTo(state()->currentLap->points().back()->position()) < 5)
+            {
+                QFile f;
+                f.setFileName(getStorageLocation().absolutePath() + "/" + state()->currentLap->trackName() + "-finishline.gt7boundary");
+                f.open(QIODeviceBase::Append);
+                if (f.isOpen())
+                {
+                    f.write(state()->currentLap->points().back()->getData());
+                    f.write(p->getData());
+                }
+                else
+                {
+                    DBG_MSG << "Could not open finish line file";
+                }
+
+            }
+#endif
         }
     }
 }

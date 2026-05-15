@@ -28,14 +28,17 @@ void ProgressManager::newPoint(PTelemetryPoint p)
     else if (state()->comparisonLaps.contains("ref-a"))
     {
         progress = state()->comparisonLaps["progress"] = state()->comparisonLaps["ref-a"];
+        state()->invisibleComparisonLaps.insert("progress");
     }
     else if (state()->comparisonLaps.contains("ref-b"))
     {
         progress = state()->comparisonLaps["progress"] = state()->comparisonLaps["ref-b"];
+        state()->invisibleComparisonLaps.insert("progress");
     }
     else if (state()->comparisonLaps.contains("ref-c"))
     {
         progress = state()->comparisonLaps["progress"] = state()->comparisonLaps["ref-c"];
+        state()->invisibleComparisonLaps.insert("progress");
     }
 
     if (!progress.isNull() && progress->hasClosestPoint)

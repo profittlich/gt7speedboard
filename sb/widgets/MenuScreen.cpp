@@ -68,3 +68,13 @@ void MenuScreen::closeClicked()
     //DBG_MSG << this->size() << this->widget()->size();
     deleteLater();
 }
+
+void MenuScreen::stackMenu(MenuScreen * menu)
+{
+    MainWidget * mw = dynamic_cast<MainWidget*> (parent());
+
+    mw->m_layout->insertWidget(0,menu);
+    mw->m_layout->setCurrentIndex(0);
+
+    deleteLater();
+}

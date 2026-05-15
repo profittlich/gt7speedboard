@@ -65,6 +65,8 @@ SOURCES += \
     sb/widgets/ErrorScreen.cpp \
     sb/widgets/GaugeLabel.cpp \
     sb/widgets/ImageLabel.cpp \
+    sb/widgets/LapMenuScreen.cpp \
+    sb/widgets/LapsMenuScreen.cpp \
     sb/widgets/MainMenuScreen.cpp \
     sb/widgets/MenuScreen.cpp \
     sb/widgets/SideButtonLabel.cpp \
@@ -134,6 +136,8 @@ HEADERS += \
     sb/widgets/GaugeLabel.h \
     sb/widgets/ImageLabel.hpp \
     sb/widgets/InteractiveWidget.h \
+    sb/widgets/LapMenuScreen.h \
+    sb/widgets/LapsMenuScreen.h \
     sb/widgets/MainMenuScreen.h \
     sb/widgets/MenuScreen.h \
     sb/widgets/SideButtonLabel.h \
