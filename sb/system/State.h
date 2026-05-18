@@ -77,6 +77,7 @@ public:
 
     void saveComparisonLap(QString key, QString fnKey, bool absolutePath = false);
     void loadComparisonLap(QString key, QString fnKey, bool absolutePath = false);
+    void deleteComparisonLap(QString key, QString fnKey, bool absolutePath = false);
 
     PLap currentLap;
     float lapProgress;
@@ -85,8 +86,8 @@ public:
     QMap<QString, PComparisonLap> comparisonLaps;
     QSet<QString> invisibleComparisonLaps;
 
-    PTrack assumedTrack;
-    PTrack identifiedTrack;
+    //PTrack assumedTrack;
+    //PTrack identifiedTrack;
 
     FuelData fuelData;
 

@@ -47,3 +47,33 @@ void State::loadComparisonLap(QString key, QString fnKey, bool absolutePath)
         DBG_MSG << "Could not load file" << fnKey;
     }
 }
+
+
+void State::deleteComparisonLap(QString key, QString fnKey, bool absolutePath)
+{
+    QString filename;
+
+    if (absolutePath)
+    {
+        filename = fnKey;
+    }
+    else
+    {
+        filename = getStorageLocation().absolutePath() + "/" + fnKey + ".gt7lap";
+    }
+
+    QFile f(filename);
+
+
+    if (f.rename(filename + "-backup"))
+    {
+        if (comparisonLaps.contains(key))
+        {
+            comparisonLaps.remove(key);
+        }
+    }
+    else
+    {
+        DBG_MSG << "Could not delete file" << fnKey;
+    }
+}

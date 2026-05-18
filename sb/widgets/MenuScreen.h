@@ -16,6 +16,7 @@ class MenuScreen : public QScrollArea
 
 public:
     MenuScreen (MainWidget * parent, PDash dash, PState state);
+    ~MenuScreen();
 
 public slots:
     void closeClicked();

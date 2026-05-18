@@ -8,28 +8,35 @@ LapMenuScreen::LapMenuScreen (MainWidget * parent, PDash dash, PState pstate, QS
 
     QPushButton * btn;
 
-    addButton("CLEAR", this, &LapMenuScreen::clearClicked);
-
-    if (lap != "ref-a")
+    if (state()->comparisonLaps.contains(lap))
     {
-        btn = addButton("SAVE AS REF-A", this, &LapMenuScreen::saveAsRefClicked);
-        btn->setProperty("target", "ref-a");
-    }
+        addButton("CLEAR", this, &LapMenuScreen::clearClicked);
 
-    if (lap != "ref-b")
+        if (lap != "ref-a")
+        {
+            btn = addButton("SAVE AS REF-A", this, &LapMenuScreen::saveAsRefClicked);
+            btn->setProperty("target", "ref-a");
+        }
+
+        if (lap != "ref-b")
+        {
+            btn = addButton("SAVE AS REF-B", this, &LapMenuScreen::saveAsRefClicked);
+            btn->setProperty("target", "ref-b");
+        }
+
+        if (lap != "ref-c")
+        {
+            btn = addButton("SAVE AS REF-C", this, &LapMenuScreen::saveAsRefClicked);
+            btn->setProperty("target", "ref-c");
+        }
+
+        addButton("IMPORT", this, &LapMenuScreen::importClicked);
+        addButton("EXPORT", this, &LapMenuScreen::exportClicked);
+    }
+    else
     {
-        btn = addButton("SAVE AS REF-B", this, &LapMenuScreen::saveAsRefClicked);
-        btn->setProperty("target", "ref-b");
+        addButton("IMPORT", this, &LapMenuScreen::importClicked);
     }
-
-    if (lap != "ref-c")
-    {
-        btn = addButton("SAVE AS REF-C", this, &LapMenuScreen::saveAsRefClicked);
-        btn->setProperty("target", "ref-c");
-    }
-
-    addButton("IMPORT", this, &LapMenuScreen::importClicked);
-    addButton("EXPORT", this, &LapMenuScreen::exportClicked);
 
     layout()->insertStretch(layout()->count());
 }
@@ -47,10 +54,7 @@ void LapMenuScreen::saveAsRefClicked()
 void LapMenuScreen::clearClicked()
 {
     DBG_MSG << "clear";
-    if (state()->comparisonLaps.contains(m_lap))
-    {
-        state()->comparisonLaps.remove(m_lap);
-    }
+    state()->deleteComparisonLap(m_lap, m_lap);
     deleteLater();
 
 }

@@ -136,7 +136,17 @@ void LapTimes::callAction(QString a)
 
 void LapTimes::exportCSV()
 {
-    auto filePath = QFileDialog::getSaveFileName(nullptr, "Save lap times", QDate::currentDate().toString("yyyy-MM-dd") + " lap times.csv", "CSV (*.csv)");
+    QString trackName = state()->currentLap->trackName(true);
+    if (trackName.isNull())
+    {
+        trackName = "";
+    }
+    else
+    {
+        trackName = " - " + trackName + " -";
+    }
+    QString filename = QDate::currentDate().toString("yyyy-MM-dd") + " " + QTime::currentTime().toString("HHmm") + "h" + trackName +  " lap times.csv";
+    auto filePath = QFileDialog::getSaveFileName(nullptr, "Save lap times", filename, "CSV (*.csv)");
     if(!filePath.isNull())
     {
         DBG_MSG << "Save lap times to" << filePath;
@@ -150,11 +160,20 @@ void LapTimes::exportCSV()
             for (size_t i = 0; i < numLaps; ++i)
             {
                 PLap cur = state()->previousLaps[i];
+                if (cur->points()[0]->currentLap() == 0)
+                {
+                    continue;
+                }
+                QString lapTimeStr = "";
+                if (cur->lapTime() != -1)
+                {
+                    lapTimeStr = msToTime(cur->lapTime());
+                }
                 f.write(QString(
                     QString::number(i) + "\t" +
                     QString::number(cur->points()[0]->currentLap()) + "\t" +
                     QString::number(cur->lapTime()) + "\t" +
-                    msToTime(cur->lapTime()) + "\t" +
+                    lapTimeStr + "\t" +
                     (cur->valid() ? "1" : "0") + "\n"
                     ).toStdString().c_str());
             }

@@ -40,5 +40,6 @@ private:
     QWidget * m_widget;
     QStackedLayout * m_layout;
     bool m_inDash;
+    int m_inMenu;
 };
 #endif // MAINWIDGET_H

@@ -5,7 +5,24 @@ LapsMenuScreen::LapsMenuScreen (MainWidget * parent, PDash dash, PState pstate) 
 {
     setTitle("LAPS");
 
-    for (auto l : state()->comparisonLaps.keys())
+    auto compLaps = state()->comparisonLaps.keys();
+
+    if (!compLaps.contains("ref-a"))
+    {
+        compLaps.append("ref-a");
+    }
+    if (!compLaps.contains("ref-b"))
+    {
+        compLaps.append("ref-b");
+    }
+    if (!compLaps.contains("ref-c"))
+    {
+        compLaps.append("ref-c");
+    }
+
+    compLaps.sort();
+
+    for (auto l : compLaps)
     {
         if (state()->invisibleComparisonLaps.contains(l))
         {

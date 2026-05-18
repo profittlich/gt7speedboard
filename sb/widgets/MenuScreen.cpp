@@ -22,6 +22,7 @@
 // Abstract menu
 MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScrollArea(parent), m_dash(dash), m_state(state)
 {
+    parent->m_inMenu++;
     setContentsMargins(5,5,5,5);
     setStyleSheet("background-color: " + g_globalConfiguration.backgroundColor().name() + ";");
 
@@ -44,6 +45,12 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScroll
 
     setWidget(widget);
     setupScroller(this);
+}
+
+MenuScreen::~MenuScreen ()
+{
+    MainWidget * mw = dynamic_cast<MainWidget*> (parent());
+    mw->m_inMenu--;
 }
 
 void MenuScreen::setTitle (QString t)

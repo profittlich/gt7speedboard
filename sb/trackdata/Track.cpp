@@ -3,7 +3,7 @@
 
 Track::Track(const QString & fn)
 {
-    m_tolerance = 30.0;
+    m_tolerance = 35.0;
     m_pitTolerance = m_tolerance;
     m_pitExit = 0;
     m_pitEntry = 0;

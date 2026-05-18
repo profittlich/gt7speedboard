@@ -18,7 +18,7 @@
 #include "sb/widgets/ComponentWidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
-    : QWidget(parent), m_inDash(false)
+    : QWidget(parent), m_inDash(false), m_inMenu(0)
 {
     DBG_MSG << "Construct MainWidget";
     m_widget = nullptr;
@@ -201,9 +201,14 @@ void MainWidget::correctSize()
 
 void MainWidget::keyPressEvent(QKeyEvent *event)
 {
-    DBG_MSG << this->height() << this->sizeHint() << this->sizePolicy() << this->minimumSizeHint();
-
-    if (m_inDash)
+    if (m_inMenu > 0)
+    {
+        if (event->key() == Qt::Key_Escape || event->key() == Qt::Key_Back)
+        {
+            m_layout->widget(0)->deleteLater();
+        }
+    }
+    else if (m_inDash)
     {
         if (event->key() == Qt::Key_Escape || event->key() == Qt::Key_Back)
         {
