@@ -15,8 +15,8 @@ public:
         return isOnTrack (p, temp);
     }
 
-    bool isOnTrack(PPoint p, size_t & index, size_t offset = 0, bool verbose=false);
-    QString name () { return m_name; }
+    bool isOnTrack(PPoint p, size_t & index, size_t offset = 0, bool verbose=false, float *dist = nullptr);
+    const QString name () const { return m_name; }
     size_t numPoints() { return m_points.size(); }
 
 private:

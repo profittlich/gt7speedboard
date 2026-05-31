@@ -13,7 +13,9 @@
 
 class MainWidget : public QWidget
 {
-    friend class MenuScreen, class ComponentContextMenuScreen, class MainMenuScreen; //TODO reduce to MenuScreen
+    friend class MenuScreen;
+    friend class ComponentContextMenuScreen;
+    friend class MainMenuScreen; //TODO reduce to MenuScreen
 
     Q_OBJECT
 

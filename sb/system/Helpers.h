@@ -20,7 +20,7 @@ void setKeepScreenOn(bool enable);
 
 #define DBG_MSG qWarning () << (QTime::currentTime().toString("hh:mm:ss.zzz") + " " +  QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
 
-const QString c_version = "RED-PB-A";
+const QString c_version = "RED-PB-B";
 const float c_FPS = 59.94;
 
 void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt);
@@ -35,8 +35,8 @@ public:
 
     virtual QColor getColor(float value) = 0;
 
-    const float center () { return m_center; }
-    const float spread () { return m_spread; }
+    float center () const { return m_center; }
+    float spread () const { return m_spread; }
 
 private:
     float m_center;

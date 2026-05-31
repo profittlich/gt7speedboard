@@ -37,13 +37,18 @@ SOURCES += \
     sb/components/LapProgress.cpp \
     sb/components/LapTimes.cpp \
     sb/components/Map.cpp \
+    sb/components/MapRenderers/SBGLMapWidgetLines.cpp \
+    sb/components/MapRenderers/SBGLMapWidgetZoomedLines.cpp \
     sb/components/Message.cpp \
+    sb/components/PedalGraph.cpp \
     sb/components/PresetSelector.cpp \
     sb/components/ProgressManager.cpp \
     sb/components/RPM.cpp \
+    sb/components/RaceTime.cpp \
     sb/components/SessionChangeDetector.cpp \
     sb/components/Speed.cpp \
     sb/components/Throttle.cpp \
+    sb/components/TrackDetectDebug.cpp \
     sb/components/TrackName.cpp \
     sb/components/TyreTemps.cpp \
     sb/receiver/GT7TelemetryReceiver.cpp \
@@ -64,13 +69,15 @@ SOURCES += \
     sb/widgets/DashWidget.cpp \
     sb/widgets/ErrorScreen.cpp \
     sb/widgets/GaugeLabel.cpp \
+    sb/widgets/Graph.cpp \
     sb/widgets/ImageLabel.cpp \
     sb/widgets/LapMenuScreen.cpp \
     sb/widgets/LapsMenuScreen.cpp \
     sb/widgets/MainMenuScreen.cpp \
     sb/widgets/MenuScreen.cpp \
     sb/widgets/SideButtonLabel.cpp \
-    sb/widgets/StartScreen.cpp
+    sb/widgets/StartScreen.cpp \
+    sb/widgets/TextInput.cpp
 
 HEADERS += \
     MainWidget.h \
@@ -101,13 +108,19 @@ HEADERS += \
     sb/components/LapProgress.h \
     sb/components/LapTimes.h \
     sb/components/Map.h \
+    sb/components/MapRenderers/SBGLMapWidget.h \
+    sb/components/MapRenderers/SBGLMapWidgetLines.h \
+    sb/components/MapRenderers/SBGLMapWidgetZoomedLines.h \
     sb/components/Message.h \
+    sb/components/PedalGraph.h \
     sb/components/PresetSelector.h \
     sb/components/ProgressManager.h \
     sb/components/RPM.h \
+    sb/components/RaceTime.h \
     sb/components/SessionChangeDetector.h \
     sb/components/Speed.h \
     sb/components/Throttle.h \
+    sb/components/TrackDetectDebug.h \
     sb/components/TrackName.h \
     sb/components/TyreTemps.h \
     sb/receiver/GT7TelemetryReceiver.h \
@@ -134,6 +147,7 @@ HEADERS += \
     sb/widgets/DialogWidget.h \
     sb/widgets/ErrorScreen.h \
     sb/widgets/GaugeLabel.h \
+    sb/widgets/Graph.h \
     sb/widgets/ImageLabel.hpp \
     sb/widgets/InteractiveWidget.h \
     sb/widgets/LapMenuScreen.h \
@@ -141,7 +155,8 @@ HEADERS += \
     sb/widgets/MainMenuScreen.h \
     sb/widgets/MenuScreen.h \
     sb/widgets/SideButtonLabel.h \
-    sb/widgets/StartScreen.h
+    sb/widgets/StartScreen.h \
+    sb/widgets/TextInput.h
 
 TRANSLATIONS += \
     SpeedBoard_for_GT7_Next_de_DE.ts
@@ -160,6 +175,7 @@ ios {
 }
 
 QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+#QMAKE_APPLE_DEVICE_ARCHS = arm64
 
 DISTFILES += \
     android/AndroidManifest.xml \

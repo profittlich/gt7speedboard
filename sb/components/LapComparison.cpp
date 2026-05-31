@@ -44,6 +44,7 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     font.setPointSizeF(baseFontSize() * 2);
     m_offset->setFont(font);
     m_offset->setStyleSheet("color : #fff;font-weight:bold;");
+    m_offset->setVisible(false);
 
     m_time->setAlignment(Qt::AlignCenter);
     font = m_time->font();
@@ -116,6 +117,7 @@ void LapComparison::rotateTargets()
 
 void LapComparison::pointFinished(PTelemetryPoint p)
 {
+    m_offset->setVisible((*s_offset)() != 0);
     if (canFullScreenSignal() && s_fullScreenTarget == "")
     {
         s_fullScreenTarget = (*currentTarget())();
@@ -178,6 +180,7 @@ void LapComparison::pointFinished(PTelemetryPoint p)
     {
         //m_speed->setText ("");
         m_speed->setColor(g_globalConfiguration.backgroundColor());
+        m_speed->update();
         m_time->disable();
     }
     m_time->update();
@@ -196,11 +199,17 @@ void LapComparison::completedLap(PLap, bool)
     updateLabel();
 }
 
+void LapComparison::newTrack(PTrack track)
+{
+    updateLabel();
+}
+
 void LapComparison::updateLabel()
 {
     DBG_MSG << (*currentTarget())();
     DBG_MSG << state().get();
-    if (state()->comparisonLaps.contains((*currentTarget())()))
+
+    if (state()->comparisonLaps.contains((*currentTarget())()) && state()->currentLap->maybeOnSameTrack(state()->comparisonLaps[(*currentTarget())()]->lap))
     {
         if (state()->comparisonLaps[(*currentTarget())()]->lap->valid())
         {
@@ -213,7 +222,7 @@ void LapComparison::updateLabel()
     }
     else
     {
-        m_speed->setText( (*currentTarget())().toUpper());
+        m_speed->setText( "(" + (*currentTarget())().toUpper() + ")");
         m_speed->setColor(g_globalConfiguration.backgroundColor());
     }
     if (s_fullScreenTarget == (*currentTarget())())

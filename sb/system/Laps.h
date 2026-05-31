@@ -37,6 +37,16 @@ public:
     //size_t findNextThrottleLift () const { return 0; }
     //size_t findNextShift () const { return 0; }
 
+    bool definitelyOnSameTrack(PLap other)
+    {
+        return other->trackDetector()->detectedTrack().get () == trackDetector()->detectedTrack().get() && trackDetector()->trackFound();
+    }
+
+    bool maybeOnSameTrack(PLap other)
+    {
+        return (other->trackDetector()->detectedTrack().get () == trackDetector()->detectedTrack().get()) || !trackDetector()->trackFound() || !other->trackDetector()->trackFound();
+    }
+
     void appendTelemetryPoint(PTelemetryPoint p);
     const QList<PTelemetryPoint> & points() const { return m_points; }
     void setSucceedingPoint (PTelemetryPoint p)

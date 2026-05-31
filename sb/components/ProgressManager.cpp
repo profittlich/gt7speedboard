@@ -25,17 +25,17 @@ void ProgressManager::newPoint(PTelemetryPoint p)
     {
         progress = state()->comparisonLaps["progress"];
     }
-    else if (state()->comparisonLaps.contains("ref-a"))
+    else if (state()->comparisonLaps.contains("ref-a") && state()->currentLap->trackDetector()->detectedTrack().get() == state()->comparisonLaps["ref-a"]->lap->trackDetector()->detectedTrack().get()) //(!state()->currentLap->trackDetector()->trackFound() || state()->comparisonLaps["ref-a"]->lap->trackName() == state()->currentLap->trackName()))
     {
         progress = state()->comparisonLaps["progress"] = state()->comparisonLaps["ref-a"];
         state()->invisibleComparisonLaps.insert("progress");
     }
-    else if (state()->comparisonLaps.contains("ref-b"))
+    else if (state()->comparisonLaps.contains("ref-b") && state()->currentLap->trackDetector()->detectedTrack().get() == state()->comparisonLaps["ref-b"]->lap->trackDetector()->detectedTrack().get()) // && (!state()->currentLap->trackDetector()->trackFound() || state()->comparisonLaps["ref-b"]->lap->trackName() == state()->currentLap->trackName()))
     {
         progress = state()->comparisonLaps["progress"] = state()->comparisonLaps["ref-b"];
         state()->invisibleComparisonLaps.insert("progress");
     }
-    else if (state()->comparisonLaps.contains("ref-c"))
+    else if (state()->comparisonLaps.contains("ref-c") && state()->currentLap->trackDetector()->detectedTrack().get() == state()->comparisonLaps["ref-c"]->lap->trackDetector()->detectedTrack().get()) // && (!state()->currentLap->trackDetector()->trackFound() || state()->comparisonLaps["ref-c"]->lap->trackName() == state()->currentLap->trackName()))
     {
         progress = state()->comparisonLaps["progress"] = state()->comparisonLaps["ref-c"];
         state()->invisibleComparisonLaps.insert("progress");

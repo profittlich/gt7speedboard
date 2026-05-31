@@ -15,9 +15,6 @@
 #include <QScroller>
 
 #include "sb/system/Configuration.h"
-#include "sb/widgets/DashWidget.h"
-#include "sb/widgets/ComponentWidget.h"
-#include "sb/components/ComponentFactory.h"
 
 // Abstract menu
 MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScrollArea(parent), m_dash(dash), m_state(state)
@@ -43,6 +40,7 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScroll
 
     layout()->addWidget(m_pbClose);
 
+    m_widget = widget;
     setWidget(widget);
     setupScroller(this);
 }

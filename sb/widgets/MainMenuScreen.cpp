@@ -109,7 +109,8 @@ void MainMenuScreen::nextPageClicked()
 
 void MainMenuScreen::addPageFlipper()
 {
-    QWidget * flipper = new QWidget(widget());
+    auto w = widget();
+    QWidget * flipper = new QWidget(w);
     QHBoxLayout * flipLayout = new QHBoxLayout(flipper);
     flipLayout->setContentsMargins(0,0,0,0);
 

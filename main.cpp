@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
     }
 
     DBG_MSG << "Application starting";
-    DBG_MSG << qVersion();
 
     QPalette pal = a.palette();
     pal.setColor(QPalette::Window, "#222");

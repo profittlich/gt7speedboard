@@ -58,6 +58,7 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
 
     // Update components, first those without widget, then with widget
     PLap previousLap;
+    PTrack newTrack;
     bool withoutWidget = true;
     for (size_t o = 0; o < 2; ++o)
     {
@@ -134,7 +135,24 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
         // current lap
         if (withoutWidget)
         {
+            PTrack curTrack = m_state->currentLap->trackDetector()->detectedTrack();
             m_state->currentLap->appendTelemetryPoint(p);
+            if (curTrack != m_state->currentLap->trackDetector()->detectedTrack())
+            {
+                newTrack = m_state->currentLap->trackDetector()->detectedTrack();
+            }
+        }
+
+        if (!newTrack.isNull())
+        {
+            DBG_MSG << "New track:" << newTrack->name();
+            for (auto it : std::as_const(m_dash->components))
+            {
+                if ((it->getWidget() == nullptr) == withoutWidget)
+                {
+                    it->newTrack(newTrack);
+                }
+            }
         }
 
         // New session

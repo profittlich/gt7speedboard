@@ -75,7 +75,7 @@ void MainWidget::showStartScreen()
         }
     }
 
-    m_widget = new StartScreen(this);
+    m_widget = new StartScreen(this, m_layout);
     //m_layout->setContentsMargins(0,0,0,0);
 
     m_layout->addWidget(m_widget);

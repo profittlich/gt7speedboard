@@ -1,5 +1,6 @@
 #include "StartScreen.h"
 #include "sb/system/Helpers.h"
+#include "TextInput.h"
 
 #include <QtLogging>
 #include <QVBoxLayout>
@@ -14,8 +15,10 @@
 
 #include "sb/system/Configuration.h"
 
-StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
+StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWidget(parent)
 {
+    m_parent = parent;
+    m_parentLayout = parentLayout;
 #if !defined(Q_OS_IOS) && !defined(Q_OS_ANDROID)
     setMinimumSize(500, 500);
 #endif
@@ -73,20 +76,22 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     lbIP->setText ("PlayStation address:");
     layout->addWidget(lbIP);
 
-    m_leIP = new QLineEdit (this);
-    m_leIP->setText(g_globalConfiguration.hostAddress());
-    //m_leIP->setStyleSheet("background-color:#0000;");
-    fnt = m_leIP->font();
-    fnt.setPointSize(20);
-    m_leIP->setFont(fnt);
-    m_leIP->setMinimumHeight(30);
-    m_leIP->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
-    layout->addWidget(m_leIP);
+    m_btnIP = new QPushButton(this);
+    m_btnIP->setText(g_globalConfiguration.hostAddress());
+    m_btnIP->setStyleSheet ("height: 30px; background-color: #555;     border-style: none;  color:white; text-align:left;");
+    auto font = m_btnIP->font();
+    font.setPointSizeF(23);
+    font.setBold(false);
+    m_btnIP->setFont(font);
+    connect (m_btnIP, &QPushButton::clicked, this, &StartScreen::editIP);
+
+    layout->addWidget(m_btnIP);
 
     QLabel * lbFont = new QLabel(this);
     lbFont->setText ("Font size:");
     layout->addWidget(lbFont);
 
+    /*
     auto sbFont = new QSpinBox(this);
     sbFont->setMinimum(25);
     sbFont->setMaximum(300);
@@ -100,13 +105,74 @@ StartScreen::StartScreen (QWidget * parent) : QWidget(parent)
     sbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
     //sbFont->setStyleSheet("background-color:#0000;");
     connect(sbFont, &QSpinBox::valueChanged, this, &StartScreen::setFontSize);
+    */
+
+    auto cbFont = new QComboBox(this);
+    cbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
+    fnt = cbFont->font();
+    fnt.setPointSize(20);
+    cbFont->setFont(fnt);
+    cbFont->setMinimumHeight(30);
+    cbFont->addItem("25%", 25);
+    cbFont->addItem("50%", 50);
+    cbFont->addItem("75%", 75);
+    cbFont->addItem("100%", 100);
+    cbFont->addItem("125%", 125);
+    cbFont->addItem("150%", 150);
+    cbFont->addItem("200%", 200);
+    cbFont->addItem("250%", 250);
+    cbFont->addItem("300%", 300);
+
+    cbFont->setCurrentIndex(3);
+
+    float curSize = g_globalConfiguration.globalFontScale()*100;
+    if (curSize < 26)
+    {
+        cbFont->setCurrentIndex(0);
+    }
+    else if (curSize < 51)
+    {
+        cbFont->setCurrentIndex(1);
+    }
+    else if (curSize < 76)
+    {
+        cbFont->setCurrentIndex(2);
+    }
+    else if (curSize < 101)
+    {
+        cbFont->setCurrentIndex(3);
+    }
+    else if (curSize < 126)
+    {
+        cbFont->setCurrentIndex(4);
+    }
+    else if (curSize < 151)
+    {
+        cbFont->setCurrentIndex(5);
+    }
+    else if (curSize < 201)
+    {
+        cbFont->setCurrentIndex(6);
+    }
+    else if (curSize < 251)
+    {
+        cbFont->setCurrentIndex(7);
+    }
+    else if (curSize < 301)
+    {
+        cbFont->setCurrentIndex(8);
+    }
+    connect(cbFont, &QComboBox::currentIndexChanged, this, &StartScreen::selectFontSize);
+    layout->addWidget(cbFont);
+
+
 
 //layout->addStretch();
 
     QPushButton * pbStart = new QPushButton(this);
     pbStart->setText("START");
     pbStart->setStyleSheet ("height: 100px; background-color: #555;     border-style: none;  color:white;");
-    auto font = pbStart->font();
+    font = pbStart->font();
     font.setPointSizeF(23);
     font.setBold(true);
     pbStart->setFont(font);
@@ -126,6 +192,30 @@ void StartScreen::selectLayout(unsigned idx)
     g_globalConfiguration.setSelectedLayout(m_selectedLayout->itemData(idx).toString());
 }
 
+void StartScreen::editIP()
+{
+    TextInput * inp = new TextInput(m_parent, "PlayStation IP", g_globalConfiguration.hostAddress());
+    connect(inp, &TextInput::ok, this, &StartScreen::gotNewIP);
+    connect(inp, &TextInput::cancelled, this, &StartScreen::textInputCancelled);
+    m_parentLayout->insertWidget(0,inp);
+    m_parentLayout->setCurrentIndex(0);
+
+}
+
+void StartScreen::gotNewIP()
+{
+    TextInput *inp = dynamic_cast<TextInput*> (sender());
+    m_btnIP->setText(inp->getResult());
+    DBG_MSG << "New IP:" << inp->getResult();
+    inp->deleteLater();
+}
+
+void StartScreen::textInputCancelled()
+{
+    TextInput *inp = dynamic_cast<TextInput*> (sender());
+    inp->deleteLater();
+}
+
 void StartScreen::resizeEvent(QResizeEvent * e)
 {
     unsigned targetSize = e->size().width();
@@ -141,14 +231,21 @@ void StartScreen::resizeEvent(QResizeEvent * e)
 void StartScreen::startDashClicked()
 {
     QSettings settings;
-    settings.setValue("ip", m_leIP->text());
+    settings.setValue("ip", m_btnIP->text());
     settings.setValue("fontScale", g_globalConfiguration.globalFontScale());
     settings.sync();
 
-    g_globalConfiguration.setHostAddress(m_leIP->text());
+    g_globalConfiguration.setHostAddress(m_btnIP->text());
 
     emit startDash();
 
+}
+
+void StartScreen::selectFontSize(int idx)
+{
+    QComboBox * cbFont = dynamic_cast<QComboBox*>(sender());
+    float size = cbFont->currentData().toFloat();
+    setFontSize(size);
 }
 
 void StartScreen::setFontSize(float size)

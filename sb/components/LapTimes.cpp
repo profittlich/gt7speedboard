@@ -12,6 +12,7 @@ LapTimes::LapTimes () : Component()
 {
     m_widget = new QLabel();
 
+    m_widget->setTextFormat(Qt::TextFormat::RichText);
     m_widget->setAlignment(Qt::AlignLeft);
     QFont font = m_widget->font();
     font.setPointSizeF(baseFontSize() * 3);
@@ -60,7 +61,7 @@ void LapTimes::completedLap(PLap, bool)
 
             if (lapTime >= 0)
             {
-                txt += i + ": " + msToTime(lapTime)  + "\n";
+                txt += i + ": " + msToTime(lapTime);
             }
             else
             {
@@ -68,16 +69,17 @@ void LapTimes::completedLap(PLap, bool)
                 DBG_MSG << "Got estimated lap time " << lapTime;
                 if (lapTime >= 0)
                 {
-                    txt += i + ": " + msToTime(lapTime)  + " (est.)\n";
+                    txt += i + ": " + msToTime(lapTime)  + " (est.)";
                 }
                 else
                 {
-                    txt += i + ": N/A\n";
+                    txt += i + ": N/A";
                 }
             }
+            txt += " <font color=\"gray\">(" + state()->comparisonLaps[i]->lap->trackName() + ")</font><br>";
         }
     }
-    txt += "\n";
+    txt += "<br>";
     size_t numLaps = state()->previousLaps.size();
     for (size_t i = 0; i < numLaps; ++i)
     {
@@ -94,7 +96,7 @@ void LapTimes::completedLap(PLap, bool)
                 lapTime = cur->estimateLapTime();
                 if (lapTime >= 0)
                 {
-                    txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime);
+                    txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime) + " (" + cur->trackName() + ")";
                 }
                 else
                 {
@@ -105,7 +107,8 @@ void LapTimes::completedLap(PLap, bool)
             {
                 txt += " <invalid>";
             }
-            txt += "\n";
+            txt += " <font color=\"gray\">(" + cur->trackName() + ")</font>";
+            txt += "<br>";
         }
     }
     m_widget->setText(txt);

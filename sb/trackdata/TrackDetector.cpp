@@ -6,14 +6,13 @@ void TrackDetector::addPoint(PPoint p)
     for (auto i : m_candidates)
     {
         size_t curIndex;
-        bool verbose=false;
+        bool verbose=true;
         if (m_candidates.size() == 1)
         {
             verbose = true;
         }
         if(!i->isOnTrack(p, curIndex, std::max(0, m_indexes[i]), verbose))
         {
-
             toRemove.append(i);
         }
         else
@@ -63,6 +62,10 @@ QString TrackDetector::location()
     QString firstLoc = m_candidates[0]->name().left (m_candidates[0]->name().indexOf('-')-1);
     if (numCandidates() == 1)
     {
+        if (!trackFound())
+        {
+            return m_candidates[0]->name() + "\n(unknown direction)";
+        }
         return firstLoc;
     }
     else if (numCandidates() <= 12) // Lago Maggiore has 12 layouts
@@ -72,12 +75,12 @@ QString TrackDetector::location()
             QString curLoc = m_candidates[i]->name().left (m_candidates[i]->name().indexOf('-')-1);
             if (curLoc != firstLoc)
             {
-                return "unknown location (" + QString::number(numCandidates()) + " tracks)";
+                return "unknown location\n(" + QString::number(numCandidates()) + " tracks)";
             }
         }
-        return firstLoc + " (" + QString::number(numCandidates()) + " layouts)";
+        return firstLoc + "\n(" + QString::number(numCandidates()) + " layouts)";
     }
-    return "unknown location (" + QString::number(numCandidates()) + " tracks)";
+    return "unknown location\n(" + QString::number(numCandidates()) + " tracks)";
 }
 
 void TrackDetector::reset()

@@ -41,34 +41,68 @@ Track::Track(const QString & fn)
     DBG_MSG << "Loaded" << m_name;
 }
 
-bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose)
+bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose, float *dist)
 {
-    float minDist = 1000000000.0;
+    float curDist;
+    float tempDist;
+    if (dist == nullptr)
+    {
+        dist = &tempDist;
+    }
+    *dist = 100000000000.0;
+    bool enteredTrack = false;
     for (size_t j = 0; j < m_points.size(); ++j)
     {
         size_t i = (j + offset) % m_points.size();
-        auto dist = p->position().distanceTo(m_points[i]->position());
-        minDist = std::min(minDist, dist);
+        curDist = p->position().distanceTo(m_points[i]->position());
         if (((m_pitEntry > m_pitExit and (i < m_pitExit or i > m_pitEntry)) or (m_pitEntry < m_pitExit and i < m_pitExit and i > m_pitEntry)))
         {
-            if (dist <= m_pitTolerance)
+            if (curDist <= m_pitTolerance)
             {
+                enteredTrack = true;
+                *dist = std::min(*dist, curDist);
                 index = i;
-                return true;
+                if (i == 0) // Check for lap change, maybe still at end of lap
+                {
+                    auto altCurDist = p->position().distanceTo(m_points.last()->position());
+                    if (altCurDist < *dist)
+                    {
+                        index = m_points.size() - 1;
+                        *dist = altCurDist;
+                    }
+                }
+            }
+            else if (enteredTrack)
+            {
+                break;
             }
         }
         else
         {
-            if (dist <= m_tolerance)
+            if (curDist <= m_tolerance)
             {
+                enteredTrack = true;
+                *dist = std::min(*dist, curDist);
                 index = i;
-                return true;
+                if (i == 0)
+                {
+                    auto altCurDist = p->position().distanceTo(m_points.last()->position());
+                    if (altCurDist < *dist)
+                    {
+                        index = m_points.size() - 1;
+                        *dist = altCurDist;
+                    }
+                }
+            }
+            else if (enteredTrack)
+            {
+                break;
             }
         }
     }
-    if (verbose)
+    if (verbose && !enteredTrack)
     {
-        DBG_MSG << "Not on track" << m_name << ", dist=" << minDist << "tolerance" << m_tolerance;
+        DBG_MSG << "Not on track" << m_name << ", dist=" << *dist << "tolerance" << m_tolerance;
     }
-    return false;
+    return enteredTrack;
 }
