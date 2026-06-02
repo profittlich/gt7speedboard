@@ -31,6 +31,13 @@ LapsMenuScreen::LapsMenuScreen (MainWidget * parent, PDash dash, PState pstate) 
         auto btn = addButton(l.toUpper(), this, &LapsMenuScreen::lapClicked);
         btn->setProperty("lapName", l);
     }
+
+    if (state()->previousLaps.size() > 0)
+    {
+        auto btn = addButton("ALL LAPS", this, &LapsMenuScreen::lapClicked);
+        btn->setProperty("lapName", "ALL LAPS");
+    }
+
     layout()->insertStretch(layout()->count());
 }
 

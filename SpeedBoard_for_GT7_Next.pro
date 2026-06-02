@@ -4,6 +4,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 anroid {
 QT += androidextras core-private
+QT_ANDROID_APP_ICON = @mipmap/ic_launcher
 }
 
 
@@ -171,10 +172,21 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 ios {
     QMAKE_INFO_PLIST = platform/ios/Info.plist
     app_launch_screen.files = $$PWD/platform/ios/SBLaunchScreen.storyboard $$files($$PWD/platform/ios/LoadingScreenLogo.png)
+
     QMAKE_BUNDLE_DATA += app_launch_screen
+
+app_icon.files = $$PWD/platform/ios/IOS_Assests.xcassets
+QMAKE_BUNDLE_DATA += app_icon
+
+
+#QMAKE_ASSET_CATALOGS += $$PWD/platform/ios/IOS_Assests.xcassets
+QMAKE_ASSET_CATALOG_APP_ICON = AppIcon
 }
 
-QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+macx {
+    QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+    ICON = doc/SpeedBoard_Icon.icns
+}
 #QMAKE_APPLE_DEVICE_ARCHS = arm64
 
 DISTFILES += \

@@ -37,4 +37,5 @@ private:
     QList<GLfloat> m_aspectMatrix;
     QList<GLfloat> m_centerMatrix;
     QList<GLfloat> m_scaleMatrix;
+    QList<GLfloat> m_rotateMatrix;
 };

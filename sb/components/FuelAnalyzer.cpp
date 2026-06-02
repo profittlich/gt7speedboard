@@ -23,7 +23,7 @@ void FuelAnalyzer::newPoint(PTelemetryPoint p)
 {
     if (!m_curPoint.isNull() && p->currentFuel() > m_curPoint->currentFuel())
     {
-        DBG_MSG << "refuel detected";
+        //DBG_MSG << "refuel detected";
         m_wasInPit = true;
     }
     m_curPoint = p;

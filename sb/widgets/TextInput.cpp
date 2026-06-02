@@ -1,6 +1,8 @@
 #include "TextInput.h"
 #include "sb/system/Configuration.h"
 #include <QtWidgets/qboxlayout.h>
+#include <QTimer>
+#include <QKeyEvent>
 
 TextInput::TextInput(QWidget *parent, QString title, QString init)
 {
@@ -59,8 +61,20 @@ TextInput::TextInput(QWidget *parent, QString title, QString init)
 
     layout->addWidget(buttons);
 
-
     layout->addStretch();
+
+    QTimer::singleShot(0, m_leText, SLOT(setFocus()));
+}
+
+void TextInput::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Escape) {
+        emit cancelled();
+    }
+    else if (e->key() == Qt::Key_Return)
+    {
+        emit ok();
+    }
 }
 
 QString TextInput::getResult()

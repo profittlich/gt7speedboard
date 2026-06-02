@@ -20,8 +20,8 @@
         <file>assets/tracks/Autodrome Lago Maggiore - West End.gt7track</file>
         <file>assets/tracks/Autodrome Lago Maggiore - West.gt7track</file>
         <file>assets/tracks/Autodromo de Interlagos - Full Course.gt7track</file>
-        <file>assets/tracks/Autodromo Nazionale Monza - Full Course.gt7track</file>
-        <file>assets/tracks/Autodromo Nazionale Monza - No Chicane.gt7track</file>
+        <file>assets/tracks/Autodromo Nazionale Monza - Full Course!PIT-154-9-40.gt7track</file>
+        <file>assets/tracks/Autodromo Nazionale Monza - No Chicane!PIT-141-9-40.gt7track</file>
         <file>assets/tracks/Autopolis International Racing Course - Full Course.gt7track</file>
         <file>assets/tracks/Autopolis International Racing Course - Shortcut Course.gt7track</file>
         <file>assets/tracks/Blue Moon Bay Speedway - Full Course.gt7track</file>
@@ -74,8 +74,8 @@
         <file>assets/tracks/Sardegna Road Track - Layout C.gt7track</file>
         <file>assets/tracks/Sardegna Windmills - Full Course.gt7track</file>
         <file>assets/tracks/Special Stage Route X - Full Course.gt7track</file>
-        <file>assets/tracks/Suzuka Circuit - East Course.gt7track</file>
-        <file>assets/tracks/Suzuka Circuit - Full Course.gt7track</file>
+        <file>assets/tracks/Suzuka Circuit - East Course!WIDTH-45.gt7track</file>
+        <file>assets/tracks/Suzuka Circuit - Full Course!WIDTH-45.gt7track</file>
         <file>assets/tracks/Tokyo Expressway - Central Clockwise.gt7track</file>
         <file>assets/tracks/Tokyo Expressway - Central Counterclockwise.gt7track</file>
         <file>assets/tracks/Tokyo Expressway - East Clockwise.gt7track</file>
@@ -91,5 +91,6 @@
         <file>assets/tracks/Willow Springs International Raceway - Horse Thief Mile.gt7track</file>
         <file>assets/tracks/Willow Springs International Raceway - Streets of Willow Springs.gt7track</file>
         <file>assets/tracks/Yas Marina Circuit - Full Course.gt7track</file>
+        <file>assets/SpeedBoard_Icon_512.png</file>
     </qresource>
 </RCC>

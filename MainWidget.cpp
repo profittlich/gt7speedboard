@@ -32,6 +32,7 @@ MainWidget::MainWidget(QWidget *parent)
 #ifdef Q_OS_ANDROID
     connect(m_layout, &QStackedLayout::widgetRemoved, this, &MainWidget::correctSize);
 #endif
+    setWindowIcon(QIcon(":/assets/assets/SpeedBoard_Icon_512.png"));
 }
 
 MainWidget::~MainWidget()

@@ -6,7 +6,7 @@
 PedalGraph::PedalGraph () : Component()
 {
     m_widget = new Graph(nullptr);
-    m_widget->setWidth(600);
+    m_widget->setWidth(400);
     m_widget->setYRange(0, 100);
 
     m_widget->setColor (0, QColor(255, 0, 0));
@@ -33,9 +33,9 @@ void PedalGraph::newPoint(PTelemetryPoint p)
 
     if (!m_previous.isNull() && m_previous->currentGear() != p->currentGear())
     {
-        m_widget->addValue(2, m_counter, -1);
-        m_widget->addValue(2, m_counter, 100);
-        m_widget->addValue(2, m_counter, -1);
+        m_widget->addValue(2, m_counter-10, -1);
+        m_widget->addValue(2, m_counter, 20);
+        m_widget->addValue(2, m_counter+10, -1);
     }
 
     m_counter++;

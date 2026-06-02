@@ -53,6 +53,10 @@ public:
         {
             a = 1;
         }
+        else if (a < -1)
+        {
+            a = -1;
+        }
         T r = std::acos(a);
         return r;
     }

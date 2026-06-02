@@ -43,7 +43,7 @@ Track::Track(const QString & fn)
 
 bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose, float *dist)
 {
-    float curDist;
+    float curDist=1000000000000.0;
     float tempDist;
     if (dist == nullptr)
     {
@@ -100,9 +100,13 @@ bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose, flo
             }
         }
     }
-    if (verbose && !enteredTrack)
+    if (verbose && !enteredTrack && m_name.contains("Monza"))
     {
-        DBG_MSG << "Not on track" << m_name << ", dist=" << *dist << "tolerance" << m_tolerance;
+        DBG_MSG << "Not on track" << m_name << ", dist=" << *dist << "tolerance" << m_tolerance << "#:" << m_points.size() << "cur" << curDist;
+    }
+    if (m_name.contains("Suzuka"))
+    {
+        DBG_MSG << m_name << *dist;
     }
     return enteredTrack;
 }

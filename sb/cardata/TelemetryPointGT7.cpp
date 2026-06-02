@@ -73,6 +73,12 @@ TelemetryPointGT7::TelemetryPointGT7(const QByteArray & data)
         *reinterpret_cast<const float*> (&data.data()[idxPositionY]),
         *reinterpret_cast<const float*> (&data.data()[idxPositionZ])));
 
+    setVelocity(Vector3D<float> (
+        *reinterpret_cast<const float*> (&data.data()[idxVelocityX]),
+        *reinterpret_cast<const float*> (&data.data()[idxVelocityY]),
+        *reinterpret_cast<const float*> (&data.data()[idxVelocityZ])));
+
+
     setCarSpeed(3.6 * *reinterpret_cast<const float*> (&data.data()[idxCarSpeed]));
     setBrake(static_cast<unsigned char>(data.data()[idxBrake])/2.55);
     setThrottle(static_cast<unsigned char>(data.data()[idxThrottle])/2.55);

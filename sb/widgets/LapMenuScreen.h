@@ -14,6 +14,7 @@ public slots:
     void clearClicked();
     void importClicked();
     void exportClicked();
+    void exportAllClicked();
 
 private:
     QString m_lap;

@@ -62,13 +62,16 @@ void TrackDetectDebug::newPoint(PTelemetryPoint p)
         PTrack track = m_detect->detectedTrack();
         size_t index;
         float dist;
-        track->isOnTrack(p, index, 0, false, &dist);
+        bool on = track->isOnTrack(p, index, 0, false, &dist);
+        if (on)
+        {
         m_maxDist = std::max (dist, m_maxDist);
         std::stringstream conv;
         conv << track->name().toStdString() << "\n" << index << " - " << round(dist) << " - " << round(m_maxDist);
         m_label->setText(conv.str().c_str());
         m_graph->addValue(0, m_counter, m_maxDist);
         m_graph->addValue(1, m_counter++, dist);
+        }
     }
 }
 

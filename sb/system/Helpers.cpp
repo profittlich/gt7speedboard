@@ -12,10 +12,12 @@
 #include <QJniObject>
 #endif
 
+#ifndef Q_OS_IOS
 #ifdef Q_OS_APPLE
 #include <IOKit/pwr_mgt/IOPMLib.h>
 CFStringRef g_reasonForActivity= CFSTR("User Activity Type");
 IOPMAssertionID g_assertionID;
+#endif
 #endif
 
 
@@ -120,6 +122,7 @@ void setKeepScreenOn(bool enable)
     });
 #endif
 
+#ifndef Q_OS_IOS
 #ifdef Q_OS_APPLE
     int success;
     bool active;
@@ -134,7 +137,8 @@ void setKeepScreenOn(bool enable)
     }
     DBG_MSG << "Awake mode: " << (enable ? "enable" : "disable") << " " << success << " " << (active ? "active" : "inactive");
 #endif
-
+#endif
+    
 #ifdef Q_OS_WINDOWS
     int result;
     if (enable)

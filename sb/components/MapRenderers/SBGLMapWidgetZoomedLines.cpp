@@ -31,6 +31,19 @@ void SBGLMapWidgetZoomedLines::addPoint(const PTelemetryPoint & p)
     m_vertices.append(p->position().x());
     m_vertices.append(p->position().y());
     m_vertices.append(p->position().z());
+
+    const auto north = Vector3D<float>(0, 0, 1);
+    const auto angle = p->velocity().angle(north);
+    const auto east = Vector3D<float>(1, 0, 0);
+    const auto eastAngle = p->velocity().angle(east);
+    const auto sky = Vector3D<float>(0, 1, 0);
+    const auto skyAngle = p->velocity().angle(sky);
+    DBG_MSG << round(180 * angle / 3.1415926) << round(180 * eastAngle / 3.1415926)  << round(180 * skyAngle / 3.1415926)
+            << round(p->velocity().x())<< round(p->velocity().y())<< round(p->velocity().z());
+    /*m_rotateMatrix[0] = cos(angle);
+    m_rotateMatrix[1] = -sin(angle);
+    m_rotateMatrix[4] = sin(angle);
+    m_rotateMatrix[5] = cos(angle);*/
 }
 
 void SBGLMapWidgetZoomedLines::recalcExtents()
@@ -67,6 +80,12 @@ void SBGLMapWidgetZoomedLines::initializeGL()
     m_centerMatrix[10] = 1.0;
     m_centerMatrix[15] = 1.0;
 
+    m_rotateMatrix.resize(16);
+    m_rotateMatrix[0] = 1.0;
+    m_rotateMatrix[5] = 1.0;
+    m_rotateMatrix[10] = 1.0;
+    m_rotateMatrix[15] = 1.0;
+
     m_initialized = false;
     // Set up the rendering context, load shaders and other resources, etc.:
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -89,13 +108,14 @@ void SBGLMapWidgetZoomedLines::initializeGL()
         "uniform mat4 uAspectMatrix;\n"
         "uniform mat4 uCenterMatrix;\n"
         "uniform mat4 uScaleMatrix;\n"
+        "uniform mat4 uRotateMatrix;\n"
         "void main() \n"
         "{ \n"
         " gl_Position[0] = vPosition[0]; \n"
         " gl_Position[1] = -vPosition[2]; \n"
         " gl_Position[2] = vPosition[1]; \n"
         " gl_Position[3] = vPosition[3]; \n"
-        " gl_Position =  gl_Position * uCenterMatrix * uScaleMatrix * uAspectMatrix;\n"
+        " gl_Position =  gl_Position * uCenterMatrix * uScaleMatrix * uAspectMatrix * uRotateMatrix;\n"
         " gl_PointSize = 20.0;\n"
         "} \n";
 
@@ -217,9 +237,9 @@ void SBGLMapWidgetZoomedLines::paintGL()
         centerScale = dy;
     }
 
-    m_scaleMatrix[0] = 1.5/centerScale;
-    m_scaleMatrix[5] = 1.5/centerScale;
-    m_scaleMatrix[10] = 1.5/centerScale;
+    m_scaleMatrix[0] = 3/centerScale;
+    m_scaleMatrix[5] = 3/centerScale;
+    m_scaleMatrix[10] = 0;//1.5/centerScale;
     m_scaleMatrix[15] = 1.0;
 
     m_centerMatrix[3] = -cx;
@@ -233,6 +253,7 @@ void SBGLMapWidgetZoomedLines::paintGL()
     auto uLocA = f->glGetUniformLocation(m_programObject, "uAspectMatrix");
     auto uLocT = f->glGetUniformLocation(m_programObject, "uCenterMatrix");
     auto uLocS = f->glGetUniformLocation(m_programObject, "uScaleMatrix");
+    auto uLocR = f->glGetUniformLocation(m_programObject, "uRotateMatrix");
 
     f->glUseProgram(m_programObject);
     f->glLineWidth(5);
@@ -240,6 +261,7 @@ void SBGLMapWidgetZoomedLines::paintGL()
     f->glUniformMatrix4fv(uLocA, 1, false, m_aspectMatrix.data());
     f->glUniformMatrix4fv(uLocT, 1, false, m_centerMatrix.data());
     f->glUniformMatrix4fv(uLocS, 1, false, m_scaleMatrix.data());
+    f->glUniformMatrix4fv(uLocR, 1, false, m_rotateMatrix.data());
 
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesPrev.data());
     f->glUniform3f(uLoc, 0.5, 0.5, 0.5);

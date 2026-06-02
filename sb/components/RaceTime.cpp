@@ -44,13 +44,13 @@ void RaceTime::newPoint(PTelemetryPoint p)
     if (m_started && (*m_showLaps)() && laps > 0)
     {
         float lapsLeft = (laps / m_elapsed) * (1000 * 60 * (*m_raceLength)()) - laps;
-        DBG_MSG << "rounded laps left:" << lapsLeft;
+        //DBG_MSG << "rounded laps left:" << lapsLeft;
         lapsLeft = ceil(lapsLeft);
         QString risk = "";
         if (state()->lapProgress > -0.5)
         {
             lapsLeft = (laps + state()->lapProgress) / ms * (1000 * 60 * (*m_raceLength)()) - laps;
-            DBG_MSG << "exact laps left:" << lapsLeft;
+            //DBG_MSG << "exact laps left:" << lapsLeft;
             if (lapsLeft - int(lapsLeft) > 0.9)
             {
                 risk = " (+1?)";
@@ -62,11 +62,15 @@ void RaceTime::newPoint(PTelemetryPoint p)
 
             lapsLeft = ceil(lapsLeft);
             lapsLeft -= state()->lapProgress;
-            DBG_MSG << "with final lap:" << lapsLeft;
+            //DBG_MSG << "with final lap:" << lapsLeft;
             lapsLeft = round(100*lapsLeft) / 100;
         }
         m_widget->setText (elapsed + " (" + QString::number((*m_raceLength)()) + " min. race)\n" + QString::number(lapsLeft) + risk + " laps to go");
 
+    }
+    else if ((*m_showLaps)())
+    {
+        m_widget->setText (elapsed + " (" + QString::number((*m_raceLength)()) + " min. race)");
     }
     else
     {

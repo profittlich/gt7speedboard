@@ -22,6 +22,9 @@ signals:
     void ok();
     void cancelled();
 
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
+
 private:
     QLineEdit * m_leText;
     QPushButton * m_btnOK;
