@@ -20,6 +20,14 @@ Track::Track(const QString & fn)
         m_name = tfn[0];
     }
 
+    m_name = m_name.replace("_auml_", "ä");
+    m_name = m_name.replace("_ouml_", "ö");
+    m_name = m_name.replace("_uuml_", "ü");
+    m_name = m_name.replace("_Auml_", "Ä");
+    m_name = m_name.replace("_Ouml_", "Ö");
+    m_name = m_name.replace("_Uuml_", "Ü");
+    m_name = m_name.replace("_szlig_", "ß");
+
     for (size_t i = 1; i < tfn.size(); ++i)
     {
         DBG_MSG << "Param:" << tfn[0] << ":" << tfn[i];

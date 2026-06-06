@@ -183,6 +183,10 @@ ios {
     QMAKE_ASSET_CATALOG_APP_ICON = AppIcon
 }
 
+windows {
+    RC_ICONS = doc/SpeedBoard_Icon_512.ico
+}
+
 macx {
     QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
     ICON = doc/SpeedBoard_Icon.icns
