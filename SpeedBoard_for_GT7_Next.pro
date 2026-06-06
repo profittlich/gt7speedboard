@@ -175,17 +175,19 @@ ios {
 
     QMAKE_BUNDLE_DATA += app_launch_screen
 
-app_icon.files = $$PWD/platform/ios/IOS_Assests.xcassets
-QMAKE_BUNDLE_DATA += app_icon
+    app_icon.files = $$PWD/platform/ios/IOS_Assests.xcassets
+    QMAKE_BUNDLE_DATA += app_icon
 
 
-#QMAKE_ASSET_CATALOGS += $$PWD/platform/ios/IOS_Assests.xcassets
-QMAKE_ASSET_CATALOG_APP_ICON = AppIcon
+    #QMAKE_ASSET_CATALOGS += $$PWD/platform/ios/IOS_Assests.xcassets
+    QMAKE_ASSET_CATALOG_APP_ICON = AppIcon
 }
 
 macx {
     QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
     ICON = doc/SpeedBoard_Icon.icns
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 12.0
+    MACOSX_DEPLOYMENT_TARGET=12.0
 }
 #QMAKE_APPLE_DEVICE_ARCHS = arm64
 
