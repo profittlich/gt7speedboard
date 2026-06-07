@@ -22,8 +22,8 @@ public:
 
 
 private:
-    QWidget * m_widget;
-    GaugeLabel * m_widgetCpu;
-    GaugeLabel * m_widgetFps;
-    ColorLabel * m_widgetDrops;
+    QWidget * m_widget = nullptr;
+    GaugeLabel * m_widgetCpu = nullptr;
+    GaugeLabel * m_widgetFps = nullptr;
+    ColorLabel * m_widgetDrops = nullptr;
 };

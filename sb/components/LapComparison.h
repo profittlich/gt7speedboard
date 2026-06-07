@@ -36,11 +36,11 @@ protected:
 
 
 private:
-    ColorMapperGreenRed * m_colorMapper;
-    QWidget * m_widget;
-    ColorLabel * m_speed;
-    GaugeLabel * m_time;
-    ColorLabel * m_offset;
+    ColorMapperGreenRed * m_colorMapper = nullptr;
+    QWidget * m_widget = nullptr;
+    ColorLabel * m_speed = nullptr;
+    GaugeLabel * m_time = nullptr;
+    ColorLabel * m_offset = nullptr;
     PComponentParameterFloat m_currentTarget;
     PComponentParameterString m_firstTarget;
     PComponentParameterString m_secondTarget;

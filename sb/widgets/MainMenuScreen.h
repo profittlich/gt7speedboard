@@ -20,5 +20,5 @@ protected:
     void addPageFlipper();
 
 private:
-    QLabel * m_curPage;
+    QLabel * m_curPage = nullptr;
 };

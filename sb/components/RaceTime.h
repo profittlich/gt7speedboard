@@ -28,7 +28,7 @@ public slots:
 
 
 private:
-    ColorLabel * m_widget;
+    ColorLabel * m_widget = nullptr;
     PTelemetryPoint m_curPoint;
     QElapsedTimer m_timer;
     int m_elapsed;

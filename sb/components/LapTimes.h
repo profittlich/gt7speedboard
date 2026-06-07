@@ -28,6 +28,6 @@ protected:
 
 
 private:
-    QScrollArea * m_scroller;
-    QLabel * m_widget;
+    QScrollArea * m_scroller = nullptr;
+    QLabel * m_widget = nullptr;
 };

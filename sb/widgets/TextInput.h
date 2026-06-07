@@ -26,7 +26,7 @@ protected:
     void keyPressEvent(QKeyEvent *e) override;
 
 private:
-    QLineEdit * m_leText;
-    QPushButton * m_btnOK;
-    QPushButton * m_btnCancel;
+    QLineEdit * m_leText = nullptr;
+    QPushButton * m_btnOK = nullptr;
+    QPushButton * m_btnCancel = nullptr;
 };

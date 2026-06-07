@@ -32,9 +32,9 @@ protected:
     void resizeEvent(QResizeEvent * e);
 
 private:
-    QPushButton * m_btnIP;
-    ImageLabel * m_lbHead;
-    QComboBox * m_selectedLayout;
-    QStackedLayout * m_parentLayout;
-    QWidget * m_parent;
+    QPushButton * m_btnIP = nullptr;
+    ImageLabel * m_lbHead = nullptr;
+    QComboBox * m_selectedLayout = nullptr;
+    QStackedLayout * m_parentLayout = nullptr;
+    QWidget * m_parent = nullptr;
 };

@@ -22,9 +22,9 @@ public:
 
 
 private:
-    QWidget * m_widget;
-    ColorLabel * m_label;
-    Graph * m_graph;
+    QWidget * m_widget = nullptr;
+    ColorLabel * m_label = nullptr;
+    Graph * m_graph = nullptr;
     PTrackDetector m_detect;
     float m_maxDist;
     float m_counter;

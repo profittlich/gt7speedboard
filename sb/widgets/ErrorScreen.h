@@ -19,7 +19,7 @@ public slots:
     void okClicked();
 
 private:
-    QLabel * m_lbMessage;
+    QLabel * m_lbMessage = nullptr;
     PDash m_dash;
 
 };

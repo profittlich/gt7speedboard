@@ -314,7 +314,7 @@ private:
     bool m_canGotoPage;
     bool m_canFullScreenSignal;
 
-    QStackedWidget * m_stacker;
+    QStackedWidget * m_stacker = nullptr;
     size_t m_stackIndex;
     PState m_state;
     QMap<QString, PComponentParameterFloat> m_floatParameters;

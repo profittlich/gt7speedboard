@@ -21,8 +21,8 @@ public:
     virtual void presetSwitched() override;
 
 private:
-    QWidget * m_widget;
-    ColorLabel * m_label;
+    QWidget * m_widget = nullptr;
+    ColorLabel * m_label = nullptr;
 
     PComponentParameterString m_preset;
     PComponentParameterString m_presetListParameter;

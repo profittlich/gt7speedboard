@@ -17,6 +17,6 @@ public:
     static QString componentId ();
 
 private:
-    ColorLabel * m_widget;
+    ColorLabel * m_widget = nullptr;
     float m_curProgress;
 };

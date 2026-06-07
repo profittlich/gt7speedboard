@@ -22,7 +22,7 @@ public:
 
 
 private:
-    ColorLabel * m_widget;
+    ColorLabel * m_widget = nullptr;
     QElapsedTimer m_timer;
     unsigned m_counter;
 };

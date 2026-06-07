@@ -220,13 +220,13 @@ protected:
 
 private:
     PDash m_dash;
-    QLabel * m_head;
+    QLabel * m_head = nullptr;
     PComponent m_component;
-    QGridLayout * m_layout;
+    QGridLayout * m_layout = nullptr;
     QString m_headText;
     QElapsedTimer m_longClickTimer;
-    QLayout * m_ownLayout;
-    QStackedWidget * m_ownStack;
+    QLayout * m_ownLayout = nullptr;
+    QStackedWidget * m_ownStack = nullptr;
     bool m_backButton;
     bool m_showHeader;
     QString m_title;

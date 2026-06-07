@@ -39,8 +39,8 @@ private:
     PTelemetryReceiver m_receiver;
     PRawRecorder m_debugRecorder;
     PDash m_dash;
-    QWidget * m_widget;
-    QStackedLayout * m_layout;
+    QWidget * m_widget = nullptr;
+    QStackedLayout * m_layout = nullptr;
     bool m_inDash;
     int m_inMenu;
 };

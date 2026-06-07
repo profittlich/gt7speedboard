@@ -74,7 +74,7 @@ public:
     QJsonDocument json;
     QList<Page> pages;
     QList <PComponent> components;
-    DashWidget * widget;
+    DashWidget * widget = nullptr;
     QMap<unsigned, QPair<PComponent, QString>> actions;
     QMap<unsigned, unsigned> pageShortcuts;
 };

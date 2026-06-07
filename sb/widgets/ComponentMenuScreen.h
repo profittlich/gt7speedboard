@@ -19,7 +19,7 @@ protected:
 private:
     PState m_state;
     PComponent m_component;
-    QLabel * m_lbParam;
+    QLabel * m_lbParam = nullptr;
 
 };
 

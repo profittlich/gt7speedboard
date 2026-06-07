@@ -21,6 +21,6 @@ public:
 
 private:
     QList<QString> m_messageQueue;
-    ColorLabel * m_widget;
+    ColorLabel * m_widget = nullptr;
     int m_countdown;
 };

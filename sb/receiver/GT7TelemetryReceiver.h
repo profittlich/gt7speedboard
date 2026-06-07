@@ -30,7 +30,7 @@ protected slots:
 
 private:
     QTimer m_heartBeatTimer;
-    QUdpSocket * m_socket;
+    QUdpSocket * m_socket = nullptr;
     bool m_isRunning;
     QList<uint32_t> m_lastSequenceNumbers;
 };

@@ -22,6 +22,6 @@ public:
 
 
 private:
-    ColorLabel * m_widget;
+    ColorLabel * m_widget = nullptr;
     PComponentParameterBoolean m_showTime;
 };

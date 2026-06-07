@@ -51,7 +51,7 @@ protected:
 private:
     PDash m_dash;
     PState m_state;
-    QWidget * m_widget;
-    QVBoxLayout * m_layout;
-    SideButtonLabel * m_pbClose;
+    QWidget * m_widget = nullptr;
+    QVBoxLayout * m_layout = nullptr;
+    SideButtonLabel * m_pbClose = nullptr;
 };

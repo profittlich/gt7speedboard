@@ -23,5 +23,5 @@ public:
 
 protected:
     bool m_initialized;
-    const Map * m_parent;
+    const Map * m_parent = nullptr;
 };

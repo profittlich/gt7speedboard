@@ -17,7 +17,7 @@ public:
     static QString componentId ();
 
 private:
-    Graph * m_widget;
+    Graph * m_widget = nullptr;
     int m_counter;
     PTelemetryPoint m_previous;
 };

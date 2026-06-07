@@ -21,7 +21,7 @@ public:
     static QString componentId ();
 
 private:
-    ColorLabel * m_widget;
+    ColorLabel * m_widget = nullptr;
     PComponentParameterString m_text;
     PComponentParameterString m_color;
     PComponentParameterFloat m_hideWidget;

@@ -32,13 +32,13 @@ public:
     //virtual void switchToPreset(QString preset) override;
 
 private:
-    QWidget * m_widget;
-    ColorLabel * m_fl;
-    ColorLabel * m_fr;
-    ColorLabel * m_rl;
-    ColorLabel * m_rr;
+    QWidget * m_widget = nullptr;
+    ColorLabel * m_fl = nullptr;
+    ColorLabel * m_fr = nullptr;
+    ColorLabel * m_rl = nullptr;
+    ColorLabel * m_rr = nullptr;
 
-    ColorMapper * m_colorMapper;
+    ColorMapper * m_colorMapper = nullptr;
 
     PComponentParameterFloat m_target;
     PComponentParameterFloat m_spread;

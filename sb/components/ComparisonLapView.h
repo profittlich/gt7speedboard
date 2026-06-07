@@ -26,6 +26,6 @@ public:
     static QString componentId ();
 
 private:
-    ColorLabel * m_widget;
-    QScrollArea * m_scrollWidget;
+    ColorLabel * m_widget = nullptr;
+    QScrollArea * m_scrollWidget = nullptr;
 };
