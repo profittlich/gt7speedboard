@@ -12,6 +12,7 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QDir>
+#include <QFileDialog>
 
 #include "sb/system/Configuration.h"
 
@@ -40,6 +41,12 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
 
     m_selectedLayout = new QComboBox(this);
 
+    auto fnt = m_selectedLayout->font();
+    fnt.setPointSize(20);
+    m_selectedLayout->setFont(fnt);
+    m_selectedLayout->setMinimumHeight(30);
+    //m_selectedLayout->setStyleSheet("border-style:auto;");
+
     QDir storeLoc = getStorageLocation();
     QFile llTest (storeLoc.absolutePath() + "/Last Used.sblayout");
     if (llTest.exists())
@@ -47,12 +54,7 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
         m_selectedLayout->addItem("Last used layout", storeLoc.absolutePath() + "/Last Used.sblayout");
     }
 
-
-    auto fnt = m_selectedLayout->font();
-    fnt.setPointSize(20);
-    m_selectedLayout->setFont(fnt);
-    m_selectedLayout->setMinimumHeight(30);
-    //m_selectedLayout->setStyleSheet("border-style:auto;");
+    m_selectedLayout->insertSeparator(m_selectedLayout->count());
 
     QDir layoutFiles = QDir(":/assets/assets/");
     auto files = layoutFiles.entryList({"*.sblayout"});
@@ -61,12 +63,17 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
         m_selectedLayout->addItem((i.first(i.size() - strlen (".sblayout"))).replace("_", " "), ":/assets/assets/" + i);
     }
 
+    m_selectedLayout->insertSeparator(m_selectedLayout->count());
+
     layoutFiles = QDir(storeLoc.absolutePath());
     files = layoutFiles.entryList({"*.sblayout"});
     for (const auto &i : std::as_const(files))
     {
         m_selectedLayout->addItem((i.first(i.size() - strlen (".sblayout"))).replace("_", " "), storeLoc.absolutePath() + "/" + i);
     }
+
+    m_selectedLayout->insertSeparator(m_selectedLayout->count());
+    m_selectedLayout->addItem("Import...", "<IMPORT>");
 
     layout->addWidget(m_selectedLayout);
     connect(m_selectedLayout, &QComboBox::currentIndexChanged, this, &StartScreen::selectLayout);
@@ -188,8 +195,33 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
 
 void StartScreen::selectLayout(unsigned idx)
 {
-    DBG_MSG << "Layout: " << m_selectedLayout->itemData(idx).toString();
-    g_globalConfiguration.setSelectedLayout(m_selectedLayout->itemData(idx).toString());
+    auto sel = m_selectedLayout->itemData(idx).toString();
+    DBG_MSG << "Layout: " << sel;
+    if (sel == "<IMPORT>")
+    {
+        DBG_MSG << "Import layout";
+        auto filePath = QFileDialog::getOpenFileName(this, "Load layout", QString(), "Dashboard Layout (*.sblayout)");
+        if(!filePath.isNull())
+        {
+            QFileInfo inf(filePath);
+            QFile f(filePath);
+            auto storeLoc = getStorageLocation().absolutePath();
+            f.copy(storeLoc + "/" + inf.fileName());
+
+            m_selectedLayout->addItem((inf.fileName().first(inf.fileName().size() - strlen (".sblayout"))).replace("_", " "), storeLoc + "/" + inf.fileName());
+            m_selectedLayout->setCurrentIndex(m_selectedLayout->count()-1);
+
+        }
+        else
+        {
+            DBG_MSG << "No file selected";
+            m_selectedLayout->setCurrentIndex(0);
+        }
+    }
+    else
+    {
+        g_globalConfiguration.setSelectedLayout(m_selectedLayout->itemData(idx).toString());
+    }
 }
 
 void StartScreen::editIP()
