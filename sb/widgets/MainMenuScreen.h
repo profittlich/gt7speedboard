@@ -15,6 +15,7 @@ public slots:
     void lapsClicked();
     void prevPageClicked();
     void nextPageClicked();
+    void saveLayoutClicked();
 
 protected:
     void addPageFlipper();

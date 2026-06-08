@@ -30,7 +30,6 @@
  *      save layout
  *      save layout as
  *      export layout
- *      import layout
  *  EXIT DASH
  *
  */
@@ -41,6 +40,7 @@ MainMenuScreen::MainMenuScreen (MainWidget * parent, PDash dash, PState pstate) 
     addPageFlipper();
     addButton ("RESET DATA", this, &MainMenuScreen::resetClicked);
     addButton ("LAPS", this, &MainMenuScreen::lapsClicked);
+    addButton ("SAVE LAYOUT", this, &MainMenuScreen::saveLayoutClicked);
     addButton ("EXIT DASH", this, &MainMenuScreen::exitClicked);
 
     layout()->insertStretch(layout()->count()-1);
@@ -148,4 +148,29 @@ void MainMenuScreen::addPageFlipper()
 
 
     layout()->addWidget(flipper);
+}
+
+void MainMenuScreen::saveLayoutClicked()
+{
+        QDir storeLoc = getStorageLocation();
+
+
+        auto filePath = QFileDialog::getSaveFileName(this, "Save dashbboard layout", storeLoc.absolutePath() + "/New Layout.sblayout", "Dashboard Layout (*.sblayout)");
+        if(!filePath.isNull())
+        {
+            QFile outFile(filePath);
+            DBG_MSG << "Out file: " << outFile.fileName();
+            if (outFile.open(QIODevice::WriteOnly))
+            {
+                QTextStream stream( &outFile );
+                stream << dash()->toJson().toJson();
+                outFile.close();
+                deleteLater();
+            }
+        }
+        else
+        {
+            DBG_MSG << "No file selected";
+        }
+
 }
