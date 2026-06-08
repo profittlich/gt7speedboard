@@ -40,7 +40,7 @@ MainWidget::~MainWidget()
     if (!m_dash.isNull())
     {
         QDir storeLoc = getStorageLocation();
-        QFile outFile (storeLoc.absolutePath() + "/Last Used.sblayout");
+        QFile outFile (storeLoc.absolutePath() + "/Last Used.sblayout.autosave");
         DBG_MSG << "Out file: " << outFile.fileName();
         if (outFile.open(QIODevice::WriteOnly))
         {
@@ -66,7 +66,7 @@ void MainWidget::showStartScreen()
         m_widget->deleteLater();
 
         QDir storeLoc = getStorageLocation();
-        QFile outFile (storeLoc.absolutePath() + "/Last Used.sblayout");
+        QFile outFile (storeLoc.absolutePath() + "/Last Used.sblayout.autosave");
         DBG_MSG << "Out file: " << outFile.fileName();
         if (outFile.open(QIODevice::WriteOnly))
         {

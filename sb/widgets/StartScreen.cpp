@@ -49,13 +49,13 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
     //m_selectedLayout->setStyleSheet("border-style:auto;");
 
     QDir storeLoc = getStorageLocation();
-    QFile llTest (storeLoc.absolutePath() + "/Last Used.sblayout");
+    QFile llTest (storeLoc.absolutePath() + "/Last Used.sblayout.autosave");
     if (llTest.exists())
     {
-        m_selectedLayout->addItem("Last used layout", storeLoc.absolutePath() + "/Last Used.sblayout");
+        m_selectedLayout->addItem("Last used layout", storeLoc.absolutePath() + "/Last Used.sblayout.autosave");
+        m_selectedLayout->insertSeparator(m_selectedLayout->count());
     }
 
-    m_selectedLayout->insertSeparator(m_selectedLayout->count());
 
     QDir layoutFiles = QDir(":/assets/assets/");
     auto files = layoutFiles.entryList({"*.sblayout"});
