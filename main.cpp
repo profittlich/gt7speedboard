@@ -43,7 +43,11 @@ int main(int argc, char *argv[])
     DBG_MSG << "Start up UI";
     g_globalConfiguration.init();
     MainWidget w;
+#ifdef Q_OS_ANDROID
+    w.showFullScreen();
+#else
     w.show();
+#endif
 
     return a.exec();
 }
