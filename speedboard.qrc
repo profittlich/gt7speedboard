@@ -4,11 +4,10 @@
         <file>assets/SpeedBoard_Logo_trans.png</file>
         <file>assets/SpeedBoard_Logo_white.png</file>
         <file>assets/SpeedBoard_Logo_black_trans.png</file>
-        <file>assets/2_Columns.sblayout</file>
-        <file>assets/Development.sblayout</file>
+        <file>assets/Simple.sblayout</file>
         <file>assets/cars.csv</file>
         <file>assets/makers.csv</file>
-        <file>assets/3_Columns.sblayout</file>
+        <file>assets/Default.sblayout</file>
         <file>assets/tracks/24 Heures du Mans Racing Circuit - Full Course.gt7track</file>
         <file>assets/tracks/24 Heures du Mans Racing Circuit - No Chicane.gt7track</file>
         <file>assets/tracks/Alsace - Test Course.gt7track</file>

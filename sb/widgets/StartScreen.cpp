@@ -39,6 +39,7 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
     layout->addWidget(lbLay);
 
     m_selectedLayout = new QComboBox(this);
+    m_selectedLayout->setStyleSheet ("height: 30px; background-color: #555;     border-style: none;  color:white; text-align:left;");
 
     QDir storeLoc = getStorageLocation();
     QFile llTest (storeLoc.absolutePath() + "/Last Used.sblayout");

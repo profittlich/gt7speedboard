@@ -200,7 +200,7 @@ DISTFILES += \
     android/build.gradle \
     android/res/values/libs.xml \
     android/res/xml/qtprovider_paths.xml \
-    assets/3_Columns.sblayout \
+    assets/Default.sblayout \
     assets/SpeedBoard_Logo_black.png \
     assets/SpeedBoard_Logo_black_trans.png \
     assets/SpeedBoard_Logo_trans.png \

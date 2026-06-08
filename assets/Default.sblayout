@@ -28,13 +28,17 @@
                         {
                             "list" : [
                                 {
+                                    "component": "LapDisplay",
+                                    "stretch": 1
+                                },
+                                {
                                     "component" : "FuelPerLap",
-                                    "stretch" : 1,
+                                    "stretch" : 3,
                                     "title" : "FUEL"
                                 },
                                 {
                                     "component" : "FuelRange",
-                                    "stretch" : 1,
+                                    "stretch" : 3,
                                     "showHeader" : false
                                 },
                                 {
@@ -106,7 +110,7 @@
                         {
                             "list" : [
                                  {
-                                    "component": "LapDisplay",
+                                    "component": "TrackName",
                                     "stretch": 1
                                 },
                                 {
@@ -114,7 +118,8 @@
                                     "configuration": {
                                         "target": "ref-a"
                                     },
-                                    "stretch": 4
+                                    "stretch": 4,
+                                    "showHeader" : false
                                 },
                                 {
                                     "component": "LapTimes",

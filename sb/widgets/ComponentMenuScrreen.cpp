@@ -21,6 +21,15 @@ ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDa
 
     layout()->addWidget(m_lbParam);
 
+    auto lbActions = new QLabel(widget());
+    font = lbActions->font();
+    font.setPointSizeF(30);
+    font.setBold(true);
+    lbActions->setFont(font);
+    lbActions->setStyleSheet ("height: 100px;     border-style: none;  color:white;");
+    lbActions->setText("Actions:");
+    layout()->addWidget(lbActions);
+
     auto actions = comp->getActions();
     auto actionKeys = actions.keys();
     std::sort(actionKeys.begin(), actionKeys.end(), [actions](QString a, QString b) { return actions[a].order < actions[b].order; });

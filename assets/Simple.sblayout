@@ -30,12 +30,12 @@
                                 },
                                 {
                                     "component" : "FuelPerLap",
-                                    "stretch" : 1,
+                                    "stretch" : 3,
                                     "title" : "FUEL"
                                 },
                                 {
                                     "component" : "FuelRange",
-                                    "stretch" : 1,
+                                    "stretch" : 3,
                                     "showHeader" : false
                                 },
                                 {
