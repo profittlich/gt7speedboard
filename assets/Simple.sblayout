@@ -95,8 +95,8 @@
                                     "stretch":5
                                 },
                                 {
-                                    "component": "CPULoad",
-                                    "stretch": 1
+                                    "component": "PedalGraph",
+                                    "stretch": 2
                                 }
                             ]
                         }
