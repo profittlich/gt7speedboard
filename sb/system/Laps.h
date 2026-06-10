@@ -135,13 +135,11 @@ private:
 class ComparisonLap
 {
 public:
-    ComparisonLap () : /*lapTime(UINT_MAX),*/ hasClosestPoint(false) {}
     PLap lap;
-    //unsigned lapTime;
-    size_t closestPoint;
-    bool hasClosestPoint;
-    size_t nextBrake;
-    size_t nextThrottle;
+    size_t closestPoint = 0;
+    bool hasClosestPoint = false;
+    size_t nextBrake = 0;
+    size_t nextThrottle = 0;
 };
 
 typedef QSharedPointer<ComparisonLap> PComparisonLap;
