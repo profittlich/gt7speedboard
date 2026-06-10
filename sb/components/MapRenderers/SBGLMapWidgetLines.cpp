@@ -84,6 +84,25 @@ void SBGLMapWidgetLines::recalcExtents()
             m_maxY = m_vertices[i+2];
         }
     }
+    for (size_t i = 0; i < m_verticesPrev.size(); i+=3)
+    {
+        if (m_verticesPrev[i] < m_minX)
+        {
+            m_minX = m_verticesPrev[i];
+        }
+        if (m_verticesPrev[i] > m_maxX)
+        {
+            m_maxX = m_verticesPrev[i];
+        }
+        if (m_verticesPrev[i+2] < m_minY)
+        {
+            m_minY = m_verticesPrev[i+2];
+        }
+        if (m_verticesPrev[i+2] > m_maxY)
+        {
+            m_maxY = m_verticesPrev[i+2];
+        }
+    }
 }
 
 void SBGLMapWidgetLines::nextLap()

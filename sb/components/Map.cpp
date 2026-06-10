@@ -66,9 +66,10 @@ void Map::loaded()
 bool Map::targetLapUsable() const
 {
     return state()->comparisonLaps.contains((*m_target)()) &&
-           (!state()->comparisonLaps[(*m_target)()]->lap->trackDetector()->trackFound() ||
+           state()->comparisonLaps[(*m_target)()]->lap->maybeOnSameTrack(state()->currentLap);
+           /*(!state()->comparisonLaps[(*m_target)()]->lap->trackDetector()->trackFound() ||
             !state()->currentLap->trackDetector()->trackFound() ||
-            state()->comparisonLaps[(*m_target)()]->lap->trackDetector()->detectedTrack().get() == state()->currentLap->trackDetector()->detectedTrack().get());
+            state()->comparisonLaps[(*m_target)()]->lap->trackDetector()->detectedTrack().get() == state()->currentLap->trackDetector()->detectedTrack().get());*/
 }
 
 void Map::newPoint(PTelemetryPoint p)

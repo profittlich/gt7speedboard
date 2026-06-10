@@ -83,6 +83,18 @@ QString TrackDetector::location()
     return "unknown location\n(" + QString::number(numCandidates()) + " tracks)";
 }
 
+bool TrackDetector::isAmongCandidates(PTrack trk)
+{
+    for (auto i : m_candidates)
+    {
+        if (i.get() == trk.get())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void TrackDetector::reset()
 {
     m_candidates = g_globalConfiguration.allTracks();

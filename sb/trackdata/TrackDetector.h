@@ -22,6 +22,7 @@ public:
     void addPoint(PPoint p);
 
     bool trackFound() { return m_candidates.size () == 1 && abs(m_directions[m_candidates[0]]) >= 3; }
+    bool isAmongCandidates(PTrack trk);
     size_t numCandidates() { return m_candidates.size(); }
     QString location();
     bool isReversed()

@@ -96,7 +96,7 @@ void LapTimes::completedLap(PLap, bool)
                 lapTime = cur->estimateLapTime();
                 if (lapTime >= 0)
                 {
-                    txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime) + " (" + cur->trackName() + ")";
+                    txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime);
                 }
                 else
                 {
@@ -107,7 +107,7 @@ void LapTimes::completedLap(PLap, bool)
             {
                 txt += " <invalid>";
             }
-            txt += " <font color=\"gray\">(" + cur->trackName() + ")</font>";
+            txt += " <font color=\"gray\">(" + cur->trackName(true) + ")</font>";
             txt += "<br>";
         }
     }

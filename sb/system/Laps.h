@@ -44,7 +44,10 @@ public:
 
     bool maybeOnSameTrack(PLap other)
     {
-        return (other->trackDetector()->detectedTrack().get () == trackDetector()->detectedTrack().get()) || !trackDetector()->trackFound() || !other->trackDetector()->trackFound();
+        return (other->trackDetector()->detectedTrack().get () == trackDetector()->detectedTrack().get()) ||
+               trackDetector()->isAmongCandidates(other->trackDetector()->detectedTrack()) ||
+               other->trackDetector()->isAmongCandidates(trackDetector()->detectedTrack());
+               //!trackDetector()->trackFound() || !other->trackDetector()->trackFound();
     }
 
     void appendTelemetryPoint(PTelemetryPoint p);
