@@ -26,14 +26,14 @@ private:
     QList<GLfloat> m_verticesPrev;
     QList<GLfloat> m_vertices;
     QList<GLfloat> m_verticesRef;
-    float m_minX;
-    float m_maxX;
-    float m_minY;
-    float m_maxY;
+    float m_minX = 0;
+    float m_maxX = 0;
+    float m_minY = 0;
+    float m_maxY = 0;
 
-    GLuint m_programObject;
-    GLuint m_vShader;
-    GLuint m_fShader;
+    GLuint m_programObject = 0;
+    GLuint m_vShader = 0;
+    GLuint m_fShader = 0;
     QList<GLfloat> m_aspectMatrix;
     QList<GLfloat> m_centerMatrix;
     QList<GLfloat> m_scaleMatrix;

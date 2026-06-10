@@ -41,7 +41,7 @@ private:
     PDash m_dash;
     QWidget * m_widget = nullptr;
     QStackedLayout * m_layout = nullptr;
-    bool m_inDash;
-    int m_inMenu;
+    bool m_inDash = false;
+    int m_inMenu = 0;
 };
 #endif // MAINWIDGET_H

@@ -39,8 +39,8 @@ public:
     float spread () const { return m_spread; }
 
 private:
-    float m_center;
-    float m_spread;
+    float m_center = 0;
+    float m_spread = 0;
 };
 
 typedef QSharedPointer<ColorMapper> PColorMapper;

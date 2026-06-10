@@ -309,13 +309,13 @@ private:
     void setDescription (QString a) { m_description = a; }
     void setComponentId (QString a) { m_componentId = a; }
 
-    bool m_permissionsSet;
-    bool m_canRaise;
-    bool m_canGotoPage;
-    bool m_canFullScreenSignal;
+    bool m_permissionsSet = false;
+    bool m_canRaise = false;
+    bool m_canGotoPage = false;
+    bool m_canFullScreenSignal = false;
 
     QStackedWidget * m_stacker = nullptr;
-    size_t m_stackIndex;
+    size_t m_stackIndex = 0;
     PState m_state;
     QMap<QString, PComponentParameterFloat> m_floatParameters;
     QList<PComponentParameterFloat> m_floatParametersOrdered;

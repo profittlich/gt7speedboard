@@ -24,5 +24,5 @@ public:
 private:
     ColorLabel * m_widget = nullptr;
     QElapsedTimer m_timer;
-    unsigned m_counter;
+    unsigned m_counter = 0;
 };

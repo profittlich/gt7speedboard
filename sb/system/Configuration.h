@@ -88,16 +88,16 @@ public:
 
 private:
     /* PROPERTIES */
-    float m_platformFontScale;
-    float m_fontScale;
-    unsigned m_longClickTimeout;
+    float m_platformFontScale = 0;
+    float m_fontScale = 0;
+    unsigned m_longClickTimeout = 0;
     //QString m_storageLocation;
     QString m_hostAddress;
     QColor m_backgroundColor;
     QColor m_dimColor;
     QColor m_headerTextColor;
-    size_t m_fuelStatisticsLaps;
-    float m_maxPointDistanceForValidLap;
+    size_t m_fuelStatisticsLaps = 0;
+    float m_maxPointDistanceForValidLap = 0;
     QString m_selectedLayout;
     QMap<unsigned, QString> m_carMakers;
     QMap<unsigned, QString> m_cars;

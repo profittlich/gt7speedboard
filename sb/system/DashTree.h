@@ -48,7 +48,7 @@ public:
 
 private:
     PComponent m_component;
-    ComponentWidget * m_widget;
+    ComponentWidget * m_widget = nullptr;
 };
 
 class DashList : public DashNode

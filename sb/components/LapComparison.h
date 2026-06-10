@@ -48,7 +48,7 @@ private:
     static PComponentParameterFloat s_offset;
     PComparisonLap m_targetLap;
 
-    bool m_prevFullScreenPermission;
+    bool m_prevFullScreenPermission = false;
 
     static QString s_fullScreenTarget;
     static QList<LapComparison*> s_allLapComparisons;

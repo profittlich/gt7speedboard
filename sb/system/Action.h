@@ -4,7 +4,7 @@
 
 struct Action
 {
-    unsigned order;
+    unsigned order = 0;
     QString label;
     QString description;
 };

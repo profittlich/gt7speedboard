@@ -125,7 +125,7 @@ private:
     PTelemetryPoint m_preceedingPoint;
     QList<PTelemetryPoint> m_points;
     PTelemetryPoint m_succeedingPoint;
-    bool m_valid;
+    bool m_valid = false;
     PTrackDetector m_trackDetector;
     //QMap<int, QSet<size_t>> m_quadPoints;
 

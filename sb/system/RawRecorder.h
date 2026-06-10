@@ -18,7 +18,7 @@ public slots:
 
 private:
     QString m_filename;
-    bool m_recording;
+    bool m_recording = false;
     QFile m_file;
 };
 

@@ -18,5 +18,5 @@ public:
 
 private:
     ColorLabel * m_widget = nullptr;
-    float m_curProgress;
+    float m_curProgress = 0;
 };

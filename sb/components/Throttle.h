@@ -20,5 +20,5 @@ public:
 
 private:
     ColorLabel * m_widget = nullptr;
-    float m_curThrottle;
+    float m_curThrottle = 0;
 };

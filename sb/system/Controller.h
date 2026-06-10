@@ -21,7 +21,7 @@ public slots:
 private:
     PDash m_dash;
     PState m_state;
-    unsigned m_previousSequenceNumber;
+    unsigned m_previousSequenceNumber = 0;
     QColor m_currentColor;
     QElapsedTimer m_timer;
     QElapsedTimer m_fpsTimer;

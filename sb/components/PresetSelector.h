@@ -27,5 +27,5 @@ private:
     PComponentParameterString m_preset;
     PComponentParameterString m_presetListParameter;
     QStringList m_presetList;
-    int m_currentPreset;
+    int m_currentPreset = 0;
 };

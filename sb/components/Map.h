@@ -26,9 +26,9 @@ protected:
     bool targetLapUsable() const;
 
 private:
-    mutable SBGLMapWidget * m_widget;
+    mutable SBGLMapWidget * m_widget = nullptr;
     PComponentParameterString m_target;
     PComponentParameterString m_renderer;
     PLap m_refLap;
-    bool m_firstPointReceived;
+    bool m_firstPointReceived = false;
 };

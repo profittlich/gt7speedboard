@@ -18,7 +18,7 @@ public:
     static QString componentId ();
 
 private:
-    int m_currentLap;
-    float m_validLapEndpointDistance;
+    int m_currentLap = -1;
+    float m_validLapEndpointDistance = 20;
 
 };

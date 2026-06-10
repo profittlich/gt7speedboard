@@ -34,7 +34,7 @@ protected:
     void paintGL() override;
 
 private:
-    bool m_initialized;
+    bool m_initialized = false;
     GLuint m_programObject;
     GLuint m_vShader;
     GLuint m_fShader;
@@ -42,14 +42,14 @@ private:
     QList<GLfloat> m_centerMatrix;
     QList<GLfloat> m_windowMatrix;
 
-    float m_minX;
-    float m_maxX;
-    float m_minY;
-    float m_maxY;
+    float m_minX = 0;
+    float m_maxX = 0;
+    float m_minY = 0;
+    float m_maxY = 0;
 
-    int m_width;
-    float m_rangeMinY;
-    float m_rangeMaxY;
+    int m_width = 0;
+    float m_rangeMinY = 0;
+    float m_rangeMaxY = 0;
 
     QList <QList<float>> m_values;
     QList <QColor> m_colors;

@@ -22,10 +22,10 @@ public:
 private:
     QString m_name;
     QList<PPoint> m_points;
-    float m_tolerance;
-    size_t m_pitEntry;
-    size_t m_pitExit;
-    float m_pitTolerance;
+    float m_tolerance = 0;
+    size_t m_pitEntry = 0;
+    size_t m_pitExit = 0;
+    float m_pitTolerance = 0;
 };
 
 typedef QSharedPointer<Track> PTrack;

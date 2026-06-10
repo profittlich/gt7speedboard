@@ -23,6 +23,6 @@ private:
     QList<float> m_previousLapFuel;
     QList<unsigned> m_previousLapTimes;
     PTelemetryPoint m_curPoint;
-    bool m_wasInPit;
+    bool m_wasInPit = false;
 
 };

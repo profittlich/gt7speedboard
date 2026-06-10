@@ -14,8 +14,8 @@ public:
     FuelData() : fuelPerLap(-1), infiniteFuel(false) {}
 
     float fuelPerLap;
-    float fuelTime;
-    bool infiniteFuel;
+    float fuelTime = 0;
+    bool infiniteFuel = false;
 
 };
 
@@ -104,14 +104,14 @@ protected:
         m_messageQueue.clear();
     }
 
-    bool newLap;
-    bool newLapIsClosedLoop; // TODO: redundant with Lap::m_valid?
-    bool newSession;
-    bool inPit;
+    bool newLap = false;
+    bool newLapIsClosedLoop = false; // TODO: redundant with Lap::m_valid?
+    bool newSession = false;
+    bool inPit = false;
     //bool onNewTrack;
     //bool maybeOnNewTrack;
-    QString currentPreset;
-    bool presetChanged;
+    QString currentPreset = 0;
+    bool presetChanged = false;
     QMap<QString, QList<QString>> m_messageQueue;
 };
 

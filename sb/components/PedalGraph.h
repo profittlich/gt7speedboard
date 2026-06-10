@@ -18,6 +18,6 @@ public:
 
 private:
     Graph * m_widget = nullptr;
-    int m_counter;
+    int m_counter = 0;
     PTelemetryPoint m_previous;
 };

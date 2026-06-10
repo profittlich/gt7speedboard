@@ -26,6 +26,6 @@ private:
     ColorLabel * m_label = nullptr;
     Graph * m_graph = nullptr;
     PTrackDetector m_detect;
-    float m_maxDist;
-    float m_counter;
+    float m_maxDist = 0;
+    float m_counter = 0;
 };

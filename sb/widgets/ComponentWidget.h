@@ -227,7 +227,7 @@ private:
     QElapsedTimer m_longClickTimer;
     QLayout * m_ownLayout = nullptr;
     QStackedWidget * m_ownStack = nullptr;
-    bool m_backButton;
-    bool m_showHeader;
+    bool m_backButton = false;
+    bool m_showHeader = true;
     QString m_title;
 };

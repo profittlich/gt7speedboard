@@ -18,6 +18,6 @@ public:
     static QString componentId ();
 
 private:
-    int m_currentLap;
+    int m_currentLap = 0;
 
 };

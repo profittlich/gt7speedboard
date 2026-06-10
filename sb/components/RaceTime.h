@@ -31,9 +31,9 @@ private:
     ColorLabel * m_widget = nullptr;
     PTelemetryPoint m_curPoint;
     QElapsedTimer m_timer;
-    int m_elapsed;
-    bool m_started;
-    bool m_readyToStart;
+    int m_elapsed = 0;
+    bool m_started = false;
+    bool m_readyToStart = false;
     PComponentParameterFloat m_raceLength;
     PComponentParameterBoolean m_showLaps;
 };
