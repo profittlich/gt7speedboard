@@ -20,7 +20,7 @@ void setKeepScreenOn(bool enable);
 
 #define DBG_MSG qWarning () << (QTime::currentTime().toString("hh:mm:ss.zzz") + " " +  QString(__FILE__) + "::" + QString::number(__LINE__) + ":").toStdString().c_str()
 
-const QString c_version = "RED-PB-B";
+const QString c_version = "RED-PB-C";
 const float c_FPS = 59.94;
 
 void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt);
