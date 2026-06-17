@@ -2,6 +2,8 @@
 
 SpeedBoard for GT7 is a dashboard for Gran Turismo 7.
 
+![SpeedBoard](doc/screenshot-pb-b-1.png)
+
 This is the in-development redesign of the software, currently available as BETA releases. It does not have all the features of the original version, but also has some new features that the old version does not have. The original version is still available under _Releases_ and in the _legacy_ branch.
 
 ## Platforms
