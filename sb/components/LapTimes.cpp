@@ -170,7 +170,7 @@ void LapTimes::exportCSV()
         f.open(QFile::WriteOnly);
         if (f.isOpen())
         {
-            f.write("Index\tLap\tms\tTime\tValid\n");
+            f.write("Index\tLap\tms\tTime\tValid\tTrack\tCar\n");
             DBG_MSG << "write data";
             size_t numLaps = state()->previousLaps.size();
             for (size_t i = 0; i < numLaps; ++i)
@@ -185,12 +185,21 @@ void LapTimes::exportCSV()
                 {
                     lapTimeStr = msToTime(cur->lapTime());
                 }
+                PTelemetryPointGT7 pgt7 = cur->points()[0].dynamicCast<TelemetryPointGT7>();
+                QString carName = "unknown car";
+                if (!pgt7.isNull())
+                {
+                    carName = g_globalConfiguration.carName(pgt7->carID());
+                }
                 f.write(QString(
                     QString::number(i) + "\t" +
                     QString::number(cur->points()[0]->currentLap()) + "\t" +
                     QString::number(cur->lapTime()) + "\t" +
                     lapTimeStr + "\t" +
-                    (cur->valid() ? "1" : "0") + "\n"
+                    (cur->valid() ? "1" : "0") + "\t" +
+                    cur->trackName(true) + "\t" +
+                    carName +
+                    "\n"
                     ).toStdString().c_str());
             }
 
