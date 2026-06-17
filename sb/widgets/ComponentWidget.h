@@ -115,7 +115,7 @@ protected:
         if (event->type() == QEvent::MouseButtonPress && mev->button() == Qt::LeftButton  )
         {
             DBG_MSG << "Mouse press";
-            m_longClickTimer.start();
+            m_longClickTimer.restart();
             return true;
         }
         else if (event->type() == QEvent::MouseButtonRelease && mev->button() == Qt::LeftButton)
