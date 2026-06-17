@@ -1,6 +1,6 @@
 #include "MainWidget.h"
 
-#include "sb/system/Helpers.h"
+#include "src/system/Helpers.h"
 
 #include <QApplication>
 #include <QLocale>

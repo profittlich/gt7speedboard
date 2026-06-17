@@ -6,16 +6,16 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QFileDialog>
-#include "sb/widgets/ErrorScreen.h"
-#include "sb/widgets/MainMenuScreen.h"
-#include "sb/widgets/ComponentMenuScreen.h"
-#include "sb/widgets/StartScreen.h"
-#include "sb/receiver/GT7TelemetryReceiver.h"
-#include "sb/system/DashBuilder.h"
-#include "sb/system/Configuration.h"
-#include "sb/system/KeyStrings.h"
-#include "sb/widgets/DashWidget.h"
-#include "sb/widgets/ComponentWidget.h"
+#include "src/widgets/ErrorScreen.h"
+#include "src/widgets/MainMenuScreen.h"
+#include "src/widgets/ComponentMenuScreen.h"
+#include "src/widgets/StartScreen.h"
+#include "src/receiver/GT7TelemetryReceiver.h"
+#include "src/system/DashBuilder.h"
+#include "src/system/Configuration.h"
+#include "src/system/KeyStrings.h"
+#include "src/widgets/DashWidget.h"
+#include "src/widgets/ComponentWidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), m_inDash(false), m_inMenu(0)

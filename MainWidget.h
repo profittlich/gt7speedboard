@@ -3,10 +3,10 @@
 
 #include <QWidget>
 #include <QLabel>
-#include <sb/widgets/ColorLabel.h>
-#include <sb/receiver/GT7TelemetryReceiver.h>
-#include <sb/system/Controller.h>
-#include <sb/system/RawRecorder.h>
+#include <src/widgets/ColorLabel.h>
+#include <src/receiver/GT7TelemetryReceiver.h>
+#include <src/system/Controller.h>
+#include <src/system/RawRecorder.h>
 #include <QVBoxLayout>
 #include <QStackedLayout>
 
