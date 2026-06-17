@@ -1,6 +1,7 @@
 #include "sb/components/LapTimes.h"
 
 #include "sb/components/ComponentFactory.h"
+#include "sb/cardata/TelemetryPointGT7.h"
 
 #include <QScroller>
 #include <QtWidgets/qboxlayout.h>
@@ -50,7 +51,7 @@ QString LapTimes::defaultTitle () const
     return "Times";
 }
 
-void LapTimes::completedLap(PLap, bool)
+void LapTimes::completedLap(PLap lap, bool)
 {
     QString txt = "";
     for (auto i : state()->comparisonLaps.keys())
@@ -76,7 +77,13 @@ void LapTimes::completedLap(PLap, bool)
                     txt += i + ": N/A";
                 }
             }
-            txt += " <font color=\"gray\">(" + state()->comparisonLaps[i]->lap->trackName() + ")</font><br>";
+            PTelemetryPointGT7 pgt7 = state()->comparisonLaps[i]->lap->points()[0].dynamicCast<TelemetryPointGT7>();
+            QString carName = "unknown car";
+            if (!pgt7.isNull())
+            {
+                carName = g_globalConfiguration.carName(pgt7->carID());
+            }
+            txt += " <font color=\"gray\">(" + state()->comparisonLaps[i]->lap->trackName() + ", " + carName + ")</font><br>";
         }
     }
     txt += "<br>";
@@ -107,7 +114,13 @@ void LapTimes::completedLap(PLap, bool)
             {
                 txt += " <invalid>";
             }
-            txt += " <font color=\"gray\">(" + cur->trackName(true) + ")</font>";
+            PTelemetryPointGT7 pgt7 = lap->points()[0].dynamicCast<TelemetryPointGT7>();
+            QString carName = "unknown car";
+            if (!pgt7.isNull())
+            {
+                carName = g_globalConfiguration.carName(pgt7->carID());
+            }
+            txt += " <font color=\"gray\">(" + cur->trackName(true) + ", " + carName + ")</font>";
             txt += "<br>";
         }
     }
