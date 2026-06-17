@@ -118,6 +118,12 @@ protected:
             m_longClickTimer.restart();
             return true;
         }
+        else if (event->type() == QEvent::MouseButtonDblClick && mev->button() == Qt::LeftButton  )
+        {
+            DBG_MSG << "Mouse click";
+            m_longClickTimer.restart();
+            return true;
+        }
         else if (event->type() == QEvent::MouseButtonRelease && mev->button() == Qt::LeftButton)
         {
             DBG_MSG << m_longClickTimer.elapsed();
