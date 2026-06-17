@@ -15,8 +15,8 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    MainWidget.cpp \
-    main.cpp \
+    src/widgets/MainWidget.cpp \
+    src/main.cpp \
     src/cardata/TelemetryPoint.cpp \
     src/cardata/TelemetryPointGT7.cpp \
     src/components/Brake.cpp \
@@ -81,7 +81,7 @@ SOURCES += \
     src/widgets/TextInput.cpp
 
 HEADERS += \
-    MainWidget.h \
+    src/widgets/MainWidget.h \
     contrib/Salsa20-master/Source/Salsa20.h \
     contrib/Salsa20-master/Source/Salsa20.inl \
     src/cardata/Point.h \

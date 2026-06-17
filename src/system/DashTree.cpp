@@ -1,7 +1,7 @@
 #include "DashTree.h"
 
 #include "src/widgets/ComponentWidget.h"
-#include "MainWidget.h"
+#include "src/widgets/MainWidget.h"
 
 QJsonValue DashComponent::toJson()
 {

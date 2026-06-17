@@ -3,7 +3,7 @@
 #include "src/widgets/DashWidget.h"
 #include "src/widgets/ComponentWidget.h"
 #include "src/components/ComponentFactory.h"
-#include "MainWidget.h"
+#include "src/widgets/MainWidget.h"
 
 
 QJsonValue DashBuilder::jVal(QJsonObject obj, QString key, QJsonValue def)

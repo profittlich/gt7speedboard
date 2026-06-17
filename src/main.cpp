@@ -1,4 +1,4 @@
-#include "MainWidget.h"
+#include "src/widgets/MainWidget.h"
 
 #include "src/system/Helpers.h"
 
