@@ -35,7 +35,7 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     m_speed->setFont(font);
     m_speed->setStyleSheet("color : #fff;font-weight:bold;");
 
-    m_speed->setText((*currentTarget())().toUpper());
+    m_speed->setText(currentTarget()().toUpper());
 
     connect(m_speed, &ColorLabel::clicked, this, &LapComparison::goFullscreen);
 
@@ -66,6 +66,11 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     s_allLapComparisons.append(this);
 }
 
+void LapComparison::loaded()
+{
+    updateLabel();
+}
+
 LapComparison::~LapComparison()
 {
     s_allLapComparisons.removeAll(this);
@@ -78,11 +83,11 @@ QWidget * LapComparison::getWidget() const
 
 PComponentParameterString LapComparison::currentTarget()
 {
-    if ((*m_currentTarget)() > 2.5)
+    if (m_currentTarget() > 2.5)
     {
         return m_thirdTarget;
     }
-    else if ((*m_currentTarget)() > 1.5)
+    else if (m_currentTarget() > 1.5)
     {
         return m_secondTarget;
     }
@@ -99,7 +104,7 @@ QString LapComparison::defaultTitle () const
 
 void LapComparison::presetSwitched()
 {
-    m_speed->setText((*currentTarget())().toUpper());
+    m_speed->setText(currentTarget()().toUpper());
 }
 
 void LapComparison::goFullscreen()
@@ -117,29 +122,29 @@ void LapComparison::rotateTargets()
 
 void LapComparison::pointFinished(PTelemetryPoint p)
 {
-    m_offset->setVisible((*s_offset)() != 0);
+    m_offset->setVisible(s_offset() != 0);
     if (canFullScreenSignal() && s_fullScreenTarget == "")
     {
-        s_fullScreenTarget = (*currentTarget())();
+        s_fullScreenTarget = currentTarget()();
         DBG_MSG << "Init global target" << s_fullScreenTarget;
     }
-    if ((canFullScreenSignal() && s_fullScreenTarget == (*currentTarget())()) != m_prevFullScreenPermission)
+    if ((canFullScreenSignal() && s_fullScreenTarget == currentTarget()()) != m_prevFullScreenPermission)
     {
-        m_prevFullScreenPermission = (canFullScreenSignal() && s_fullScreenTarget == (*currentTarget())());
-        if (s_fullScreenTarget == (*currentTarget())())
+        m_prevFullScreenPermission = (canFullScreenSignal() && s_fullScreenTarget == currentTarget()());
+        if (s_fullScreenTarget == currentTarget()())
         {
-            DBG_MSG << "Underline" << (*currentTarget())();
+            DBG_MSG << "Underline" << currentTarget()();
             m_speed->setStyleSheet("color : #fff;font-weight:bold;text-decoration:underline;");
         }
         else
         {
-            DBG_MSG << "No underline" << (*currentTarget())();
+            DBG_MSG << "No underline" << currentTarget()();
             m_speed->setStyleSheet("color : #fff;font-weight:bold;");
         }
     }
-    if (state()->comparisonLaps.contains((*currentTarget())()))
+    if (state()->comparisonLaps.contains(currentTarget()()))
     {
-        m_targetLap = state()->comparisonLaps[(*currentTarget())()];
+        m_targetLap = state()->comparisonLaps[currentTarget()()];
     }
     else
     {
@@ -184,13 +189,13 @@ void LapComparison::pointFinished(PTelemetryPoint p)
         m_time->disable();
     }
     m_time->update();
-    if ((*s_offset)() == 0)
+    if (s_offset() == 0)
     {
         m_offset->setText("");
     }
     else
     {
-        m_offset->setText(QString((*s_offset)() > 0 ? "+" : "") + QString::number(round((*s_offset)() * 1000.0 / c_FPS)) + " ms");
+        m_offset->setText(QString(s_offset() > 0 ? "+" : "") + QString::number(round(s_offset() * 1000.0 / c_FPS)) + " ms");
     }
 }
 
@@ -206,28 +211,24 @@ void LapComparison::newTrack(PTrack track)
 
 void LapComparison::updateLabel()
 {
-    DBG_MSG << (*currentTarget())();
-    DBG_MSG << state().get();
-
-    if (state()->comparisonLaps.contains((*currentTarget())()) && state()->currentLap->maybeOnSameTrack(state()->comparisonLaps[(*currentTarget())()]->lap))
+    if (state()->comparisonLaps.contains(currentTarget()()) && !state()->currentLap.isNull() && state()->currentLap->maybeOnSameTrack(state()->comparisonLaps[currentTarget()()]->lap))
     {
-        if (state()->comparisonLaps[(*currentTarget())()]->lap->valid())
+        if (state()->comparisonLaps[currentTarget()()]->lap->valid())
         {
-            m_speed->setText((*currentTarget())().toUpper());
+            m_speed->setText(currentTarget()().toUpper());
         }
         else
         {
-            m_speed->setText("(" + (*currentTarget())().toUpper() + ")");
+            m_speed->setText("(" + currentTarget()().toUpper() + ")");
         }
     }
     else
     {
-        m_speed->setText( "(" + (*currentTarget())().toUpper() + ")");
+        m_speed->setText( "(" + currentTarget()().toUpper() + ")");
         m_speed->setColor(g_globalConfiguration.backgroundColor());
     }
-    if (s_fullScreenTarget == (*currentTarget())())
+    if (s_fullScreenTarget == currentTarget()())
     {
-        DBG_MSG << "Underline" << (*currentTarget())();
         m_speed->setStyleSheet("color : #fff;font-weight:bold;text-decoration:underline;");
         for (auto d : s_allLapComparisons)
         {
@@ -238,7 +239,6 @@ void LapComparison::updateLabel()
     }
     else
     {
-        DBG_MSG << "No underline" << (*currentTarget())();
         m_speed->setStyleSheet("color : #fff;font-weight:bold;");
     }
 }
@@ -253,7 +253,7 @@ QColor LapComparison::signalColor() const
     {
         return QColor();
     }
-    int curPtIdx = m_targetLap->closestPoint + (*s_offset)();
+    int curPtIdx = m_targetLap->closestPoint + s_offset();
     if (curPtIdx < 0)
     {
         curPtIdx += m_targetLap->lap->points().size();
@@ -270,7 +270,7 @@ QColor LapComparison::signalColor() const
         return QColor (0xffff00 - (unsigned (curPt->brake() * 2.55) << 8));
     }
 
-    int nextBrakeIn = m_targetLap->nextBrake - (*s_offset)() - m_targetLap->closestPoint;
+    int nextBrakeIn = m_targetLap->nextBrake - s_offset() - m_targetLap->closestPoint;
 
     if (nextBrakeIn > 15 && nextBrakeIn <= 30)
     {
@@ -313,43 +313,43 @@ void LapComparison::callAction(QString a)
 {
     if (a == "toggleFullscreen")
     {
-        if (s_fullScreenTarget == (*currentTarget())())
+        if (s_fullScreenTarget == currentTarget()())
         {
             DBG_MSG << "No target" << m_prevFullScreenPermission;
             s_fullScreenTarget = "<none>";
         }
         else
         {
-            DBG_MSG << "Target" << (*currentTarget())() << m_prevFullScreenPermission;
-            s_fullScreenTarget = (*currentTarget())();
+            DBG_MSG << "Target" << currentTarget()() << m_prevFullScreenPermission;
+            s_fullScreenTarget = currentTarget()();
         }
         updateLabel();
     }
     else if (a == "nextTarget")
     {
         DBG_MSG << "next target";
-        (*m_currentTarget)() += 1.0;
+        m_currentTarget() += 1.0;
 
-        if ((*m_currentTarget)() > 3.5)
+        if (m_currentTarget() > 3.5)
         {
-            (*m_currentTarget)() = 1.0;
+            m_currentTarget() = 1.0;
         }
 
-        if ((*currentTarget())() == "")
+        if (currentTarget()() == "")
         {
-            (*m_currentTarget)() += 1.0;
-            if ((*m_currentTarget)() > 3.5)
+            m_currentTarget() += 1.0;
+            if (m_currentTarget() > 3.5)
             {
-                (*m_currentTarget)() = 1.0;
+                m_currentTarget() = 1.0;
             }
         }
 
-        if ((*currentTarget())() == "")
+        if (currentTarget()() == "")
         {
-            (*m_currentTarget)() += 1.0;
-            if ((*m_currentTarget)() > 3.5)
+            m_currentTarget() += 1.0;
+            if (m_currentTarget() > 3.5)
             {
-                (*m_currentTarget)() = 1.0;
+                m_currentTarget() = 1.0;
             }
         }
 
@@ -359,11 +359,11 @@ void LapComparison::callAction(QString a)
     }
     else if (a == "incOffset")
     {
-        (*s_offset)() += 1;
+        s_offset() += 1;
     }
     else if (a == "decOffset")
     {
-        (*s_offset)() -= 1;
+        s_offset() -= 1;
     }
 }
 

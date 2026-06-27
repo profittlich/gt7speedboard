@@ -9,7 +9,11 @@ void Graph::addValue(size_t idx, float x, float y)
     {
         m_values.append(QList<float>());
     }
-    while (m_colors.size() < idx+1)
+    while (m_values.size() > m_types.size())
+    {
+        m_types.append(Plot);
+    }
+    while (m_values.size() > m_colors.size())
     {
         m_colors.append(QColor(1,1,1));
     }
@@ -24,7 +28,7 @@ void Graph::addValue(size_t idx, float x, float y)
         m_values[idx].pop_front();
     }
 
-    recalcExtents();
+    recalcExtents(); // this can be optimized by checking only the new points
     update();
 }
 
@@ -37,10 +41,20 @@ void Graph::setColor(size_t idx, QColor col)
     m_colors[idx] = col;
 }
 
+void Graph::setType(size_t idx, GraphTypes t)
+{
+    while (m_types.size() < idx+1)
+    {
+        m_types.append(Plot);
+    }
+    m_types[idx] = t;
+}
+
 void Graph::clear()
 {
     m_values.clear();
     m_colors.clear();
+    m_types.clear();
 }
 
 void Graph::recalcExtents()
@@ -133,7 +147,7 @@ void Graph::initializeGL()
         " gl_Position[2] = vPosition[2]; \n"
         " gl_Position[3] = vPosition[3]; \n"
         " gl_Position =  gl_Position * uWindowMatrix * uScaleMatrix * uCenterMatrix;\n"
-        //" gl_PointSize = 20.0;\n"
+        " gl_PointSize = 20.0;\n"
         "} \n";
 
     f->glShaderSource(m_vShader, 1, &vShaderStr, NULL);
@@ -216,7 +230,7 @@ void Graph::initializeGL()
 
 void Graph::resizeGL(int w, int h)
 {
-
+    m_viewportAspect = float(w)/float(h);
 }
 
 void Graph::paintGL()
@@ -227,9 +241,11 @@ void Graph::paintGL()
     }
 
     auto dx = m_maxX - m_minX;
-    auto cx = (m_maxX + m_minX)/2.0;
+    //auto cx = (m_maxX + m_minX)/2.0;
     auto dy = m_maxY - m_minY;
-    auto cy = (m_maxY + m_minY)/2.0;
+    //auto cy = (m_maxY + m_minY)/2.0;
+    auto aspect = dx/dy / m_viewportAspect;
+
 
     float centerScale = 0;
     if (dx > dy)
@@ -241,14 +257,13 @@ void Graph::paintGL()
         centerScale = dy;
     }
 
-    //DBG_MSG << dx << dy;
-    m_scaleMatrix[0] = 2/dx;//10000.0;//1.5/centerScale;
-    m_scaleMatrix[5] = 2/dy;//100.0;//1.5/centerScale;
-    m_scaleMatrix[10] = 1.0;//1.5/centerScale;
+    m_scaleMatrix[0] = 2/dx;
+    m_scaleMatrix[5] = 2/dy;
+    m_scaleMatrix[10] = 1.0;
     m_scaleMatrix[15] = 1.0;
 
-    m_centerMatrix[3] = -1;//-cx;
-    m_centerMatrix[7] = -1;//-cy;
+    m_centerMatrix[3] = -1;
+    m_centerMatrix[7] = -1;
 
     m_windowMatrix[3] = -(m_maxX-m_width);
     m_windowMatrix[7] = 0;
@@ -271,12 +286,102 @@ void Graph::paintGL()
 
     for (size_t idx = 0; idx < m_values.size(); ++idx)
     {
-        if (m_values[idx].size())
+        if (m_types[idx] == Plot)
         {
-            f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_values[idx].data());
-            f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
-            f->glEnableVertexAttribArray(0);
-            f->glDrawArrays(GL_LINE_STRIP, 0, m_values[idx].size()/3);
+            if (m_values[idx].size())
+            {
+                f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_values[idx].data());
+                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glEnableVertexAttribArray(0);
+                f->glDrawArrays(GL_LINE_STRIP, 0, m_values[idx].size()/3);
+            }
+        }
+        else if (m_types[idx] == MarkerDiamond)
+        {
+            if (m_values[idx].size())
+            {
+                m_markerArray.resize(0);
+                for (size_t mp = 0; mp < m_values[idx].size(); mp+=3)
+                {
+                    m_markerArray.append(m_values[idx][mp]-(dy*aspect)/10);
+                    m_markerArray.append(m_values[idx][mp+1]);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]+(dy*aspect)/10);
+                    m_markerArray.append(m_values[idx][mp+1]);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]);
+                    m_markerArray.append(m_values[idx][mp+1]+dy/10);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]+(dy*aspect)/10);
+                    m_markerArray.append(m_values[idx][mp+1]);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]-(dy*aspect)/10);
+                    m_markerArray.append(m_values[idx][mp+1]);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]);
+                    m_markerArray.append(m_values[idx][mp+1]-dy/10);
+                    m_markerArray.append(m_values[idx][mp+2]);
+                }
+                f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_markerArray.data());
+                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glEnableVertexAttribArray(0);
+                f->glDrawArrays(GL_TRIANGLES, 0, m_markerArray.size()/3);
+            }
+        }
+        else if (m_types[idx] == MarkerUp)
+        {
+            if (m_values[idx].size())
+            {
+                m_markerArray.resize(0);
+                for (size_t mp = 0; mp < m_values[idx].size(); mp+=3)
+                {
+                    m_markerArray.append(m_values[idx][mp]-(dy*aspect)/20);
+                    m_markerArray.append(m_values[idx][mp+1]-dy/20);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]+(dy*aspect)/20);
+                    m_markerArray.append(m_values[idx][mp+1]-dy/20);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]);
+                    m_markerArray.append(m_values[idx][mp+1]+dy/20);
+                    m_markerArray.append(m_values[idx][mp+2]);
+                }
+                f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_markerArray.data());
+                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glEnableVertexAttribArray(0);
+                f->glDrawArrays(GL_TRIANGLES, 0, m_markerArray.size()/3);
+            }
+        }
+        else if (m_types[idx] == MarkerDown)
+        {
+            if (m_values[idx].size())
+            {
+                m_markerArray.resize(0);
+                for (size_t mp = 0; mp < m_values[idx].size(); mp+=3)
+                {
+                    m_markerArray.append(m_values[idx][mp]+(dy*aspect)/20);
+                    m_markerArray.append(m_values[idx][mp+1]+dy/20);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]-(dy*aspect)/20);
+                    m_markerArray.append(m_values[idx][mp+1]+dy/20);
+                    m_markerArray.append(m_values[idx][mp+2]);
+
+                    m_markerArray.append(m_values[idx][mp]);
+                    m_markerArray.append(m_values[idx][mp+1]-dy/20);
+                    m_markerArray.append(m_values[idx][mp+2]);
+                }
+                f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_markerArray.data());
+                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glEnableVertexAttribArray(0);
+                f->glDrawArrays(GL_TRIANGLES, 0, m_markerArray.size()/3);
+            }
         }
     }
 

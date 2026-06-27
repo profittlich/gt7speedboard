@@ -2,6 +2,9 @@
 #include "src/system/Helpers.h"
 #include "TextInput.h"
 
+#include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonobject.h>
+#include <QtGui/qdesktopservices.h>
 #include <QtLogging>
 #include <QVBoxLayout>
 #include <QLineEdit>
@@ -13,6 +16,8 @@
 #include <QSpinBox>
 #include <QDir>
 #include <QFileDialog>
+#include <QNetworkAccessManager>
+#include <QMessageBox>
 
 #include "src/system/Configuration.h"
 
@@ -173,7 +178,18 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
     connect(cbFont, &QComboBox::currentIndexChanged, this, &StartScreen::selectFontSize);
     layout->addWidget(cbFont);
 
+#if defined(Q_OS_MACOS) || defined(Q_OS_WINDOWS)
+    QPushButton * btnUpdate = new QPushButton(this);
+    btnUpdate->setText("Check for updates");
+    btnUpdate->setStyleSheet ("height: 30px; background-color: #555;     border-style: none;  color:white; text-align:left;");
+    font = btnUpdate->font();
+    font.setPointSizeF(23);
+    font.setBold(false);
+    btnUpdate->setFont(font);
+    connect (btnUpdate, &QPushButton::clicked, this, &StartScreen::updateCheck);
 
+    layout->addWidget(btnUpdate);
+#endif
 
 //layout->addStretch();
 
@@ -222,6 +238,33 @@ void StartScreen::selectLayout(unsigned idx)
     else
     {
         g_globalConfiguration.setSelectedLayout(m_selectedLayout->itemData(idx).toString());
+    }
+}
+
+void StartScreen::updateCheck()
+{
+    auto manager = new QNetworkAccessManager(this);
+    connect (manager, &QNetworkAccessManager::finished, this, &StartScreen::updateReply);
+    manager->get(QNetworkRequest(QUrl("https://api.github.com/repos/profittlich/gt7speedboard/releases/latest")));
+}
+
+void StartScreen::updateReply (QNetworkReply *reply)
+{
+    QJsonDocument jDoc = QJsonDocument::fromJson(reply->readAll());
+    QJsonObject root = jDoc.object();
+    QString ver = root["tag_name"].toString();
+    if (ver == c_version)
+    {
+        QMessageBox::information(this, "Updates", "This is the current official version.\nYou are up to date.");
+    }
+    else
+    {
+        auto result = QMessageBox::information(this, "Updates", "This version is: " + c_version + "\nThe current official version is: " + ver + "\n\nYou you want to visit the download page?", QMessageBox::Yes | QMessageBox::No);
+        if (result == QMessageBox::Yes)
+        {
+            QDesktopServices::openUrl(QUrl(root["html_url"].toString()));
+        }
+
     }
 }
 

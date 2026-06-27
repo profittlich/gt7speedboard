@@ -21,6 +21,7 @@ public:
     virtual void presetSwitched() override;
     virtual QColor signalColor () const override;
     virtual void callAction(QString a) override;
+    virtual void loaded() override;
 
     static QString description ();
     static QMap<QString, Action> actions ();

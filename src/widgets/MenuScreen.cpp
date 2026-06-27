@@ -48,7 +48,10 @@ MenuScreen::MenuScreen (MainWidget * parent, PDash dash, PState state) : QScroll
 MenuScreen::~MenuScreen ()
 {
     MainWidget * mw = dynamic_cast<MainWidget*> (parent());
-    mw->m_inMenu--;
+    if (mw)
+    {
+        mw->m_inMenu--;
+    }
 }
 
 void MenuScreen::setTitle (QString t)

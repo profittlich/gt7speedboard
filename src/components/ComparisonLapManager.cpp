@@ -68,8 +68,13 @@ void ComparisonLapManager::updateClosestPoints (PTelemetryPoint p)
             else
             {
                 compLap->hasClosestPoint = false;
-                //qDebug() << "closest: " << compLap->name << "none";
+                //DBG_MSG << "closest: " << "none";
             }
+        }
+        else
+        {
+            //DBG_MSG << "no lap data";
+            compLap->hasClosestPoint = false;
         }
     }
 }

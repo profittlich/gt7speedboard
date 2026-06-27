@@ -5,6 +5,8 @@
 class Graph : public QOpenGLWidget
 {
 public:
+    typedef enum { Plot, MarkerDiamond, MarkerUp, MarkerDown } GraphTypes;
+
     Graph(QWidget * parent) : QOpenGLWidget(parent)
     {
         m_width = -1;
@@ -14,6 +16,7 @@ public:
 
     void addValue(size_t idx, float x, float y);
     void setColor(size_t idx, QColor col);
+    void setType(size_t idx, GraphTypes t);
 
     void clear();
     void setWidth (float px)
@@ -51,6 +54,10 @@ private:
     float m_rangeMinY = 0;
     float m_rangeMaxY = 0;
 
+    float m_viewportAspect;
+
     QList <QList<float>> m_values;
+    QList <float> m_markerArray;
     QList <QColor> m_colors;
+    QList <GraphTypes> m_types;
 };

@@ -23,6 +23,11 @@ public:
         m_useConfigs = on;
     }
 
+    T & getRef ()
+    {
+        return m_currentValue;
+    }
+
     T & operator()()
     {
         return m_currentValue;
@@ -81,9 +86,22 @@ private:
     QMap<QString, T> m_otherConfigs;
 };
 
-typedef QSharedPointer<ComponentParameter<float>> PComponentParameterFloat;
-typedef QSharedPointer<ComponentParameter<QString>> PComponentParameterString;
-typedef QSharedPointer<ComponentParameter<bool>> PComponentParameterBoolean;
+template<typename T>
+class PComponentParameter : public QSharedPointer<ComponentParameter<T>>
+{
+public:
+    PComponentParameter() : QSharedPointer<ComponentParameter<T>>() {}
+    PComponentParameter(ComponentParameter<T> *ptr) : QSharedPointer<ComponentParameter<T>>(ptr) {}
+
+    T & operator()() { return this->get()->getRef(); }
+    const T & operator()() const { return this->get()->getRef(); }
+
+};
+
+typedef PComponentParameter<float> PComponentParameterFloat;
+typedef PComponentParameter<QString> PComponentParameterString;
+typedef PComponentParameter<bool> PComponentParameterBoolean;
+typedef PComponentParameter<int> PComponentParameterInt;
 
 class Component : public QObject
 {
@@ -127,7 +145,7 @@ public:
         if (m_floatParameters.contains(p.name()))
         {
             DBG_MSG << p.name();
-            (*m_floatParameters[p.name()])() = p();
+            m_floatParameters[p.name()]() = p();
             if (overwritePresets)
             {
                 (*m_floatParameters[p.name()]).overwritePresets(p.getAll());
@@ -145,6 +163,38 @@ public:
         return ComponentParameter<float>("", 0, false);
     }
 
+    QList<ComponentParameter<int>> getIntParameters()
+    {
+        QList<ComponentParameter<int>> result = QList<ComponentParameter<int>>();
+        for (auto i : m_intParametersOrdered)
+        {
+            result.append(*i);
+        }
+
+        return result;
+    }
+
+    void setIntParameter (ComponentParameter<int> & p, bool overwritePresets = false) {
+        if (m_intParameters.contains(p.name()))
+        {
+            DBG_MSG << p.name();
+            m_intParameters[p.name()]() = p();
+            if (overwritePresets)
+            {
+                (*m_intParameters[p.name()]).overwritePresets(p.getAll());
+            }
+            parameterChanged(m_intParameters[p.name()]);
+        }
+    }
+
+    ComponentParameter<int> intParameter(const QString & key)
+    {
+        if (m_intParameters.contains(key))
+        {
+            return *m_intParameters[key];
+        }
+        return ComponentParameter<int>("", 0, false);
+    }
 
     QList<ComponentParameter<bool>> getBooleanParameters()
     {
@@ -161,7 +211,7 @@ public:
         if (m_booleanParameters.contains(p.name()))
         {
             DBG_MSG << p.name();
-            (*m_booleanParameters[p.name()])() = p();
+            m_booleanParameters[p.name()]() = p();
             if (overwritePresets)
             {
                 (*m_booleanParameters[p.name()]).overwritePresets(p.getAll());
@@ -194,7 +244,7 @@ public:
     {
         if (m_stringParameters.contains(p.name()))
         {
-            (*m_stringParameters[p.name()])() = p();
+            m_stringParameters[p.name()]() = p();
             if (overwritePresets)
             {
                 (*m_stringParameters[p.name()]).overwritePresets(p.getAll());
@@ -272,6 +322,11 @@ public:
             i->switchToPreset(preset);
             parameterChanged(i);
         }
+        for (auto i : m_intParameters)
+        {
+            i->switchToPreset(preset);
+            parameterChanged(i);
+        }
         presetSwitched();
     }
 
@@ -279,6 +334,7 @@ public:
     virtual void parameterChanged(const PComponentParameterFloat &) {}
     virtual void parameterChanged(const PComponentParameterBoolean &) {}
     virtual void parameterChanged(const PComponentParameterString &) {}
+    virtual void parameterChanged(const PComponentParameterInt &) {}
 
     const QMap<QString, Action> & getActions () const { return m_actions; }
     const QString & getDescription () const { return m_description; }
@@ -299,6 +355,11 @@ protected:
     {
         m_stringParameters[p->name()] = p;
         m_stringParametersOrdered.append(p);
+    }
+    void addComponentParameter (const PComponentParameterInt & p)
+    {
+        m_intParameters[p->name()] = p;
+        m_intParametersOrdered.append(p);
     }
 
 signals:
@@ -323,6 +384,8 @@ private:
     QList<PComponentParameterBoolean> m_booleanParametersOrdered;
     QMap<QString, PComponentParameterString> m_stringParameters;
     QList<PComponentParameterString> m_stringParametersOrdered;
+    QMap<QString, PComponentParameterInt> m_intParameters;
+    QList<PComponentParameterInt> m_intParametersOrdered;
 
     QString m_componentId;
     QString m_description;

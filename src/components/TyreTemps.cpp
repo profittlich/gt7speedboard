@@ -9,7 +9,7 @@ TyreTemps::TyreTemps () : Component(), m_target(new ComponentParameter<float>("t
     addComponentParameter(m_target);
     addComponentParameter(m_spread);
 
-    m_colorMapper = new ColorMapperBlueGreenRed((*m_target)(), (*m_spread)());
+    m_colorMapper = new ColorMapperBlueGreenRed(m_target(), m_spread());
 
     m_widget = new QWidget();
 
@@ -110,7 +110,7 @@ void TyreTemps::newPoint(PTelemetryPoint p)
     m_rl->setColor(m_colorMapper->getColor(rl));
     m_rr->setColor(m_colorMapper->getColor(rr));
 
-    emit setTitleSuffix("[" + QString::number((*m_target)()) + " °C]");
+    emit setTitleSuffix("[" + QString::number(m_target()) + " °C]");
 }
 
 
@@ -139,29 +139,29 @@ void TyreTemps::callAction(QString a)
 {
     if (a == "targetUp")
     {
-        if ((*m_target)() < 150)
+        if (m_target() < 150)
         {
-            (*m_target)()++;
-            m_colorMapper = new ColorMapperBlueGreenRed((*m_target)(), (*m_spread)());
+            m_target()++;
+            m_colorMapper = new ColorMapperBlueGreenRed(m_target(), m_spread());
             m_widget->update();
-            emit setTitleSuffix("[" + QString::number((*m_target)()) + " °C]");
+            emit setTitleSuffix("[" + QString::number(m_target()) + " °C]");
         }
     }
     else if (a == "targetDown")
     {
-        if ((*m_target)() > 20)
+        if (m_target() > 20)
         {
-            (*m_target)()--;
-            m_colorMapper = new ColorMapperBlueGreenRed((*m_target)(), (*m_spread)());
+            m_target()--;
+            m_colorMapper = new ColorMapperBlueGreenRed(m_target(), m_spread());
             m_widget->update();
-            emit setTitleSuffix("[" + QString::number((*m_target)()) + " °C]");
+            emit setTitleSuffix("[" + QString::number(m_target()) + " °C]");
         }
     }
 }
 
 void TyreTemps::presetSwitched()
 {
-    m_colorMapper = new ColorMapperBlueGreenRed((*m_target)(), (*m_spread)());
+    m_colorMapper = new ColorMapperBlueGreenRed(m_target(), m_spread());
 }
 
 

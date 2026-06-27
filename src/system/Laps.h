@@ -44,6 +44,10 @@ public:
 
     bool maybeOnSameTrack(PLap other)
     {
+        if (m_trackDetector.isNull() || other->trackDetector().isNull())
+        {
+            return false;
+        }
         return (other->trackDetector()->detectedTrack().get () == trackDetector()->detectedTrack().get()) ||
                trackDetector()->isAmongCandidates(other->trackDetector()->detectedTrack()) ||
                other->trackDetector()->isAmongCandidates(trackDetector()->detectedTrack());
@@ -84,7 +88,7 @@ public:
     {
         if (m_succeedingPoint.isNull())
         {
-            DBG_MSG << "return NULL for" << points()[0]->currentLap();
+            DBG_MSG << "return NULL for" << (points().size() == 0 ? -1 : points()[0]->currentLap());
             return -1;
         }
         return m_succeedingPoint->lastLapMs();
@@ -105,6 +109,8 @@ public:
         DBG_MSG << "Invalidate lap";
         m_valid = false;
     }
+
+    void updateValidity();
 
     PTelemetryPoint loopedPoint(int index) const
     {

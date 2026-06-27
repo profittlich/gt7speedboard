@@ -91,5 +91,6 @@
         <file>assets/tracks/Willow Springs International Raceway - Streets of Willow Springs.gt7track</file>
         <file>assets/tracks/Yas Marina Circuit - Full Course.gt7track</file>
         <file>assets/SpeedBoard_Icon_512.png</file>
+        <file>assets/BrakeBoard.sblayout</file>
     </qresource>
 </RCC>

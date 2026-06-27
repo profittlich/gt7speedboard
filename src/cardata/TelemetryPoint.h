@@ -6,6 +6,10 @@
 #include <src/cardata/WheelData.h>
 #include <QMap>
 
+class TelemetryPoint;
+
+typedef QSharedPointer<TelemetryPoint> PTelemetryPoint;
+
 class TelemetryPoint : public Point
 {
 public:
@@ -15,6 +19,7 @@ public:
     }
 
     virtual QByteArray getData() = 0;
+    virtual PTelemetryPoint copy() = 0;
 
     virtual int getInt(size_t key);
     virtual float getFloat(size_t key);
@@ -214,5 +219,3 @@ private:
 
 };
 
-
-typedef QSharedPointer<TelemetryPoint> PTelemetryPoint;

@@ -61,6 +61,20 @@ QJsonValue DashComponent::toJson()
             presets[j].insert(i.name(), all[j]);
         }
     }
+    for (auto i : m_component->getIntParameters())
+    {
+        found = true;
+        conf.insert(i.name(), i());
+        QMap<QString, int> all = i.getAll();
+        for (auto j : all.keys())
+        {
+            if (!presets.contains(j))
+            {
+                presets[j] = QJsonObject();
+            }
+            presets[j].insert(i.name(), all[j]);
+        }
+    }
 
     if (found)
     {

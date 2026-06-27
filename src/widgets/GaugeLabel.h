@@ -14,7 +14,11 @@ public:
     GaugeLabel(QWidget * parent, const float base, const float spread, bool twoWay, bool vertical, bool displayExcess=false);
 
     void setValue(const float value);
+    void setSpread(float s);
+    void setBase (float b);
     void disable();
+    void setStickyBars(bool on);
+    void setBarColors (QColor neg, QColor pos);
 
 protected:
     void mouseReleaseEvent(QMouseEvent * ev);
@@ -25,6 +29,8 @@ signals:
 
 private:
     QColor m_backgroundColor;
+    QColor m_minusColor;
+    QColor m_plusColor;
     QPainter m_painter;
     QLinearGradient m_minusGradient;
     QLinearGradient m_plusGradient;

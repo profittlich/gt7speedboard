@@ -77,11 +77,16 @@ void LapTimes::completedLap(PLap lap, bool)
                     txt += i + ": N/A";
                 }
             }
-            PTelemetryPointGT7 pgt7 = state()->comparisonLaps[i]->lap->points()[0].dynamicCast<TelemetryPointGT7>();
+
             QString carName = "unknown car";
-            if (!pgt7.isNull())
+            if (!state()->comparisonLaps[i]->lap->points().empty())
             {
-                carName = g_globalConfiguration.carName(pgt7->carID());
+                PTelemetryPointGT7 pgt7 = state()->comparisonLaps[i]->lap->points()[0].dynamicCast<TelemetryPointGT7>();
+
+                if (!pgt7.isNull())
+                {
+                    carName = g_globalConfiguration.carName(pgt7->carID());
+                }
             }
             txt += " <font color=\"gray\">(" + state()->comparisonLaps[i]->lap->trackName() + ", " + carName + ")</font><br>";
         }

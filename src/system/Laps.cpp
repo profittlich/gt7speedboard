@@ -142,6 +142,15 @@ QList<PLap> Lap::loadLaps(QString filename, bool detectTrack)
     return result;
 }
 
+void Lap::updateValidity()
+{
+    for (size_t i = 0 ; i < m_points.size()-1; ++i)
+    {
+        m_valid &= m_points[i]->position().distanceTo(m_points[i+1]->position()) < 5.0; // todo: constant
+    }
+    m_valid &= m_points.front()->position().distanceTo(m_points.back()->position()) < 20.0; // todo: constant
+}
+
 QPair<size_t, float> Lap::findClosestPoint(PPoint p, size_t start, float cancelRange) const
 {
 #if 0
@@ -190,7 +199,7 @@ QPair<size_t, float> Lap::findClosestPoint(PPoint p, size_t start, float cancelR
     //DBG_MSG << "start search";
     if (start > 60)
     {
-        start -= 60;
+        start -= 60; // todo: this seems sketchy
     }
     for (int i = start; i < start + m_points.size(); ++i)
     {
@@ -230,6 +239,11 @@ void Lap::appendTelemetryPoint(PTelemetryPoint p)
     {
         m_trackDetector->addPoint(p);
     }
+    /*if (!m_points.empty() && p->position().distanceTo(m_points.back()->position()) > 5.0)
+    {
+        invalidate();
+    }*/
+
     m_points.append(p);
     /*int xQuad = p->position().x()/c_quadSize;
     int yQuad = p->position().y()/c_quadSize;

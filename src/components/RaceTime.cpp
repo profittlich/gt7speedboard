@@ -41,15 +41,15 @@ void RaceTime::newPoint(PTelemetryPoint p)
     float laps = p->currentLap()-1;
 
     //DBG_MSG << "Race estimation available:" << m_started;
-    if (m_started && (*m_showLaps)() && laps > 0)
+    if (m_started && m_showLaps() && laps > 0)
     {
-        float lapsLeft = (laps / m_elapsed) * (1000 * 60 * (*m_raceLength)()) - laps;
+        float lapsLeft = (laps / m_elapsed) * (1000 * 60 * m_raceLength()) - laps;
         //DBG_MSG << "rounded laps left:" << lapsLeft;
         lapsLeft = ceil(lapsLeft);
         QString risk = "";
         if (state()->lapProgress > -0.5)
         {
-            lapsLeft = (laps + state()->lapProgress) / ms * (1000 * 60 * (*m_raceLength)()) - laps;
+            lapsLeft = (laps + state()->lapProgress) / ms * (1000 * 60 * m_raceLength()) - laps;
             //DBG_MSG << "exact laps left:" << lapsLeft;
             if (lapsLeft - int(lapsLeft) > 0.9)
             {
@@ -65,12 +65,12 @@ void RaceTime::newPoint(PTelemetryPoint p)
             //DBG_MSG << "with final lap:" << lapsLeft;
             lapsLeft = round(100*lapsLeft) / 100;
         }
-        m_widget->setText (elapsed + " (" + QString::number((*m_raceLength)()) + " min. race)\n" + QString::number(lapsLeft) + risk + " laps to go");
+        m_widget->setText (elapsed + " (" + QString::number(m_raceLength()) + " min. race)\n" + QString::number(lapsLeft) + risk + " laps to go");
 
     }
-    else if ((*m_showLaps)())
+    else if (m_showLaps())
     {
-        m_widget->setText (elapsed + " (" + QString::number((*m_raceLength)()) + " min. race)");
+        m_widget->setText (elapsed + " (" + QString::number(m_raceLength()) + " min. race)");
     }
     else
     {
@@ -102,21 +102,21 @@ void RaceTime::callAction(QString a)
 {
     if (a == "timeUp")
     {
-        if ((*m_raceLength)() < 1440)
+        if (m_raceLength() < 1440)
         {
-            (*m_raceLength)()++;
+            m_raceLength()++;
         }
     }
     else if (a == "timeDown")
     {
-        if ((*m_raceLength)() > 1)
+        if (m_raceLength() > 1)
         {
-            (*m_raceLength)()--;
+            m_raceLength()--;
         }
     }
     else if (a == "toggleLapsLeft")
     {
-        (*m_showLaps)() = !(*m_showLaps)();
+        m_showLaps() = !m_showLaps();
     }
 }
 

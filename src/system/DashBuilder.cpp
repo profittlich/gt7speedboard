@@ -120,6 +120,12 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
         if (curObj.contains("configuration") && curObj["configuration"].isObject())
         {
             config = curObj["configuration"].toObject();
+            auto ints = cmp->getIntParameters();
+            QList<QString> intKeys;
+            for (auto i : ints)
+            {
+                intKeys.append(i.name());
+            }
 
             for (const auto & i : config.keys())
             {
@@ -131,10 +137,20 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
                 }
                 else if (config[i].isDouble())
                 {
-                    DBG_MSG << "Set number" << i << QString::number (config[i].toDouble());
-                    DBG_MSG << "Param" << i << config[i];
-                    ComponentParameter<float> param (i, config[i].toDouble());
-                    cmp->setFloatParameter(param);
+                    if (intKeys.contains(i))
+                    {
+                        DBG_MSG << "Set int number" << i << QString::number (config[i].toDouble());
+                        DBG_MSG << "Param" << i << config[i];
+                        ComponentParameter<int> param (i, round(config[i].toDouble()));
+                        cmp->setIntParameter(param);
+                    }
+                    else
+                    {
+                        DBG_MSG << "Set float number" << i << QString::number (config[i].toDouble());
+                        DBG_MSG << "Param" << i << config[i];
+                        ComponentParameter<float> param (i, config[i].toDouble());
+                        cmp->setFloatParameter(param);
+                    }
                 }
                 else if (config[i].isBool())
                 {

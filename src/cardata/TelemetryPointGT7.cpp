@@ -103,6 +103,11 @@ TelemetryPointGT7::TelemetryPointGT7(const QByteArray & data)
     setIsPaused(flags & 0x2);
 }
 
+PTelemetryPoint TelemetryPointGT7::copy()
+{
+    return PTelemetryPointGT7(new TelemetryPointGT7(*this));
+}
+
 QByteArray TelemetryPointGT7::getData()
 {
     return m_data;

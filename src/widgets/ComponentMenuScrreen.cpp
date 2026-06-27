@@ -84,6 +84,12 @@ void ComponentContextMenuScreen::updateParams()
     {
         m_lbParam->setText (m_lbParam->text() + i.name() + ": " + QString::number(i()) + "\n");
     }
+
+    auto intLabels = m_component->getIntParameters();
+    for (auto i : intLabels)
+    {
+        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + QString::number(i()) + "\n");
+    }
 }
 
 void ComponentContextMenuScreen::actionClicked()

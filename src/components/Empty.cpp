@@ -24,11 +24,11 @@ void Empty::parameterChanged(const PComponentParameterString & p)
 {
     if (p == m_text)
     {
-        m_widget->setText((*m_text)());
+        m_widget->setText(m_text());
     }
     else if (p == m_color)
     {
-        m_widget->setStyleSheet("color : " + (*m_color)() + ";");
+        m_widget->setStyleSheet("color : " + m_color() + ";");
     }
 }
 
@@ -37,9 +37,8 @@ void Empty::parameterChanged(const PComponentParameterFloat & p)
     DBG_MSG << "float parameterChanged";
     if (p == m_hideWidget)
     {
-        DBG_MSG << "hideWidget" << (*m_hideWidget)();
-        //m_widget->setHidden((*m_hideWidget)() > 0.5);
-        if ((*m_hideWidget)() > 0.5)
+        DBG_MSG << "hideWidget" << m_hideWidget();
+        if (m_hideWidget() > 0.5)
         {
             m_widget->setDisabled(true);
         }

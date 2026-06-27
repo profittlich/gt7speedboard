@@ -8,13 +8,15 @@ QT_ANDROID_APP_ICON = @mipmap/ic_launcher
 }
 
 
-CONFIG += c++17
+CONFIG += c++20
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/components/BrakeBoard.cpp \
+    src/components/LapOptimizer.cpp \
     src/widgets/MainWidget.cpp \
     src/main.cpp \
     src/cardata/TelemetryPoint.cpp \
@@ -81,6 +83,8 @@ SOURCES += \
     src/widgets/TextInput.cpp
 
 HEADERS += \
+    src/components/BrakeBoard.h \
+    src/components/LapOptimizer.h \
     src/widgets/MainWidget.h \
     contrib/Salsa20-master/Source/Salsa20.h \
     contrib/Salsa20-master/Source/Salsa20.inl \
@@ -200,6 +204,7 @@ DISTFILES += \
     android/build.gradle \
     android/res/values/libs.xml \
     android/res/xml/qtprovider_paths.xml \
+    assets/BrakeBoard.sblayout \
     assets/Default.sblayout \
     assets/SpeedBoard_Logo_black.png \
     assets/SpeedBoard_Logo_black_trans.png \

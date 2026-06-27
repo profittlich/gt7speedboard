@@ -5,22 +5,34 @@ GaugeLabel::GaugeLabel(QWidget * parent, const float base, const float spread, b
 {
     m_countdownPos = 0;
     m_countdownNeg = 0;
-    m_stickyBars = true;
 
     setMinimumSize(10, 0);
     setValue(m_base);
     m_backgroundColor = g_globalConfiguration.backgroundColor();
 
+    setBarColors(0xff0000, 0x00ff00);
 
+
+}
+
+void GaugeLabel::setStickyBars(bool on)
+{
+    m_stickyBars = on;
+}
+
+void GaugeLabel::setBarColors (QColor neg, QColor pos)
+{
+    DBG_MSG << "Set Bar Colors" << neg << pos;
+    m_minusColor = neg;
+    m_plusColor = pos;
     m_minusGradient = QLinearGradient (0, 10,0,120);
     m_minusGradient.setColorAt(0.0, QColor(0x222222));
     m_minusGradient.setColorAt(0.2, QColor(0x222222));
-    m_minusGradient.setColorAt(1.0, QColor(0xff0000));
+    m_minusGradient.setColorAt(1.0, QColor(neg));
     m_plusGradient = QLinearGradient (0, 10,0,120);
     m_plusGradient.setColorAt(0.0, QColor(0X222222));
     m_plusGradient.setColorAt(0.2, QColor(0x222222));
-    m_plusGradient.setColorAt(1.0, QColor(0xff00));
-
+    m_plusGradient.setColorAt(1.0, QColor(pos));
 }
 
 void GaugeLabel::setValue (const float value)
@@ -61,6 +73,16 @@ void GaugeLabel::setValue (const float value)
     }
 
     update();
+}
+
+void GaugeLabel::setSpread(float s)
+{
+    m_spread = s;
+}
+
+void GaugeLabel::setBase (float b)
+{
+    m_base = b;
 }
 
 void GaugeLabel::disable()
@@ -149,7 +171,7 @@ void GaugeLabel::paintEvent(QPaintEvent * ev)
 
             if (m_countdownNeg > 0)
             {
-                QPen pen(QColor(255,0,0));
+                QPen pen(m_minusColor);
                 pen.setWidth(3);
                 m_painter.setPen(pen);
                 auto temp = (m_stickyNeg - m_base) / m_spread;
@@ -158,7 +180,7 @@ void GaugeLabel::paintEvent(QPaintEvent * ev)
 
             if (m_countdownPos > 0)
             {
-                QPen pen(QColor(0,255,0));
+                QPen pen(m_plusColor);
                 pen.setWidth(3);
                 m_painter.setPen(pen);
                 auto temp = (m_stickyPos - m_base) / m_spread;

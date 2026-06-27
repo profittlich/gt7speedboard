@@ -84,7 +84,7 @@ void FuelRange::newPoint(PTelemetryPoint p)
             m_widget->setTextColor(Qt::white);
         }
         m_widget->setText (QString::number(round(range)/100.) + " of " + QString::number(round(1.0/state()->fuelData.fuelPerLap * 100.)/100.) + " LAPS"
-                          + ((*m_showTime)() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): ""));
+                          + (m_showTime() ? "\n" + sToTime(p->currentFuel() * state()->fuelData.fuelTime / 100000) + " of " + sToTime(state()->fuelData.fuelTime / 1000): ""));
         m_widget->update();
 
     }
@@ -115,7 +115,7 @@ void FuelRange::callAction(QString a)
 {
     if (a == "toggle time left")
     {
-        (*m_showTime)() = !(*m_showTime)();
+        m_showTime() = !m_showTime();
     }
 }
 

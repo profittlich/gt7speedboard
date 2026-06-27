@@ -9,6 +9,7 @@ public:
     TelemetryPointGT7(const QByteArray & data);
 
     virtual QByteArray getData() override;
+    virtual PTelemetryPoint copy() override;
 
     virtual int getInt(size_t key) override;
 

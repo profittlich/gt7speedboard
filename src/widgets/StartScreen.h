@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QComboBox>
+#include <QNetworkReply>
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets/qstackedlayout.h>
 #include "ImageLabel.hpp"
@@ -24,6 +25,8 @@ public slots:
     void editIP();
     void gotNewIP();
     void textInputCancelled();
+    void updateCheck();
+    void updateReply(QNetworkReply *reply);
 
 signals:
     void startDash();

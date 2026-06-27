@@ -24,7 +24,7 @@ PresetSelector::PresetSelector () : Component(), m_preset(new ComponentParameter
     m_label->setStyleSheet("color : #fff;");
     m_label->setText("<none>");
 
-    m_presetList = (*m_presetListParameter)().split(";");
+    m_presetList = m_presetListParameter().split(";");
 }
 
 QWidget * PresetSelector::getWidget() const
@@ -54,7 +54,7 @@ QMap<QString, Action> PresetSelector::actions ()
 
 void PresetSelector::presetSwitched()
 {
-    m_presetList = (*m_presetListParameter)().split(";");
+    m_presetList = m_presetListParameter().split(";");
 }
 
 QString PresetSelector::componentId ()
