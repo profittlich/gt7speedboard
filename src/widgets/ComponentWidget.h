@@ -4,6 +4,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QElapsedTimer>
+#include <QtCore/qtimer.h>
 #include "src/system/Dash.h"
 #include "src/widgets/DashWidget.h"
 #include "src/components/Component.h"
@@ -57,6 +58,9 @@ public:
         setContentsMargins(0,0,0,0);
         m_layout->setContentsMargins(0,0,0,0);
         //setStyleSheet("background-color:red;");
+
+        m_longClickTimer.setSingleShot(true);
+        connect (&m_longClickTimer, &QTimer::timeout, this, &ComponentWidget::longClick);
     }
 
     PComponent component() { return m_component; }
@@ -115,26 +119,27 @@ protected:
         if (event->type() == QEvent::MouseButtonPress && mev->button() == Qt::LeftButton  )
         {
             DBG_MSG << "Mouse press";
-            m_longClickTimer.restart();
+            m_longClickTimer.start(g_globalConfiguration.longClickTimeout());
             return true;
         }
         else if (event->type() == QEvent::MouseButtonDblClick && mev->button() == Qt::LeftButton  )
         {
-            DBG_MSG << "Mouse click";
-            m_longClickTimer.restart();
+            DBG_MSG << "Mouse double click";
+            m_longClickTimer.start(g_globalConfiguration.longClickTimeout());
             return true;
         }
         else if (event->type() == QEvent::MouseButtonRelease && mev->button() == Qt::LeftButton)
         {
-            DBG_MSG << m_longClickTimer.elapsed();
-            if (m_longClickTimer.elapsed() > g_globalConfiguration.longClickTimeout())
+            if (m_longClickTimer.isActive())
             {
-                DBG_MSG << "Long click";
-                emit longClick();
+                DBG_MSG << "Regular click, stop long press timer";
+                m_longClickTimer.stop();
+            }
+            else
+            {
+                DBG_MSG << "Long clicked, ignore mouse release";
                 return true;
             }
-
-            return false;
         }
         else if (event->type() == QEvent::MouseButtonPress && mev->button() == Qt::RightButton)
         {
@@ -230,7 +235,7 @@ private:
     PComponent m_component;
     QGridLayout * m_layout = nullptr;
     QString m_headText;
-    QElapsedTimer m_longClickTimer;
+    QTimer m_longClickTimer;
     QLayout * m_ownLayout = nullptr;
     QStackedWidget * m_ownStack = nullptr;
     bool m_backButton = false;
