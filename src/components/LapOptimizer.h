@@ -1,14 +1,11 @@
 #pragma once
 
 #include "src/components/Component.h"
-#include "src/widgets/ColorLabel.h"
 
-#include <QScrollArea>
-
-class LapTimes : public Component
+class LapOptimizer : public Component
 {
 public:
-    LapTimes ();
+    LapOptimizer ();
 
     virtual QWidget * getWidget() const override;
 
@@ -17,18 +14,17 @@ public:
     virtual void newPoint(PTelemetryPoint p) override;
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
 
-    virtual void callAction(QString a) override;
-
     static QString description ();
     static QMap<QString, Action> actions ();
     static QString componentId ();
 
 protected:
-    void setupScroller(QScrollArea *area);
-    void exportCSV();
-
+    void publishOptimizingLap();
 
 private:
-    QScrollArea * m_scroller = nullptr;
-    QLabel * m_widget = nullptr;
+    PComparisonLap m_preparingOptimized;
+    PLap m_optimizingLap;
+    size_t m_curIndex = 0;
+    size_t m_curLiveIndex = 0;
+    bool m_curBrake = false;
 };

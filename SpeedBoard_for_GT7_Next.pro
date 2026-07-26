@@ -15,7 +15,10 @@ CONFIG += c++20
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/cardata/LinearInterpolator.cpp \
     src/components/BrakeBoard.cpp \
+    src/components/DataGraph.cpp \
+    src/components/DebugLog.cpp \
     src/components/LapOptimizer.cpp \
     src/widgets/MainWidget.cpp \
     src/main.cpp \
@@ -83,7 +86,11 @@ SOURCES += \
     src/widgets/TextInput.cpp
 
 HEADERS += \
+    src/cardata/LinearInterpolator.h \
+    src/cardata/TelemetryInterpolator.h \
     src/components/BrakeBoard.h \
+    src/components/DataGraph.h \
+    src/components/DebugLog.h \
     src/components/LapOptimizer.h \
     src/widgets/MainWidget.h \
     contrib/Salsa20-master/Source/Salsa20.h \

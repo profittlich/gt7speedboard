@@ -121,7 +121,7 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
     */
 
     auto cbFont = new QComboBox(this);
-    cbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
+    cbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white; selection-background-color: #777; selection-color: white;");
     fnt = cbFont->font();
     fnt.setPointSize(20);
     cbFont->setFont(fnt);

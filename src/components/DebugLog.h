@@ -2,22 +2,19 @@
 
 #include "src/components/Component.h"
 #include "src/widgets/ColorLabel.h"
+#include <QtCore/qdatetime.h>
+#include <QtWidgets/qscrollarea.h>
 
-#include <QScrollArea>
-
-class LapTimes : public Component
+class DebugLog : public Component
 {
 public:
-    LapTimes ();
+    DebugLog ();
 
     virtual QWidget * getWidget() const override;
 
     virtual QString defaultTitle () const override;
 
     virtual void newPoint(PTelemetryPoint p) override;
-    virtual void completedLap(PLap lastLap, bool isFullLap) override;
-
-    virtual void callAction(QString a) override;
 
     static QString description ();
     static QMap<QString, Action> actions ();
@@ -25,10 +22,8 @@ public:
 
 protected:
     void setupScroller(QScrollArea *area);
-    void exportCSV();
-
 
 private:
     QScrollArea * m_scroller = nullptr;
-    QLabel * m_widget = nullptr;
+    ColorLabel * m_widget = nullptr;
 };

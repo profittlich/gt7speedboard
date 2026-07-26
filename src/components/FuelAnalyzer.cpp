@@ -38,7 +38,6 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
         return;
     }
 
-    DBG_MSG << isFullLap << state()->previousLaps.back()->points().empty();
     if (!state()->previousLaps.back()->points().empty())
     {
         auto lastConsumption = fabs(state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel());
@@ -62,13 +61,11 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
         for (size_t i = 0; i < m_previousLapFuel.size(); ++i)
         {
             avgConsumption += m_previousLapFuel[i] * 1.0/(m_previousLapFuel.size());
-            DBG_MSG << ("Used fuel: " + QString::number(m_previousLapFuel[i]).toLatin1() + " " + QString::number(avgConsumption).toLatin1());
         }
         float avgLapTime = 0;
         for (size_t i = 0; i < m_previousLapTimes.size(); ++i)
         {
             avgLapTime += m_previousLapTimes[i] * 1.0/(m_previousLapTimes.size());
-            DBG_MSG << ("Fuel time: " + QString::number(m_previousLapTimes[i]).toLatin1() + " " + QString::number(avgLapTime).toLatin1());
         }
         float fuelCapacity = m_curPoint->fuelCapacity();
         if (m_curPoint->fuelCapacity() <= std::numeric_limits<float>::epsilon())

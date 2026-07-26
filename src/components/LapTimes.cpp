@@ -51,6 +51,11 @@ QString LapTimes::defaultTitle () const
     return "Times";
 }
 
+void LapTimes::newPoint(PTelemetryPoint p)
+{
+    //completedLap(PLap(), true);
+}
+
 void LapTimes::completedLap(PLap lap, bool)
 {
     QString txt = "";
@@ -60,9 +65,13 @@ void LapTimes::completedLap(PLap lap, bool)
         {
             auto lapTime = state()->comparisonLaps[i]->lap->lapTime();
 
-            if (lapTime >= 0)
+            if (lapTime >= 0 && state()->comparisonLaps[i]->lap->valid())
             {
                 txt += i + ": " + msToTime(lapTime);
+            }
+            else if (lapTime >= 0)
+            {
+                txt += i + ": (" + msToTime(lapTime) + ")";
             }
             else
             {
@@ -96,12 +105,16 @@ void LapTimes::completedLap(PLap lap, bool)
     for (size_t i = 0; i < numLaps; ++i)
     {
         PLap cur = state()->previousLaps[numLaps - i - 1];
-        if (cur->points()[0]->currentLap() >= 1)
+        if (cur->points()[0]->currentLap() >= 1 && !lap.isNull())
         {
             auto lapTime = cur->lapTime();
-            if (lapTime >= 0)
+            if (lapTime >= 0 && cur->valid())
             {
                 txt += QString::number (cur->points()[0]->currentLap()) + ": " + msToTime(lapTime);
+            }
+            else if (lapTime >= 0)
+            {
+                txt += QString::number (cur->points()[0]->currentLap()) + ": (" + msToTime(lapTime) + ")";
             }
             else
             {

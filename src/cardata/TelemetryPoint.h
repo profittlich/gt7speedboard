@@ -59,7 +59,7 @@ public:
 
     void setTyreTemperature(const WheelData<float> & v) { m_tyreTemperature = v; }
 
-    void setTyreSpeed(const WheelData<float> & v) { m_tyreSpeed = v; }
+    void setWheelRps(const WheelData<float> & v) { m_wheelRps = v; }
 
     void setSuspension(const WheelData<float> & v) { m_suspension = v; }
 
@@ -70,7 +70,7 @@ public:
     void setRpmRevLimiter(const int32_t & v) { m_rpmRevLimiter = v; }
     void setEstimatedTopSpeed(const float & v) { m_estimatedTopSpeed = v; }
 
-    void setGear(const unsigned index, const float & v) { m_gear[index] = v; }
+    void setGear(const unsigned index, const float & v) { m_gear[index-1] = v; }
 
     void setCurrentLap(const int32_t & v) { m_currentLap = v; }
     void setTotalLaps(const int32_t & v) { m_totalLaps = v; }
@@ -88,11 +88,35 @@ public:
     void setInGear(const bool & v) { m_inGear = v; }
     void setHasTurbo(const bool & v) { m_hasTurbo = v; }
     void setRevLimiterBlinkAlertActive(const bool & v) { m_revLimiterBlinkAlertActive = v; }
+    void setHandBrakeActive(const bool & v) { m_handBrakeActive = v; }
     void setLightsActive(const bool & v) { m_lightsActive = v; }
     void setHighBeamActive(const bool & v) { m_highBeamActive = v; }
     void setLowBeamActive(const bool & v) { m_lowBeamActive = v; }
     void setAsmActive(const bool & v) { m_asmActive = v; }
     void setTcsActive(const bool & v) { m_tcsActive = v; }
+
+    // B
+
+    void setSteeringWheelRotation (float val) { m_steeringWheelRotation = val; }
+    void setSteeringWheelVelocity (float val) { m_steeringWheelVelocity = val; }
+    void setShs(Vector3D<float> val) { m_shs = val; }
+
+    // ~
+    void setFilteredThrottle (float val) { m_filteredThrottle = val; }
+    void setFilteredBrake (float val) { m_filteredBrake = val; }
+
+    void setTorque (WheelData<float> val) { m_torque = val; }
+
+    void setEnergyRecovery (float val) { m_energyRecovery = val; }
+
+    // C
+    void setSurface (WheelData<int>val) { m_surface = val; }
+    void setCurrentLapMs (int32_t val) { m_currentLapMs = val; }
+    void setSteeringAngleL (float val) { m_steeringAngleL = val; }
+    void setSteeringAngleR (float val) { m_steeringAngleR = val; }
+    void setWheelBase (float val) { m_wheelBase = val; }
+
+
 
     /* GETTERS */
     const unsigned & sequenceNumber() const { return m_sequenceNumber; }
@@ -120,7 +144,7 @@ public:
 
     const WheelData<float> & tyreTemperature() const { return m_tyreTemperature; }
 
-    const WheelData<float> & tyreSpeed() const { return m_tyreSpeed; }
+    const WheelData<float> & wheelRps() const { return m_wheelRps; }
 
     const WheelData<float> & suspension() const { return m_suspension; }
 
@@ -131,7 +155,7 @@ public:
     const int32_t & rpmRevLimiter() const { return m_rpmRevLimiter; }
     const float & estimatedTopSpeed() const { return m_estimatedTopSpeed; }
 
-    const float & gear(unsigned index) const { return m_gear[index]; }
+    const float & gear(unsigned index) const { return m_gear[index-1]; }
 
     const int32_t & currentLap() const { return m_currentLap; }
     const int32_t & totalLaps() const { return m_totalLaps; }
@@ -149,11 +173,34 @@ public:
     const bool & inGear() const { return m_inGear; }
     const bool & hasTurbo() const { return m_hasTurbo; }
     const bool & revLimiterBlinkAlertActive() const { return m_revLimiterBlinkAlertActive; }
+    const bool & handBrakeActive() const { return m_handBrakeActive; }
     const bool & lightsActive() const { return m_lightsActive; }
     const bool & highBeamActive() const { return m_highBeamActive; }
     const bool & lowBeamActive() const { return m_lowBeamActive; }
     const bool & asmActive() const { return m_asmActive; }
     const bool & tcsActive() const { return m_tcsActive; }
+
+    // B
+
+    const float & steeringWheelRotation() const { return m_steeringWheelRotation; }
+    const float & steeringWheelVelocity() const { return m_steeringWheelVelocity; }
+    const Vector3D<float> & shs() const { return m_shs; }
+
+    // ~
+    const float & filteredThrottle() const { return m_filteredThrottle; }
+    const float & filteredBrake() const { return m_filteredBrake; }
+
+    const WheelData<float> & torque() const { return m_torque; }
+
+    const float & energyRecovery() const { return m_energyRecovery; }
+
+    // C
+    const WheelData<int> & surface() const { return m_surface; }
+    const int32_t & currentLapMs() const { return m_currentLapMs; }
+    const float & steeringAngleL() const { return m_steeringAngleL; }
+    const float & steeringAngleR() const { return m_steeringAngleR; }
+    const float & wheelBase() const { return m_wheelBase; }
+
 
 private:
     /* PROPERTIES */
@@ -182,7 +229,7 @@ private:
 
     WheelData<float> m_tyreTemperature;
 
-    WheelData<float> m_tyreSpeed;
+    WheelData<float> m_wheelRps;
 
     WheelData<float> m_suspension;
 
@@ -211,11 +258,33 @@ private:
     bool m_inGear;
     bool m_hasTurbo;
     bool m_revLimiterBlinkAlertActive;
+    bool m_handBrakeActive;
     bool m_lightsActive;
     bool m_highBeamActive;
     bool m_lowBeamActive;
     bool m_asmActive;
     bool m_tcsActive;
+
+    // B
+
+    float m_steeringWheelRotation;
+    float m_steeringWheelVelocity;
+    Vector3D<float> m_shs; // sway, heave, surge
+
+    // ~
+    float m_filteredThrottle;
+    float m_filteredBrake;
+
+    WheelData<float> m_torque;
+
+    float m_energyRecovery;
+
+    // C
+    WheelData<int> m_surface;
+    int32_t m_currentLapMs;
+    float m_steeringAngleL;
+    float m_steeringAngleR;
+    float m_wheelBase;
 
 };
 

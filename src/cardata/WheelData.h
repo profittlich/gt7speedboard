@@ -32,3 +32,14 @@ private:
     T m_rr;
 };
 
+template<typename T>
+WheelData<T> operator*(float c, WheelData<T> w)
+{
+    return WheelData<T> (c * w.fl(), c * w.fr(), c * w.rl(), c * w.rr());
+}
+
+template<typename T>
+WheelData<T> operator+(WheelData<T> w1, WheelData<T> w2)
+{
+    return WheelData<T> (w1.fl() + w2.fl(), w1.fr() + w2.fr(), w1.rl() + w2.rl(), w1.rr() + w2.rr());
+}

@@ -22,6 +22,7 @@ void setKeepScreenOn(bool enable);
 
 const QString c_version = "RED-BETA-C";
 const float c_FPS = 59.94;
+extern QString g_debugText;
 
 void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt);
 

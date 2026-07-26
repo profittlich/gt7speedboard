@@ -20,10 +20,12 @@ IOPMAssertionID g_assertionID;
 #endif
 #endif
 
+QString g_debugText;
 
 void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt)
 {
     std::cout << txt.toStdString() << std::endl;
+    g_debugText += txt.toStdString() + "\n";
 
     QDir storeLoc = getStorageLocation();
     QFile outFile (storeLoc.absolutePath() + "/Last Debug.txt");

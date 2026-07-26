@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QLabel>
+#include <QThread>
 #include <src/widgets/ColorLabel.h>
 #include <src/receiver/GT7TelemetryReceiver.h>
 #include <src/system/Controller.h>
@@ -37,6 +38,7 @@ protected:
 private:
     PController m_controller;
     PTelemetryReceiver m_receiver;
+    //QThread m_receiverThread;
     PRawRecorder m_debugRecorder;
     PDash m_dash;
     QWidget * m_widget = nullptr;

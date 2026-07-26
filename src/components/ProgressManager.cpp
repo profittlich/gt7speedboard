@@ -56,6 +56,7 @@ void ProgressManager::completedLap(PLap lastLap, bool isFullLap)
     if (state()->comparisonLaps.contains("best"))
     {
         state()->comparisonLaps["progress"] = state()->comparisonLaps["best"];
+        state()->invisibleComparisonLaps.insert("progress");
     }
 }
 

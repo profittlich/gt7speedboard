@@ -49,6 +49,17 @@ MainWidget::~MainWidget()
             outFile.close();
         }
     }
+    if (m_widget != nullptr)
+    {
+        m_receiver.clear();
+        //m_receiverThread.quit();
+        m_controller.clear();
+        if (m_debugRecorder.get())
+        {
+            m_debugRecorder->stop();
+            m_debugRecorder.clear();
+        }
+    }
 }
 
 void MainWidget::showStartScreen()
@@ -57,6 +68,7 @@ void MainWidget::showStartScreen()
     if (m_widget != nullptr)
     {
         m_receiver.clear();
+        //m_receiverThread.quit();
         m_controller.clear();
         if (m_debugRecorder.get())
         {
@@ -112,6 +124,7 @@ void MainWidget::startDash ()
     QJsonDocument jDoc = QJsonDocument::fromJson(jsonData);
 
     m_receiver = QSharedPointer<TelemetryReceiver> (new GT7TelemetryReceiver());
+    //m_receiver->moveToThread(&m_receiverThread);
     m_controller = QSharedPointer<Controller> (new Controller());
 
 #ifdef QT_DEBUG
@@ -158,7 +171,10 @@ void MainWidget::startDash ()
     connect(m_dash->widget, &DashWidget::showMenu, this, &MainWidget::showMenuScreen);
     connect(m_receiver.get(), &TelemetryReceiver::newTelemetryPoint, m_controller.get(), &Controller::newTelemetryPoint);
 
+    //connect (&m_receiverThread, &QThread::started, m_receiver.get(), &TelemetryReceiver::start);
+    //m_receiverThread.start();
     m_receiver->start();
+
     m_layout->addWidget(m_widget);
     m_layout->setContentsMargins(0,0,0,0);
     setStyleSheet("");//background-color: " + g_globalConfiguration.dimColor().name() + ";");

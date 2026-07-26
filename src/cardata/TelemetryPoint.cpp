@@ -93,7 +93,7 @@ QMap<QString, size_t> TelemetryPoint::getWheelDataKeys()
     QMap<QString, size_t> result;
 
     result.insert("tyreTemperature", 1);
-    result.insert("tyreSpeed", 2);
+    result.insert("wheelRps", 2);
     result.insert("suspension", 3);
     result.insert("tyreDiameter", 4);
 
@@ -151,7 +151,7 @@ WheelData<float> TelemetryPoint::getWheelData(size_t key)
 {
     if (key == 1) return m_tyreTemperature;
 
-    else if (key == 2) return m_tyreSpeed;
+    else if (key == 2) return m_wheelRps;
 
     else if (key == 3) return m_suspension;
 

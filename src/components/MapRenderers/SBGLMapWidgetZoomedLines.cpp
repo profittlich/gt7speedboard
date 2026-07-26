@@ -8,6 +8,19 @@ void SBGLMapWidgetZoomedLines::clearRefLap()
     recalcExtents();
 }
 
+bool SBGLMapWidgetZoomedLines::hasRefLap()
+{
+    return !m_verticesRef.empty();
+}
+bool SBGLMapWidgetZoomedLines::hasRefLap2()
+{
+    return !m_verticesRef2.empty();
+}
+bool SBGLMapWidgetZoomedLines::hasRefLap3()
+{
+    return !m_verticesRef3.empty();
+}
+
 void SBGLMapWidgetZoomedLines::updateRefLap(PLap refLap)
 {
     m_verticesRef.clear();
@@ -18,6 +31,42 @@ void SBGLMapWidgetZoomedLines::updateRefLap(PLap refLap)
         m_verticesRef.append(i->position().z());
     }
     DBG_MSG << "New ref lap size: " << m_verticesRef.size();
+}
+
+void SBGLMapWidgetZoomedLines::clearRefLap2()
+{
+    m_verticesRef2.clear();
+    recalcExtents();
+}
+
+void SBGLMapWidgetZoomedLines::updateRefLap2(PLap refLap)
+{
+    m_verticesRef2.clear();
+    for (auto i : refLap->points())
+    {
+        m_verticesRef2.append(i->position().x());
+        m_verticesRef2.append(i->position().y());
+        m_verticesRef2.append(i->position().z());
+    }
+    DBG_MSG << "New ref lap 2 size: " << m_verticesRef2.size();
+}
+
+void SBGLMapWidgetZoomedLines::clearRefLap3()
+{
+    m_verticesRef3.clear();
+    recalcExtents();
+}
+
+void SBGLMapWidgetZoomedLines::updateRefLap3(PLap refLap)
+{
+    m_verticesRef3.clear();
+    for (auto i : refLap->points())
+    {
+        m_verticesRef3.append(i->position().x());
+        m_verticesRef3.append(i->position().y());
+        m_verticesRef3.append(i->position().z());
+    }
+    DBG_MSG << "New ref lap 3 size: " << m_verticesRef3.size();
 }
 
 void SBGLMapWidgetZoomedLines::addPoint(const PTelemetryPoint & p)
@@ -274,6 +323,20 @@ void SBGLMapWidgetZoomedLines::paintGL()
         f->glUniform3f(uLoc, 1.0, 0.0, 0.0);
         f->glEnableVertexAttribArray(0);
         f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef.size()/3);
+    }
+    if (m_verticesRef2.size() >= 3)
+    {
+        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef2.data());
+        f->glUniform3f(uLoc, 1.0, 1.0, 0.0);
+        f->glEnableVertexAttribArray(0);
+        f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef2.size()/3);
+    }
+    if (m_verticesRef3.size() >= 3)
+    {
+        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef3.data());
+        f->glUniform3f(uLoc, 0.0, 1.0, 1.0);
+        f->glEnableVertexAttribArray(0);
+        f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef3.size()/3);
     }
 
     if (m_vertices.size() >= 3)

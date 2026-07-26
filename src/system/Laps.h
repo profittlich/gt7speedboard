@@ -14,7 +14,10 @@ typedef QSharedPointer<Lap> PLap;
 class Lap
 {
 public:
-    Lap () : m_valid(true) {}
+    Lap () : m_valid(true)
+    {
+        DBG_MSG << "New Lap" << reinterpret_cast<size_t> (this);
+    }
 
     QPair<size_t, float> findClosestPoint(PPoint p, size_t start = 0, float cancelRange=100.0) const;
 
@@ -88,7 +91,7 @@ public:
     {
         if (m_succeedingPoint.isNull())
         {
-            DBG_MSG << "return NULL for" << (points().size() == 0 ? -1 : points()[0]->currentLap());
+            //DBG_MSG << "return NULL for" << (points().size() == 0 ? -1 : points()[0]->currentLap());
             return -1;
         }
         return m_succeedingPoint->lastLapMs();

@@ -12,11 +12,12 @@
 GT7TelemetryReceiver::GT7TelemetryReceiver() : TelemetryReceiver ()
 {
     DBG_MSG << ("Construct GT7TelemetryReceiver");
-    connect(&m_heartBeatTimer, &QTimer::timeout, this, &GT7TelemetryReceiver::sendHeartBeat);
 }
 
 void GT7TelemetryReceiver::start()
 {
+    m_heartBeatTimer = new QTimer(this);
+    connect(m_heartBeatTimer, &QTimer::timeout, this, &GT7TelemetryReceiver::sendHeartBeat);
     DBG_MSG << ("Start receiving");
     m_socket = new QUdpSocket(this);
 
@@ -30,8 +31,8 @@ void GT7TelemetryReceiver::start()
     m_isRunning = true;
 
     sendHeartBeat();
-    m_heartBeatTimer.setInterval(3000);
-    m_heartBeatTimer.start();
+    m_heartBeatTimer->setInterval(3000);
+    m_heartBeatTimer->start();
 
     m_lastSequenceNumbers.clear();
     m_lastSequenceNumbers.push_back(0);
@@ -63,6 +64,22 @@ QByteArray GT7TelemetryReceiver::decrypt(const QByteArray & data)
     oiv[3] = data.at(0x43);
     uint32_t iv1 = oiv[0] + 0x100 * oiv[1] + 0x10000 * oiv[2] + 0x1000000 * oiv[3];
     uint32_t iv2 = iv1 ^ 0xDEADBEAF;
+    switch (data.size())
+    {
+    case 296:
+        iv2 = iv1 ^ 0xDEADBEAF;
+        break;
+    case 296 + 20:
+        iv2 = iv1 ^ 0xDEADBEEF;
+        break;
+    case 296 + 20 + 28:
+        iv2 = iv1 ^ 0x55FABB4F;
+        break;
+    case 296 + 20 + 28 + 20:
+        iv2 = iv1 ^ 0xDEADBEEF;
+        break;
+    }
+
     uint8_t * piv1 = reinterpret_cast<uint8_t*> (&iv1);
     uint8_t * piv2 = reinterpret_cast<uint8_t*> (&iv2);
 
@@ -89,6 +106,8 @@ void GT7TelemetryReceiver::readPendingDatagrams()
 {
     while (m_socket->hasPendingDatagrams())
     {
+        QList <PTelemetryPoint> pendingPackages;
+        m_lastTimeStamps.push_back(QTime::currentTime());
         QNetworkDatagram datagram = m_socket->receiveDatagram();
         if (!datagram.isValid())
         {
@@ -114,15 +133,36 @@ void GT7TelemetryReceiver::readPendingDatagrams()
                 DBG_MSG << "Double receive of telemetry package, sequence " << p->sequenceNumber();
                 continue;
             }
-            DBG_MSG << ("Receiver: Start of new telemetry sequence, d=" + QString::number (int(p->sequenceNumber()) - int(m_lastSequenceNumbers.back())).toLatin1()) << p->sequenceNumber() << m_lastSequenceNumbers.back();
-            //DBG_MSG << (datagram.data() == s_prevDatagram.data());
+            if ((p->sequenceNumber() - m_lastSequenceNumbers.back()) < 60 && !m_previousPackage.isNull())
+            {
+                DBG_MSG << "Lost" << (p->sequenceNumber() - m_lastSequenceNumbers.back()) << "packages. Using interpolator.";
+                pendingPackages.append(m_interpolator.interpolate(m_previousPackage,p));
+            }
+            else
+            {
+                DBG_MSG << ("Receiver: Start of new telemetry sequence, d=" + QString::number (int(p->sequenceNumber()) - int(m_lastSequenceNumbers.back())).toLatin1()) << p->sequenceNumber() << m_lastSequenceNumbers.back();
+                if (m_lastTimeStamps.size () >= 2)
+                {
+                    DBG_MSG << m_lastTimeStamps[m_lastTimeStamps.size()-2].toString("ss.zzz") << m_lastTimeStamps.back().toString("ss.zzz");
+                }
+                //DBG_MSG << (datagram.data() == s_prevDatagram.data());
+            }
         }
+
+        pendingPackages.append(p);
+        m_previousPackage = p;
+
         m_lastSequenceNumbers.push_back (p->sequenceNumber());
         while(m_lastSequenceNumbers.size() > 5)
         {
             m_lastSequenceNumbers.pop_front();
+            m_lastTimeStamps.pop_front();
         }
-        emit newTelemetryPoint(QSharedPointer<TelemetryPoint>(p));
+
+        for (auto curp : pendingPackages)
+        {
+            emit newTelemetryPoint(QSharedPointer<TelemetryPoint>(curp));
+        }
     }
 }
 

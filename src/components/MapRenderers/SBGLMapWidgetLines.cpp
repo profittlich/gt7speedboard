@@ -4,8 +4,14 @@
 
 void SBGLMapWidgetLines::clearRefLap()
 {
+    DBG_MSG << "clearRefLap";
     m_verticesRef.clear();
     recalcExtents();
+}
+
+bool SBGLMapWidgetLines::hasRefLap()
+{
+    return !m_verticesRef.empty();
 }
 
 void SBGLMapWidgetLines::updateRefLap(PLap refLap)
@@ -33,26 +39,109 @@ void SBGLMapWidgetLines::updateRefLap(PLap refLap)
         m_verticesRef.append(i->position().y());
         m_verticesRef.append(i->position().z());
     }
-    DBG_MSG << "New ref lap size: " << m_verticesRef.size();
+    //DBG_MSG << "New ref lap size: " << m_verticesRef.size();
+}
+
+void SBGLMapWidgetLines::clearRefLap2()
+{
+    DBG_MSG << "clearRefLap2";
+    m_verticesRef2.clear();
+    recalcExtents();
+}
+
+bool SBGLMapWidgetLines::hasRefLap2()
+{
+    return !m_verticesRef2.empty();
+}
+
+void SBGLMapWidgetLines::updateRefLap2(PLap refLap)
+{
+    m_verticesRef2.clear();
+    for (auto i : refLap->points())
+    {
+        if (i->position().x() < m_minX)
+        {
+            m_minX = i->position().x();
+        }
+        if (i->position().x() > m_maxX)
+        {
+            m_maxX = i->position().x();
+        }
+        if (i->position().z() < m_minY)
+        {
+            m_minY = i->position().z();
+        }
+        if (i->position().z() > m_maxY)
+        {
+            m_maxY = i->position().z();
+        }
+        m_verticesRef2.append(i->position().x());
+        m_verticesRef2.append(i->position().y());
+        m_verticesRef2.append(i->position().z());
+    }
+    //DBG_MSG << "New ref lap 2 size: " << m_verticesRef2.size();
+}
+
+void SBGLMapWidgetLines::clearRefLap3()
+{
+    DBG_MSG << "clearRefLap3";
+    m_verticesRef3.clear();
+    recalcExtents();
+}
+
+bool SBGLMapWidgetLines::hasRefLap3()
+{
+    return !m_verticesRef3.empty();
+}
+
+void SBGLMapWidgetLines::updateRefLap3(PLap refLap)
+{
+    m_verticesRef3.clear();
+    for (auto i : refLap->points())
+    {
+        if (i->position().x() < m_minX)
+        {
+            m_minX = i->position().x();
+        }
+        if (i->position().x() > m_maxX)
+        {
+            m_maxX = i->position().x();
+        }
+        if (i->position().z() < m_minY)
+        {
+            m_minY = i->position().z();
+        }
+        if (i->position().z() > m_maxY)
+        {
+            m_maxY = i->position().z();
+        }
+        m_verticesRef3.append(i->position().x());
+        m_verticesRef3.append(i->position().y());
+        m_verticesRef3.append(i->position().z());
+    }
+    DBG_MSG << "New ref lap 3 size: " << m_verticesRef3.size();
 }
 
 void SBGLMapWidgetLines::addPoint(const PTelemetryPoint & p)
 {
-    if (p->position().x() < m_minX)
+    if (m_showCurrent)
     {
-        m_minX = p->position().x();
-    }
-    if (p->position().x() > m_maxX)
-    {
-        m_maxX = p->position().x();
-    }
-    if (p->position().z() < m_minY)
-    {
-        m_minY = p->position().z();
-    }
-    if (p->position().z() > m_maxY)
-    {
-        m_maxY = p->position().z();
+        if (p->position().x() < m_minX)
+        {
+            m_minX = p->position().x();
+        }
+        if (p->position().x() > m_maxX)
+        {
+            m_maxX = p->position().x();
+        }
+        if (p->position().z() < m_minY)
+        {
+            m_minY = p->position().z();
+        }
+        if (p->position().z() > m_maxY)
+        {
+            m_maxY = p->position().z();
+        }
     }
     m_vertices.append(p->position().x());
     m_vertices.append(p->position().y());
@@ -61,46 +150,53 @@ void SBGLMapWidgetLines::addPoint(const PTelemetryPoint & p)
 
 void SBGLMapWidgetLines::recalcExtents()
 {
+    DBG_MSG << "recalc extents";
     m_minX = 1000000.0;
     m_maxX = -1000000.0;
     m_minY = 1000000.0;
     m_maxY = -1000000.0;
-    for (size_t i = 0; i < m_vertices.size(); i+=3)
+    if (m_showCurrent)
     {
-        if (m_vertices[i] < m_minX)
+        for (size_t i = 0; i < m_vertices.size(); i+=3)
         {
-            m_minX = m_vertices[i];
-        }
-        if (m_vertices[i] > m_maxX)
-        {
-            m_maxX = m_vertices[i];
-        }
-        if (m_vertices[i+2] < m_minY)
-        {
-            m_minY = m_vertices[i+2];
-        }
-        if (m_vertices[i+2] > m_maxY)
-        {
-            m_maxY = m_vertices[i+2];
+            if (m_vertices[i] < m_minX)
+            {
+                m_minX = m_vertices[i];
+            }
+            if (m_vertices[i] > m_maxX)
+            {
+                m_maxX = m_vertices[i];
+            }
+            if (m_vertices[i+2] < m_minY)
+            {
+                m_minY = m_vertices[i+2];
+            }
+            if (m_vertices[i+2] > m_maxY)
+            {
+                m_maxY = m_vertices[i+2];
+            }
         }
     }
-    for (size_t i = 0; i < m_verticesPrev.size(); i+=3)
+    if (m_showPrev)
     {
-        if (m_verticesPrev[i] < m_minX)
+        for (size_t i = 0; i < m_verticesPrev.size(); i+=3)
         {
-            m_minX = m_verticesPrev[i];
-        }
-        if (m_verticesPrev[i] > m_maxX)
-        {
-            m_maxX = m_verticesPrev[i];
-        }
-        if (m_verticesPrev[i+2] < m_minY)
-        {
-            m_minY = m_verticesPrev[i+2];
-        }
-        if (m_verticesPrev[i+2] > m_maxY)
-        {
-            m_maxY = m_verticesPrev[i+2];
+            if (m_verticesPrev[i] < m_minX)
+            {
+                m_minX = m_verticesPrev[i];
+            }
+            if (m_verticesPrev[i] > m_maxX)
+            {
+                m_maxX = m_verticesPrev[i];
+            }
+            if (m_verticesPrev[i+2] < m_minY)
+            {
+                m_minY = m_verticesPrev[i+2];
+            }
+            if (m_verticesPrev[i+2] > m_maxY)
+            {
+                m_maxY = m_verticesPrev[i+2];
+            }
         }
     }
 }
@@ -309,28 +405,48 @@ void SBGLMapWidgetLines::paintGL()
     f->glUniformMatrix4fv(uLocT, 1, false, m_centerMatrix.data());
     f->glUniformMatrix4fv(uLocS, 1, false, m_scaleMatrix.data());
 
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesPrev.data());
-    f->glUniform3f(uLoc, 0.5, 0.5, 0.5);
-    f->glEnableVertexAttribArray(0);
-    f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesPrev.size()/3);
+    if (m_showPrev)
+    {
+        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesPrev.data());
+        f->glUniform3f(uLoc, 0.5, 0.5, 0.5);
+        f->glEnableVertexAttribArray(0);
+        f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesPrev.size()/3);
+    }
 
+    if (m_verticesRef3.size() >= 3)
+    {
+        //DBG_MSG << "Draw ref" << (m_verticesRef.size()/3);
+        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef3.data());
+        f->glUniform3f(uLoc, 0.0, 1.0, 1.0);
+        f->glEnableVertexAttribArray(0);
+        f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef3.size()/3);
+    }
+    if (m_verticesRef2.size() >= 3)
+    {
+        //DBG_MSG << "Draw ref" << (m_verticesRef.size()/3);
+        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef2.data());
+        f->glUniform3f(uLoc, 1.0, 1.0, 0.0);
+        f->glEnableVertexAttribArray(0);
+        f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef2.size()/3);
+    }
     if (m_verticesRef.size() >= 3)
     {
+        //DBG_MSG << "Draw ref" << (m_verticesRef.size()/3);
         f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_verticesRef.data());
         f->glUniform3f(uLoc, 1.0, 0.0, 0.0);
         f->glEnableVertexAttribArray(0);
         f->glDrawArrays(GL_LINE_STRIP, 0, m_verticesRef.size()/3);
     }
 
-    if (m_vertices.size() >= 3)
+    if (m_showCurrent && m_vertices.size() >= 3)
     {
-
-
         f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_vertices.data());
         f->glUniform3f(uLoc, 1.0, 1.0, 1.0);
         f->glEnableVertexAttribArray(0);
         f->glDrawArrays(GL_LINE_STRIP, 0, m_vertices.size()/3);
-
+    }
+    if (m_showCurrentDot && m_vertices.size() >= 3)
+    {
 #ifndef Q_OS_IOS
 #ifndef Q_OS_ANDROID
         f->glEnable(GL_PROGRAM_POINT_SIZE);

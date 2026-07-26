@@ -61,7 +61,6 @@ public:
         return r;
     }
 
-
     void setX (const T &x) { m_x = x; }
     void setY (const T &y) { m_y = y; }
     void setZ (const T &z) { m_z = z; }
@@ -75,4 +74,16 @@ private:
     T m_y;
     T m_z;
 };
+
+template<typename T>
+Vector3D<T> operator*(float c, Vector3D<T> v)
+{
+    return Vector3D<T> (c * v.x(), c * v.y(), c * v.z());
+}
+
+template<typename T>
+Vector3D<T> operator+(Vector3D<T> v1, Vector3D<T> v2)
+{
+    return Vector3D<T> (v1.x() + v2.x(), v1.y() + v2.y(), v1.z() + v2.z());
+}
 

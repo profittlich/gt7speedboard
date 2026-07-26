@@ -8,6 +8,7 @@ QJsonValue DashComponent::toJson()
     QJsonObject result;// = m_json.toObject();
 
     result.insert("component", m_component->getComponentId());
+    DBG_MSG << "Component to JSON:" << m_component->getComponentId();
 
     auto additionalFields = getFields();
     DBG_MSG << additionalFields.size() << "additional fields";

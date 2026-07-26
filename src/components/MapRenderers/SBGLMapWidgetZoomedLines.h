@@ -14,6 +14,14 @@ public:
     void nextLap() override;
     void updateRefLap(PLap refLap) override;
     void clearRefLap() override;
+    bool hasRefLap() override;
+    void updateRefLap2(PLap refLap) override;
+    void clearRefLap2() override;
+    bool hasRefLap2() override;
+    void updateRefLap3(PLap refLap) override;
+    void clearRefLap3() override;
+    bool hasRefLap3() override;
+
 
 protected:
     void recalcExtents();
@@ -26,6 +34,8 @@ private:
     QList<GLfloat> m_verticesPrev;
     QList<GLfloat> m_vertices;
     QList<GLfloat> m_verticesRef;
+    QList<GLfloat> m_verticesRef2;
+    QList<GLfloat> m_verticesRef3;
     float m_minX = 0;
     float m_maxX = 0;
     float m_minY = 0;

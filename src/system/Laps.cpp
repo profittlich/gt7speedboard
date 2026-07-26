@@ -1,4 +1,4 @@
-#include "Laps.h"
+    #include "Laps.h"
 #include "src/cardata/TelemetryPointGT7.h"
 #include <contrib/Salsa20-master/Source/Salsa20.h>
 #include "src/receiver/GT7TelemetryReceiver.h"
@@ -144,11 +144,31 @@ QList<PLap> Lap::loadLaps(QString filename, bool detectTrack)
 
 void Lap::updateValidity()
 {
-    for (size_t i = 0 ; i < m_points.size()-1; ++i)
+    bool valid = true;
+    if (m_points.size() > 0)
     {
-        m_valid &= m_points[i]->position().distanceTo(m_points[i+1]->position()) < 5.0; // todo: constant
+        for (int i = 0 ; i < int(m_points.size())-1; ++i)
+        {
+            valid &= m_points[i]->position().distanceTo(m_points[i+1]->position()) < 5.0; // todo: constant
+        }
+        if (!valid)
+        {
+            DBG_MSG << "Invalidate lap due to jumps";
+        }
+        valid &= m_points.front()->position().distanceTo(m_points.back()->position()) < 20.0; // todo: constant
+        if (!valid)
+        {
+            DBG_MSG << "Invalidate lap due to jumps or endpoint distance" << m_points.size() << m_points.front()->position().distanceTo(m_points.back()->position());
+            DBG_MSG << reinterpret_cast <size_t> (m_points.data());
+        }
     }
-    m_valid &= m_points.front()->position().distanceTo(m_points.back()->position()) < 20.0; // todo: constant
+    else
+    {
+        DBG_MSG << "no points, lap invalid";
+        valid = false;
+    }
+
+    m_valid &= valid;
 }
 
 QPair<size_t, float> Lap::findClosestPoint(PPoint p, size_t start, float cancelRange) const

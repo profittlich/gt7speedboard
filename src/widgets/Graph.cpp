@@ -179,10 +179,10 @@ void Graph::initializeGL()
 #ifdef Q_OS_ANDROID
         "precision mediump float;\n"
 #endif
-        "uniform vec3 uColor;\n"
+        "uniform vec4 uColor;\n"
         "void main() \n"
         "{ \n"
-        " gl_FragColor = vec4(uColor[0], uColor[1], uColor[2], 1.0); \n"
+        " gl_FragColor = vec4(uColor[0], uColor[1], uColor[2], uColor[3]); \n"
         "} \n";
 
     f->glShaderSource(m_fShader, 1, &fShaderStr, NULL);
@@ -266,7 +266,7 @@ void Graph::paintGL()
     m_centerMatrix[7] = -1;
 
     m_windowMatrix[3] = -(m_maxX-m_width);
-    m_windowMatrix[7] = 0;
+    m_windowMatrix[7] = -m_minY;
 
     // Draw the scene:
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -280,6 +280,9 @@ void Graph::paintGL()
     f->glUseProgram(m_programObject);
     f->glLineWidth(4);
 
+    f->glEnable(GL_BLEND);
+    f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     f->glUniformMatrix4fv(uLocC, 1, false, m_centerMatrix.data());
     f->glUniformMatrix4fv(uLocS, 1, false, m_scaleMatrix.data());
     f->glUniformMatrix4fv(uLocW, 1, false, m_windowMatrix.data());
@@ -291,7 +294,7 @@ void Graph::paintGL()
             if (m_values[idx].size())
             {
                 f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_values[idx].data());
-                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glUniform4f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF(), m_colors[idx].alphaF());
                 f->glEnableVertexAttribArray(0);
                 f->glDrawArrays(GL_LINE_STRIP, 0, m_values[idx].size()/3);
             }
@@ -328,7 +331,7 @@ void Graph::paintGL()
                     m_markerArray.append(m_values[idx][mp+2]);
                 }
                 f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_markerArray.data());
-                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glUniform4f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF(), m_colors[idx].alphaF());
                 f->glEnableVertexAttribArray(0);
                 f->glDrawArrays(GL_TRIANGLES, 0, m_markerArray.size()/3);
             }
@@ -353,7 +356,7 @@ void Graph::paintGL()
                     m_markerArray.append(m_values[idx][mp+2]);
                 }
                 f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_markerArray.data());
-                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glUniform4f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF(), m_colors[idx].alphaF());
                 f->glEnableVertexAttribArray(0);
                 f->glDrawArrays(GL_TRIANGLES, 0, m_markerArray.size()/3);
             }
@@ -378,7 +381,7 @@ void Graph::paintGL()
                     m_markerArray.append(m_values[idx][mp+2]);
                 }
                 f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m_markerArray.data());
-                f->glUniform3f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF());
+                f->glUniform4f(uLoc, m_colors[idx].redF(), m_colors[idx].greenF(), m_colors[idx].blueF(), m_colors[idx].alphaF());
                 f->glEnableVertexAttribArray(0);
                 f->glDrawArrays(GL_TRIANGLES, 0, m_markerArray.size()/3);
             }

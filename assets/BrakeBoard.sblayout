@@ -1,0 +1,20 @@
+{
+    "version" : 2,
+    "pages" : [
+        {
+            "title" : "Page 1",
+            "shortcuts" : [ "Key_1" ],
+            "list" : [
+                {
+                    "component": "BrakeBoard",
+                    "stretch": 4,
+                    "actions" : { "Key_D" : "cycleDifficulty", "Key_M" : "cycleMode" }
+                },
+                {
+                    "component": "PedalGraph",
+                    "stretch": 1
+                }
+            ]
+        }
+    ]
+}

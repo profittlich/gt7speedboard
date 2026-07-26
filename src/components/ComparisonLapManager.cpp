@@ -55,9 +55,9 @@ void ComparisonLapManager::updateClosestPoints (PTelemetryPoint p)
 {
     for (auto curLap : state()->comparisonLaps.keys())
     {
+        auto compLap = state()->comparisonLaps[curLap];
         if (!state()->comparisonLaps[curLap]->lap->points().empty())
         {
-            auto compLap = state()->comparisonLaps[curLap];
             auto closest = compLap->lap->findClosestPoint(p, compLap->closestPoint);
             if (closest.second <= (*m_maxClosenessDistance)())
             {
@@ -144,7 +144,7 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         lastCompLap->lap = lastLap;
         //lastCompLap->lapTime = lastLap->lapTime();
 
-        DBG_MSG << "Last lap: " << lastCompLap->lap->lapTime() << "ms";
+        DBG_MSG << "Last lap:" << lastCompLap->lap->points()[0]->currentLap() << lastCompLap->lap->lapTime() << "ms" << (lastCompLap->lap->valid() ? "" : "(invalid)") << reinterpret_cast <size_t> (lastCompLap->lap->points().data());
     }
 
     // BEST
@@ -160,7 +160,12 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
         {
             bestCompLap->lap = lastLap;
         }
-        DBG_MSG << "Best lap: " << bestCompLap->lap->lapTime() << "ms";
+    }
+
+    if (state()->comparisonLaps.contains(("best")))
+    {
+        auto bestCompLap = state()->comparisonLaps["best"];
+        DBG_MSG << "Best lap: " << bestCompLap->lap->points()[0]->currentLap() << bestCompLap->lap->lapTime() << "ms" << reinterpret_cast <size_t> (bestCompLap->lap->points().data());
     }
 
     // MEDIAN
@@ -179,7 +184,18 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
 
         auto medianCompLap = state()->comparisonLaps["median"];
         medianCompLap->lap = sortedLaps[sortedLaps.size() / 2];
-        DBG_MSG << "Median lap: " << medianCompLap->lap->lapTime() << "ms";
+    }
+
+    if (state()->comparisonLaps.contains(("median")))
+    {
+        auto medianCompLap = state()->comparisonLaps["median"];
+        DBG_MSG << "Median lap: " << medianCompLap->lap->points()[0]->currentLap() << medianCompLap->lap->lapTime() << "ms"  << reinterpret_cast <size_t> (medianCompLap->lap->points().data());
+    }
+
+    if (state()->comparisonLaps.contains(("opt")))
+    {
+        auto optCompLap = state()->comparisonLaps["opt"];
+        DBG_MSG << "Optimized lap: " << optCompLap->lap->lapTime() << "ms"  << reinterpret_cast <size_t> (optCompLap->lap->points().data());
     }
 
     // TODO update points again for new lap

@@ -3,19 +3,25 @@
 #include "src/components/ComponentFactory.h"
 #include "src/system/Configuration.h"
 
+const size_t c_idxGearUp = 2;
+const size_t c_idxGearDown = 3;
+const size_t c_idxBrake = 0;
+const size_t c_idxThrottle = 1;
+
+
 PedalGraph::PedalGraph () : Component()
 {
     m_widget = new Graph(nullptr);
     m_widget->setWidth(400);
     m_widget->setYRange(0, 100);
 
-    m_widget->setColor (2, QColor(255, 0, 0));
-    m_widget->setColor (3, QColor(0, 255, 0));
-    m_widget->setColor (1, QColor(127, 127, 127));
-    m_widget->setColor (0, QColor(127, 127, 127));
+    m_widget->setColor (c_idxBrake, QColor(255, 0, 0));
+    m_widget->setColor (c_idxThrottle, QColor(0, 255, 0));
+    m_widget->setColor (c_idxGearDown, QColor(255, 255, 255, 127));
+    m_widget->setColor (c_idxGearUp, QColor(255, 255, 255, 127));
 
-    m_widget->setType(0, Graph::MarkerUp);
-    m_widget->setType(1, Graph::MarkerDown);
+    m_widget->setType(c_idxGearUp, Graph::MarkerUp);
+    m_widget->setType(c_idxGearDown, Graph::MarkerDown);
 
     m_counter = 0;
 }
@@ -32,18 +38,18 @@ QString PedalGraph::defaultTitle () const
 
 void PedalGraph::newPoint(PTelemetryPoint p)
 {
-    m_widget->addValue(2, m_counter, p->brake());
-    m_widget->addValue(3, m_counter, p->throttle());
+    m_widget->addValue(c_idxBrake, m_counter, p->brake());
+    m_widget->addValue(c_idxThrottle, m_counter, p->throttle());
 
     if (!m_previous.isNull() && m_previous->currentGear() != p->currentGear())
     {
         if (m_previous->currentGear() > p->currentGear())
         {
-            m_widget->addValue(0, m_counter, 50);
+            m_widget->addValue(c_idxGearDown, m_counter, 50);
         }
         else
         {
-            m_widget->addValue(1, m_counter, 50);
+            m_widget->addValue(c_idxGearUp, m_counter, 50);
         }
     }
 
