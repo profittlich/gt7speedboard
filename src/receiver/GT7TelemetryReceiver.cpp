@@ -159,7 +159,7 @@ void GT7TelemetryReceiver::readPendingDatagrams()
             m_lastTimeStamps.pop_front();
         }
 
-        for (auto curp : pendingPackages)
+        for (auto & curp : pendingPackages)
         {
             emit newTelemetryPoint(QSharedPointer<TelemetryPoint>(curp));
         }

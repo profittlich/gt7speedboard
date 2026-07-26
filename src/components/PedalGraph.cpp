@@ -1,7 +1,6 @@
 #include "src/components/PedalGraph.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 const size_t c_idxGearUp = 2;
 const size_t c_idxGearDown = 3;

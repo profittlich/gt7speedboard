@@ -4,7 +4,7 @@
 #include <QTimer>
 #include <QKeyEvent>
 
-TextInput::TextInput(QWidget *parent, QString title, QString init)
+TextInput::TextInput(QWidget *, QString title, QString init)
 {
     setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + ";");
 

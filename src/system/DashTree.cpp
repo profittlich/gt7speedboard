@@ -12,7 +12,7 @@ QJsonValue DashComponent::toJson()
 
     auto additionalFields = getFields();
     DBG_MSG << additionalFields.size() << "additional fields";
-    for (auto i : additionalFields.keys()) {
+    for (auto & i : additionalFields.keys()) {
         result.insert(i, additionalFields[i]);
     }
 
@@ -25,7 +25,7 @@ QJsonValue DashComponent::toJson()
         found = true;
         conf.insert(i.name(), i());
         QMap<QString, bool> all = i.getAll();
-        for (auto j : all.keys())
+        for (auto & j : all.keys())
         {
             if (!presets.contains(j))
             {
@@ -39,7 +39,7 @@ QJsonValue DashComponent::toJson()
         found = true;
         conf.insert(i.name(), i());
         QMap<QString, float> all = i.getAll();
-        for (auto j : all.keys())
+        for (auto & j : all.keys())
         {
             if (!presets.contains(j))
             {
@@ -53,7 +53,7 @@ QJsonValue DashComponent::toJson()
         found = true;
         conf.insert(i.name(), i());
         QMap<QString, QString> all = i.getAll();
-        for (auto j : all.keys())
+        for (auto & j : all.keys())
         {
             if (!presets.contains(j))
             {
@@ -67,7 +67,7 @@ QJsonValue DashComponent::toJson()
         found = true;
         conf.insert(i.name(), i());
         QMap<QString, int> all = i.getAll();
-        for (auto j : all.keys())
+        for (auto & j : all.keys())
         {
             if (!presets.contains(j))
             {
@@ -82,7 +82,7 @@ QJsonValue DashComponent::toJson()
         if (!presets.empty())
         {
             QJsonObject preVal;
-            for (auto j : presets.keys())
+            for (auto & j : presets.keys())
             {
                 preVal.insert(j, presets[j]);
             }

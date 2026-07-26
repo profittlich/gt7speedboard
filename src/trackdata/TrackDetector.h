@@ -1,8 +1,9 @@
 #pragma once
 
-#include "src/cardata/TelemetryPoint.h"
-#include "src/system/Configuration.h"
 #include <QSharedPointer>
+#include <QMap>
+#include <src/cardata/Point.h>
+#include <src/trackdata/Track.h>
 
 class TrackDetector;
 typedef QSharedPointer<TrackDetector> PTrackDetector;

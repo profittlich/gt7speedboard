@@ -5,8 +5,8 @@ void RawRecorder::start()
 {
     DBG_MSG << "Start recording to" << m_filename;
     m_file.setFileName(m_filename);
-    m_file.open(QIODeviceBase::WriteOnly);
-    if (m_file.isOpen())
+
+    if (m_file.open(QIODeviceBase::WriteOnly))
     {
         m_recording = true;
     }

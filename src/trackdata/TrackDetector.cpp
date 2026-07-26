@@ -1,9 +1,11 @@
 #include "TrackDetector.h"
+#include "src/system/Helpers.h"
+#include "src/system/Configuration.h"
 
 void TrackDetector::addPoint(PPoint p)
 {
     QList<PTrack> toRemove;
-    for (auto i : m_candidates)
+    for (auto i : std::as_const(m_candidates))
     {
         size_t curIndex;
         bool verbose=true;
@@ -29,11 +31,11 @@ void TrackDetector::addPoint(PPoint p)
             {
                 //DBG_MSG << gap << curIndex << m_indexes[i] << "of" << i->numPoints() << "at" << i->name();
 
-                if (curIndex > m_indexes[i])
+                if (int(curIndex) > m_indexes[i])
                 {
                     m_directions[i]++;
                 }
-                else if (curIndex < m_indexes[i])
+                else if (int(curIndex) < m_indexes[i])
                 {
                     m_directions[i]--;
                 }
@@ -45,7 +47,7 @@ void TrackDetector::addPoint(PPoint p)
 
     m_previousPoint = p;
 
-    for (auto i : toRemove)
+    for (auto & i : toRemove)
     {
         m_candidates.removeAll(i);
     }
@@ -85,7 +87,7 @@ QString TrackDetector::location()
 
 bool TrackDetector::isAmongCandidates(PTrack trk)
 {
-    for (auto i : m_candidates)
+    for (auto & i : std::as_const(m_candidates))
     {
         if (i.get() == trk.get())
         {
@@ -98,7 +100,7 @@ bool TrackDetector::isAmongCandidates(PTrack trk)
 void TrackDetector::reset()
 {
     m_candidates = g_globalConfiguration.allTracks();
-    for (auto i : m_candidates)
+    for (auto & i : std::as_const(m_candidates))
     {
         m_indexes[i] = -1;
         m_directions[i] = 0;

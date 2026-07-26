@@ -1,9 +1,9 @@
 #pragma once
 
 #include "src/components/Component.h"
-#include "src/widgets/ColorLabel.h"
 
 #include <QScrollArea>
+#include <QLabel>
 
 class LapTimes : public Component
 {

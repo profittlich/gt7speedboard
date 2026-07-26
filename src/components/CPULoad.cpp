@@ -1,7 +1,6 @@
 #include "src/components/CPULoad.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 #include <QtWidgets/qboxlayout.h>
 
 CPULoad::CPULoad () : Component()
@@ -61,12 +60,6 @@ void CPULoad::newPoint(PTelemetryPoint p)
 {
     if (p->sequenceNumber() % 6 > 0)
         return;
-    unsigned summed = 0;
-    for (auto i : state()->lastProcessingTimes)
-    {
-        summed += i;
-    }
-    unsigned avgTime = summed / state()->lastProcessingTimes.size();
 
     m_widgetCpu->setValue(100.0 * state()->cpuLoad);
     m_widgetCpu->setText(QString::number(round (1000.0 * state()->cpuLoad)/10.0) + " % proc thread");

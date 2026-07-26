@@ -24,8 +24,8 @@ public:
         setHostAddress(settings.value("ip", "127.0.0.1").toString());
         //setHostAddress("192.168.178.64");
 
-        setBackgroundColor(QColor("#222"));
-        setDimColor(QColor("#333"));
+        setBackgroundColor(QColor(0x22, 0x22, 0x22));
+        setDimColor(QColor(0x33, 0x33, 0x33));
         setHeaderTextColor(QColor("white"));
 
         m_platformFontScale = 1;
@@ -71,9 +71,9 @@ public:
     void setFuelStatisticsLaps(const size_t & v) { m_fuelStatisticsLaps = v; }
 
     /* GETTERS */
-    const float fontScale() const { return m_fontScale * m_platformFontScale; }
+    float fontScale() const { return m_fontScale * m_platformFontScale; }
     const float & globalFontScale() const { return m_fontScale; }
-    const unsigned longClickTimeout() const { return m_longClickTimeout; }
+    unsigned longClickTimeout() const { return m_longClickTimeout; }
     //const QString & storageLocation() const { return m_storageLocation; }
     const QString & hostAddress() const { return m_hostAddress; }
     const QString & selectedLayout() const { return m_selectedLayout; }

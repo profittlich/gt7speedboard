@@ -16,6 +16,8 @@ public:
         friend class ComponentFactory;
 
     public:
+        virtual ~ComponentBaseConstructor() {}
+
         virtual PComponent create() = 0;
 
         bool hasWidget()

@@ -1,7 +1,6 @@
 #include "src/components/DebugLog.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 #include <QtWidgets/qscroller.h>
 
 DebugLog::DebugLog () : Component()
@@ -34,7 +33,7 @@ void DebugLog::setupScroller(QScrollArea *area)
     QScroller::scroller(area->viewport())->setScrollerProperties(ScrollerProperties);
 }
 
-void DebugLog::newPoint(PTelemetryPoint p)
+void DebugLog::newPoint(PTelemetryPoint)
 {
     m_widget->setText(g_debugText);
     m_scroller->ensureVisible(0, m_widget->height());

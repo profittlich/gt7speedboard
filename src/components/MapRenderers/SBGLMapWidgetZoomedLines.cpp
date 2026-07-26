@@ -24,7 +24,7 @@ bool SBGLMapWidgetZoomedLines::hasRefLap3()
 void SBGLMapWidgetZoomedLines::updateRefLap(PLap refLap)
 {
     m_verticesRef.clear();
-    for (auto i : refLap->points())
+    for (auto & i : refLap->points())
     {
         m_verticesRef.append(i->position().x());
         m_verticesRef.append(i->position().y());
@@ -42,7 +42,7 @@ void SBGLMapWidgetZoomedLines::clearRefLap2()
 void SBGLMapWidgetZoomedLines::updateRefLap2(PLap refLap)
 {
     m_verticesRef2.clear();
-    for (auto i : refLap->points())
+    for (auto & i : refLap->points())
     {
         m_verticesRef2.append(i->position().x());
         m_verticesRef2.append(i->position().y());
@@ -60,7 +60,7 @@ void SBGLMapWidgetZoomedLines::clearRefLap3()
 void SBGLMapWidgetZoomedLines::updateRefLap3(PLap refLap)
 {
     m_verticesRef3.clear();
-    for (auto i : refLap->points())
+    for (auto & i : refLap->points())
     {
         m_verticesRef3.append(i->position().x());
         m_verticesRef3.append(i->position().y());
@@ -183,7 +183,7 @@ void SBGLMapWidgetZoomedLines::initializeGL()
         {
             char* infoLog = (char*)malloc(sizeof(char) * infoLen);
             f->glGetShaderInfoLog(m_vShader, infoLen, NULL, infoLog);
-            DBG_MSG << ("Error compiling shader:\n%s\n", infoLog);
+            DBG_MSG << "Error compiling shader:" << infoLog;
             free(infoLog);
         }
 

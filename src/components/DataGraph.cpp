@@ -1,7 +1,6 @@
 #include "src/components/DataGraph.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 DataGraph::DataGraph () : Component(),
     m_target (new ComponentParameter<QString>("target","carSpeed", true)),

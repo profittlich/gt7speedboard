@@ -113,7 +113,7 @@ signals:
     void longClick();
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) override
+    bool eventFilter(QObject *, QEvent *event) override
     {
         QMouseEvent * mev = dynamic_cast<QMouseEvent*>(event);
         if (event->type() == QEvent::MouseButtonPress && mev->button() == Qt::LeftButton  )

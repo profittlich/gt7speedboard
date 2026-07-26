@@ -7,11 +7,11 @@ class FuelAnalyzer : public Component
 public:
     FuelAnalyzer ();
 
-    virtual QWidget * getWidget() const;
+    virtual QWidget * getWidget() const override;
 
-    virtual QString defaultTitle () const;
+    virtual QString defaultTitle () const override;
 
-    virtual void newPoint(PTelemetryPoint p);
+    virtual void newPoint(PTelemetryPoint p) override;
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
     virtual void pitStop() override;
 

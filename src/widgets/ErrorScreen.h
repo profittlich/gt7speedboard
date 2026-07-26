@@ -1,12 +1,10 @@
 #pragma once
 
-#include "qscrollarea.h"
 #include <QWidget>
 #include <QLineEdit>
 #include <QLabel>
 #include <QComboBox>
-#include "src/system/DashBuilder.h"
-#include "ImageLabel.hpp"
+#include "src/system/Dash.h"
 
 class ErrorScreen : public QWidget
 {

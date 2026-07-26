@@ -79,7 +79,7 @@ void RaceTime::newPoint(PTelemetryPoint p)
     m_curPoint = p;
 }
 
-void RaceTime::completedLap(PLap lastLap, bool isFullLap)
+void RaceTime::completedLap(PLap, bool)
 {
     if (m_curPoint->currentLap() == 0)
     {

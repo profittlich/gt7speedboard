@@ -51,7 +51,7 @@ QString LapTimes::defaultTitle () const
     return "Times";
 }
 
-void LapTimes::newPoint(PTelemetryPoint p)
+void LapTimes::newPoint(PTelemetryPoint)
 {
     //completedLap(PLap(), true);
 }
@@ -59,7 +59,7 @@ void LapTimes::newPoint(PTelemetryPoint p)
 void LapTimes::completedLap(PLap lap, bool)
 {
     QString txt = "";
-    for (auto i : state()->comparisonLaps.keys())
+    for (auto & i : state()->comparisonLaps.keys())
     {
         if (!state()->invisibleComparisonLaps.contains(i))
         {
@@ -185,8 +185,8 @@ void LapTimes::exportCSV()
     {
         DBG_MSG << "Save lap times to" << filePath;
         QFile f(filePath);
-        f.open(QFile::WriteOnly);
-        if (f.isOpen())
+
+        if (f.open(QFile::WriteOnly))
         {
             f.write("Index\tLap\tms\tTime\tValid\tTrack\tCar\n");
             DBG_MSG << "write data";

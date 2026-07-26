@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     DBG_MSG << "Application starting";
 
     QPalette pal = a.palette();
-    pal.setColor(QPalette::Window, "#222");
+    pal.setColor(QPalette::Window, QColor(0x22, 0x22, 0x22));
     a.setPalette(pal);
 
     QTranslator translator;

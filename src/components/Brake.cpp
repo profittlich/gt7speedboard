@@ -1,7 +1,6 @@
 #include "src/components/Brake.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 Brake::Brake () : Component()
 {

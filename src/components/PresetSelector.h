@@ -2,16 +2,15 @@
 
 #include "src/components/Component.h"
 #include "src/widgets/ColorLabel.h"
-#include "src/system/Helpers.h"
 
 class PresetSelector : public Component
 {
 public:
     PresetSelector ();
 
-    virtual QWidget * getWidget() const;
+    virtual QWidget * getWidget() const override;
 
-    virtual QString defaultTitle () const;
+    virtual QString defaultTitle () const override;
 
     static QString description ();
     static QMap<QString, Action> actions ();

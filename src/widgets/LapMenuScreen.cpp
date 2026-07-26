@@ -10,7 +10,7 @@ LapMenuScreen::LapMenuScreen (MainWidget * parent, PDash dash, PState pstate, QS
 
     if (lap == "ALL LAPS")
     {
-        btn = addButton("EXPORT", this, &LapMenuScreen::exportAllClicked);
+        addButton("EXPORT", this, &LapMenuScreen::exportAllClicked);
     }
     else if (state()->comparisonLaps.contains(lap))
     {
@@ -105,8 +105,7 @@ void LapMenuScreen::exportAllClicked()
     {
         DBG_MSG << "Save" << filePath << "from" << m_lap;
         QFile f(filePath);
-        f.open(QFile::WriteOnly);
-        if (f.isOpen())
+        if (f.open(QFile::WriteOnly))
         {
             if (!state()->previousLaps.front()->preceedingPoint().isNull())
             {
@@ -116,7 +115,7 @@ void LapMenuScreen::exportAllClicked()
 
             bool consecutive = true;
             PLap prev;
-            for (auto l : state()->previousLaps)
+            for (auto & l : state()->previousLaps)
             {
                 DBG_MSG << "LAP" << l->points()[0]->currentLap();
                 DBG_MSG << "has preceeding:" << !l->preceedingPoint().isNull();

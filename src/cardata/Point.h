@@ -12,6 +12,8 @@ public:
         setNormal(n);
     }
 
+    virtual ~Point() {}
+
     void setPosition(const Vector3D<float> & v) { m_position = v; }
     const Vector3D<float> & position() const { return m_position; }
 

@@ -29,7 +29,7 @@ void FuelAnalyzer::newPoint(PTelemetryPoint p)
     m_curPoint = p;
 }
 
-void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
+void FuelAnalyzer::completedLap(PLap, bool isFullLap)
 {
     if (m_wasInPit)
     {
@@ -49,7 +49,7 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
         m_previousLapFuel.append(state()->previousLaps.back()->points()[0]->currentFuel() - m_curPoint->currentFuel());
         m_previousLapTimes.append(m_curPoint->lastLapMs());
     }
-    while (m_previousLapFuel.size() > g_globalConfiguration.fuelStatisticsLaps())
+    while (m_previousLapFuel.size() > qsizetype(g_globalConfiguration.fuelStatisticsLaps()))
     {
         m_previousLapFuel.pop_front();
         m_previousLapTimes.pop_front();
@@ -58,12 +58,12 @@ void FuelAnalyzer::completedLap(PLap lastLap, bool isFullLap)
     if (!m_previousLapFuel.empty())
     {
         float avgConsumption = 0;
-        for (size_t i = 0; i < m_previousLapFuel.size(); ++i)
+        for (qsizetype i = 0; i < m_previousLapFuel.size(); ++i)
         {
             avgConsumption += m_previousLapFuel[i] * 1.0/(m_previousLapFuel.size());
         }
         float avgLapTime = 0;
-        for (size_t i = 0; i < m_previousLapTimes.size(); ++i)
+        for (qsizetype i = 0; i < m_previousLapTimes.size(); ++i)
         {
             avgLapTime += m_previousLapTimes[i] * 1.0/(m_previousLapTimes.size());
         }

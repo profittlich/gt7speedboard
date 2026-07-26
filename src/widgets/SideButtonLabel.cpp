@@ -1,10 +1,7 @@
 #include "src/widgets/SideButtonLabel.h"
-#include "src/system/Configuration.h"
-#include "src/system/Helpers.h"
 #include <QFileDialog>
 
 const unsigned g_margin = 10;
-const unsigned g_spacing = 17;
 
 SideButtonLabel::SideButtonLabel(QWidget * parent, Type type) : ButtonLabel(parent), m_type(type)
 {
@@ -12,7 +9,7 @@ SideButtonLabel::SideButtonLabel(QWidget * parent, Type type) : ButtonLabel(pare
 
 void SideButtonLabel::mouseReleaseEvent(QMouseEvent * ev)
 {
-    if (ev->pos().x() < height() + g_margin)
+    if (ev->pos().x() < int(height() + g_margin))
     {
         qInfo("Side button clicked");
         emit buttonClicked();

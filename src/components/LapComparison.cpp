@@ -204,7 +204,7 @@ void LapComparison::completedLap(PLap, bool)
     updateLabel();
 }
 
-void LapComparison::newTrack(PTrack track)
+void LapComparison::newTrack(PTrack)
 {
     updateLabel();
 }
@@ -230,7 +230,7 @@ void LapComparison::updateLabel()
     if (s_fullScreenTarget == currentTarget()())
     {
         m_speed->setStyleSheet("color : #fff;font-weight:bold;text-decoration:underline;");
-        for (auto d : s_allLapComparisons)
+        for (auto d : std::as_const(s_allLapComparisons))
         {
             if (d != this) {
                 d->m_speed->setStyleSheet("color : #fff;font-weight:bold;");

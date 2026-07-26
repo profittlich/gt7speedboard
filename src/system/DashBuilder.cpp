@@ -122,7 +122,7 @@ QWidget * DashBuilder::makeDashTree (PDash dash, QBoxLayout * curLayout, QJsonVa
             config = curObj["configuration"].toObject();
             auto ints = cmp->getIntParameters();
             QList<QString> intKeys;
-            for (auto i : ints)
+            for (auto & i : std::as_const(ints))
             {
                 intKeys.append(i.name());
             }
@@ -346,7 +346,7 @@ PDash DashBuilder::makeDash(QWidget * parent, QJsonDocument spec)
                 unsigned keyCode = qtKey(i.toString());
                 if (result->pageShortcuts.contains(keyCode) || result->actions.contains(keyCode))
                 {
-                    qDebug("Shortcut already taken: " + i.toString().toLatin1());
+                    DBG_MSG << "Shortcut already taken: " << i.toString();
                 }
                 else
                 {

@@ -133,7 +133,7 @@ public:
     QList<ComponentParameter<float>> getFloatParameters()
     {
         QList<ComponentParameter<float>> result = QList<ComponentParameter<float>>();
-        for (auto i : m_floatParametersOrdered)
+        for (auto & i : std::as_const(m_floatParametersOrdered))
         {
             result.append(*i);
         }
@@ -166,7 +166,7 @@ public:
     QList<ComponentParameter<int>> getIntParameters()
     {
         QList<ComponentParameter<int>> result = QList<ComponentParameter<int>>();
-        for (auto i : m_intParametersOrdered)
+        for (auto & i : std::as_const(m_intParametersOrdered))
         {
             result.append(*i);
         }
@@ -199,7 +199,7 @@ public:
     QList<ComponentParameter<bool>> getBooleanParameters()
     {
         QList<ComponentParameter<bool>> result = QList<ComponentParameter<bool>>();
-        for (auto i : m_booleanParametersOrdered)
+        for (auto & i : std::as_const(m_booleanParametersOrdered))
         {
             result.append(*i);
         }
@@ -232,7 +232,7 @@ public:
     QList<ComponentParameter<QString>> getStringParameters()
     {
         QList<ComponentParameter<QString>> result = QList<ComponentParameter<QString>>();
-        for (auto i : m_stringParametersOrdered)
+        for (auto & i : std::as_const(m_stringParametersOrdered))
         {
             result.append(*i);
         }
@@ -307,22 +307,22 @@ public:
 
     void switchToPreset(QString preset)
     {
-        for (auto i : m_floatParameters)
+        for (auto i : std::as_const(m_floatParameters))
         {
             i->switchToPreset(preset);
             parameterChanged(i);
         }
-        for (auto i : m_stringParameters)
+        for (auto i : std::as_const(m_stringParameters))
         {
             i->switchToPreset(preset);
             parameterChanged(i);
         }
-        for (auto i : m_booleanParameters)
+        for (auto i : std::as_const(m_booleanParameters))
         {
             i->switchToPreset(preset);
             parameterChanged(i);
         }
-        for (auto i : m_intParameters)
+        for (auto i : std::as_const(m_intParameters))
         {
             i->switchToPreset(preset);
             parameterChanged(i);

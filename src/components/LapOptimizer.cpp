@@ -133,7 +133,7 @@ void LapOptimizer::newPoint(PTelemetryPoint p)
 */
 }
 
-void LapOptimizer::completedLap(PLap lastLap, bool isFullLap)
+void LapOptimizer::completedLap(PLap, bool)
 {
     PComparisonLap optimized;
 

@@ -24,7 +24,7 @@ public:
     float topSpeed() const
     {
         float result = 0;
-        for (auto it : m_points)
+        for (auto & it : std::as_const(m_points))
         {
             if (it->carSpeed() > result)
             {

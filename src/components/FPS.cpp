@@ -27,7 +27,7 @@ QString FPS::defaultTitle () const
     return "FPS";
 }
 
-void FPS::newPoint(PTelemetryPoint p)
+void FPS::newPoint(PTelemetryPoint)
 {
     m_counter++;
     if (m_counter == 60)

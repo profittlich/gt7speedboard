@@ -4,7 +4,6 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-#include "src/system/Helpers.h"
 
 class GaugeLabel : public QLabel
 {

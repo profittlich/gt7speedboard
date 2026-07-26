@@ -31,11 +31,11 @@ QString ComparisonLapView::defaultTitle () const
     return "Comp Laps";
 }
 
-void ComparisonLapView::newPoint(PTelemetryPoint p)
+void ComparisonLapView::newPoint(PTelemetryPoint)
 {
 }
 
-void ComparisonLapView::completedLap(PLap lastLap, bool isFullLap)
+void ComparisonLapView::completedLap(PLap lastLap, bool)
 {
     QString txt = "";
     txt +=  "lastLap: " + QString::number(lastLap->points().size()) + " points, " + (lastLap->valid() ? "valid" : "invalid") + "\n";
@@ -62,14 +62,14 @@ void ComparisonLapView::pitStop()
 
 }
 
-void ComparisonLapView::newTrack(PTrack track)
+void ComparisonLapView::newTrack(PTrack)
 {
     m_widget->setText(m_widget->text() + "\nNew track");
     m_widget->adjustSize();
 
 }
 
-void ComparisonLapView::maybeNewTrack(PTrack track)
+void ComparisonLapView::maybeNewTrack(PTrack)
 {
     m_widget->setText(m_widget->text() + "\nMaybe new track ");
 

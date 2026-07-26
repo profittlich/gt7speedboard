@@ -2,7 +2,6 @@
 
 #include "src/components/Component.h"
 #include "src/widgets/ColorLabel.h"
-#include "src/widgets/GaugeLabel.h"
 #include "src/system/Helpers.h"
 
 class TyreTemps : public Component
@@ -10,11 +9,11 @@ class TyreTemps : public Component
 public:
     TyreTemps ();
 
-    virtual QWidget * getWidget() const;
+    virtual QWidget * getWidget() const override;
 
-    virtual QString defaultTitle () const;
+    virtual QString defaultTitle () const override;
 
-    virtual void newPoint(PTelemetryPoint p);
+    virtual void newPoint(PTelemetryPoint p) override;
 
     static QString description ();
     static QMap<QString, Action> actions ();

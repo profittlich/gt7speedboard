@@ -1,7 +1,6 @@
 #include "src/components/Throttle.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 Throttle::Throttle () : Component()
 {

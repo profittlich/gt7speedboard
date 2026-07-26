@@ -1,8 +1,6 @@
 #include "src/components/TrackDetectDebug.h"
 
-#include "src/cardata/TelemetryPointGT7.h"
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 #include <sstream>
 #include <QVBoxLayout>

@@ -27,7 +27,7 @@ QString FuelPerLap::defaultTitle () const
     return "Fuel per lap";
 }
 
-void FuelPerLap::newPoint(PTelemetryPoint p)
+void FuelPerLap::newPoint(PTelemetryPoint)
 {
     if (state()->fuelData.infiniteFuel)
     {

@@ -20,7 +20,7 @@ PState Controller::state()
 
 void Controller::newTelemetryPoint(PTelemetryPoint p)
 {
-    static unsigned sCarId=0;
+    static int32_t sCarId=0;
     auto fpsTime = m_fpsTimer.nsecsElapsed();
     m_fpsTimer.start();
 
@@ -225,23 +225,8 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
     m_state->lastProcessingTimes.push_back (m_timer.nsecsElapsed());
     m_state->lastProcessingTimes.pop_front();
 
-    unsigned summed = 0;
-    for (auto i : m_state->lastProcessingTimes)
-    {
-        summed += i;
-    }
-    unsigned avgTime = summed / state()->lastProcessingTimes.size();
-
     m_state->lastFpsTimes.push_back (fpsTime);
     m_state->lastFpsTimes.pop_front();
-
-    summed = 0;
-    for (auto i : m_state->lastFpsTimes)
-    {
-        summed += i;
-    }
-    unsigned avgFpsTime = float(summed) / state()->lastFpsTimes.size();
-
 
     m_state->cpuLoad = (m_timer.nsecsElapsed()/1000)/1000.0/16.7;
     m_state->avgFrameTime = (fpsTime/100000)/10.0;

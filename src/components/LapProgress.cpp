@@ -1,7 +1,6 @@
 #include "src/components/LapProgress.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 LapProgress::LapProgress () : Component()
 {

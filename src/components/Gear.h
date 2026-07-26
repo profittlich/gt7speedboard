@@ -8,11 +8,11 @@ class Gear : public Component
 public:
     Gear ();
 
-    virtual QWidget * getWidget() const;
+    virtual QWidget * getWidget() const override;
 
-    virtual QString defaultTitle () const;
+    virtual QString defaultTitle () const override;
 
-    virtual void newPoint(PTelemetryPoint p);
+    virtual void newPoint(PTelemetryPoint p) override;
 
     static QString description ();
     static QMap<QString, Action> actions ();

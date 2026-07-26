@@ -1,6 +1,5 @@
 #include "LinearInterpolator.h"
 #include "src/cardata/TelemetryPointGT7.h"
-#include "src/system/Helpers.h"
 
 QList<PTelemetryPoint> LinearInterpolator::interpolate (PTelemetryPoint p1, PTelemetryPoint p2)
 {

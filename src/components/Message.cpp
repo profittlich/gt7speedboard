@@ -25,7 +25,7 @@ QString Message::defaultTitle () const
     return "Message";
 }
 
-void Message::newPoint(PTelemetryPoint p)
+void Message::newPoint(PTelemetryPoint)
 {
     auto newMessages = state()->messages("main");
     m_messageQueue.append(newMessages);
@@ -49,7 +49,7 @@ void Message::newPoint(PTelemetryPoint p)
     }
 }
 
-void Message::completedLap(PLap lastLap, bool isFullLap)
+void Message::completedLap(PLap, bool)
 {
     DBG_MSG << ("New lap message on");
     //m_widget->setText("NEW LAP");

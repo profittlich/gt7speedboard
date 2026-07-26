@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/cardata/TelemetryPoint.h"
-#include "src/trackdata/Track.h"
 #include "src/system/Laps.h"
 #include <QSharedPointer>
 #include <QList>
@@ -33,16 +31,16 @@ public:
         currentLap(new Lap()),
         lapProgress(-1),
         //currentLapValid(true),
+        frameDrops(0),
+        cpuLoad(0),
+        avgFrameTime(16.7),
         newLap(false),
+        //onNewTrack(false),
+        //maybeOnNewTrack(false),
         newLapIsClosedLoop(false),
         newSession(false),
         inPit(false),
-        //onNewTrack(false),
-        //maybeOnNewTrack(false),
-        presetChanged(false),
-        frameDrops(0),
-        cpuLoad(0),
-        avgFrameTime(16.7)
+        presetChanged(false)
     {
         currentLap->setTrackDetector(PTrackDetector(new TrackDetector()));
 

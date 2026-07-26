@@ -17,7 +17,7 @@ QString ProgressManager::defaultTitle () const
     return "Progress Manager";
 }
 
-void ProgressManager::newPoint(PTelemetryPoint p)
+void ProgressManager::newPoint(PTelemetryPoint)
 {
     PComparisonLap progress;
 
@@ -51,7 +51,7 @@ void ProgressManager::newPoint(PTelemetryPoint p)
     }
 }
 
-void ProgressManager::completedLap(PLap lastLap, bool isFullLap)
+void ProgressManager::completedLap(PLap, bool)
 {
     if (state()->comparisonLaps.contains("best"))
     {

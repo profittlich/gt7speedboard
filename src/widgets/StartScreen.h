@@ -1,6 +1,5 @@
 #pragma once
 
-#include "qscrollarea.h"
 #include <QWidget>
 #include <QLineEdit>
 #include <QLabel>
@@ -32,7 +31,6 @@ signals:
     void startDash();
 
 protected:
-    void resizeEvent(QResizeEvent * e);
 
 private:
     QPushButton * m_btnIP = nullptr;

@@ -5,7 +5,7 @@
 
 void Graph::addValue(size_t idx, float x, float y)
 {
-    while (m_values.size() < idx+1)
+    while (m_values.size() < qsizetype(idx)+1)
     {
         m_values.append(QList<float>());
     }
@@ -34,7 +34,7 @@ void Graph::addValue(size_t idx, float x, float y)
 
 void Graph::setColor(size_t idx, QColor col)
 {
-    while (m_colors.size() < idx+1)
+    while (m_colors.size() < qsizetype(idx)+1)
     {
         m_colors.append(QColor(1,1,1));
     }
@@ -43,7 +43,7 @@ void Graph::setColor(size_t idx, QColor col)
 
 void Graph::setType(size_t idx, GraphTypes t)
 {
-    while (m_types.size() < idx+1)
+    while (m_types.size() < qsizetype(idx)+1)
     {
         m_types.append(Plot);
     }
@@ -165,7 +165,7 @@ void Graph::initializeGL()
         {
             char* infoLog = (char*)malloc(sizeof(char) * infoLen);
             f->glGetShaderInfoLog(m_vShader, infoLen, NULL, infoLog);
-            DBG_MSG << ("Error compiling shader:\n%s\n", infoLog);
+            DBG_MSG << "Error compiling shader:" << infoLog;
             free(infoLog);
         }
 
@@ -246,17 +246,6 @@ void Graph::paintGL()
     //auto cy = (m_maxY + m_minY)/2.0;
     auto aspect = dx/dy / m_viewportAspect;
 
-
-    float centerScale = 0;
-    if (dx > dy)
-    {
-        centerScale = dx;
-    }
-    else
-    {
-        centerScale = dy;
-    }
-
     m_scaleMatrix[0] = 2/dx;
     m_scaleMatrix[5] = 2/dy;
     m_scaleMatrix[10] = 1.0;
@@ -287,7 +276,7 @@ void Graph::paintGL()
     f->glUniformMatrix4fv(uLocS, 1, false, m_scaleMatrix.data());
     f->glUniformMatrix4fv(uLocW, 1, false, m_windowMatrix.data());
 
-    for (size_t idx = 0; idx < m_values.size(); ++idx)
+    for (size_t idx = 0; qsizetype(idx) < m_values.size(); ++idx)
     {
         if (m_types[idx] == Plot)
         {
@@ -304,7 +293,7 @@ void Graph::paintGL()
             if (m_values[idx].size())
             {
                 m_markerArray.resize(0);
-                for (size_t mp = 0; mp < m_values[idx].size(); mp+=3)
+                for (size_t mp = 0; qsizetype(mp) < m_values[idx].size(); mp+=3)
                 {
                     m_markerArray.append(m_values[idx][mp]-(dy*aspect)/10);
                     m_markerArray.append(m_values[idx][mp+1]);
@@ -341,7 +330,7 @@ void Graph::paintGL()
             if (m_values[idx].size())
             {
                 m_markerArray.resize(0);
-                for (size_t mp = 0; mp < m_values[idx].size(); mp+=3)
+                for (size_t mp = 0; qsizetype(mp) < m_values[idx].size(); mp+=3)
                 {
                     m_markerArray.append(m_values[idx][mp]-(dy*aspect)/20);
                     m_markerArray.append(m_values[idx][mp+1]-dy/20);
@@ -366,7 +355,7 @@ void Graph::paintGL()
             if (m_values[idx].size())
             {
                 m_markerArray.resize(0);
-                for (size_t mp = 0; mp < m_values[idx].size(); mp+=3)
+                for (size_t mp = 0; qsizetype(mp) < m_values[idx].size(); mp+=3)
                 {
                     m_markerArray.append(m_values[idx][mp]+(dy*aspect)/20);
                     m_markerArray.append(m_values[idx][mp+1]+dy/20);

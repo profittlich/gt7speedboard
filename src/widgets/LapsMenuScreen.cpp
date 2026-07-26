@@ -22,7 +22,7 @@ LapsMenuScreen::LapsMenuScreen (MainWidget * parent, PDash dash, PState pstate) 
 
     compLaps.sort();
 
-    for (auto l : compLaps)
+    for (auto & l : std::as_const(compLaps))
     {
         if (state()->invisibleComparisonLaps.contains(l))
         {

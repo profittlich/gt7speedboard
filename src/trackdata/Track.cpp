@@ -28,7 +28,7 @@ Track::Track(const QString & fn)
     m_name = m_name.replace("_Uuml_", "Ü");
     m_name = m_name.replace("_szlig_", "ß");
 
-    for (size_t i = 1; i < tfn.size(); ++i)
+    for (qsizetype i = 1; i < tfn.size(); ++i)
     {
         DBG_MSG << "Param:" << tfn[0] << ":" << tfn[i];
         if (tfn[i].left(6) == "WIDTH-")
@@ -59,7 +59,7 @@ bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose, flo
     }
     *dist = 100000000000.0;
     bool enteredTrack = false;
-    for (size_t j = 0; j < m_points.size(); ++j)
+    for (qsizetype j = 0; j < m_points.size(); ++j)
     {
         size_t i = (j + offset) % m_points.size();
         curDist = p->position().distanceTo(m_points[i]->position());

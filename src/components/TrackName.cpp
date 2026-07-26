@@ -1,8 +1,6 @@
 #include "src/components/TrackName.h"
 
-#include "src/cardata/TelemetryPointGT7.h"
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 
 
 
@@ -29,7 +27,7 @@ QString TrackName::defaultTitle () const
     return "Track";
 }
 
-void TrackName::newPoint(PTelemetryPoint p)
+void TrackName::newPoint(PTelemetryPoint)
 {
     QString trc = state()->currentLap->trackName(true);
     if (!trc.isNull())

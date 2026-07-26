@@ -1,5 +1,4 @@
 #include "ErrorScreen.h"
-#include "src/system/Helpers.h"
 
 #include <QtLogging>
 #include <QVBoxLayout>

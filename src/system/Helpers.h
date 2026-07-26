@@ -6,8 +6,6 @@
 #include <QtCore/qdebug.h>
 #include <QDir>
 
-#include<iostream>
-
 #include <qlogging.h>
 
 QString indexToTime(size_t idx);

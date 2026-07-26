@@ -292,18 +292,6 @@ void StartScreen::textInputCancelled()
     inp->deleteLater();
 }
 
-void StartScreen::resizeEvent(QResizeEvent * e)
-{
-    unsigned targetSize = e->size().width();
-    if (e->size().height() < targetSize)
-    {
-        targetSize = e->size().height();
-    }
-    targetSize *= 0.9;
-
-    //m_lbHead->setPixmap(QPixmap(":/assets/assets/SpeedBoard_Logo_black_trans.png").scaled (targetSize, targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-}
-
 void StartScreen::startDashClicked()
 {
     QSettings settings;
@@ -317,7 +305,7 @@ void StartScreen::startDashClicked()
 
 }
 
-void StartScreen::selectFontSize(int idx)
+void StartScreen::selectFontSize(int)
 {
     QComboBox * cbFont = dynamic_cast<QComboBox*>(sender());
     float size = cbFont->currentData().toFloat();

@@ -13,7 +13,7 @@ public:
         QJsonObject result = dashNode->toJson().toObject();
         result.insert("title", title);
         QJsonArray scArray;
-        for (auto i : shortcuts)
+        for (auto & i : std::as_const(shortcuts))
         {
             scArray.append(i);
         }
@@ -42,7 +42,7 @@ public:
         QJsonObject out;
         out.insert("version", 2);
         QJsonArray pagesArray;
-        for (auto i : pages)
+        for (auto i : std::as_const(pages))
         {
             //qDebug("===PAGE===");
 
@@ -56,7 +56,7 @@ public:
     void replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target)
     {
         bool success = false;
-        for (auto i : pages)
+        for (auto i : std::as_const(pages))
         {
             success |= i.replaceComponent(oldComponent, newComponent, target);
         }

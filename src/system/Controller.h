@@ -2,8 +2,8 @@
 
 #include <QObject>
 #include <QElapsedTimer>
-#include "src/system/DashBuilder.h"
 #include "src/cardata/TelemetryPoint.h"
+#include <src/system/Dash.h>
 
 class Controller : public QObject
 {

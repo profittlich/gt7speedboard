@@ -32,8 +32,8 @@ void ComparisonLapManager::newPoint(PTelemetryPoint p)
         {
             QFile f;
             f.setFileName(getStorageLocation().absolutePath() + "/" + state()->currentLap->trackName() + "-jumps.gt7boundary");
-            f.open(QIODeviceBase::Append);
-            if (f.isOpen())
+
+            if (f.open(QIODeviceBase::Append))
             {
                 f.write(state()->currentLap->points().back()->getData());
                 f.write(p->getData());
@@ -53,7 +53,7 @@ void ComparisonLapManager::newPoint(PTelemetryPoint p)
 
 void ComparisonLapManager::updateClosestPoints (PTelemetryPoint p)
 {
-    for (auto curLap : state()->comparisonLaps.keys())
+    for (auto & curLap : state()->comparisonLaps.keys())
     {
         auto compLap = state()->comparisonLaps[curLap];
         if (!state()->comparisonLaps[curLap]->lap->points().empty())
@@ -81,7 +81,7 @@ void ComparisonLapManager::updateClosestPoints (PTelemetryPoint p)
 
 void ComparisonLapManager::updateNextCriticalPoints()
 {
-    for (auto curLap : state()->comparisonLaps.keys())
+    for (auto & curLap : state()->comparisonLaps.keys())
     {
         auto compLap = state()->comparisonLaps[curLap];
         if (compLap->hasClosestPoint)
@@ -118,7 +118,7 @@ void ComparisonLapManager::updateNextCriticalPoints()
     }
 }
 
-void ComparisonLapManager::completedLap(PLap lastLap, bool isFullLap)
+void ComparisonLapManager::completedLap(PLap lastLap, bool)
 {
     // CHECKS FOR COMPLETED LAP
     if (lastLap->lapTime() == -1)

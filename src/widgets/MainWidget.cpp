@@ -110,15 +110,27 @@ void MainWidget::startDash ()
     if (!f.exists())
     {
         QFile f (":/assets/assets/Default.sblayout");
-        f.open(QIODeviceBase::ReadOnly);
-        jsonData = f.readAll();
-        f.close();
+        if (f.open(QIODeviceBase::ReadOnly))
+        {
+            jsonData = f.readAll();
+            f.close();
+        }
+        else
+        {
+            DBG_MSG << "Failed to read layout JSON file.";
+        }
     }
     else
     {
-        f.open(QIODeviceBase::ReadOnly);
-        jsonData = f.readAll();
-        f.close();
+        if (f.open(QIODeviceBase::ReadOnly))
+        {
+            jsonData = f.readAll();
+            f.close();
+        }
+        else
+        {
+            DBG_MSG << "Failed to read layout JSON file.";
+        }
     }
 
     QJsonDocument jDoc = QJsonDocument::fromJson(jsonData);
@@ -179,7 +191,7 @@ void MainWidget::startDash ()
     m_layout->setContentsMargins(0,0,0,0);
     setStyleSheet("");//background-color: " + g_globalConfiguration.dimColor().name() + ";");
 
-    for (auto i : m_dash->components)
+    for (auto i : std::as_const(m_dash->components))
     {
         i->setState (m_controller->state());
         i->loaded();
@@ -280,7 +292,7 @@ void MainWidget::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void MainWidget::resizeEvent(QResizeEvent * ev)
+void MainWidget::resizeEvent(QResizeEvent *)
 {
     //DBG_MSG << ev->oldSize().width() << "x" << ev->oldSize().height() << " -> " << ev->size().width() << "x" << ev->size().height();
     //DBG_MSG << this->contentsMargins().top();

@@ -9,6 +9,8 @@
 class DashNode
 {
 public:
+    virtual ~DashNode() {};
+
     virtual QJsonValue toJson() = 0;
 
     virtual bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) = 0;
@@ -20,7 +22,7 @@ public:
 
     QMap<QString, QJsonValue> getFields() {
         QMap<QString, QJsonValue> result;
-        for (auto i : m_additionalFields.keys())
+        for (auto & i : m_additionalFields.keys())
         {
             DBG_MSG << i << m_additionalFields[i];
             result[i] = m_additionalFields[i].toJsonValue();
@@ -59,27 +61,27 @@ public:
     bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) override
     {
         bool result = false;
-        for (auto i : m_list)
+        for (auto i : std::as_const(m_list))
         {
             result |= i->replaceComponent(oldComponent, newComponent, target);
         }
         return result;
     }
 
-    QJsonValue toJson()
+    QJsonValue toJson() override
     {
         QJsonObject result;
 
         QJsonArray list;
 
-        for (auto i : m_list)
+        for (auto i : std::as_const(m_list))
         {
             list.append(i->toJson());
         }
 
         auto additionalFields = getFields();
         DBG_MSG << additionalFields.size() << "additional fields";
-        for (auto i : additionalFields.keys()) {
+        for (auto & i : additionalFields.keys()) {
             result.insert(i, additionalFields[i]);
         }
 
@@ -101,20 +103,20 @@ public:
     bool replaceComponent(PComponent oldComponent, PComponent newComponent, QWidget * target) override
     {
         bool result = false;
-        for (auto i : m_stack)
+        for (auto i : std::as_const(m_stack))
         {
             result |= i->replaceComponent(oldComponent, newComponent, target);
         }
         return result;
     }
 
-    QJsonValue toJson()
+    QJsonValue toJson() override
     {
         QJsonObject result;
 
         QJsonArray list;
 
-        for (auto i : m_stack)
+        for (auto i : std::as_const(m_stack))
         {
             list.append(i->toJson());
         }

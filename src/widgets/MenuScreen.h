@@ -5,9 +5,8 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QScrollArea>
-#include "src/system/DashBuilder.h"
+#include <QPushButton>
 #include "MainWidget.h"
-#include "src/widgets/ButtonLabel.h"
 #include "src/widgets/SideButtonLabel.h"
 
 class MenuScreen : public QScrollArea

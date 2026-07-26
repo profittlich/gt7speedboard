@@ -8,21 +8,10 @@ ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDa
 
     setTitle(comp->title().toUpper());
 
-    m_lbParam = new QLabel(widget());
-    auto font = m_lbParam->font();
-    font.setPointSizeF(30);
-    font.setBold(true);
-    m_lbParam->setFont(font);
-    m_lbParam->setStyleSheet ("height: 100px;     border-style: none;  color:white;");
-
-    updateParams();
-
     addButton("REPLACE", this, &ComponentContextMenuScreen::replaceClicked);
 
-    layout()->addWidget(m_lbParam);
-
     auto lbActions = new QLabel(widget());
-    font = lbActions->font();
+    auto font = lbActions->font();
     font.setPointSizeF(30);
     font.setBold(true);
     lbActions->setFont(font);
@@ -34,13 +23,24 @@ ComponentContextMenuScreen::ComponentContextMenuScreen (MainWidget * parent, PDa
     auto actionKeys = actions.keys();
     std::sort(actionKeys.begin(), actionKeys.end(), [actions](QString a, QString b) { return actions[a].order < actions[b].order; });
 
-    for (auto i : actionKeys)
+    for (auto & i : std::as_const(actionKeys))
     {
         QPushButton * curButton = addButton (actions[i].label.toUpper(), this, &ComponentContextMenuScreen::actionClicked);
         curButton->setProperty("componentAction", i);
     }
 
+    m_lbParam = new QLabel(widget());
+    font = m_lbParam->font();
+    font.setPointSizeF(30);
+    font.setBold(true);
+    m_lbParam->setFont(font);
+    m_lbParam->setStyleSheet ("height: 100px;     border-style: none;  color:white;");
+    m_lbParam->setText ("Parameters:");
+    layout()->addWidget(m_lbParam);
+
     layout()->insertStretch(layout()->count());
+
+    updateParams();
 }
 
 // Component replace/select menu
@@ -51,7 +51,7 @@ ComponentSelectionMenuScreen::ComponentSelectionMenuScreen (MainWidget * parent,
     setTitle("REPLACE");
 
     auto comps = ComponentFactory::listComponents();
-    for (auto i : comps)
+    for (auto & i : std::as_const(comps))
     {
         if (!ComponentFactory::componentHasWidget(i))
         {
@@ -66,30 +66,49 @@ ComponentSelectionMenuScreen::ComponentSelectionMenuScreen (MainWidget * parent,
 
 void ComponentContextMenuScreen::updateParams()
 {
-    m_lbParam->setText ("Parameters:\n");
-    auto boolLabels = m_component->getBooleanParameters();
-    for (auto i : boolLabels)
+    for (auto i : std::as_const(m_paramItems))
     {
-        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + (i() ? "ON" : "OFF") + "\n");
+        delete i;
+    }
+    m_paramItems.clear();
+
+    // remove spacer temporarily
+    layout()->removeItem(layout()->itemAt(layout()->count()-1));
+
+    auto boolLabels = m_component->getBooleanParameters();
+    for (auto i : std::as_const(boolLabels))
+    {
+        QPushButton * curButton = addButton (i.name() + ": " + (i() ? "ON" : "OFF"), this, &ComponentContextMenuScreen::paramClicked);
+        curButton->setProperty("paramKey", i.name());
+        m_paramItems.push_back(curButton);
     }
 
     auto strLabels = m_component->getStringParameters();
-    for (auto i : strLabels)
+    for (auto i : std::as_const(strLabels))
     {
-        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + i() + "\n");
+        QPushButton * curButton = addButton (i.name() + ": " + i(), this, &ComponentContextMenuScreen::paramClicked);
+        curButton->setProperty("paramKey", i.name());
+        m_paramItems.push_back(curButton);
     }
 
     auto fltLabels = m_component->getFloatParameters();
-    for (auto i : fltLabels)
+    for (auto i : std::as_const(fltLabels))
     {
-        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + QString::number(i()) + "\n");
+        QPushButton * curButton = addButton (i.name() + ": " + QString::number(i()), this, &ComponentContextMenuScreen::paramClicked);
+        curButton->setProperty("paramKey", i.name());
+        m_paramItems.push_back(curButton);
     }
 
     auto intLabels = m_component->getIntParameters();
-    for (auto i : intLabels)
+    for (auto i : std::as_const(intLabels))
     {
-        m_lbParam->setText (m_lbParam->text() + i.name() + ": " + QString::number(i()) + "\n");
+        QPushButton * curButton = addButton (i.name() + ": " + QString::number(i()), this, &ComponentContextMenuScreen::paramClicked);
+        curButton->setProperty("paramKey", i.name());
+        m_paramItems.push_back(curButton);
     }
+
+    // re-add spacer
+    layout()->insertStretch(layout()->count());
 }
 
 void ComponentContextMenuScreen::actionClicked()
@@ -98,6 +117,12 @@ void ComponentContextMenuScreen::actionClicked()
     DBG_MSG << "Action clicked:" << action;
     m_component->callAction(action);
     updateParams();
+}
+
+void ComponentContextMenuScreen::paramClicked()
+{
+    QString action = sender()->property("paramKey").toString();
+    DBG_MSG << "Param clicked:" << action;
 }
 
 void ComponentContextMenuScreen::replaceClicked()

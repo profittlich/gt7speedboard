@@ -17,7 +17,7 @@ bool SBGLMapWidgetLines::hasRefLap()
 void SBGLMapWidgetLines::updateRefLap(PLap refLap)
 {
     m_verticesRef.clear();
-    for (auto i : refLap->points())
+    for (auto & i : refLap->points())
     {
         if (i->position().x() < m_minX)
         {
@@ -57,7 +57,7 @@ bool SBGLMapWidgetLines::hasRefLap2()
 void SBGLMapWidgetLines::updateRefLap2(PLap refLap)
 {
     m_verticesRef2.clear();
-    for (auto i : refLap->points())
+    for (auto & i : refLap->points())
     {
         if (i->position().x() < m_minX)
         {
@@ -97,7 +97,7 @@ bool SBGLMapWidgetLines::hasRefLap3()
 void SBGLMapWidgetLines::updateRefLap3(PLap refLap)
 {
     m_verticesRef3.clear();
-    for (auto i : refLap->points())
+    for (auto & i : refLap->points())
     {
         if (i->position().x() < m_minX)
         {
@@ -157,7 +157,7 @@ void SBGLMapWidgetLines::recalcExtents()
     m_maxY = -1000000.0;
     if (m_showCurrent)
     {
-        for (size_t i = 0; i < m_vertices.size(); i+=3)
+        for (qsizetype i = 0; i < m_vertices.size(); i+=3)
         {
             if (m_vertices[i] < m_minX)
             {
@@ -179,7 +179,7 @@ void SBGLMapWidgetLines::recalcExtents()
     }
     if (m_showPrev)
     {
-        for (size_t i = 0; i < m_verticesPrev.size(); i+=3)
+        for (qsizetype i = 0; i < m_verticesPrev.size(); i+=3)
         {
             if (m_verticesPrev[i] < m_minX)
             {
@@ -278,7 +278,7 @@ void SBGLMapWidgetLines::initializeGL()
         {
             char* infoLog = (char*)malloc(sizeof(char) * infoLen);
             f->glGetShaderInfoLog(m_vShader, infoLen, NULL, infoLog);
-            DBG_MSG << ("Error compiling shader:\n%s\n", infoLog);
+            DBG_MSG << "Error compiling shader:" << infoLog;
             free(infoLog);
         }
 

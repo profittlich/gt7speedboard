@@ -15,9 +15,8 @@ void Configuration::loadCars()
     DBG_MSG << "loadCars";
     {
         QFile f (":/assets/assets/makers.csv");
-        if (f.exists())
+        if (f.exists() && f.open(QIODeviceBase::ReadOnly))
         {
-            f.open(QIODeviceBase::ReadOnly);
             auto all = f.readLine();
             while (!all.isNull())
             {
@@ -36,9 +35,8 @@ void Configuration::loadCars()
 
     {
         QFile f (":/assets/assets/cars.csv");
-        if (f.exists())
+        if (f.exists() && f.open(QIODeviceBase::ReadOnly))
         {
-            f.open(QIODeviceBase::ReadOnly);
             auto all = f.readLine();
             while (!all.isNull())
             {

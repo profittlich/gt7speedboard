@@ -11,6 +11,7 @@ public:
 
 public slots:
     void actionClicked();
+    void paramClicked();
     void replaceClicked();
 
 protected:
@@ -20,6 +21,7 @@ private:
     PState m_state;
     PComponent m_component;
     QLabel * m_lbParam = nullptr;
+    QList<QWidget*> m_paramItems;
 
 };
 

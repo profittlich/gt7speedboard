@@ -1,7 +1,6 @@
 #include "src/components/Map.h"
 
 #include "src/components/ComponentFactory.h"
-#include "src/system/Configuration.h"
 #include "src/components/MapRenderers/SBGLMapWidgetLines.h"
 #include "src/components/MapRenderers/SBGLMapWidgetZoomedLines.h"
 
@@ -162,21 +161,21 @@ void Map::newPoint(PTelemetryPoint p)
         m_widget->clearRefLap3();
     }
 
-    if (targetLapUsable(m_target()) && (m_refLap.isNull() || state()->comparisonLaps[m_target()]->lap != m_refLap || m_refLap->points().size() != m_prevSize))
+    if (targetLapUsable(m_target()) && (m_refLap.isNull() || state()->comparisonLaps[m_target()]->lap != m_refLap || m_refLap->points().size() != qsizetype(m_prevSize)))
     {
         m_refLap = state()->comparisonLaps[m_target()]->lap;
         m_prevSize = m_refLap->points().size();
         //DBG_MSG << "New ref lap:" << m_refLap->points().size();
         m_widget->updateRefLap(m_refLap);
     }
-    if (targetLapUsable(m_target2()) && (m_refLap2.isNull() || state()->comparisonLaps[m_target2()]->lap != m_refLap2 || m_refLap2->points().size() != m_prevSize2))
+    if (targetLapUsable(m_target2()) && (m_refLap2.isNull() || state()->comparisonLaps[m_target2()]->lap != m_refLap2 || m_refLap2->points().size() != qsizetype(m_prevSize2)))
     {
         m_refLap2 = state()->comparisonLaps[m_target2()]->lap;
         m_prevSize2 = m_refLap2->points().size();
         //DBG_MSG << "New ref lap2:" << m_refLap2->points().size();
         m_widget->updateRefLap2(m_refLap2);
     }
-    if (targetLapUsable(m_target3()) && (m_refLap3.isNull() || state()->comparisonLaps[m_target3()]->lap != m_refLap3 || m_refLap3->points().size() != m_prevSize3))
+    if (targetLapUsable(m_target3()) && (m_refLap3.isNull() || state()->comparisonLaps[m_target3()]->lap != m_refLap3 || m_refLap3->points().size() != qsizetype(m_prevSize3)))
     {
         m_refLap3 = state()->comparisonLaps[m_target3()]->lap;
         m_prevSize3 = m_refLap3->points().size();
@@ -187,7 +186,7 @@ void Map::newPoint(PTelemetryPoint p)
     m_widget->update();
 }
 
-void Map::completedLap(PLap lastLap, bool isFullLap)
+void Map::completedLap(PLap, bool)
 {
     if (state()->comparisonLaps.contains(m_target()) && (m_refLap.isNull() || state()->comparisonLaps[m_target()]->lap != m_refLap))
     {

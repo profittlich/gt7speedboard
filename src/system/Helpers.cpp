@@ -2,6 +2,7 @@
 #include <QString>
 #include <QColor>
 #include <QStandardPaths>
+#include <iostream>
 
 #ifdef Q_OS_WINDOWS
 #include <windows.h>
@@ -22,7 +23,7 @@ IOPMAssertionID g_assertionID;
 
 QString g_debugText;
 
-void sbDebugMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & txt)
+void sbDebugMessageHandler(QtMsgType, const QMessageLogContext &, const QString & txt)
 {
     std::cout << txt.toStdString() << std::endl;
     g_debugText += txt.toStdString() + "\n";

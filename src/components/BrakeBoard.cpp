@@ -401,8 +401,9 @@ void BrakeBoard::brakeTiming(PTelemetryPoint p)
             if (!m_brakeDownTime.isNull())
             {
                 brakeElapsed = m_brakeDownTime.msecsTo(m_targetTime);
+                DBG_MSG << brakeElapsed << elapsed << m_brakeDownTime << m_brakeTimingTolerance;
             }
-            DBG_MSG << brakeElapsed << elapsed << m_brakeDownTime << m_brakeTimingTolerance;
+
             if (m_brakeDownTime.isNull())
             {
                 m_mainLabel->setText("MISS!");

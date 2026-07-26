@@ -42,8 +42,8 @@ void LapChangeDetector::newPoint(PTelemetryPoint p)
             {
                 QFile f;
                 f.setFileName(getStorageLocation().absolutePath() + "/" + state()->currentLap->trackName() + "-finishline.gt7boundary");
-                f.open(QIODeviceBase::Append);
-                if (f.isOpen())
+
+                if (f.open(QIODeviceBase::Append))
                 {
                     f.write(state()->currentLap->points().back()->getData());
                     f.write(p->getData());
