@@ -7,13 +7,13 @@
 
 QString LapComparison::s_fullScreenTarget;
 QList<LapComparison*> LapComparison::s_allLapComparisons;
-PComponentParameterFloat LapComparison::s_offset;
+PComponentParameterInt LapComparison::s_offset;
 
-LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<float>("currentTarget",1, true)), m_firstTarget (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
+LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<int>("currentTarget",1, true)), m_firstTarget (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
 {
     if (s_offset.isNull())
     {
-        s_offset = PComponentParameterFloat( new ComponentParameter<float> ("offset", 0, true));
+        s_offset = PComponentParameterInt (new ComponentParameter<int> ("offset", 0, true));
     }
 
     addComponentParameter(m_currentTarget);
@@ -69,6 +69,22 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
 void LapComparison::loaded()
 {
     updateLabel();
+}
+
+void LapComparison::parameterChanged(const PComponentParameterString &)
+{
+    if (!state().isNull())
+    {
+        updateLabel();
+    }
+}
+
+void LapComparison::parameterChanged(const PComponentParameterInt &)
+{
+    if (!state().isNull())
+    {
+        updateLabel();
+    }
 }
 
 LapComparison::~LapComparison()
@@ -328,28 +344,28 @@ void LapComparison::callAction(QString a)
     else if (a == "nextTarget")
     {
         DBG_MSG << "next target";
-        m_currentTarget() += 1.0;
+        m_currentTarget() += 1;
 
-        if (m_currentTarget() > 3.5)
+        if (m_currentTarget() > 3)
         {
-            m_currentTarget() = 1.0;
+            m_currentTarget() = 1;
         }
 
         if (currentTarget()() == "")
         {
-            m_currentTarget() += 1.0;
-            if (m_currentTarget() > 3.5)
+            m_currentTarget() += 1;
+            if (m_currentTarget() > 3)
             {
-                m_currentTarget() = 1.0;
+                m_currentTarget() = 1;
             }
         }
 
         if (currentTarget()() == "")
         {
-            m_currentTarget() += 1.0;
-            if (m_currentTarget() > 3.5)
+            m_currentTarget() += 1;
+            if (m_currentTarget() > 3)
             {
-                m_currentTarget() = 1.0;
+                m_currentTarget() = 1;
             }
         }
 

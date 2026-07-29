@@ -22,6 +22,8 @@ public:
     virtual QColor signalColor () const override;
     virtual void callAction(QString a) override;
     virtual void loaded() override;
+    virtual void parameterChanged(const PComponentParameterString &) override;
+    virtual void parameterChanged(const PComponentParameterInt &) override;
 
     static QString description ();
     static QMap<QString, Action> actions ();
@@ -42,11 +44,11 @@ private:
     ColorLabel * m_speed = nullptr;
     GaugeLabel * m_time = nullptr;
     ColorLabel * m_offset = nullptr;
-    PComponentParameterFloat m_currentTarget;
+    PComponentParameterInt m_currentTarget;
     PComponentParameterString m_firstTarget;
     PComponentParameterString m_secondTarget;
     PComponentParameterString m_thirdTarget;
-    static PComponentParameterFloat s_offset;
+    static PComponentParameterInt s_offset;
     PComparisonLap m_targetLap;
 
     bool m_prevFullScreenPermission = false;

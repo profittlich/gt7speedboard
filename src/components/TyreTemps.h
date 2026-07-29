@@ -15,13 +15,11 @@ public:
 
     virtual void newPoint(PTelemetryPoint p) override;
 
+    virtual void parameterChanged(const PComponentParameterFloat &) override;
+
     static QString description ();
     static QMap<QString, Action> actions ();
     static QString componentId ();
-
-    //virtual QList<ComponentParameter<float>> getFloatParameters() override;
-    //virtual ComponentParameter<float> floatParameter(const QString & key) override;
-    //virtual void loatParameter (ComponentParameter<float> &) override;
 
     virtual void callAction(QString a) override;
 

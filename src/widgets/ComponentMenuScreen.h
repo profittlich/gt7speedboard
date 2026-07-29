@@ -14,6 +14,9 @@ public slots:
     void paramClicked();
     void replaceClicked();
 
+    void textInputOk();
+    void textInputCancelled();
+
 protected:
     void updateParams();
 
@@ -22,6 +25,10 @@ private:
     PComponent m_component;
     QLabel * m_lbParam = nullptr;
     QList<QWidget*> m_paramItems;
+    QMap<QString, ComponentParameter<bool>> m_boolParameters;
+    QMap<QString, ComponentParameter<QString>> m_stringParameters;
+    QMap<QString, ComponentParameter<int>> m_intParameters;
+    QMap<QString, ComponentParameter<float>> m_floatParameters;
 
 };
 

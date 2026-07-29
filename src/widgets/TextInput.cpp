@@ -4,14 +4,16 @@
 #include <QTimer>
 #include <QKeyEvent>
 
-TextInput::TextInput(QWidget *, QString title, QString init)
+TextInput::TextInput(QWidget *, QString title, QString init, QValidator * validator)
 {
+    m_validator = validator;
     setStyleSheet("background-color: " + g_globalConfiguration.dimColor().name() + ";");
 
     QVBoxLayout * layout = new QVBoxLayout(this);
 
     QLabel * lbTitle = new QLabel(this);
     lbTitle->setText (title);
+    m_title = title;
 
     lbTitle->setAlignment(Qt::AlignCenter);
     auto font = lbTitle->font();
@@ -30,6 +32,10 @@ TextInput::TextInput(QWidget *, QString title, QString init)
     m_leText->setFont(fnt);
     m_leText->setMinimumHeight(30);
     m_leText->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
+    if (m_validator)
+    {
+        m_leText->setValidator(m_validator);
+    }
 
     layout->addWidget(m_leText);
 
@@ -80,6 +86,11 @@ void TextInput::keyPressEvent(QKeyEvent *e)
 QString TextInput::getResult()
 {
     return m_leText->text();
+}
+
+QString TextInput::getTitle()
+{
+    return m_title;
 }
 
 void TextInput::okClicked()

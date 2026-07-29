@@ -134,6 +134,13 @@ QString TyreTemps::componentId ()
     return "TyreTemps";
 }
 
+void TyreTemps::parameterChanged(const PComponentParameterFloat &)
+{
+    if (!state().isNull())
+    {
+        m_colorMapper = new ColorMapperBlueGreenRed(m_target(), m_spread());
+    }
+}
 
 void TyreTemps::callAction(QString a)
 {

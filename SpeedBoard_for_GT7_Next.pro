@@ -20,6 +20,7 @@ SOURCES += \
     src/components/DataGraph.cpp \
     src/components/DebugLog.cpp \
     src/components/LapOptimizer.cpp \
+    src/widgets/ComponentWidget.cpp \
     src/widgets/MainWidget.cpp \
     src/main.cpp \
     src/cardata/TelemetryPoint.cpp \
@@ -195,12 +196,12 @@ ios {
 }
 
 windows {
-    RC_ICONS = doc/SpeedBoard_Icon_512.ico
+    RC_ICONS = doc/images/SpeedBoard_Icon_512.ico
 }
 
 macx {
     QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
-    ICON = doc/SpeedBoard_Icon.icns
+    ICON = doc/images/SpeedBoard_Icon.icns
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 12.0
     MACOSX_DEPLOYMENT_TARGET=12.0
 }
@@ -217,6 +218,7 @@ DISTFILES += \
     assets/SpeedBoard_Logo_black_trans.png \
     assets/SpeedBoard_Logo_trans.png \
     assets/SpeedBoard_Logo_white.png \
+    doc/ARCHITECTURE.md \
     platform/ios/LoadingScreenLogo.png \
     platform/ios/SBLaunchScreen.storyboard \
     platform/ios/Info.plist

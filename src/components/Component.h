@@ -10,6 +10,7 @@
 #include <QWidget>
 #include <QStackedWidget>
 
+
 template <typename T>
 class ComponentParameter
 {
