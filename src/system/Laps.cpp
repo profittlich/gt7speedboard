@@ -14,16 +14,19 @@ bool Lap::saveLap(QString filename)
         if (!preceedingPoint().isNull())
         {
             DBG_MSG << "write preceeding";
+            m_preceedingPoint->reconstructData();
             f.write(preceedingPoint()->getData());
         }
         DBG_MSG << "write points";
         for (auto i : points())
         {
+            i->reconstructData();
             f.write(i->getData());
         }
         if (!succeedingPoint().isNull())
         {
             DBG_MSG << "write succeeding";
+            m_succeedingPoint->reconstructData();
             f.write(succeedingPoint()->getData());
         }
 

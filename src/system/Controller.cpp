@@ -59,6 +59,7 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
     // Update components, first those without widget, then with widget
     PLap previousLap;
     PTrack newTrack;
+    bool leftTrack = false;
     bool withoutWidget = true;
     for (size_t o = 0; o < 2; ++o)
     {
@@ -135,11 +136,31 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
         // current lap
         if (withoutWidget)
         {
-            PTrack curTrack = m_state->currentLap->trackDetector()->detectedTrack();
+            PTrack curTrackBefore = m_state->currentLap->trackDetector()->detectedTrack();
             m_state->currentLap->appendTelemetryPoint(p);
-            if (curTrack != m_state->currentLap->trackDetector()->detectedTrack())
+            PTrack curTrackAfter = m_state->currentLap->trackDetector()->detectedTrack();
+            if (curTrackBefore != curTrackAfter)
             {
-                newTrack = m_state->currentLap->trackDetector()->detectedTrack();
+                if (!curTrackAfter.isNull() && m_currentDetectedTrack != curTrackAfter)
+                {
+                    newTrack = m_currentDetectedTrack = curTrackAfter;
+                }
+                if (curTrackAfter.isNull())
+                {
+                    leftTrack = true;
+                }
+            }
+        }
+
+        if (leftTrack)
+        {
+            DBG_MSG << "Left track" << m_currentDetectedTrack->name();
+            for (auto it : std::as_const(m_dash->components))
+            {
+                if ((it->getWidget() == nullptr) == withoutWidget)
+                {
+                    it->leftTrack();
+                }
             }
         }
 

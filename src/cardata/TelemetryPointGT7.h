@@ -16,7 +16,7 @@ public:
     virtual QMap<QString, size_t> getIntKeys() override;
 
     QByteArray makeGT7Package(size_t targetSize = 296);
-    void reconstructData();
+    void reconstructData() override;
 
     /* SETTERS */
     void setCarID(const int32_t & v) { m_carID = v; }

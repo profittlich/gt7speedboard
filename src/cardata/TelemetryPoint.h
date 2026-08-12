@@ -19,6 +19,7 @@ public:
     }
 
     virtual QByteArray getData() = 0;
+    virtual void reconstructData() = 0;
     virtual PTelemetryPoint copy() = 0;
 
     virtual int getInt(size_t key);

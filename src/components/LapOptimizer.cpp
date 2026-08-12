@@ -20,7 +20,7 @@ QString LapOptimizer::defaultTitle () const
     return "Lap Optimizer";
 }
 
-void LapOptimizer::newPoint(PTelemetryPoint p)
+void LapOptimizer::pointFinished(PTelemetryPoint p)
 {
     PComparisonLap optimized;
     if (!state()->comparisonLaps.contains("opt"))
@@ -41,6 +41,7 @@ void LapOptimizer::newPoint(PTelemetryPoint p)
                 for (auto i : init->lap->points())
                 {
                     m_preparingOptimized->lap->appendTelemetryPoint(i->copy()); // Copy the points, because we'll manipulate the sequence numbers
+                    m_preparingOptimized->lap->points().back()->setCurrentLap(1);
                 }
 
             }
@@ -55,19 +56,22 @@ void LapOptimizer::newPoint(PTelemetryPoint p)
 
     if (optimized->lap->points().empty())
     {
-        if (m_optimizingLap->points().size() != state()->currentLap->points().size())
+        if (m_optimizingLap->points().size()+1 != state()->currentLap->points().size())
         {
+            DBG_MSG << m_optimizingLap->points().size() << state()->currentLap->points().size();
             for (auto i : state()->currentLap->points())
             {
                 m_optimizingLap->appendTelemetryPoint(i->copy()); // Copy the points, because we'll manipulate the sequence numbers
+                m_optimizingLap->points().back()->setCurrentLap(1);
             }
-            DBG_MSG << "now in opt:" << m_optimizingLap->points().size();
+            //DBG_MSG << "now in opt:" << m_optimizingLap->points().size();
         }
         else
         {
             m_optimizingLap->appendTelemetryPoint(p->copy());
+            m_optimizingLap->points().back()->setCurrentLap(1);
         }
-        m_curIndex = optimized->closestPoint;;
+        m_curIndex = optimized->closestPoint;
         m_curLiveIndex = state()->currentLap->points().size();
     }
     else
@@ -84,23 +88,31 @@ void LapOptimizer::newPoint(PTelemetryPoint p)
                 if (lenOpt > lenLive || lenOpt == 0)
                 {
                     // insert new segment
-                    for (size_t i = m_curLiveIndex; i < m_curLiveIndex + lenLive; ++i)
+                    size_t i;
+                    for (i = m_curLiveIndex; i < m_curLiveIndex + lenLive-1; ++i) // TODO: WTF?
                     {
                         m_optimizingLap->appendTelemetryPoint(state()->currentLap->points()[i]->copy());
+                        m_optimizingLap->points().back()->setThrottle(m_optimizingLap->points().back()->currentLap() * 10 + 20); // TODO remove
+                        m_optimizingLap->points().back()->setCurrentLap(1);
                     }
-                    DBG_MSG << "now in opt w/ new:" << m_optimizingLap->points().size() << lenOpt << lenLive;
+                    m_curLiveIndex = i;//state()->currentLap->points().size();
+                    m_curIndex = optimized->closestPoint;
+                    DBG_MSG << "now in opt w/ new:" << m_optimizingLap->points().size() << m_curIndex << lenOpt << "|" << m_curLiveIndex << lenLive;
                 }
                 else
                 {
                     // insert old segment
-                    for (size_t i = m_curIndex; i < m_curIndex + lenOpt; ++i)
+                    size_t i;
+                    for (i = m_curIndex; i < m_curIndex + lenOpt; ++i)
                     {
-                        m_optimizingLap->appendTelemetryPoint(optimized->lap->points()[i]->copy());
+                        m_optimizingLap->appendTelemetryPoint(optimized->lap->points()[i]);
+                        //m_optimizingLap->points().back()->setCurrentLap(1);
                     }
-                    DBG_MSG << "now in opt w/ old:" << m_optimizingLap->points().size() << lenOpt << lenLive;
+                    m_curLiveIndex = state()->currentLap->points().size()-1;
+                    m_curIndex = i;//optimized->closestPoint;
+                    DBG_MSG << "now in opt w/ old:" << m_optimizingLap->points().size() << m_curIndex << lenOpt << "|" << m_curLiveIndex << lenLive;
                 }
-                m_curLiveIndex = state()->currentLap->points().size() - 1;
-                m_curIndex = optimized->closestPoint-1;
+
 
             }
         }
@@ -146,26 +158,31 @@ void LapOptimizer::completedLap(PLap, bool)
         optimized = state()->comparisonLaps["opt"];
     }
 
-    auto lenOpt = optimized->closestPoint - m_curIndex;
-    auto lenLive = state()->currentLap->points().size() - m_curLiveIndex;
+    auto lenOpt = optimized->lap->points().size() - m_curIndex;
+    auto lenLive = state()->previousLaps.back()->points().size() - m_curLiveIndex;
 
-    if (lenOpt > lenLive || lenOpt == 0)
+    DBG_MSG << "lenLive:" << lenLive << m_curLiveIndex << state()->currentLap->points().size() << state()->previousLaps.back()->points().size();
+
+    if (lenOpt > lenLive || optimized->lap->points().empty())
     {
         // insert new segment
         for (size_t i = m_curLiveIndex; i < m_curLiveIndex + lenLive; ++i)
         {
-            m_optimizingLap->appendTelemetryPoint(state()->currentLap->points()[i]->copy());
+            m_optimizingLap->appendTelemetryPoint(state()->previousLaps.back()->points()[i]->copy());
+            m_optimizingLap->points().back()->setThrottle(m_optimizingLap->points().back()->currentLap() * 10 + 20); //TODO remove
+            m_optimizingLap->points().back()->setCurrentLap(1);
         }
-        DBG_MSG << "now in opt w/ new at end:" << m_optimizingLap->points().size() << lenOpt << lenLive;
+        DBG_MSG << "now in opt w/ new at end:" << m_optimizingLap->points().size() << m_curLiveIndex  << state()->currentLap->points().size() << lenLive;
     }
     else
     {
         // insert old segment
         for (size_t i = m_curIndex; i < m_curIndex + lenOpt; ++i)
         {
-            m_optimizingLap->appendTelemetryPoint(optimized->lap->points()[i]->copy());
+            m_optimizingLap->appendTelemetryPoint(optimized->lap->points()[i]);
+            //m_optimizingLap->points().back()->setCurrentLap(1);
         }
-        DBG_MSG << "now in opt w/ old at end:" << m_optimizingLap->points().size() << lenOpt << lenLive;
+        DBG_MSG << "now in opt w/ old at end:" << m_optimizingLap->points().size() << m_curIndex << optimized->closestPoint << lenOpt;
     }
 
     m_optimizingLap->updateValidity();
@@ -174,14 +191,29 @@ void LapOptimizer::completedLap(PLap, bool)
     if (m_optimizingLap->valid())
     {
         DBG_MSG << "Update optimized lap:" << m_optimizingLap->points().front()->position().distanceTo(m_optimizingLap->points().back()->position());
+        DBG_MSG << m_optimizingLap->points()[0]->sequenceNumber()
+                   << m_optimizingLap->points()[1]->sequenceNumber()
+                << m_optimizingLap->points()[2]->sequenceNumber();
         auto newCL = PComparisonLap(new ComparisonLap());
         newCL->lap = m_optimizingLap;
         state()->comparisonLaps["opt"] = newCL;
     }
     else
     {
-        DBG_MSG << "Invalid optimizing lap";
+        DBG_MSG << "Invalid optimizing lap" << m_optimizingLap->points().size();
+            //m_optimizingLap->points().front()->position().distanceTo(m_optimizingLap->points().back()->position());
+        if (state()->comparisonLaps.contains("opting") && state()->comparisonLaps["opting"]->lap->points().size())
+        {
+            DBG_MSG << "comp:" << state()->comparisonLaps["opting"]->lap->points().front()->position().distanceTo(state()->comparisonLaps["opting"]->lap->points().back()->position());
+        }
     }
+
+#ifdef QT_DEBUG
+    if (state()->comparisonLaps.contains("opting"))
+    {
+        state()->comparisonLaps["prevopting"] = state()->comparisonLaps["opting"];
+    }
+#endif
 
     PTrackDetector trk = m_optimizingLap->trackDetector();
     m_optimizingLap = PLap(new Lap());
@@ -227,6 +259,23 @@ void LapOptimizer::publishOptimizingLap()
 #ifndef QT_DEBUG
     state()->invisibleComparisonLaps.insert("opting");
 #endif
+}
+
+void LapOptimizer::newTrack(PTrack track)
+{
+    DBG_MSG << "new track:" << track->name();
+    if (state()->comparisonLaps.contains(("opt")))
+    {
+        state()->comparisonLaps.remove("opt");
+    }
+    if (state()->comparisonLaps.contains(("opting")))
+    {
+        state()->comparisonLaps.remove("opting");
+    }
+    if (state()->comparisonLaps.contains(("prevopting")))
+    {
+        state()->comparisonLaps.remove("prevopting");
+    }
 }
 
 QString LapOptimizer::description ()

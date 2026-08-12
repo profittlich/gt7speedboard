@@ -14,6 +14,7 @@ public:
 
     virtual void newPoint(PTelemetryPoint p) override;
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
+    virtual void newTrack(PTrack track) override;
 
     static QString description ();
     static QMap<QString, Action> actions ();

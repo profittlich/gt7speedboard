@@ -133,7 +133,7 @@ bool ComponentWidget::eventFilter(QObject *, QEvent *event)
         m_layout->setContentsMargins(0,0,0,0);
         this->setMaximumHeight(m_oldMaxHeight);
         this->setMaximumWidth(m_oldMaxWidth);
-        this->setStyleSheet("");
+
 
 
         if (m_longClickTimer.isActive())

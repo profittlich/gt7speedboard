@@ -25,6 +25,7 @@ private:
     QColor m_currentColor;
     QElapsedTimer m_timer;
     QElapsedTimer m_fpsTimer;
+    PTrack m_currentDetectedTrack;
 };
 
 typedef QSharedPointer<Controller> PController;

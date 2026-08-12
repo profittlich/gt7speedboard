@@ -53,7 +53,7 @@ QString LapTimes::defaultTitle () const
 
 void LapTimes::newPoint(PTelemetryPoint)
 {
-    //completedLap(PLap(), true);
+    completedLap(PLap(), true);
 }
 
 void LapTimes::completedLap(PLap lap, bool)
@@ -76,7 +76,7 @@ void LapTimes::completedLap(PLap lap, bool)
             else
             {
                 lapTime = state()->comparisonLaps[i]->lap->estimateLapTime();
-                DBG_MSG << "Got estimated lap time " << lapTime;
+                //DBG_MSG << "Got estimated lap time " << lapTime;
                 if (lapTime >= 0)
                 {
                     txt += i + ": " + msToTime(lapTime)  + " (est.)";

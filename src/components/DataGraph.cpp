@@ -99,7 +99,6 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
         {
             keyIdx = keys[target()];
             type = typeid(float);
-            DBG_MSG << "Index:" << keyIdx << type.name();
         }
         else
         {
@@ -108,7 +107,6 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
             {
                 keyIdx = keys[target()];
                 type = typeid(int);
-                DBG_MSG << "Index:" << keyIdx << type.name();
             }
             else
             {
@@ -117,7 +115,6 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
                 {
                     keyIdx = keys[target()];
                     type = typeid(bool);
-                    DBG_MSG << "Index:" << keyIdx << type.name();
                 }
                 else
                 {
@@ -140,7 +137,6 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
                         {
                             field = 2;
                         }
-                        DBG_MSG << "Index:" << keyIdx << type.name() << field;
                     }
                     else
                     {
@@ -166,7 +162,6 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
                             {
                                 field = 3;
                             }
-                            DBG_MSG << "Index:" << keyIdx << type.name() << field;
                         }
                     }
                 }

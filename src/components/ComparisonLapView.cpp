@@ -69,11 +69,11 @@ void ComparisonLapView::newTrack(PTrack)
 
 }
 
-void ComparisonLapView::maybeNewTrack(PTrack)
+/*void ComparisonLapView::maybeNewTrack(PTrack)
 {
     m_widget->setText(m_widget->text() + "\nMaybe new track ");
 
-}
+}*/
 
 void ComparisonLapView::leftTrack()
 {

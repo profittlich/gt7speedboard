@@ -18,7 +18,7 @@ public:
     virtual void pitStop() override;
 
     virtual void newTrack(PTrack track) override;
-    virtual void maybeNewTrack(PTrack track) override;
+    //virtual void maybeNewTrack(PTrack track) override;
     virtual void leftTrack() override;
 
     static QString description ();

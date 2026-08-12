@@ -99,6 +99,10 @@ public:
 
     int estimateLapTime() const
     {
+        if (m_points.empty())
+        {
+            return -1;
+        }
         return (m_points.size()+1) * 1000.0 / c_FPS;
     }
 

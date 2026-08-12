@@ -108,9 +108,5 @@ bool Track::isOnTrack(PPoint p, size_t & index, size_t offset, bool verbose, flo
             }
         }
     }
-    if (verbose && !enteredTrack && m_name.contains("Monza"))
-    {
-        DBG_MSG << "Not on track" << m_name << ", dist=" << *dist << "tolerance" << m_tolerance << "#:" << m_points.size() << "cur" << curDist;
-    }
     return enteredTrack;
 }

@@ -33,7 +33,7 @@ void LapDisplay::newPoint(PTelemetryPoint p)
     {
         if (state()->lapProgress > -0.5)
         {
-            m_widget->setText (QString::number(round(100 * (p->currentLap() + state()->lapProgress))/100.0));
+            m_widget->setText (QString::number(p->currentLap()) + " (" + QString::number(round(100 * state()->lapProgress)) + "%)");
         }
         else
         {

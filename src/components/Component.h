@@ -286,11 +286,11 @@ public:
     virtual void completedLap(PLap lastLap, bool isFullLap) { Q_UNUSED(lastLap) Q_UNUSED(isFullLap) }
     virtual void pitStop() {};
 
-    virtual void newCircuit() {}
+    //virtual void newCircuit() {}
     virtual void newTrack(PTrack track) { Q_UNUSED(track) }
-    virtual void maybeNewTrack(PTrack track) { Q_UNUSED(track) }
+    //virtual void maybeNewTrack(PTrack track) { Q_UNUSED(track) }
     virtual void leftTrack() {};
-    virtual void leftCircuit() {};
+    //virtual void leftCircuit() {};
 
     virtual void callAction(QString a) { Q_UNUSED(a) };
     virtual void shutdown() {};

@@ -104,22 +104,6 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
     lbFont->setText ("Font size:");
     layout->addWidget(lbFont);
 
-    /*
-    auto sbFont = new QSpinBox(this);
-    sbFont->setMinimum(25);
-    sbFont->setMaximum(300);
-    sbFont->setValue(g_globalConfiguration.globalFontScale()*100);
-    sbFont->setSuffix("%");
-    fnt = sbFont->font();
-    fnt.setPointSize(20);
-    sbFont->setFont(fnt);
-    sbFont->setMinimumHeight(30);
-    layout->addWidget(sbFont);
-    sbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white;");
-    //sbFont->setStyleSheet("background-color:#0000;");
-    connect(sbFont, &QSpinBox::valueChanged, this, &StartScreen::setFontSize);
-    */
-
     auto cbFont = new QComboBox(this);
     cbFont->setStyleSheet ("background-color: #555;     border-style: none;  color:white; selection-background-color: #777; selection-color: white;");
     fnt = cbFont->font();
@@ -190,8 +174,6 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
 
     layout->addWidget(btnUpdate);
 #endif
-
-//layout->addStretch();
 
     QPushButton * pbStart = new QPushButton(this);
     pbStart->setText("START");

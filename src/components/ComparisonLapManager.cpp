@@ -178,6 +178,10 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool)
         }
 
         auto sortedLaps = state()->previousLaps;
+        for (size_t i = 0; i < m_medianStart; ++i)
+        {
+            sortedLaps.pop_front();
+        }
         erase_if(sortedLaps, [](PLap p) { return !p->valid();});
 
         std::sort (sortedLaps.begin(), sortedLaps.end(), [](PLap a, PLap b){ return a->lapTime() < b->lapTime();});
@@ -200,6 +204,36 @@ void ComparisonLapManager::completedLap(PLap lastLap, bool)
 
     // TODO update points again for new lap
     updateClosestPoints(m_cachedPt);
+}
+
+void ComparisonLapManager::newTrack(PTrack track)
+{
+    DBG_MSG << "new track:" << track->name();
+    if (state()->comparisonLaps.contains(("best")))
+    {
+        state()->comparisonLaps.remove("best");
+    }
+    if (state()->comparisonLaps.contains(("median")))
+    {
+        state()->comparisonLaps.remove("median");
+    }
+    if (state()->comparisonLaps.contains(("last")))
+    {
+        state()->comparisonLaps.remove("last");
+    }
+    DBG_MSG << "prev count:" << state()->previousLaps.size();
+    m_medianStart = state()->previousLaps.size();
+}
+
+/*void ComparisonLapManager::maybeNewTrack(PTrack track)
+{
+    DBG_MSG << "maybe new track:" << track->name();
+}*/
+
+void ComparisonLapManager::leftTrack()
+{
+    DBG_MSG << "left Track";
+    state()->currentLap->invalidate();
 }
 
 QString ComparisonLapManager::description ()

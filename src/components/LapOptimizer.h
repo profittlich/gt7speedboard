@@ -11,8 +11,9 @@ public:
 
     virtual QString defaultTitle () const override;
 
-    virtual void newPoint(PTelemetryPoint p) override;
+    virtual void pointFinished(PTelemetryPoint p) override;
     virtual void completedLap(PLap lastLap, bool isFullLap) override;
+    virtual void newTrack(PTrack track) override;
 
     static QString description ();
     static QMap<QString, Action> actions ();

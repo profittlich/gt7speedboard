@@ -60,6 +60,15 @@ void ProgressManager::completedLap(PLap, bool)
     }
 }
 
+void ProgressManager::newTrack(PTrack track)
+{
+    DBG_MSG << "new track:" << track->name();
+    if (state()->comparisonLaps.contains(("progress")))
+    {
+        state()->comparisonLaps.remove("progress");
+    }
+}
+
 QString ProgressManager::description ()
 {
     return "Detect the current lap progress for other components";
