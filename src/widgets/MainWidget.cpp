@@ -16,6 +16,7 @@
 #include "src/system/KeyStrings.h"
 #include "src/widgets/DashWidget.h"
 #include "src/widgets/ComponentWidget.h"
+#include "src/widgets/TutorialScreen.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), m_inDash(false), m_inMenu(0)
@@ -89,9 +90,13 @@ void MainWidget::showStartScreen()
     }
 
     m_widget = new StartScreen(this, m_layout);
-    //m_layout->setContentsMargins(0,0,0,0);
+
+    //auto test = new TutorialScreen(this);
+    //m_layout->addWidget(test);
 
     m_layout->addWidget(m_widget);
+
+
 
     m_inDash = false;
 

@@ -84,7 +84,8 @@ SOURCES += \
     src/widgets/MenuScreen.cpp \
     src/widgets/SideButtonLabel.cpp \
     src/widgets/StartScreen.cpp \
-    src/widgets/TextInput.cpp
+    src/widgets/TextInput.cpp \
+    src/widgets/TutorialScreen.cpp
 
 HEADERS += \
     src/cardata/LinearInterpolator.h \
@@ -169,7 +170,8 @@ HEADERS += \
     src/widgets/MenuScreen.h \
     src/widgets/SideButtonLabel.h \
     src/widgets/StartScreen.h \
-    src/widgets/TextInput.h
+    src/widgets/TextInput.h \
+    src/widgets/TutorialScreen.h
 
 TRANSLATIONS += \
     SpeedBoard_for_GT7_Next_de_DE.ts

@@ -84,7 +84,8 @@
                                         {
                                              "component":"LapComparison",
                                              "configuration": {
-                                                 "target": "best"
+                                                 "target": "best",
+                                                 "secondTarget": "opt"
                                              },
                                              "fullScreenSignalAllowed": true,
                                              "showHeader" : false
@@ -93,7 +94,8 @@
                                              "component":"LapComparison",
                                              "configuration": {
                                                  "target": "last",
-                                                 "secondTarget": "median"
+                                                 "secondTarget": "median",
+                                                 "thirdTarget": "best"
                                              },
                                              "fullScreenSignalAllowed": true,
                                              "showHeader" : false
