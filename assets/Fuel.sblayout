@@ -1,0 +1,48 @@
+{
+    "version" : 2,
+    "pages" : [
+        {
+            "title" : "Page 1",
+            "shortcuts" : [ "Key_1" ],
+            "list" : [
+                {
+                    "component" : "LapChangeDetector"
+                },
+                {
+                    "component" : "FuelAnalyzer"
+                },
+                {
+                    "component" : "SessionChangeDetector"
+                },
+                {
+                    "component": "ComparisonLapManager",
+                    "configuration": {
+                        "maxClosenessDistance": 20
+                    }
+                },
+                {
+                    "list" : [
+                        {
+                            "list" : [
+                                {
+                                   "component": "LapDisplay",
+                                   "stretch": 1
+                                },
+                                {
+                                    "component" : "FuelPerLap",
+                                    "stretch" : 3,
+                                    "title" : "FUEL"
+                                },
+                                {
+                                    "component" : "FuelRange",
+                                    "stretch" : 3,
+                                    "showHeader" : false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

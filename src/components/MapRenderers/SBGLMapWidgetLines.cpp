@@ -449,8 +449,10 @@ void SBGLMapWidgetLines::paintGL()
     {
 #ifndef Q_OS_IOS
 #ifndef Q_OS_ANDROID
+#ifndef Q_OS_WASM
         f->glEnable(GL_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SMOOTH);
+#endif
 #endif
 #endif
 

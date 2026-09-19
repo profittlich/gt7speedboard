@@ -54,8 +54,16 @@ void TrackDetector::addPoint(PPoint p)
 
     if (m_candidates.size() == 0)
     {
-        //DBG_MSG << "reset track check";
+        if (!m_hasJustReset)
+        {
+            DBG_MSG << "reset track check";
+        }
+        m_hasJustReset = true;
         reset();
+    }
+    else
+    {
+        m_hasJustReset = false;
     }
 }
 

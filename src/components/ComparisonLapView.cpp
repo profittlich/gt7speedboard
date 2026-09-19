@@ -37,6 +37,10 @@ void ComparisonLapView::newPoint(PTelemetryPoint)
 
 void ComparisonLapView::completedLap(PLap lastLap, bool)
 {
+    if (lastLap.isNull())
+    {
+        return;
+    }
     QString txt = "";
     txt +=  "lastLap: " + QString::number(lastLap->points().size()) + " points, " + (lastLap->valid() ? "valid" : "invalid") + "\n";
     for (auto i : state()->comparisonLaps.keys())

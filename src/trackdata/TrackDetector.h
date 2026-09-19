@@ -47,6 +47,7 @@ private:
     QMap<PTrack, int> m_directions;
     QList<bool> m_possible;
     PPoint m_previousPoint;
+    bool m_hasJustReset = false;
 };
 
 

@@ -58,7 +58,6 @@ void LapOptimizer::pointFinished(PTelemetryPoint p)
     {
         if (m_optimizingLap->points().size()+1 != state()->currentLap->points().size())
         {
-            DBG_MSG << m_optimizingLap->points().size() << state()->currentLap->points().size();
             for (auto i : state()->currentLap->points())
             {
                 m_optimizingLap->appendTelemetryPoint(i->copy()); // Copy the points, because we'll manipulate the sequence numbers
@@ -264,6 +263,8 @@ void LapOptimizer::publishOptimizingLap()
 void LapOptimizer::newTrack(PTrack track)
 {
     DBG_MSG << "new track:" << track->name();
+    m_optimizingLap = PLap(new Lap());
+    m_optimizingLap->setTrackDetector(PTrackDetector (new TrackDetector()));
     if (state()->comparisonLaps.contains(("opt")))
     {
         state()->comparisonLaps.remove("opt");

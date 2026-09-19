@@ -24,6 +24,9 @@
                     "component" : "ProgressManager"
                 },
                 {
+                    "component" : "LapOptimizer"
+                },
+                {
                     "list" : [
                         {
                             "list" : [
