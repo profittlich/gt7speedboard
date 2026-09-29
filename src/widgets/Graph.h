@@ -17,6 +17,7 @@ public:
     void addValue(size_t idx, float x, float y);
     void setColor(size_t idx, QColor col);
     void setType(size_t idx, GraphTypes t);
+    void setVisible(size_t idx, bool on);
 
     void clear();
     void setWidth (float px)
@@ -60,4 +61,5 @@ private:
     QList <float> m_markerArray;
     QList <QColor> m_colors;
     QList <GraphTypes> m_types;
+    QList <bool> m_visibilities;
 };

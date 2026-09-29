@@ -48,6 +48,7 @@ private:
     PComponentParameterString m_firstTarget;
     PComponentParameterString m_secondTarget;
     PComponentParameterString m_thirdTarget;
+    PComponentParameterBoolean m_syncFocusTarget;
     static PComponentParameterInt s_offset;
     PComparisonLap m_targetLap;
 

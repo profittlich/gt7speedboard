@@ -9,7 +9,7 @@ QString LapComparison::s_fullScreenTarget;
 QList<LapComparison*> LapComparison::s_allLapComparisons;
 PComponentParameterInt LapComparison::s_offset;
 
-LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<int>("currentTarget",1, true)), m_firstTarget (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true))
+LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentParameter<int>("currentTarget",1, true)), m_firstTarget (new ComponentParameter<QString>("target","last", true)), m_secondTarget (new ComponentParameter<QString>("secondTarget","", true)), m_thirdTarget (new ComponentParameter<QString>("thirdTarget","", true)), m_syncFocusTarget(new ComponentParameter<bool>("sync focus target", true, true))
 {
     if (s_offset.isNull())
     {
@@ -20,6 +20,7 @@ LapComparison::LapComparison () : Component(), m_currentTarget (new ComponentPar
     addComponentParameter(m_firstTarget);
     addComponentParameter(m_secondTarget);
     addComponentParameter(m_thirdTarget);
+    addComponentParameter(m_syncFocusTarget);
     addComponentParameter(s_offset);
 
     m_colorMapper = new ColorMapperGreenRed(0, 10);
@@ -142,6 +143,10 @@ void LapComparison::pointFinished(PTelemetryPoint p)
     if (canFullScreenSignal() && s_fullScreenTarget == "")
     {
         s_fullScreenTarget = currentTarget()();
+        if (m_syncFocusTarget() && state()->comparisonLaps.contains(s_fullScreenTarget))
+        {
+            state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
+        }
         DBG_MSG << "Init global target" << s_fullScreenTarget;
     }
     if ((canFullScreenSignal() && s_fullScreenTarget == currentTarget()()) != m_prevFullScreenPermission)
@@ -333,11 +338,26 @@ void LapComparison::callAction(QString a)
         {
             DBG_MSG << "No target" << m_prevFullScreenPermission;
             s_fullScreenTarget = "<none>";
+            if (m_syncFocusTarget())
+            {
+                state()->comparisonLaps.remove("focus");
+            }
         }
         else
         {
             DBG_MSG << "Target" << currentTarget()() << m_prevFullScreenPermission;
             s_fullScreenTarget = currentTarget()();
+            if (m_syncFocusTarget())
+            {
+                if (state()->comparisonLaps.contains(s_fullScreenTarget))
+                {
+                    state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
+                }
+                else
+                {
+                    state()->comparisonLaps.remove("focus");
+                }
+            }
         }
         updateLabel();
     }

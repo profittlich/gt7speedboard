@@ -47,6 +47,7 @@ SOURCES += \
     src/components/MapRenderers/SBGLMapWidgetLines.cpp \
     src/components/MapRenderers/SBGLMapWidgetZoomedLines.cpp \
     src/components/Message.cpp \
+    src/components/OilPressure.cpp \
     src/components/PedalGraph.cpp \
     src/components/PresetSelector.cpp \
     src/components/ProgressManager.cpp \
@@ -126,6 +127,7 @@ HEADERS += \
     src/components/MapRenderers/SBGLMapWidgetLines.h \
     src/components/MapRenderers/SBGLMapWidgetZoomedLines.h \
     src/components/Message.h \
+    src/components/OilPressure.h \
     src/components/PedalGraph.h \
     src/components/PresetSelector.h \
     src/components/ProgressManager.h \

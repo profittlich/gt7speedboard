@@ -50,11 +50,21 @@ void Graph::setType(size_t idx, GraphTypes t)
     m_types[idx] = t;
 }
 
+void Graph::setVisible(size_t idx, bool on)
+{
+    while (m_visibilities.size() < qsizetype(idx)+1)
+    {
+        m_visibilities.append(true);
+    }
+    m_visibilities[idx] = on;
+}
+
 void Graph::clear()
 {
     m_values.clear();
     m_colors.clear();
     m_types.clear();
+    m_visibilities.clear();
 }
 
 void Graph::recalcExtents()
@@ -278,6 +288,11 @@ void Graph::paintGL()
 
     for (size_t idx = 0; qsizetype(idx) < m_values.size(); ++idx)
     {
+        if (m_visibilities.contains(idx) && !m_visibilities[idx])
+        {
+            continue;
+        }
+        
         if (m_types[idx] == Plot)
         {
             if (m_values[idx].size())
