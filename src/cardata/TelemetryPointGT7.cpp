@@ -624,10 +624,10 @@ void TelemetryPointGT7::reconstructData()
     m_data = makeGT7Package((m_data.size()));
 }
 
-QMap<QString, size_t> TelemetryPointGT7::getIntKeys()
+QMap<QString, TelemetryPoint::ValueDescriptor> TelemetryPointGT7::getIntKeys()
 {
-    QMap<QString, size_t>  result = TelemetryPoint::getIntKeys();
-    result.insert("carID", 1001);
+    QMap<QString, TelemetryPoint::ValueDescriptor> result = TelemetryPoint::getIntKeys();
+    result.insert("carID", {1001, "", "Car ID"});
     return result;
 }
 

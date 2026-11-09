@@ -143,10 +143,10 @@ void LapComparison::pointFinished(PTelemetryPoint p)
     if (canFullScreenSignal() && s_fullScreenTarget == "")
     {
         s_fullScreenTarget = currentTarget()();
-        if (m_syncFocusTarget() && state()->comparisonLaps.contains(s_fullScreenTarget))
-        {
-            state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
-        }
+        //if (m_syncFocusTarget() && state()->comparisonLaps.contains(s_fullScreenTarget))
+        //{
+            //state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
+        //}
         DBG_MSG << "Init global target" << s_fullScreenTarget;
     }
     if ((canFullScreenSignal() && s_fullScreenTarget == currentTarget()()) != m_prevFullScreenPermission)
@@ -166,6 +166,10 @@ void LapComparison::pointFinished(PTelemetryPoint p)
     if (state()->comparisonLaps.contains(currentTarget()()))
     {
         m_targetLap = state()->comparisonLaps[currentTarget()()];
+        if (m_syncFocusTarget() && state()->comparisonLaps.contains(s_fullScreenTarget))
+        {
+            state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
+        }
     }
     else
     {
@@ -351,7 +355,7 @@ void LapComparison::callAction(QString a)
             {
                 if (state()->comparisonLaps.contains(s_fullScreenTarget))
                 {
-                    state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
+                    //state()->comparisonLaps["focus"] = state()->comparisonLaps[s_fullScreenTarget];
                 }
                 else
                 {

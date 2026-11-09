@@ -13,6 +13,13 @@ typedef QSharedPointer<TelemetryPoint> PTelemetryPoint;
 class TelemetryPoint : public Point
 {
 public:
+    struct ValueDescriptor
+    {
+        size_t key;
+        QString unit;
+        QString label;
+    };
+
     float angle(const TelemetryPoint & p2) const
     {
         return velocity().angle(p2.velocity());
@@ -28,11 +35,11 @@ public:
     virtual Vector3D<float> getVector3D(size_t key);
     virtual WheelData<float> getWheelData(size_t key);
 
-    virtual QMap<QString, size_t> getIntKeys();
-    virtual QMap<QString, size_t> getFloatKeys();
-    virtual QMap<QString, size_t> getBoolKeys();
-    virtual QMap<QString, size_t> getVector3DKeys();
-    virtual QMap<QString, size_t> getWheelDataKeys();
+    virtual QMap<QString, ValueDescriptor> getIntKeys();
+    virtual QMap<QString, ValueDescriptor> getFloatKeys();
+    virtual QMap<QString, ValueDescriptor> getBoolKeys();
+    virtual QMap<QString, ValueDescriptor> getVector3DKeys();
+    virtual QMap<QString, ValueDescriptor> getWheelDataKeys();
 
     /* SETTERS */
     void setSequenceNumber(const unsigned & n) { m_sequenceNumber = n; }

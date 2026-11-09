@@ -91,12 +91,12 @@ PedalGraph::PedalGraph () : Component()
     m_widget->setWidth(400);
     m_widget->setYRange(0, 100);
 
-    m_widget->setColor (c_idxRefBrake, QColor(95, 0, 0));
-    m_widget->setColor (c_idxRefThrottle, QColor(0, 95, 0));
-    m_widget->setColor (c_idxBrake, QColor(255, 0, 0));
-    m_widget->setColor (c_idxThrottle, QColor(0, 255, 0));
-    m_widget->setColor (c_idxGearDown, QColor(255, 255, 255, 127));
-    m_widget->setColor (c_idxGearUp, QColor(255, 255, 255, 127));
+    m_widget->setColor (c_idxRefBrake, QColor(0x8F, 0x00, 0x00));
+    m_widget->setColor (c_idxRefThrottle, QColor(0x00, 0x7F, 0x00));
+    m_widget->setColor (c_idxBrake, QColor(0xFF, 0x00, 0x00));
+    m_widget->setColor (c_idxThrottle, QColor(0x00, 0xFF, 0x00));
+    m_widget->setColor (c_idxGearDown, QColor(0xFF, 0xFF, 0xFF, 0x7F));
+    m_widget->setColor (c_idxGearUp, QColor(0xFF, 0xFF, 0xFF, 0x7F));
 
     m_widget->setType(c_idxGearUp, Graph::MarkerUp);
     m_widget->setType(c_idxGearDown, Graph::MarkerDown);

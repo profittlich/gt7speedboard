@@ -97,7 +97,7 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
         auto keys = p->getFloatKeys();
         if (keys.contains(target()))
         {
-            keyIdx = keys[target()];
+            keyIdx = keys[target()].key;
             type = typeid(float);
         }
         else
@@ -105,7 +105,7 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
             keys = p->getIntKeys();
             if (keys.contains(target()))
             {
-                keyIdx = keys[target()];
+                keyIdx = keys[target()].key;
                 type = typeid(int);
             }
             else
@@ -113,7 +113,7 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
                 keys = p->getBoolKeys();
                 if (keys.contains(target()))
                 {
-                    keyIdx = keys[target()];
+                    keyIdx = keys[target()].key;
                     type = typeid(bool);
                 }
                 else
@@ -122,7 +122,7 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
                     auto targetParts = target().split(":");
                     if (keys.contains(targetParts[0]))
                     {
-                        keyIdx = keys[targetParts[0]];
+                        keyIdx = keys[targetParts[0]].key;
                         type = typeid(Vector3D<float>);
                         field = 0;
                         if (targetParts[1] == "X")
@@ -144,7 +144,7 @@ void DataGraph::addDataPoint(int graphIdx, std::type_index & type, int & keyIdx,
                         auto targetParts = target().split(":");
                         if (keys.contains(targetParts[0]))
                         {
-                            keyIdx = keys[targetParts[0]];
+                            keyIdx = keys[targetParts[0]].key;
                             type = typeid(WheelData<float>);
                             if (targetParts[1] == "FL")
                             {

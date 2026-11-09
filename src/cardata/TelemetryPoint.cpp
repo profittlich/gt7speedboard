@@ -1,101 +1,101 @@
 #include "TelemetryPoint.h"
 
-QMap<QString, size_t> TelemetryPoint::getIntKeys()
+QMap<QString, TelemetryPoint::ValueDescriptor> TelemetryPoint::getIntKeys()
 {
-    QMap<QString, size_t> result;
+    QMap<QString, ValueDescriptor> result;
 
-    result.insert("sequenceNumber", 1);
-    result.insert("currentGear", 2);
-    result.insert("suggestedGear", 3);
-    result.insert("rpmRevWarning", 4);
-    result.insert("rpmRevLimiter", 5);
-    result.insert("currentLap", 6);
-    result.insert("totalLaps", 7);
-    result.insert("bestLapMs", 8);
-    result.insert("lastLapMs", 9);
-    result.insert("timeOnTrack", 10);
+    result.insert("sequenceNumber", {1, "", "Sequence Number"});
+    result.insert("currentGear", {2, "", "Current Gear"});
+    result.insert("suggestedGear", {3, "", "Suggested Gear"});
+    result.insert("rpmRevWarning", {4, "rpm", "RPM Rev Warning"});
+    result.insert("rpmRevLimiter", {5, "rpm", "RPM Rev Limiter"});
+    result.insert("currentLap", {6, "", "Current Lap"});
+    result.insert("totalLaps", {7, "", "Total Laps"});
+    result.insert("bestLapMs", {8, "ms", "Best Lap"});
+    result.insert("lastLapMs", {9, "ms", "Last Lap"});
+    result.insert("timeOnTrack", {10, "", "Time on Track"});
 
-    result.insert("currentPosition", 11);
-    result.insert("totalPositions", 12);
+    result.insert("currentPosition", {11, "", "Current Position"});
+    result.insert("totalPositions", {12, "", "Total Positions"});
 
     return result;
 }
 
-QMap<QString, size_t> TelemetryPoint::getFloatKeys()
+QMap<QString, TelemetryPoint::ValueDescriptor> TelemetryPoint::getFloatKeys()
 {
-    QMap<QString, size_t> result;
+    QMap<QString, ValueDescriptor> result;
 
-    result.insert("rpm", 1);
-    result.insert("carSpeed", 2);
-    result.insert("currentFuel", 3);
-    result.insert("boost", 4);
-    result.insert("oilPressure", 5);
-    result.insert("waterTemperature", 6);
-    result.insert("oilTemperature", 7);
+    result.insert("rpm", {1, "rpm", "RPM"});
+    result.insert("carSpeed", {2, "km/h", "Car Speed"});
+    result.insert("currentFuel", {3, "L", "Current Fuel"});
+    result.insert("boost", {4, "", "Boost"});
+    result.insert("oilPressure", {5, "bar", "Oil Pressure"});
+    result.insert("waterTemperature", {6, "°C", "Water Temperature"});
+    result.insert("oilTemperature", {7, "°C", "Oil Temperature"});
 
-    result.insert("throttle", 8);
-    result.insert("brake", 9);
+    result.insert("throttle", {8, "", "Throttle"});
+    result.insert("brake", {9, "", "Brake"});
 
-    result.insert("clutch", 10);
-    result.insert("clutchEngaged", 11);
-    result.insert("rpmAfterClutch", 12);
+    result.insert("clutch", {10, "", "Clutch"});
+    result.insert("clutchEngaged", {11, "", "Clutch Engaged"});
+    result.insert("rpmAfterClutch", {12, "rpm", "RPM After Clutch"});
 
-    result.insert("rideHeight", 13);
-    result.insert("fuelCapacity", 14);
-    result.insert("estimatedTopSpeed", 15);
+    result.insert("rideHeight", {13, "m", "Ride Height"}); //TODO: m corrent?
+    result.insert("fuelCapacity", {14, "L", "Fuel Capacity"});
+    result.insert("estimatedTopSpeed", {15, "km/h", "Estimated Top Speed"});
 
-    result.insert("gear1", 16);
-    result.insert("gear2", 17);
-    result.insert("gear3", 18);
-    result.insert("gear4", 19);
-    result.insert("gear5", 20);
-    result.insert("gear6", 21);
-    result.insert("gear7", 22);
-    result.insert("gear8", 23);
+    result.insert("gear1", {16, "", "Gear 1"});
+    result.insert("gear2", {17, "", "Gear 2"});
+    result.insert("gear3", {18, "", "Gear 3"});
+    result.insert("gear4", {19, "", "Gear 4"});
+    result.insert("gear5", {20, "", "Gear 5"});
+    result.insert("gear6", {21, "", "Gear 6"});
+    result.insert("gear7", {22, "", "Gear 7"});
+    result.insert("gear8", {23, "", "Gear 8"});
 
     return result;
 }
 
-QMap<QString, size_t> TelemetryPoint::getBoolKeys()
+QMap<QString, TelemetryPoint::ValueDescriptor> TelemetryPoint::getBoolKeys()
 {
-    QMap<QString, size_t> result;
+    QMap<QString, ValueDescriptor> result;
 
-    result.insert("inRace", 1);
-    result.insert("isPaused", 2);
-    result.insert("loadingOrProcessing", 3);
-    result.insert("inGear", 4);
-    result.insert("hasTurbo",5);
-    result.insert("revLimiterBlinkAlertActive", 6);
-    result.insert("lightsActive", 7);
-    result.insert("highBeamActive", 8);
-    result.insert("lowBeamActive", 9);
-    result.insert("asmActive", 10);
-    result.insert("tcsActive", 11);
+    result.insert("inRace", {1, "", "In Race"});
+    result.insert("isPaused", {2, "", "Is Paused"});
+    result.insert("loadingOrProcessing", {3, "", "Loading or Processing"});
+    result.insert("inGear", {4, "", "In Gear"});
+    result.insert("hasTurbo", {5, "", "Has Turbo"});
+    result.insert("revLimiterBlinkAlertActive", {6, "", "Rev Limiter Blink Alert Active"});
+    result.insert("lightsActive", {7, "", "Lights Active"});
+    result.insert("highBeamActive", {8, "", "High Beam Active"});
+    result.insert("lowBeamActive", {9, "", "Low Beam Active"});
+    result.insert("asmActive", {10, "", "ASM Active"});
+    result.insert("tcsActive", {11, "", "TCS Active"});
 
     return result;
 }
 
-QMap<QString, size_t> TelemetryPoint::getVector3DKeys()
+QMap<QString, TelemetryPoint::ValueDescriptor> TelemetryPoint::getVector3DKeys()
 {
-    QMap<QString, size_t> result;
+    QMap<QString, TelemetryPoint::ValueDescriptor> result;
 
-    result.insert("velocity", 1);
-    result.insert("position", 2);
-    result.insert("normal", 3);
-    result.insert("rotation", 4);
-    result.insert("angularVelocity", 5);
+    result.insert("velocity", {1, "", "Velocity"}); // TODO units
+    result.insert("position", {2, "", "Position"});
+    result.insert("normal", {3, "", "Normal"});
+    result.insert("rotation", {4, "", "Rotation"});
+    result.insert("angularVelocity", {5, "", "Angular Velocity"});
 
     return result;
 }
 
-QMap<QString, size_t> TelemetryPoint::getWheelDataKeys()
+QMap<QString, TelemetryPoint::ValueDescriptor> TelemetryPoint::getWheelDataKeys()
 {
-    QMap<QString, size_t> result;
+    QMap<QString, TelemetryPoint::ValueDescriptor> result;
 
-    result.insert("tyreTemperature", 1);
-    result.insert("wheelRps", 2);
-    result.insert("suspension", 3);
-    result.insert("tyreDiameter", 4);
+    result.insert("tyreTemperature", {1, "°C", "Tyre Temperature"});
+    result.insert("wheelRps", {2, "rps", "Wheel RPS"});
+    result.insert("suspension", {3, "", "Suspension"}); // TODO units
+    result.insert("tyreDiameter", {4, "", "Tyre Diameter"});
 
     return result;
 }
