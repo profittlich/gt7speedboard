@@ -38,7 +38,7 @@ void Controller::newTelemetryPoint(PTelemetryPoint p)
     if (!gt7.isNull() && gt7->carID() != sCarId)
     {
         sCarId = gt7->carID();
-        DBG_MSG << "New car ID: " << sCarId;
+        DBG_MSG << "New car ID: " << sCarId << " -> " << g_globalConfiguration.carName(sCarId);
 
     }
 

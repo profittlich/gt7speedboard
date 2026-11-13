@@ -93,5 +93,6 @@
         <file>assets/SpeedBoard_Icon_512.png</file>
         <file>assets/BrakeBoard.sblayout</file>
         <file>assets/Fuel.sblayout</file>
+        <file>assets/tracks/SUGO International Racing Course - Full Course.gt7track</file>
     </qresource>
 </RCC>
