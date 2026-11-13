@@ -540,11 +540,40 @@ ID,ShortName,Maker
 3606,9X8 '25,32
 3607,963 '24,136
 3608,911 Turbo S Safety Car (922),136
+51,FTO GP Version R '97,25
+655,Z4 3.0i '03,6
 683,Civic Si Group A version '87,15
-3395,Seven Superlight R500 '08,166
+729,Avantime 3.0 V6 24V '02,18
+761,Delta HF Integrale Rally Car '92,18
+967,Efini RX-7 Type R (FD) '91,21
+1427,BNR34 GT-R N1 base,28
+3395,Seven Superlight R500 '08,164
+3440,911 Turbo S Leichtbau (964) '93,136
+3447,Vantage '18,4
+3470,812 Superfast '17,110
+3556,Unimog Type 411 '62,22
+3564,205 GTI '88,32
+3566,CX-30 X Smart Edition '21,21
+3567,Kangoo 1.4 '01,34
+3568,Qashqai Tekna e-Power '22,28
+3569,R34 GT-R Z-tune '05,28
+3570,Corvette Z06 (C5) '01,7
+3572,CR-V e:HEV EX・Black Edition '21,15
+3573,BX 19 TRS '87,9
+3574,2008 Allure '21,32
+3575,Panda 30 CL '85,12
+3576,N-ONE RS '22,15
+3579,1 '26,160
+3581,Corvette CX Concept '25,7
+3582,Corvette CX.R VGT Concept,7
+3586,Polestar 5 Performance '26,165
+3587,296 GTB '22,110
+3589,F3500-B,33
+3590,ELANTRA N TC '24,16
 3592,Camaro 1969 Race-Mod,7
-3599,SU7 Ultra '25,164
-3602,U9 '24,165
+3599,SU7 Ultra '25,166
+3601,Captur S Edition '21,34
+3602,U9 '24,167
 3603,Twingo '93,34
 3609,RX-VISION GT3 EVO '26,21
 3610,IONIQ 6 N '25,16
@@ -552,5 +581,5 @@ ID,ShortName,Maker
 3612,Chaser Tourer V '97,43
 3653,2 CV 6 Charleston '86,9
 3654,F355 Berlinetta '94,110
-3655,Step WGN Spada Premium Line ' 23,15
-3656,Vision Gran Turismo,164
+3655,Step WGN Spada Premium Line '23,43
+3656,VGT,166
