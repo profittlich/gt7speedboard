@@ -38,12 +38,12 @@
 MainMenuScreen::MainMenuScreen (MainWidget * parent, PDash dash, PState pstate) : MenuScreen(parent, dash, pstate)
 {
     addPageFlipper();
-    addButton ("RESET DATA", this, &MainMenuScreen::resetClicked);
     addButton ("LAPS", this, &MainMenuScreen::lapsClicked);
     addButton ("SAVE LAYOUT", this, &MainMenuScreen::saveLayoutClicked);
+    addButton ("RESET DATA", this, &MainMenuScreen::resetClicked);
     addButton ("EXIT DASH", this, &MainMenuScreen::exitClicked);
 
-    layout()->insertStretch(layout()->count()-1);
+    layout()->insertStretch(layout()->count()-2);
 }
 
 void MainMenuScreen::exitClicked()
