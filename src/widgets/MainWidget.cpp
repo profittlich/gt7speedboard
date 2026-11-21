@@ -207,7 +207,7 @@ void MainWidget::startDash ()
 
 #ifdef Q_OS_WINDOWS
     showFullScreen();
-#endifs
+#endif
     m_inDash = true;
     DBG_MSG << this->height();
 }
