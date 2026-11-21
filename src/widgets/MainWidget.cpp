@@ -96,8 +96,9 @@ void MainWidget::showStartScreen()
 
     m_layout->addWidget(m_widget);
 
-
-
+#ifdef Q_OS_WINDOWS
+    showNormal();
+#endif
     m_inDash = false;
 
     connect(dynamic_cast<StartScreen*> (m_widget), &StartScreen::startDash, this, &MainWidget::startDash);
@@ -204,6 +205,9 @@ void MainWidget::startDash ()
 
     m_widget->update();
 
+#ifdef Q_OS_WINDOWS
+    showFullScreen();
+#endifs
     m_inDash = true;
     DBG_MSG << this->height();
 }

@@ -112,6 +112,7 @@ void GT7TelemetryReceiver::readPendingDatagrams()
         if (!datagram.isValid())
         {
             DBG_MSG << "Invalid datagram received, expected " << (m_lastSequenceNumbers.back() + 1);
+            continue;
         }
 
         PTelemetryPointGT7 p;
