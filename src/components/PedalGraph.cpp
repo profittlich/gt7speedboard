@@ -79,7 +79,7 @@ const size_t c_idxRefThrottle = 0;
 PedalGraph::PedalGraph () : Component()
     , m_showIndicators(new ComponentParameter<bool>("show pedal indicators", true, true))
     , m_showTarget(new ComponentParameter<bool>("show comparison target", true, true))
-    , m_target(new ComponentParameter<QString>("Comparison target", "<none>", true))
+    , m_target(new ComponentParameter<QString>("comparison target", "<none>", true))
 {
     addComponentParameter(m_showIndicators);
     addComponentParameter(m_showTarget);

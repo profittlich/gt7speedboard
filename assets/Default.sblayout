@@ -108,6 +108,11 @@
                                 },
                                 {
                                     "component": "PedalGraph",
+                                    "configuration": {
+                                        "comparison target": "best",
+                                        "show comparison target": true,
+                                        "show pedal indicators": true
+                                    },
                                     "stretch": 2
                                 }
                             ]

@@ -96,6 +96,11 @@
                                 },
                                 {
                                     "component": "PedalGraph",
+                                    "configuration": {
+                                        "comparison target": "<none>",
+                                        "show comparison target": false,
+                                        "show pedal indicators": false
+                                    },
                                     "stretch": 2
                                 }
                             ]
