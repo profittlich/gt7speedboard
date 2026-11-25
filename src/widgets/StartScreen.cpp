@@ -55,11 +55,14 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
 
     QDir storeLoc = getStorageLocation();
     QFile llTest (storeLoc.absolutePath() + "/Last Used.sblayout.autosave");
+    bool setDefault = true;
     if (llTest.exists())
     {
         m_selectedLayout->addItem("Last used layout", storeLoc.absolutePath() + "/Last Used.sblayout.autosave");
         m_selectedLayout->insertSeparator(m_selectedLayout->count());
+        setDefault = false;
     }
+    DBG_MSG << "Default as default:" << setDefault;
 
 
     QDir layoutFiles = QDir(":/assets/assets/");
@@ -67,6 +70,10 @@ StartScreen::StartScreen (QWidget * parent, QStackedLayout *parentLayout) : QWid
     for (const auto &i : std::as_const(files))
     {
         m_selectedLayout->addItem((i.first(i.size() - strlen (".sblayout"))).replace("_", " "), ":/assets/assets/" + i);
+        if(setDefault && i == "Default.sblayout")
+        {
+            m_selectedLayout->setCurrentIndex(m_selectedLayout->count()-1);
+        }
     }
 
     m_selectedLayout->insertSeparator(m_selectedLayout->count());
